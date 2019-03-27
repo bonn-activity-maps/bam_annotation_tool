@@ -1,0 +1,6 @@
+*.png
+*.mp4
+.pyc
+.idea/
+.vsc/
+__pycache__/
