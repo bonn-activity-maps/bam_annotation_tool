@@ -1,4 +1,4 @@
-angular.module('CVGTool', ['ui.router'])
+angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone'])
 
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider
@@ -13,6 +13,12 @@ angular.module('CVGTool', ['ui.router'])
                 url: "/login",
                 templateUrl: "static/views/login.html",
                 controller: "loginCtrl"
+            })
+
+            .state('admin', {
+              url: "/admin",
+              templateUrl: "static/views/admin.html",
+              controller: "adminCtrl"
             });
 
         $urlRouterProvider.otherwise('home');
