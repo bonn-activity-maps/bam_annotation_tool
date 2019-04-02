@@ -8,8 +8,8 @@ angular.module('CVGTool')
           chunking: true,
           forceChunking: true,
           url: '/uploadVideo',
-          maxFilesize: 1025, // megabytes
-          chunkSize: 1000000 // bytes
+          maxFilesize: 10240, // mb
+          chunkSize: 20000000 // bytes (chunk: 20mb)
       	};
 
         // Dropzone event handler
