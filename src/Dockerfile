@@ -18,11 +18,13 @@ COPY requirements.txt /usr/src
 RUN pip3 install --no-cache-dir -r /usr/src/requirements.txt
 
 # copy files required for the app
-COPY backend /usr/src/backend
-COPY frontend /usr/src/frontend
+COPY python /usr/src/python
+COPY static /usr/src/static
+COPY templates /usr/src/templates
+COPY api.py /usr/src/api.py
 
 # port number the container should expose
 EXPOSE 5000
 
 # run the application
-CMD ["python3", "/usr/src/backend/interface/api.py"]
+CMD ["python3", "/usr/src/api.py"]
