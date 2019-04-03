@@ -1,11 +1,21 @@
 <!--menu -->
-<nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong">
+<nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong" ng-show="loggedIn()">
     <div class="container-fluid">
         <!-- collapsed NavBar-->
         <div class="navbar-header">
             <a class="navbar-brand" href="" rel="home" id="hombeButton">
-               CVG TOol
+               CVG Tool
             </a>
         </div>
+        <ul class="nav navbar-nav">
+          <li><a href="#!/admin/statistics"> Statistics</a></li>
+          <li><a href="#!/admin/users"> User management</a></li>
+          <li><a href="#!/admin/videos"> Videos</a></li>
+          <li><a href="#!/admin/annotations"> Annotations</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a><span class="glyphicon glyphicon-user"></span> Usertype</a></li>
+          <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+        </ul>
     </div>
 </nav>

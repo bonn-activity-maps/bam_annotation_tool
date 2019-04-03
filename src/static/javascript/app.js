@@ -15,11 +15,25 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone'])
                 controller: "loginCtrl"
             })
 
-            .state('admin', {
-              url: "/admin",
-              templateUrl: "static/views/admin.html",
-              controller: "adminCtrl"
+            .state('adminUsers', {
+              url: "/admin/users",
+              templateUrl: "static/views/adminUsers.html"
+            })
+
+            .state('adminAnnotations', {
+              url: "/admin/annotations",
+              templateUrl: "static/views/adminAnnotations.html"
+            })
+
+            .state('adminVideos', {
+              url: "/admin/videos",
+              templateUrl: "static/views/adminVideos.html"
+            })
+
+            .state('adminStatistics', {
+              url: "/admin/statistics",
+              templateUrl: "static/views/adminStatistics.html"
             });
 
-        $urlRouterProvider.otherwise('home');
+        $urlRouterProvider.otherwise('login');
 });

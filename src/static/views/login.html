@@ -9,8 +9,8 @@
         <p>
             Log in as an standard user.
         </p>
-        <form role="form" ng-submit="adminLogIn()">
-          <div ng-if="error" class="alert alert-danger feedbackMessages">
+        <form role="form" ng-submit="userLogin()">
+          <div ng-if="userError" class="alert alert-danger feedbackMessages">
             <strong>&#10008</strong> {{errorMsg}}
           </div>
           <div class="form-group">
@@ -27,7 +27,6 @@
   </div>
   <div class="col-md-4"></div>
 </div>
-
 <div class="row">
   <div class="col-md-4"></div>
   <div class="col-md-4">
@@ -39,8 +38,8 @@
         <p>
             Log in as an administrator.
         </p>
-        <form role="form" ng-submit="adminLogIn()">
-          <div ng-if="error" class="alert alert-danger feedbackMessages">
+        <form role="form" ng-submit="adminLogin()">
+          <div ng-if="adminError" class="alert alert-danger feedbackMessages">
             <strong>&#10008</strong> {{errorMsg}}
           </div>
 
