@@ -1,6 +1,9 @@
-from flask import Flask, render_template,make_response, request
+from flask import Flask, render_template, make_response, request
 import os
+import logging
 import json
+
+from python.logic.videoService import *
 
 app = Flask(__name__)
 
@@ -24,6 +27,13 @@ def adminLogin():
 def userLogin():
     username = request.headers['username']
     # TODO: Check for username in database
+
+# Upload chunked video
+@app.route('/api/uploadVideo', methods=['POST'])
+def uploadVideo():
+    success, msg, status = storeVideo(request)
+    # return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+    return make_response(('ok', 200))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
