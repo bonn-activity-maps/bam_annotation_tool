@@ -3,11 +3,11 @@ angular.module('CVGTool')
     .factory('loginSrvc', function ($state, $http, $httpParamSerializer) {
         return {
           // Admin Log in call
-            adminLogIn: function (password, callbackSuccess, callbackError) {
+            adminLogin: function (password, callbackSuccess, callbackError) {
                 var that = this;
                 $http({
                     method: 'GET',
-                    url: '/api/adminLogIn',
+                    url: '/api/adminLogin',
                     headers: {
                         'password': password
                     }
