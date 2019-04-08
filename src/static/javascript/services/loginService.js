@@ -7,7 +7,7 @@ angular.module('CVGTool')
                 var that = this;
                 $http({
                     method: 'GET',
-                    url: '/api/adminLogin',
+                    url: '/api/user/adminLogin',
                     headers: {
                         'password': password
                     }

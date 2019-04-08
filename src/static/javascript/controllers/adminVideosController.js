@@ -12,7 +12,7 @@ angular.module('CVGTool')
           paramName: 'file',
           chunking: true,
           forceChunking: true,
-          url: '/api/uploadVideo',
+          url: '/api/video/upload',
           maxFilesize: 10240, // mb
           chunkSize: 20000000 // bytes (chunk: 20mb)
       	};
