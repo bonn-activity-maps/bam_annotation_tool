@@ -4,4 +4,4 @@ angular.module('CVGTool')
 
       var test = 0;
 
-    });
+});

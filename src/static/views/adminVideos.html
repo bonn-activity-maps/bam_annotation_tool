@@ -1,6 +1,45 @@
-<div>
-TODO: Admin video management
-  <div>
-    <ng-dropzone class="dropzone" options="dzOptions" callbacks="dzCallbacks" methods="dzMethods"></ng-dropzone>
+<div class="panel panel-default">
+    <div class="panel-heading">
+      <h2>Videos</h2>
+    </div>
+    <div class="panel-body">
+      <div class="row">
+          <div class="col-md-8">
+            <div class="table-responsive">
+              <table class="table table-bordered  text-center">
+                <thead>
+                  <tr>
+                    <th class="col-md-8">Name</th>
+                    <th class="col-md-2">Duration (sec)</th>
+                    <th class="col-md-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody style="overflow-y: auto;">
+                  <tr ng-repeat="video in listOfVideos">
+                      <th scope="row">{{video.name}}</th>
+                      <th scope="row">{{video.duration}}</th>
+                      <td><button ng-click="deleteVideo(video)" class="btn btn-danger">Delete</button> <button ng-click="renameVideo(video)" class="btn btn-primary">Rename</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-4">
+            Another row
+          </div>
+      </div>
+    </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+      <h2>Upload new video</h2>
+  </div>
+  <div class="panel-body">
+    <p>
+    To add a new video to the server just drag and drop it on the designated area. You can also click in the area and search for the video in the file system pop-up.
+    </p>
+    <div>
+      <ng-dropzone class="dropzone" options="dzOptions" callbacks="dzCallbacks" methods="dzMethods"></ng-dropzone>
+    </div>
   </div>
 </div>
