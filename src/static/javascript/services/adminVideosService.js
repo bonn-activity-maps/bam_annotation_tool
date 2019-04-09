@@ -6,13 +6,27 @@ angular.module('CVGTool')
         // Admin Log in call
           getInfoOfVideos: function (callbackSuccess) {
               $http({
-                  method: 'POST',
+                  method: 'GET',
                   url: '/api/video/info'
 
               }).then(function successCallback(response) {
-                  callbackSuccess()
+                  callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
-                  cconsole.log("ERROR when retrieving info from videos.")
+                  console.log("ERROR when retrieving info from videos.")
+              });
+          },
+
+          deleteVideo: function (videoName, callbackSuccess, callbackError) {
+              $http({
+                method: 'POST',
+                url: '/api/video/delete',
+                data: {
+                  'name': videoName
+                }
+              }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+              }, function errorCallback(response) {
+                  callbackError(response.data.msg)
               });
           }
       }
