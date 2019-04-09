@@ -3,7 +3,7 @@
       height: 100%;
       width: 100%;
       position: absolute;
-      overflow: hidden;
+      overflow: auto;
 }
 
 .panel-default{

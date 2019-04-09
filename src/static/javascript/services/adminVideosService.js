@@ -6,13 +6,13 @@ angular.module('CVGTool')
         // Admin Log in call
           getInfoOfVideos: function (callbackSuccess) {
               $http({
-                  method: 'POST',
+                  method: 'GET',
                   url: '/api/video/info'
 
               }).then(function successCallback(response) {
-                  callbackSuccess()
+                  callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
-                  cconsole.log("ERROR when retrieving info from videos.")
+                  console.log("ERROR when retrieving info from videos.")
               });
           }
       }

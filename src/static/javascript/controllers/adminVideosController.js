@@ -1,12 +1,7 @@
 angular.module('CVGTool')
 
     .controller('adminVideosCtrl', ['$scope', '$state', 'adminVideosSrvc', function ($scope, $state, adminVideosSrvc) {
-        $scope.listOfVideos = [{"name": "testName", "duration": 0},
-        {"name": "testName", "duration": 0},
-        {"name": "testName", "duration": 0}];
-
-        // $scope.getInfoOfVideos();
-
+    
         // Dropzone options
         $scope.dzOptions = {
           paramName: 'file',
@@ -29,15 +24,20 @@ angular.module('CVGTool')
       	};
 
         // Function to retrieve from the server all information from the videos stored there
-        $scope.getInfoOfVideos = function(showListOfVideos) {
-          adminVideosSrvc.getInfoOfVideos();
+        $scope.getInfoOfVideos = function() {
+          adminVideosSrvc.getInfoOfVideos(showListOfVideos);
         };
 
         // Function to update the list of videos
-        var showListOfVideos = function (reponse) {
+        var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
-
-            // TODO: parse the msg field from response to get info from json siguiendo un formato de 'objetos': nombre, duracion, formato, etc etc
+            for (i = 0; i < list.length; i++) {
+              $scope.listOfVideos.push({"name": list[i], "duration": 0});
+            }
         };
+
+        $scope.getInfoOfVideos();
+
+
 
 }]);
