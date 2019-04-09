@@ -1,9 +1,7 @@
 angular.module('CVGTool')
 
     .controller('adminVideosCtrl', ['$scope', '$state', 'adminVideosSrvc', function ($scope, $state, adminVideosSrvc) {
-        $scope.listOfVideos = [{"name": "testName", "duration": 0},
-        {"name": "testName", "duration": 0},
-        {"name": "testName", "duration": 0}];
+        $scope.listOfVideos = [];
 
         // $scope.getInfoOfVideos();
 
@@ -38,6 +36,14 @@ angular.module('CVGTool')
             $scope.listOfVideos = [];
 
             // TODO: parse the msg field from response to get info from json siguiendo un formato de 'objetos': nombre, duracion, formato, etc etc
+        };
+
+        $scope.renameVideo = function(video) {
+          // Open modal to rename video
+        };
+
+        $scope.deleteVideo = function(video) {
+          // Open modal to confirm the delete
         };
 
 }]);
