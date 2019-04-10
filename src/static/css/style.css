@@ -1,12 +1,23 @@
 .body{ overflow-x: hidden;
-      margin-top: 70px;
-      height: 100%;
+      font-family: 'Roboto', sans-serif !important;
+      margin-top: 5%;
+      height: 80%%;
       width: 100%;
       position: absolute;
       overflow: auto;
+      background: rgb(242,242,242);
 }
 
 .panel-default{
       margin-left: 20px;
       margin-right: 20px;
 }
+
+.panel{
+      /* box-shadow: 5px 5px 5px 5px 5px grey; */
+      border-radius: 0 !important;
+}
+
+.panel-heading{
+  background-image: none !important;
+  background: rgb(255,255,255) !important;
