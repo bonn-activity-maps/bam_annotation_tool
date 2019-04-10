@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "8888:5000"
+    volumes:
+      - "/tmp/videos:/usr/storage"
+  mongodb:
+    image: mongo
