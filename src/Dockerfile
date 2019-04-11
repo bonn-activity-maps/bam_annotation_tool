@@ -10,7 +10,8 @@ RUN apt-get install -y \
         curl \
         pkg-config \
         python3.6 \
-        python3.6-dev
+        python3.6-dev \
+        ffmpeg
 
 RUN cd /tmp/ && curl -O https://bootstrap.pypa.io/get-pip.py
 RUN python3.6 /tmp/get-pip.py && \

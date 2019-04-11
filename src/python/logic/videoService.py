@@ -1,4 +1,4 @@
-import os, json
+import os, subprocess, json
 import logging
 from werkzeug.utils import secure_filename
 
@@ -41,10 +41,17 @@ class VideoService:
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
+
         else:
             log.debug('Chunk %s of %s for %s', current_chunk+1, total_chunks, file.filename)
-
+            # this.unwrapVideo(file.filename)
         return True, 'ok', 200
+
+    # Unwrap video in frames
+    def unwrapVideo(this,v):
+        # "ffmpeg -i " + STORAGE_DIR+v + " -vf fps=" + str(fps) + " " + self.output + output + "/output%06d.jpg"
+        frames = "ffmpeg -i " + STORAGE_DIR+v + " " + STORAGE_DIR +"output%06d.jpg"
+        response = subprocess.Popen(frames, shell=True, stdout="output%06d.jpg")
 
     # Return info videos and lenght
     def getInfoVideos(this):
