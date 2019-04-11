@@ -4,9 +4,12 @@ import logging
 import json
 
 from python.logic.videoService import VideoService
+from python.infrastructure.userManager import UserManager
 
 app = Flask(__name__)
 videoService = VideoService()
+userManager = UserManager()
+
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
@@ -14,20 +17,16 @@ def redirect():
      return make_response(open('/usr/src/templates/index.html').read())
 
 # Admin login handler
-# TODO: this is temporal, when database is up change to true user management
 @app.route("/api/user/adminLogin", methods=['GET'])
 def adminLogin():
-    password = request.headers['password']
-    if (password == "test"):
-        return json.dumps({'success':True, 'msg':'ok'}), 200, {'ContentType':'application/json'}
-    else:
-        return json.dumps({'success':False, 'msg':'Incorrect password'}), 400, {'ContentType':'application/json'}
+    success, msg, status = userManager.loginAdmin(request.headers['password'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Normal user login handler
 @app.route("/api/user/userLogin", methods=['GET'])
 def userLogin():
-    username = request.headers['username']
-    # TODO: Check for username in database
+    success, msg, status = userManager.loginUser(request.headers['username'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Upload chunked video
 @app.route('/api/video/upload', methods=['POST'])

@@ -1,6 +1,5 @@
 import os, subprocess, json
 import logging
-import ffmpeg
 from werkzeug.utils import secure_filename
 
 # Path to store the videos

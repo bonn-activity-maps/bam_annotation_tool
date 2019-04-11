@@ -6,5 +6,11 @@ services:
       - "8888:5000"
     volumes:
       - "/tmp/videos:/usr/storage"
-  mongodb:
+  db:
     image: mongo
+    restart: always
+    volumes:
+      - "/tmp/mongodb:/data"
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: mongodb
+      # MONGO_INITDB_ROOT_PASSWORD: 
