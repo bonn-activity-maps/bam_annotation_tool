@@ -45,7 +45,7 @@ def getVideoList():
 @app.route('/api/video/rename', methods=['POST'])
 def renameVideo():
     req_data = request.get_json()
-    success, msg, status = videoService.renameVideo(req_data['name'], req_data['newName'])
+    success, msg, status = videoService.renameVideo(req_data['oldName'], req_data['newName'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Delete video

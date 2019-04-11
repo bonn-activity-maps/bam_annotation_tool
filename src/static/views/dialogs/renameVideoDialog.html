@@ -1,12 +1,21 @@
-<md-dialog >
-  <div ng-if="mode == 'normal'">
+<md-dialog>
+  <div class="panel" ng-if="mode == 'normal'">
     <md-dialog-content ng-if="mode == 'normal'">
-      <h2>Delete video</h2>
-      <p>Are your sure?</p>
+      <h2>Rename video</h2>
+      <p>{{oldName}}</p>
+      <div ng-if="inputError">
+        <div class="alert alert-danger">
+            <strong>&#10008</strong> {{inputMsg}}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>New name:</label>
+        <input ng-click="hiddeError()" type="text" class="form-control" ng-model="newName.name" required>
+      </div>
     </md-dialog-content>
     <md-dialog-actions>
       <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
-      <md-button ng-click="delete()" class="md-warn md-raised">Delete</md-button>
+      <md-button ng-click="rename()" class="md-primary md-raised">Rename</md-button>
     </md-dialog-actions>
   </div>
   <div ng-if="mode == 'error'">

@@ -28,6 +28,21 @@ angular.module('CVGTool')
               }, function errorCallback(response) {
                   callbackError(response.data.msg)
               });
+          },
+
+          renameVideo: function (oldVideoName, newVideoName, callbackSuccess, callbackError) {
+              $http({
+                method: 'POST',
+                url: '/api/video/rename',
+                data: {
+                  'oldName': oldVideoName,
+                  'newName': newVideoName
+                }
+              }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+              }, function errorCallback(response) {
+                  callbackError(response.data.msg)
+              });
           }
       }
 });

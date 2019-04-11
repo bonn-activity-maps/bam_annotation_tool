@@ -1,9 +1,10 @@
 angular.module('CVGTool')
 
+    /*
+     * Controller of the admin page "Videos"
+     */
     .controller('adminVideosCtrl', ['$scope', '$state', 'adminVideosSrvc', '$mdDialog', function ($scope, $state, adminVideosSrvc, $mdDialog) {
         $scope.listOfVideos = [];
-
-        // $scope.getInfoOfVideos();
 
         // Dropzone options
         $scope.dzOptions = {
@@ -32,7 +33,7 @@ angular.module('CVGTool')
           adminVideosSrvc.getInfoOfVideos(showListOfVideos);
         };
 
-        var re = /(?:\.([^.]+))?$/;
+        var re = /(?:\.([^.]+))?$/; // Regular expression used to separate name from extension of a file
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
@@ -42,20 +43,29 @@ angular.module('CVGTool')
             }
         };
 
+        // Function that opens the dialog that manages the file rename functionality
         $scope.renameVideo = function(video) {
-          // Open modal to rename video
+          $mdDialog.show({
+            templateUrl: '/static/views/dialogs/renameVideoDialog.html',
+            locals: {
+              video: video
+            },
+            controller: 'dialogRenameVideoCtrl',
+            escapeToClose: false,
+            onRemoving: function(event, removePromise) {
+              $scope.getInfoOfVideos();
+            }
+          });
         };
 
+        // Function that opens the dialog that manages the file removal functionality
         $scope.deleteVideo = function(video) {
-          var parentElement = angular.element(document.body);
           $mdDialog.show({
-            parent: parentElement,
-            templateUrl: '/static/views/modals/deleteVideoModal.html',
+            templateUrl: '/static/views/dialogs/deleteVideoDialog.html',
             locals: {
-              video: video,
-              service: adminVideosSrvc
+              video: video
             },
-            controller: DeleteVideoModalController,
+            controller: 'dialogDeleteVideoCtrl',
             escapeToClose: false,
             onRemoving: function (event, removePromise) {
               $scope.getInfoOfVideos();
@@ -63,35 +73,6 @@ angular.module('CVGTool')
           });
 
         };
-
-        // DELETE MODAL CONTROLLER
-        function DeleteVideoModalController($scope, $mdDialog, video, service) {
-          $scope.service = service;
-          console.log(video);
-
-          var videoName = video.name + '.' + video.extension;
-
-          $scope.mode = 'normal';
-          $scope.msg = '';
-
-          $scope.cancel = function() {
-            $mdDialog.hide();
-          }
-
-          var showSuccess = function(response) {
-            $scope.mode = 'success';
-            $scope.msg = 'Video successfully deleted.'
-          }
-
-          var showError = function(response) {
-            $scope.mode = 'error';
-            $scope.msg = 'There was an error deleting the video.'
-          }
-
-          $scope.delete = function() {
-            $scope.service.deleteVideo(videoName, showSuccess, showError)
-          }
-        }
 
         $scope.getInfoOfVideos();
 }]);
