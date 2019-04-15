@@ -23,20 +23,20 @@ if [ "$#" -ne 1 ]; then
   show_help
 fi
 
-if [ "$1" -eq "-h" ]; then
+if [ "$1" = "-h" ]; then
   show_help
-elif [ "$1" -eq "-bweb" ]; then
+elif [ "$1" = "-bweb" ]; then
   sudo docker-compose build web
-elif [ "$1" -eq "-lweb" ]; then
+elif [ "$1" = "-lweb" ]; then
   sudo docker-compose up web
-elif [ "$1" -eq "-ldb" ]; then
+elif [ "$1" = "-ldb" ]; then
   sudo docker-compose up db
-elif [ "$1" -eq "-rdb" ]; then
+elif [ "$1" = "-rdb" ]; then
   mongo 172.18.0.2:27017/users db/reset.js
-elif [ "$1" -eq "-ldbf" ]; then
+elif [ "$1" = "-ldbf" ]; then
   sudo docker-compose up db
   mongo 172.18.0.2:27017/users db/initialize.js
-elif [ "$1" -eq "-aweb" ]; then
+elif [ "$1" = "-aweb" ]; then
   sudo docker-compose build web
   sudo docker-compose up web
 else
