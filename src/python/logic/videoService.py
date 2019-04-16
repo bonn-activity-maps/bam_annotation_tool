@@ -60,7 +60,7 @@ class VideoService:
 
         # Unwrap video in subfolder
         ffmpeg = '/usr/bin/ffmpeg'
-        outFile = dir + '/' + filename + '%08d.jpeg'
+        outFile = dir + '/' + '%08d.jpeg'
         cmd = [ffmpeg,'-i', STORAGE_DIR+v, outFile]
         subprocess.call(cmd)
         log.warning('File %s has been unwraped successfully', filename)
@@ -68,17 +68,24 @@ class VideoService:
 
     # Return info videos and lenght
     def getInfoVideos(this):
-        videos = os.listdir(STORAGE_DIR)
-        # TODO: show only files, not folders
-        return True, videos, 200
+        files = [f for f in os.listdir(STORAGE_DIR) if os.path.isfile(os.path.join(STORAGE_DIR, f))]
+        return True, files, 200
 
     # Return metadata of video
 
-    # Rename video
+    # Rename video and folder with frames
     def renameVideo(this, name, newName):
         try:
             newName = secure_filename(newName)
+
+            # Separate name of file and extension
+            folder, _ = os.path.splitext(name)
+            newFolder, _ = os.path.splitext(newName)
+
+            # Rename video and directory
             os.rename(STORAGE_DIR+name, STORAGE_DIR+newName)
+            os.rename(STORAGE_DIR+folder, STORAGE_DIR+newFolder)
+
             log.info('Rename ', STORAGE_DIR+name,' to ', STORAGE_DIR+newName, ' successfully.')
             return True, 'ok', 200
         except OSError:
@@ -88,9 +95,13 @@ class VideoService:
     # Delete video and corresponding folder with frames
     def deleteVideo(this, video):
         try:
+            # Separate name of file and extension
             filename, _ = os.path.splitext(video)
+
+            # Remove video and folder
             os.remove(STORAGE_DIR+video)
             shutil.rmtree(STORAGE_DIR+filename)
+
             log.info('Remove ',STORAGE_DIR+video, ' file successfully.')
             return True, 'ok', 200
         except OSError:
