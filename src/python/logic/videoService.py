@@ -1,20 +1,22 @@
 import os, subprocess, json, shutil
 import logging
 from werkzeug.utils import secure_filename
-
-# Path to store the videos
-STORAGE_DIR = '/usr/storage/'
-
-# VideoService logger
-log = logging.getLogger('videoService')
+import moviepy.editor as mp
 
 class VideoService:
+
+    STORAGE_DIR = '/usr/storage/'  # Path to store the videos
+    ffmpeg = '/usr/bin/ffmpeg'     # Path to ffmpeg
+
+    # VideoService logger
+    log = logging.getLogger('videoService')
+
 
     # Storage chunked videos in $STORAGE_DIR
     def storeVideo(this, request):
         file = request.files['file']
 
-        save_path = os.path.join(STORAGE_DIR, secure_filename(file.filename))
+        save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.filename))
         current_chunk = int(request.form['dzchunkindex'])
 
         # If the file exists and is the first chunk, you cannot overwrite it
@@ -51,7 +53,7 @@ class VideoService:
     def unwrapVideo(this,v):
         # Create new directory for storing frames
         filename, _ = os.path.splitext(v)
-        dir = STORAGE_DIR+filename
+        dir = this.STORAGE_DIR+filename
         if not os.path.exists(dir):
             os.makedirs(dir)
         else:
@@ -59,19 +61,47 @@ class VideoService:
             return False, 'The directory for extracting frames exists', 500
 
         # Unwrap video in subfolder
-        ffmpeg = '/usr/bin/ffmpeg'
-        outFile = dir + '/' + '%08d.jpeg'
-        cmd = [ffmpeg,'-i', STORAGE_DIR+v, outFile]
+        outFile = dir + '/' + '%08d.jpg'
+        cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-qscale:v','2',outFile]
+        # Extract frames from 10000 to 20000
+        # cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-vf','select=\'between(n\,10000\,20000)\'','-qscale:v','2',outFile]
         subprocess.call(cmd)
         log.warning('File %s has been unwraped successfully', filename)
         return True, 'ok', 200
 
-    # Return info videos and lenght
+    # Return info videos, duration and frames
     def getInfoVideos(this):
-        files = [f for f in os.listdir(STORAGE_DIR) if os.path.isfile(os.path.join(STORAGE_DIR, f))]
-        return True, files, 200
+        files = [f for f in os.listdir(this.STORAGE_DIR) if os.path.isfile(os.path.join(this.STORAGE_DIR, f))]
+        duration = this.getDurationVideos(files)
+        frames = this.getFramesVideos(files)
 
-    # Return metadata of video
+        # Parse response to json {'name':name, 'duration':duration, 'frames':frames}
+        response = []
+        for i in range(len(files)):
+            response.append(json.dumps({'name':files[i], 'duration':duration[i], 'frames':frames[i]}))
+        return True, response, 200
+
+    # Return duration of videos hh:mm:ss.ss
+    def getDurationVideos(this, videos):
+        duration = []
+        for v in videos:
+            sec = mp.VideoFileClip(this.STORAGE_DIR+v).duration
+            # Convert to hh:mm:ss.ss
+            hh = int(sec//(60*60))
+            mm = int((sec-hh*60*60)//60)
+            ss = round(sec-(hh*60*60)-(mm*60),2)
+            mm = '0'+str(mm) if mm < 10 else str(mm)
+            ss = '0'+str(ss) if ss < 10 else str(ss)
+            duration.append(str(hh)+':'+mm+':'+ss)
+        return duration
+
+    # Return frames of videos
+    def getFramesVideos(this, videos):
+        frames = []
+        for v in videos:
+            folder, _ = os.path.splitext(v)
+            frames.append(len(os.listdir(this.STORAGE_DIR+folder)))
+        return frames
 
     # Rename video and folder with frames
     def renameVideo(this, name, newName):
@@ -83,10 +113,10 @@ class VideoService:
             newFolder, _ = os.path.splitext(newName)
 
             # Rename video and directory
-            os.rename(STORAGE_DIR+name, STORAGE_DIR+newName)
-            os.rename(STORAGE_DIR+folder, STORAGE_DIR+newFolder)
+            os.rename(this.STORAGE_DIR+name, this.STORAGE_DIR+newName)
+            os.rename(this.STORAGE_DIR+folder, this.STORAGE_DIR+newFolder)
 
-            log.info('Rename ', STORAGE_DIR+name,' to ', STORAGE_DIR+newName, ' successfully.')
+            log.info('Rename ', this.STORAGE_DIR+name,' to ', this.STORAGE_DIR+newName, ' successfully.')
             return True, 'ok', 200
         except OSError:
             log.exception('Error renaming the file')
@@ -99,10 +129,10 @@ class VideoService:
             filename, _ = os.path.splitext(video)
 
             # Remove video and folder
-            os.remove(STORAGE_DIR+video)
-            shutil.rmtree(STORAGE_DIR+filename)
+            os.remove(this.STORAGE_DIR+video)
+            shutil.rmtree(this.STORAGE_DIR+filename)
 
-            log.info('Remove ',STORAGE_DIR+video, ' file successfully.')
+            log.info('Remove ',this.STORAGE_DIR+video, ' file successfully.')
             return True, 'ok', 200
         except OSError:
             log.exception('Error deleting the file')
