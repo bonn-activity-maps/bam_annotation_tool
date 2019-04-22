@@ -83,4 +83,60 @@ angular.module('CVGTool')
         $scope.delete = function() {
           adminVideosSrvc.deleteVideo(videoName, showSuccess, showError)
         }
+    }])
+
+    /*
+     * Controller of the dialog of the "Add new camera to the camera array" action
+     */
+    .controller('dialogAddNewCameraCtrl', ['$scope','homeSrvc', '$mdDialog', function ($scope, homeSrvc, $mdDialog) {
+        $scope.isVideoSelected = false;
+        $scope.videoSelected;
+        $scope.search = {};  // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
+        $scope.listOfVideos = [];
+        $scope.listOfVideosToShow = [];
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+          $mdDialog.hide();
+        }
+
+        // Function to update the list of videos using the searchbar
+        $scope.searchInListOfVideos = function () {
+            if ($scope.search.str === undefined) {
+                return;
+            } else {
+              $scope.listOfVideosToShow = [];
+
+              $scope.listOfVideos.forEach(function(video) {
+                if (video.name.includes($scope.search.str.toString())){
+                    $scope.listOfVideosToShow.push(video);
+                }
+              });
+            }
+        }
+
+        // Function that manages item selection
+        $scope.selectItem = function (video) {
+            $scope.isVideoSelected = true;      // TODO: FInish the selection of the video, I have to use the bypass (the same way than with search)
+            console.log(video.video)
+            console.log(video.video.name)
+            $scope.videoSelected = video.video
+        }
+
+        // Function to update the list of videos
+        var showListOfVideos = function (list) {
+            $scope.listOfVideos = [];
+            for (i = 0; i < list.length; i++) {
+              $scope.listOfVideos.push({"name": list[i].substr(0, list[i].lastIndexOf('.')), "extension": list[i].substr(list[i].lastIndexOf('.')+1, list[i].length) , "duration": 0});
+            }
+            $scope.listOfVideosToShow = $scope.listOfVideos.slice();
+        };
+
+        // Recall function if the rename worked
+        $scope.getListOfVideos = function() {
+            homeSrvc.getInfoOfVideos(showListOfVideos);
+        }
+
+        $scope.getListOfVideos();
+
     }]);

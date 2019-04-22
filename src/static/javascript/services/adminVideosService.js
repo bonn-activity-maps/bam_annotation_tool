@@ -3,7 +3,6 @@ angular.module('CVGTool')
     .factory('adminVideosSrvc', function ($state, $http, $httpParamSerializer) {
 
       return {
-        // Admin Log in call
           getInfoOfVideos: function (callbackSuccess) {
               $http({
                   method: 'GET',

@@ -3,7 +3,7 @@ angular.module('CVGTool')
     .directive('navbar', function () {
         return {
             restrict: 'E',
-            templateUrl: 'static/views/components/navbar.html',
+            templateUrl: 'static/views/navbar/navbar.html',
             controller: 'navbarCtrl'
         }
 });

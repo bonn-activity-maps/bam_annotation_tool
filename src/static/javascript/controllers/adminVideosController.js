@@ -5,7 +5,6 @@ angular.module('CVGTool')
      */
     .controller('adminVideosCtrl', ['$scope', '$state', 'adminVideosSrvc', '$mdDialog', function ($scope, $state, adminVideosSrvc, $mdDialog) {
         $scope.listOfVideos = [];
-
         // Dropzone options
         $scope.dzOptions = {
           paramName: 'file',
@@ -39,7 +38,7 @@ angular.module('CVGTool')
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].substr(0, list[i].lastIndexOf('.')), "extension": list[i].substr(list[i].lastIndexOf('.')+1, list[i].length) , "duration": 0});
+              $scope.listOfVideos.push({"name": list[i].name.substr(0, list[i].lastIndexOf('.')), "extension": list[i].name.substr(list[i].lastIndexOf('.')+1, list[i].length) , "duration": list[i].duration, "frames:" list[i].frames});
             }
         };
 
