@@ -12,7 +12,9 @@
                <tr>
                  <th class="col-md-6">Name</th>
                  <th class="col-md-2">Extension</th>
-                 <th class="col-md-2">Duration (sec)</th>
+                 <th class="col-md-2">Duration</th>
+                 <th class="col-md-2">Frames</th>
+
                </tr>
              </thead>
              <tbody>
@@ -20,6 +22,7 @@
                    <td class="text-left">{{video.name}}</td>
                    <td>{{video.extension}}</td>
                    <td>{{video.duration}}</td>
+                   <td>{{video.frames}}</td>
                </tr>
                <tr ng-if="listOfVideos.length == 0">
                  <td class="text-left">No videos stored</td>

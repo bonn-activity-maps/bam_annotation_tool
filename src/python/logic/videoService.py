@@ -3,14 +3,14 @@ import logging
 from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 
+
+# VideoService logger
+log = logging.getLogger('videoService')
+
 class VideoService:
 
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'     # Path to ffmpeg
-
-    # VideoService logger
-    log = logging.getLogger('videoService')
-
 
     # Storage chunked videos in $STORAGE_DIR
     def storeVideo(this, request):
