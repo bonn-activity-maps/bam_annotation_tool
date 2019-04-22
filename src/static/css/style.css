@@ -1,10 +1,11 @@
 .body{ overflow-x: hidden;
       font-family: 'Roboto', sans-serif !important;
-      margin-top: 5%;
-      height: 80%%;
+      padding-top: 65px;
+      height: 100%%;
       width: 100%;
       position: absolute;
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       background: rgb(242,242,242);
 }
 
@@ -21,3 +22,9 @@
 .panel-heading{
   background-image: none !important;
   background: rgb(255,255,255) !important;
+}
+
+.padding-0{
+    padding-right:0;
+    padding-left:0;
+}

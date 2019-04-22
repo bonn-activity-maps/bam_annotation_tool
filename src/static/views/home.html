@@ -1,3 +1,53 @@
-<div>
-  Home Test
+<div style="height: 98%;">
+  <div class="row" style="height: 100%;">
+    <!-- Videos panel -->
+      <div class="col-md-1 padding-0" style="height: 100%;">
+        <div class="panel panel-default" style="height: 100%;">
+          <div class="panel-heading">
+            <h3>Videos</h3>
+          </div>
+          <div class="panel-body text-center">
+            <div ng-repeat="video in loadedVideos">
+                <img style="width: 100%; height: width;" src="{{video.frames[0]}}"/>
+            </div>
+              <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+          </div>
+        </div>
+      </div>
+      <!-- Camera panel -->
+      <div class="col-md-10 padding-0" style="height: 100%;">
+        <div class="panel panel-default text-center" style="height: 90%;">
+          <div class="row" style="height: 50%;">
+            <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
+                <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+            </div>
+            <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
+                <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+            </div>
+          </div>
+          <div class="row" style="height: 50%;">
+            <div class="col-md-6" style="height: 100%; padding-top: 1px;">
+                <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+            </div>
+            <div class="col-md-6" style="height: 100%; padding-top: 1px;">
+                <canvas id="canvas4" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default" style="height: 8%;">
+          Timeline
+        </div>
+      </div>
+      <!-- Tools panel -->
+      <div class="col-md-1 padding-0" style="height: 100%;">
+        <div class="panel panel-default text-center" style="height: 100%;">
+          <div class="panel-heading">
+            <h3>Tools</h3>
+          </div>
+          <div class="panel-body">
+            Nada
+          </div>
+        </div>
+      </div>
+  </div>
 </div>

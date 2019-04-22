@@ -54,7 +54,8 @@ angular.module('CVGTool')
 
           // Function that makes the call to Login as an ordinary user
           $scope.userLogin = function() {
-            $state.go('admin');
+            var username = $scope.userName;
+            loginSrvc.userLogin(username, successRedirectUser, showErrorUser);
           };
 
 }]);

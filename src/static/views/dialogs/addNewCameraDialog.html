@@ -1,0 +1,54 @@
+<md-dialog style="display: flex;">
+  <div class="panel">
+    <md-dialog-content>
+      <h3>Select a camera recording</h3>
+      <div class="container">
+        <!-- Searchbar -->
+         <input type="text" style="padding-top: 10px;" class="form-control" placeholder="Search" ng-model="search.str" ng-change="searchInListOfVideos()">
+
+         <div style="overflow-y: auto; max-height: 250px; padding-top: 10px;">
+           <table class="table table-bordered table-responsive text-center">
+             <thead>
+               <tr>
+                 <th class="col-md-6">Name</th>
+                 <th class="col-md-2">Extension</th>
+                 <th class="col-md-2">Duration</th>
+                 <th class="col-md-2">Frames</th>
+
+               </tr>
+             </thead>
+             <tbody>
+               <tr ng-if="listOfVideos.length > 0" ng-repeat="video in listOfVideosToShow" ng-click="selectItem({video})">
+                   <td class="text-left">{{video.name}}</td>
+                   <td>{{video.extension}}</td>
+                   <td>{{video.duration}}</td>
+                   <td>{{video.frames}}</td>
+               </tr>
+               <tr ng-if="listOfVideos.length == 0">
+                 <td class="text-left">No videos stored</td>
+                 <td>-</td>
+                 <td>-</td>
+               </tr>
+             </tbody>
+           </table>
+         </div>
+
+      </div>
+      <div syle="padding-top: 20px;"class="container" ng-if="isVideoSelected">
+        <hr />
+        <h3>Select the number of frames to load</h3>
+        <!-- Select frame intervals -->
+        <div class="form-group">
+          <label class="control-label col-sm-2">Name:</label>
+          <div class="col-sm-10">
+            <p class="form-control-static">{{videoSelected.name}}</p>
+          </div>
+        </div>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions>
+      <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
+      <md-button ng-if="isVideoSelected" ng-click="accept()" class="md-warn md-raised">Add</md-button>
+    </md-dialog-actions>
+  </div>
+</md-dialog>

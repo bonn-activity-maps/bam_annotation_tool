@@ -16,6 +16,21 @@ angular.module('CVGTool')
                   }, function errorCallback(response) {
                     callbackError(response.data.msg)
                 });
+            },
+
+            userLogin: function (username, callbackSuccess, callbackError) {
+                var that = this;
+                $http({
+                    mehod: 'GET',
+                    url: '/api/user/userLogin',
+                    headers: {
+                        'username': username
+                    }
+                }).then(function successCallback(response){
+                    callbackSuccess()
+                  }, function errorCallback(response) {
+                    callbackError(response.data.msg)
+                });
             }
         }
 });
