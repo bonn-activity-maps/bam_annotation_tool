@@ -34,6 +34,13 @@ def uploadVideo():
     success, msg, status = videoService.storeVideo(request)
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Unwrap video
+@app.route('/api/video/unwrap', methods=['POST'])
+def unwrapVideo():
+    req_data = request.get_json()
+    success, msg, status = videoService.unwrapVideo(req_data['name'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 # Get list of videos and lenght
 @app.route('/api/video/info', methods=['GET'])
 def getVideoList():
