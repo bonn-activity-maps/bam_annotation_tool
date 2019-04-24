@@ -3,7 +3,6 @@ import logging
 from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 
-
 # VideoService logger
 log = logging.getLogger('videoService')
 
@@ -43,8 +42,7 @@ class VideoService:
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
-                success, msg, status = this.unwrapVideo(file.filename)
-                return success, msg, status
+                return True, 'ok', 200
         else:
             log.debug('Chunk %s of %s for %s', current_chunk+1, total_chunks, file.filename)
         return True, 'ok', 200

@@ -11,6 +11,7 @@ angular.module('CVGTool')
           paramName: 'file',
           chunking: true,
           forceChunking: true,
+          acceptedFiles: '.mp4',
           url: '/api/video/upload',
           maxFilesize: 10240, // mb
           chunkSize: 20000000 // bytes (chunk: 20mb)
@@ -24,6 +25,7 @@ angular.module('CVGTool')
       		},
       		'success' : function(file, xhr){
       			console.log(file, xhr);
+            $scope.unwrapVideo(file.name);
             $scope.getInfoOfVideos();
       		},
       	};
@@ -31,6 +33,11 @@ angular.module('CVGTool')
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {
           adminVideosSrvc.getInfoOfVideos(showListOfVideos);
+        };
+
+        // Function to retrieve unwrap the video
+        $scope.unwrapVideo = function(file) {
+          adminVideosSrvc.unwrapVideo(file);
         };
 
         var re = /(?:\.([^.]+))?$/; // Regular expression used to separate name from extension of a file

@@ -23,6 +23,21 @@ angular.module('CVGTool')
               });
           },
 
+          unwrapVideo: function (videoName) {
+              $http({
+                  method: 'POST',
+                  url: '/api/video/unwrap',
+                  data: {
+                    'name': videoName
+                  }
+              }).then(function successCallback(response) {
+                // TODO: add action when unwrap is finished
+                  console.log(response.data.msg)
+                }, function errorCallback(response) {
+                  console.log(response.data.msg)
+              });
+          },
+
           deleteVideo: function (videoName, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',
