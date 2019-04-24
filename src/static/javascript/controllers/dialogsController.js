@@ -88,12 +88,43 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "Add new camera to the camera array" action
      */
-    .controller('dialogAddNewCameraCtrl', ['$scope','homeSrvc', '$mdDialog', function ($scope, homeSrvc, $mdDialog) {
+    .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout','homeSrvc', '$mdDialog', function ($scope, $timeout, homeSrvc, $mdDialog) {
         $scope.isVideoSelected = false;
         $scope.videoSelected;
         $scope.search = {};  // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
         $scope.listOfVideos = [];
         $scope.listOfVideosToShow = [];
+        $scope.retrievingData = false;
+        $scope.doneRetrievingData = false;
+        $scope.targetFrames;
+        $scope.retrievedFrames;
+
+        $scope.slider = {   // Options and values for the slider
+          from: 0,
+          to: 0,
+          options: {
+            floor: 0,
+            ceil: 0,
+            step: 1
+          },
+        }
+
+        // Function called everytime the number input of the slider is changed to check those values
+        $scope.checkSlider = function() {
+            if ($scope.slider.from < $scope.slider.options.floor) {
+              $scope.slider.from = $scope.slider.options.floor;
+            }
+
+            if ($scope.slider.to > $scope.slider.options.ceil) {
+              $scope.slider.to = $scope.slider.options.ceil
+            }
+
+            if ($scope.slider.from > $scope.slider.to) {
+              var aux = $scope.slider.from;
+              $scope.slider.from = $scope.slider.to;
+              $scope.slider.to = aux;
+            }
+        }
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
@@ -118,9 +149,8 @@ angular.module('CVGTool')
         // Function that manages item selection
         $scope.selectItem = function (video) {
             $scope.isVideoSelected = true;      // TODO: FInish the selection of the video, I have to use the bypass (the same way than with search)
-            console.log(video.video)
-            console.log(video.video.name)
             $scope.videoSelected = video.video
+            $scope.slider.options.ceil = $scope.videoSelected.frames;
         }
 
         // Function to update the list of videos
@@ -135,6 +165,38 @@ angular.module('CVGTool')
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
             homeSrvc.getInfoOfVideos(showListOfVideos);
+        }
+
+        // Function to go back from the dialog once the frames have been retrieved from the server
+        $scope.close = function() {
+          return;
+        }
+
+        // Function that will be called everytime a frame has been retrieved from the server
+        var callbackRetrievingFrame = function(frame) {
+          $scope.retrievedFrames.push(frame);
+
+          // Check if we are done
+          if ($scope.retrievedFrames.length == $scope.targetFrames) {
+            $scope.close();
+          }
+        }
+
+        // Function to retrieve the selected frame range from the selected video
+        $scope.accept = function() {
+            var range = Math.abs($scope.slider.from - $scope.slider.to);
+            if (range == 0) {
+              alert("At least one frame must be selected.")
+            } else {
+              $scope.retrievingData = true;
+              $scope.targetFrames = range;
+              $scope.retrievedFrames = [];
+
+              // Make all the petitions
+              for (var i=0; ($scope.slider.from + i) < $scope.slider.to; i++) {
+                homeSrvc.getFrame($scope.videoSelected, $scope.slider.from + i, callbackRetrievingFrame);
+              }
+            }
         }
 
         $scope.getListOfVideos();

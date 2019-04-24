@@ -21,5 +21,20 @@ angular.module('CVGTool')
                   console.log("ERROR when retrieving info from videos.")
               });
           },
+
+          getFrame: function (fileName, frame, callbackSuccess) {
+              $http({
+                  method: 'GET',
+                  url: '/api/video/getFrame',
+                  headers: {
+                      'fileName': fileName,
+                      'frame': frame
+                  }
+              }).then(function successCallback(response) {
+                  callbackSuccess(response.msg.frame);
+              }, function errorCallback(response) {
+                  console.log("ERROR when retrieving frame.")
+              });
+          },
         }
 });
