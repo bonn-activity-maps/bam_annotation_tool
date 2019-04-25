@@ -35,7 +35,19 @@
           </div>
         </div>
         <div class="panel panel-default" style="height: 8%;">
-          Timeline
+          <div class="row">
+            <div class="col-md-2">
+              <button ng-click="previousFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left"></span></button>
+              <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-play"></button>
+              <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-pause"></button>
+              <button ng-click="nextFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right"></span></button>
+            </div>
+            <div class="col-md-10">
+              <rzslider
+                   rz-slider-model="slider.value"
+                   rz-slider-options="slider.options"></rzslider>
+            </div>
+          </div>
         </div>
       </div>
       <!-- Tools panel -->
