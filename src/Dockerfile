@@ -11,7 +11,10 @@ RUN apt-get install -y \
         pkg-config \
         python3.6 \
         python3.6-dev \
-        ffmpeg
+        ffmpeg \
+        libsm6 \
+        libxext6 \
+        libxrender-dev
 
 RUN cd /tmp/ && curl -O https://bootstrap.pypa.io/get-pip.py
 RUN python3.6 /tmp/get-pip.py && \

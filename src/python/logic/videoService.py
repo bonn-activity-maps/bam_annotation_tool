@@ -1,4 +1,5 @@
 import os, subprocess, json, shutil
+import cv2
 import logging
 from werkzeug.utils import secure_filename
 import moviepy.editor as mp
@@ -93,13 +94,26 @@ class VideoService:
             duration.append(str(hh)+':'+mm+':'+ss)
         return duration
 
-    # Return frames of videos
+    # Return #frames of videos
     def getFramesVideos(this, videos):
         frames = []
         for v in videos:
             folder, _ = os.path.splitext(v)
             frames.append(len(os.listdir(this.STORAGE_DIR+folder)))
         return frames
+
+    # Return the corresponding frame of video
+    def getVideoFrame(this, video, frame):
+        frame = str(frame).zfill(8)     # Fill with 0 until 8 digits
+        file = os.path.join(this.STORAGE_DIR,video,frame+'.jpg')
+
+        # Check if file exists
+        if os.path.isfile(file):
+            img = cv2.imread(file)
+            _, encodedImg = cv2.imencode('.jpg', img)
+            return True, encodedImg.tolist(), 200
+        else:
+            return False, 'Frame does not exist', 500
 
     # Rename video and folder with frames
     def renameVideo(this, name, newName):

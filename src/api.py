@@ -47,6 +47,12 @@ def getVideoList():
     success, msg, status = videoService.getInfoVideos()
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Get frame from video
+@app.route('/api/video/getframe', methods=['GET'])
+def getVideoFrame():
+    success, msg, status = videoService.getVideoFrame(request.headers['fileName'], request.headers['frame'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 # Rename video
 @app.route('/api/video/rename', methods=['POST'])
 def renameVideo():
