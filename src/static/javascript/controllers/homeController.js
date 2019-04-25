@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-    .controller('homeCtrl', ['$scope', '$state', '$mdDialog', 'homeSrvc', function ($scope, $state, $mdDialog, homeSrvc) {
+    .controller('homeCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'homeSrvc', function ($scope, $state, $interval, $mdDialog, homeSrvc) {
 
       // Variables to control the for camera views
       $scope.cameraViewSelected = "";
@@ -11,6 +11,10 @@ angular.module('CVGTool')
       $scope.isCameraSelected = true;
       $scope.loadedCameras = [];
       $scope.recommendedFrames = "";
+
+      // Variables to control the timeline
+      $scope.isPlaying = false;
+      var promise;
 
       function fitCanvasToContainer(canvas){
         // Make it visually fill the positioned parent
@@ -37,6 +41,48 @@ angular.module('CVGTool')
       fitCanvasToContainer(canvas2);
       fitCanvasToContainer(canvas3);
       fitCanvasToContainer(canvas4);
+
+      // TIMELINE
+      $scope.slider = {   // Options and values for the slider
+        value: 0,
+        options: {
+          floor: 0,
+          ceil: 100,
+          step: 1,
+          showTicks: true
+        },
+      }
+
+      // Function that switches "on" and "off" the "play" functionality
+      $scope.switchPlay = function() {
+        $scope.isPlaying = !$scope.isPlaying;
+
+        if ($scope.isPlaying == true) {
+          promise = $interval(function(){ $scope.nextFrame(); }, 500);
+        } else {
+          $interval.cancel(promise);
+        }
+      }
+
+      // Function that increases the frame of the timeline by 1
+      $scope.nextFrame = function() {
+        if ($scope.slider.value + 1 > $scope.slider.options.ceil) {
+            $scope.slider.value = $scope.slider.options.ceil;
+            $scope.isPlaying = false;        // If we are in the last frame, stop "playing"
+            $interval.cancel(promise);       // If we are in the last frame, stop the $interval
+        } else {
+          $scope.slider.value += 1;
+        }
+      }
+
+      // Function that decreases the frame of the timeline by 1
+      $scope.previousFrame = function() {
+        if ($scope.slider.value - 1 < $scope.slider.options.floor) {
+            $scope.slider.value = $scope.slider.options.floor;
+        } else {
+          $scope.slider.value -= 1;
+        }
+      }
 
       $scope.addCamera = function() {
           // TODO: Select name and interval of frames to load (recommended is the number of frames of the others) from a dialog
