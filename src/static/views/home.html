@@ -57,7 +57,12 @@
             <h3>Tools</h3>
           </div>
           <div class="panel-body">
-            <img ngSrc="imageTest" />
+              <div class="row" style="padding-top: 5px;">
+                  <button ng-click="switchMode('navigation')" class="btn btn-lg btn-default"><span ng-if="mode != 'navigation'" class=" glyphicon glyphicon-move "></span><span ng-if="mode == 'navigation'" style="color: blue" class=" glyphicon glyphicon-move "></span></button>
+              </div>
+              <div class="row" style="padding-top: 5px;">
+                  <button ng-click="switchMode('keypoint')" class="btn btn-lg btn-default"><span ng-if="mode != 'keypoint'" class=" glyphicon glyphicon-screenshot "></span><span ng-if="mode == 'keypoint'" style="color: blue" class=" glyphicon glyphicon-screenshot "></span></button>
+              </div>
           </div>
         </div>
       </div>
