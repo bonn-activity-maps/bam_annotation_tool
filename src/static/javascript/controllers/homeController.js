@@ -84,7 +84,9 @@ angular.module('CVGTool')
             escapeToClose: false
           }).then(
             function(successData){
-              imageData = successData[0].slice(1)
+              // Decode img from base64 
+              imageData = successData[0].slice(2,successData[0].length - 1)
+              imageData = window.atob(imageData)
               var image = new Image()
               image.src = imageData;
               ctx1.drawImage(image,0,0)
