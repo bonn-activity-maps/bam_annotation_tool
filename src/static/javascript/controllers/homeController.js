@@ -16,6 +16,7 @@ angular.module('CVGTool')
       $scope.isPlaying = false;
       var promise;
 
+      // TODO: Check if this thing works
       function fitCanvasToContainer(canvas){
         // Make it visually fill the positioned parent
         canvas.style.width ='100%';
@@ -44,9 +45,9 @@ angular.module('CVGTool')
 
       // TIMELINE
       $scope.slider = {   // Options and values for the slider
-        value: 0,
+        value: 1,
         options: {
-          floor: 0,
+          floor: 1,
           ceil: 100,
           step: 1,
           showTicks: true
@@ -84,13 +85,21 @@ angular.module('CVGTool')
         }
       }
 
+      $scope.imageTest;
+      // Function that opens the dialog in charge of adding a new camera
       $scope.addCamera = function() {
-          // TODO: Select name and interval of frames to load (recommended is the number of frames of the others) from a dialog
           $mdDialog.show({
             templateUrl: '/static/views/dialogs/addNewCameraDialog.html',
             controller: 'dialogAddNewCameraCtrl',
             escapeToClose: false
-          });
+          }).then(
+            function(successData){
+              imageData = successData[0].slice(1)
+              var image = new Image()
+              image.src = imageData;
+              ctx1.drawImage(image,0,0)
+            }
+          );
       }
 
 
