@@ -3,6 +3,7 @@ import cv2
 import logging
 from werkzeug.utils import secure_filename
 import moviepy.editor as mp
+import base64
 
 # VideoService logger
 log = logging.getLogger('videoService')
@@ -107,13 +108,24 @@ class VideoService:
         frame = str(frame).zfill(8)     # Fill with 0 until 8 digits
         file = os.path.join(this.STORAGE_DIR,video,frame+'.jpg')
 
-        # Check if file exists
         if os.path.isfile(file):
-            img = cv2.imread(file)
-            _, encodedImg = cv2.imencode('.jpg', img)
-            return True, encodedImg.tolist(), 200
+            # with open(file, "rb") as imageFile:
+            #     encodedImg = base64.b64encode(imageFile.read())
+            #     return True, encodedImg, 200
+            with open(file, "rb") as image_file:
+                encodedImage = base64.b64encode(image_file.read())
+                return True, str(encodedImage), 200
         else:
             return False, 'Frame does not exist', 500
+
+        # # Check if file exists
+        # if os.path.isfile(file):
+        #     img = cv2.imread(file)
+        #     _, encodedImg = cv2.imencode('.jpg', img)
+        #     return True, encodedImg.tolist(), 200
+        #     # return True, base64.b64encode(img).decode(), 200
+        # else:
+        #     return False, 'Frame does not exist', 500
 
     # Rename video and folder with frames
     def renameVideo(this, name, newName):

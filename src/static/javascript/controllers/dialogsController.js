@@ -14,7 +14,7 @@ angular.module('CVGTool')
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
-          $mdDialog.hide();
+          $mdDialog.cancel();
         }
 
         // Callback function if the rename worked
@@ -64,7 +64,7 @@ angular.module('CVGTool')
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
-          $mdDialog.hide();
+          $mdDialog.cancel();
         }
 
         // Recall function if the rename worked
@@ -100,11 +100,11 @@ angular.module('CVGTool')
         $scope.retrievedFrames;
 
         $scope.slider = {   // Options and values for the slider
-          from: 0,
-          to: 0,
+          from: 1,
+          to: 1,
           options: {
-            floor: 0,
-            ceil: 0,
+            floor: 1,
+            ceil: 1,
             step: 1
           },
         }
@@ -128,7 +128,7 @@ angular.module('CVGTool')
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
-          $mdDialog.hide();
+          $mdDialog.cancel();
         }
 
         // Function to update the list of videos using the searchbar
@@ -168,32 +168,32 @@ angular.module('CVGTool')
         }
 
         // Function to go back from the dialog once the frames have been retrieved from the server
-        $scope.close = function() {
-          return;
+        $scope.end = function() {
+          $mdDialog.hide($scope.retrievedFrames);
         }
 
         // Function that will be called everytime a frame has been retrieved from the server
         var callbackRetrievingFrame = function(frame) {
-          $scope.retrievedFrames.push(frame);
+          $scope.retrievedFrames.push(frame); // Store the retrieved frame
 
           // Check if we are done
           if ($scope.retrievedFrames.length == $scope.targetFrames) {
-            $scope.close();
+            $scope.end();
           }
         }
 
         // Function to retrieve the selected frame range from the selected video
         $scope.accept = function() {
             var range = Math.abs($scope.slider.from - $scope.slider.to);
-            if (range == 0) {
+            if (range < 0) {
               alert("At least one frame must be selected.")
             } else {
               $scope.retrievingData = true;
-              $scope.targetFrames = range;
+              $scope.targetFrames = range + 1;
               $scope.retrievedFrames = [];
 
               // Make all the petitions
-              for (var i=0; ($scope.slider.from + i) < $scope.slider.to; i++) {
+              for (var i=0; ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
                 homeSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, callbackRetrievingFrame);
               }
             }

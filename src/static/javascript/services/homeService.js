@@ -18,22 +18,22 @@ angular.module('CVGTool')
                     callbackSuccess(parsedArray)
                   }
                 }, function errorCallback(response) {
-                  console.log("ERROR when retrieving info from videos.")
+                  console.log(response.data.msg);
               });
           },
 
           getFrame: function (fileName, frame, callbackSuccess) {
               $http({
                   method: 'GET',
-                  url: '/api/video/getFrame',
+                  url: '/api/video/getframe',
                   headers: {
                       'fileName': fileName,
                       'frame': frame
                   }
               }).then(function successCallback(response) {
-                  callbackSuccess(response.msg.frame);
+                  callbackSuccess(response.data.msg);
               }, function errorCallback(response) {
-                  console.log("ERROR when retrieving frame.")
+                  console.log(response.data.msg)
               });
           },
         }
