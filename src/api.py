@@ -4,12 +4,14 @@ import logging
 import json
 
 from python.logic.videoService import VideoService
-from python.infrastructure.userManager import UserManager
+from python.logic.annotationService import AnnotationService
+from python.logic.userService import UserService
 
 app = Flask(__name__)
-videoService = VideoService()
-userManager = UserManager()
 
+videoService = VideoService()
+annotationService = AnnotationService()
+userService = UserService()
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
@@ -19,13 +21,13 @@ def redirect():
 # Admin login handler
 @app.route("/api/user/adminLogin", methods=['GET'])
 def adminLogin():
-    success, msg, status = userManager.loginAdmin(request.headers['password'])
+    success, msg, status = userService.loginAdmin(request.headers['password'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Normal user login handler
 @app.route("/api/user/userLogin", methods=['GET'])
 def userLogin():
-    success, msg, status = userManager.loginUser(request.headers['username'])
+    success, msg, status = userService.loginUser(request.headers['username'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Upload chunked video
@@ -66,6 +68,19 @@ def deleteVideo():
     req_data = request.get_json()
     success, msg, status = videoService.deleteVideo(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Get annotation info for given frame
+@app.route('/api/annotation/getframe', methods=['GET'])
+def getAnnotation():
+    success, msg, status = annotationService.getAnnotation(request.headers['fileName'], request.headers['frame'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Save annotation info for given frame
+@app.route('/api/annotation/upload', methods=['POST'])
+def uploadAnnotation():
+    success, msg, status = annotationService.uploadAnnotation(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 
 
 if __name__ == "__main__":
