@@ -56,7 +56,6 @@ angular.module('CVGTool')
      * Controller of the dialog of the "remove stored video as administrator" action
      */
     .controller('dialogDeleteVideoCtrl', ['$scope','adminVideosSrvc', '$mdDialog', 'video', function ($scope, adminVideosSrvc, $mdDialog, video) {
-        console.log(video)
         var videoName = video.name + '.' + video.extension;
 
         $scope.mode = 'normal';
@@ -82,6 +81,29 @@ angular.module('CVGTool')
         // Function that generates the call to the server to delete the file
         $scope.delete = function() {
           adminVideosSrvc.deleteVideo(videoName, showSuccess, showError)
+        }
+    }])
+
+    /*
+     * Controller of the dialog of the "remove stored video as administrator" action
+     */
+    .controller('dialogCameraSelectorCtrl', ['$scope','$mdDialog', 'video', 'canvases', function ($scope, $mdDialog, video, canvases) {
+        $scope.variables = {
+            video: video,
+            canvases: canvases
+        };
+        
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+          $mdDialog.cancel();
+        }
+
+        $scope.switchTo = function(number) {
+          $scope.data = {
+            video: $scope.variables.video,
+            number: number
+          }
+          $mdDialog.hide($scope.data);
         }
     }])
 
@@ -173,8 +195,12 @@ angular.module('CVGTool')
         }
 
         // Function that will be called everytime a frame has been retrieved from the server
-        var callbackRetrievingFrame = function(frame) {
-          $scope.retrievedFrames.push(frame); // Store the retrieved frame
+        var callbackRetrievingFrame = function(image, fileName, frame) {
+          $scope.retrievedFrames.push({ // Store the retrieved frame
+            image: image,
+            filename: fileName,
+            frame: parseInt(frame)
+          });
 
           // Check if we are done
           if ($scope.retrievedFrames.length == $scope.targetFrames) {

@@ -112,7 +112,7 @@ class VideoService:
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
                 encodedImage = base64.b64encode(image_file.read())
-                return True, str(encodedImage).replace("\n", ""), 200
+                return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame':frame}, 200
         else:
             return False, 'Frame does not exist', 500
 

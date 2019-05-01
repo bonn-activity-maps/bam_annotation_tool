@@ -2,21 +2,41 @@
   <div class="row" style="height: 100%;">
     <!-- Videos panel -->
       <div class="col-md-1 padding-0" style="height: 100%;">
-        <div class="panel panel-default" style="height: 100%;">
+        <div class="panel panel-default padding-0" style="height: 100%;">
           <div class="panel-heading">
-            <h3>Videos</h3>
+            <h4>Videos</h4>
           </div>
           <div class="panel-body text-center">
-            <div ng-repeat="video in loadedVideos">
-                <img style="width: 100%; height: width;" src="{{video.frames[0]}}"/>
+            <div ng-repeat="video in loadedCameras">
+              <div class="container text-center" style="width: 80px; height: width/1.5; padding-bottom: 15px;">
+                  <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[0].image}}" />
+              </div>
             </div>
-              <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+            <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popover selector -->
+      <div id="popover-selector" class="hide">
+        <div class="container-fluid">
+          <div class="row">
+              <div class="col-md-6">
+                  <button type="button" class="btn btn-default">1</button>
+                  <button type="button" class="btn btn-default">2</button>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <button type="button" class="btn btn-default">3</button>
+                  <button type="button" class="btn btn-default">4</button>
+              </div>
           </div>
         </div>
       </div>
       <!-- Camera panel -->
       <div class="col-md-10 padding-0" style="height: 100%;">
-        <div class="panel panel-default text-center" style="height: 90%;">
+        <div class="panel panel-default text-center padding-0" style="height: 90%;">
           <div class="row" style="height: 50%;">
             <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
                 <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
@@ -52,9 +72,9 @@
       </div>
       <!-- Tools panel -->
       <div class="col-md-1 padding-0" style="height: 100%;">
-        <div class="panel panel-default text-center" style="height: 100%;">
+        <div class="panel panel-default text-center padding-0" style="height: 100%;">
           <div class="panel-heading">
-            <h3>Tools</h3>
+            <h4>Tools</h4>
           </div>
           <div class="panel-body">
               <div class="row" style="padding-top: 5px;">
