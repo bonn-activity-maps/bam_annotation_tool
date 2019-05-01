@@ -3,8 +3,8 @@ from pymongo import MongoClient
 class UserManager:
 
     c = MongoClient('172.18.0.2', 27017)
-    db = c.users
-    collection = db.users
+    db = c.cvg
+    collection = db.user
 
     # Check in DB if admin password is correct (hash)
     def loginAdmin(this, pwd):

@@ -18,6 +18,8 @@ userService = UserService()
 def redirect():
      return make_response(open('/usr/src/templates/index.html').read())
 
+#### USER ####
+
 # Admin login handler
 @app.route("/api/user/adminLogin", methods=['GET'])
 def adminLogin():
@@ -29,6 +31,9 @@ def adminLogin():
 def userLogin():
     success, msg, status = userService.loginUser(request.headers['username'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+
+#### VIDEO ####
 
 # Upload chunked video
 @app.route('/api/video/upload', methods=['POST'])
@@ -69,6 +74,9 @@ def deleteVideo():
     success, msg, status = videoService.deleteVideo(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+
+#### ANNOTATION ####
+
 # Get annotation info for given frame
 @app.route('/api/annotation/getframe', methods=['GET'])
 def getAnnotation():
@@ -80,6 +88,19 @@ def getAnnotation():
 def uploadAnnotation():
     success, msg, status = annotationService.uploadAnnotation(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Get annotation object by type
+@app.route('/api/annotation/getobject', methods=['GET'])
+def getAnnotationObject():
+    success, msg, status = annotationService.getAnnotationObject(request.headers['type'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Create annotation object with type, #keypoints and labels for each keypoint
+@app.route('/api/annotation/createobject', methods=['POST'])
+def createAnnotationObject():
+    success, msg, status = annotationService.createAnnotationObject(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 
 
 
