@@ -11,7 +11,7 @@ show_help ()
   echo "    -lweb: launch web application."
   echo "    -ldb:  launch mongo database. "
   echo "    -rdb:  reset mongo database. "
-  echo "    -ldbf: launch mongo database and fill it with test data."
+  echo "    -fdb: fill database with test data."
   echo "    -aweb: build and launch web application (update)."
   echo "-----------------------------"
   echo "It is recomended to launch the web application and the database on"
@@ -32,10 +32,9 @@ elif [ "$1" = "-lweb" ]; then
 elif [ "$1" = "-ldb" ]; then
   sudo docker-compose up db
 elif [ "$1" = "-rdb" ]; then
-  mongo 172.18.0.2:27017/users db/reset.js
-elif [ "$1" = "-ldbf" ]; then
-  sudo docker-compose up db
-  mongo 172.18.0.2:27017/users db/initialize.js
+  mongo 172.18.0.2:27017/cvg db/reset.js
+elif [ "$1" = "-fdb" ]; then
+  mongo 172.18.0.2:27017/cvg db/initialize.js
 elif [ "$1" = "-aweb" ]; then
   sudo docker-compose build web
   sudo docker-compose up web
