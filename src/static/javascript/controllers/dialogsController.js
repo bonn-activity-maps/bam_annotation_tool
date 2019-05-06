@@ -45,8 +45,8 @@ angular.module('CVGTool')
             $scope.inputError = true;
             $scope.inputMsg = "The new name must be different from the old name.";
           } else {
-            var newVideoName = $scope.newName.name + '.' + video.extension;
-            var oldVideoName = $scope.oldName + '.' + video.extension;
+            var newVideoName = $scope.newName.name + video.extension;
+            var oldVideoName = $scope.oldName + video.extension;
             adminVideosSrvc.renameVideo(oldVideoName, newVideoName, showSuccess, showError)
           }
         }
@@ -56,7 +56,7 @@ angular.module('CVGTool')
      * Controller of the dialog of the "remove stored video as administrator" action
      */
     .controller('dialogDeleteVideoCtrl', ['$scope','adminVideosSrvc', '$mdDialog', 'video', function ($scope, adminVideosSrvc, $mdDialog, video) {
-        var videoName = video.name + '.' + video.extension;
+        var videoName = video.name + video.extension;
 
         $scope.mode = 'normal';
         $scope.msg = '';
@@ -179,7 +179,7 @@ angular.module('CVGTool')
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name.substr(0, list[i].name.lastIndexOf('.')), "extension": list[i].name.substr(list[i].name.lastIndexOf('.')+1, list[i].length) , "duration": list[i].duration, "frames": list[i].frames});
+              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension, "duration": list[i].duration, "frames": list[i].frames});
             }
             $scope.listOfVideosToShow = $scope.listOfVideos.slice();
         };

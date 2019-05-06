@@ -46,7 +46,7 @@ angular.module('CVGTool')
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name.substr(0, list[i].name.lastIndexOf('.')), "extension": list[i].name.substr(list[i].name.lastIndexOf('.')+1, list[i].length) , "duration": list[i].duration, "frames": list[i].frames});
+              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension, "duration": list[i].duration, "frames": list[i].frames});
             }
         };
 

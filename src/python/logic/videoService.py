@@ -8,10 +8,10 @@ import base64
 # VideoService logger
 log = logging.getLogger('videoService')
 
-class VideoService:
 
+class VideoService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
-    ffmpeg = '/usr/bin/ffmpeg'     # Path to ffmpeg
+    ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
 
     # Storage chunked videos in $STORAGE_DIR
     def storeVideo(this, request):
@@ -39,21 +39,21 @@ class VideoService:
         if current_chunk + 1 == total_chunks:
             if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
                 log.error('File %s was completed, but has a size mismatch.'
-                    ' Was %s but we expected %s', file.filename,
-                    os.path.getsize(save_path), request.form['dztotalfilesize'])
+                          ' Was %s but we expected %s', file.filename,
+                          os.path.getsize(save_path), request.form['dztotalfilesize'])
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
                 return True, 'ok', 200
         else:
-            log.debug('Chunk %s of %s for %s', current_chunk+1, total_chunks, file.filename)
+            log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
 
     # Unwrap video in frames
-    def unwrapVideo(this,v):
+    def unwrapVideo(this, v):
         # Create new directory for storing frames
         filename, _ = os.path.splitext(v)
-        dir = this.STORAGE_DIR+filename
+        dir = this.STORAGE_DIR + filename
         if not os.path.exists(dir):
             os.makedirs(dir)
         else:
@@ -62,7 +62,7 @@ class VideoService:
 
         # Unwrap video in subfolder
         outFile = dir + '/' + '%08d.jpg'
-        cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-qscale:v','2',outFile]
+        cmd = [this.ffmpeg, '-i', this.STORAGE_DIR + v, '-qscale:v', '2', outFile]
         # Extract frames from 10000 to 20000
         # cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-vf','select=\'between(n\,10000\,20000)\'','-qscale:v','2',outFile]
         subprocess.call(cmd)
@@ -71,53 +71,56 @@ class VideoService:
 
     # Return info videos, duration and frames
     def getInfoVideos(this):
-        files = [f for f in os.listdir(this.STORAGE_DIR) if os.path.isdir(os.path.join(this.STORAGE_DIR, f))]
-        duration = this.getDurationVideos(files)
-        frames = this.getFramesVideos(files)
-        # Parse response to json {'name':name, 'duration':duration, 'frames':frames}
+        files = []
         response = []
-        for i in range(len(files)):
-            response.append(json.dumps({'name':files[i], 'duration':duration[i], 'frames':frames[i]}))
+        for f in os.listdir(this.STORAGE_DIR):
+            filename, filextension = os.path.splitext(f)
+            if filename not in files and os.path.isfile(os.path.join(this.STORAGE_DIR, f)):
+                files.append(filename)
+                response.append(json.dumps(
+                    {'name': filename, 'extension': filextension, 'duration': this.getDurationVideo(f),
+                     'frames': this.getFramesVideo(f)}))
+            elif filename not in files and os.path.isdir(os.path.join(this.STORAGE_DIR, f)):
+                files.append(filename)
+                response.append(json.dumps(
+                    {'name': filename, 'extension': '/', 'duration': this.getDurationVideo(f),
+                     'frames': this.getFramesVideo(f)}))
         return True, response, 200
 
     # Return duration of videos hh:mm:ss.ss
-    def getDurationVideos(this, videos):
-        duration = []
-        for v in videos:
-            if os.path.isfile(this.STORAGE_DIR+v+".mp4"):
-                sec = mp.VideoFileClip(this.STORAGE_DIR+v+".mp4").duration
-                # Convert to hh:mm:ss.ss
-                hh = int(sec//(60*60))
-                mm = int((sec-hh*60*60)//60)
-                ss = round(sec-(hh*60*60)-(mm*60),2)
-                mm = '0'+str(mm) if mm < 10 else str(mm)
-                ss = '0'+str(ss) if ss < 10 else str(ss)
-                duration.append(str(hh)+':'+mm+':'+ss)
-            else:
-                duration.append(str(0))
+    def getDurationVideo(this, video):
+        duration = str(0)
+        if os.path.isfile(this.STORAGE_DIR + video):  # Is video
+            sec = mp.VideoFileClip(this.STORAGE_DIR + video).duration
+            # Convert to hh:mm:ss.ss
+            hh = int(sec // (60 * 60))
+            mm = int((sec - hh * 60 * 60) // 60)
+            ss = round(sec - (hh * 60 * 60) - (mm * 60), 2)
+            mm = '0' + str(mm) if mm < 10 else str(mm)
+            ss = '0' + str(ss) if ss < 10 else str(ss)
+            duration = str(hh) + ':' + mm + ':' + ss
         return duration
 
     # Return #frames of videos
-    def getFramesVideos(this, videos):
-        frames = []
-        for v in videos:
-            folder, _ = os.path.splitext(v)
-            frames.append(len(os.listdir(this.STORAGE_DIR+folder)))
+    def getFramesVideo(this, video):
+        folder, _ = os.path.splitext(video)
+        frames = 0
+        if os.path.isdir(this.STORAGE_DIR + folder):
+            frames = len(os.listdir(this.STORAGE_DIR + folder))
         return frames
 
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame):
-        frame = str(frame).zfill(8)     # Fill with 0 until 8 digits
-        file = os.path.join(this.STORAGE_DIR,video,frame+'.jpg')
+        frame = str(frame).zfill(8)  # Fill with 0 until 8 digits
+        file = os.path.join(this.STORAGE_DIR, video, frame + '.jpg')
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
                 encodedImage = base64.b64encode(image_file.read())
-                return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame':frame}, 200
+                return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame}, 200
         else:
             return False, 'Frame does not exist', 500
-
 
     # Rename video and folder with frames
     def renameVideo(this, name, newName):
@@ -128,11 +131,14 @@ class VideoService:
             folder, _ = os.path.splitext(name)
             newFolder, _ = os.path.splitext(newName)
 
-            # Rename video and directory
-            os.rename(this.STORAGE_DIR+name, this.STORAGE_DIR+newName)
-            os.rename(this.STORAGE_DIR+folder, this.STORAGE_DIR+newFolder)
+            # Rename folder
+            os.rename(this.STORAGE_DIR + folder, this.STORAGE_DIR + newFolder)
 
-            log.info('Rename ', this.STORAGE_DIR+name,' to ', this.STORAGE_DIR+newName, ' successfully.')
+            # Rename video, if exists
+            if os.path.isfile(this.STORAGE_DIR + name):
+                os.rename(this.STORAGE_DIR + name, this.STORAGE_DIR + newName)
+
+            log.info('Renamed ', this.STORAGE_DIR + name, ' to ', this.STORAGE_DIR + newName, ' successfully.')
             return True, 'ok', 200
         except OSError:
             log.exception('Error renaming the file')
@@ -142,13 +148,15 @@ class VideoService:
     def deleteVideo(this, video):
         try:
             # Separate name of file and extension
-            filename, _ = os.path.splitext(video)
+            filename, filextension = os.path.splitext(video)
 
-            # Remove video and folder
-            os.remove(this.STORAGE_DIR+video)
-            shutil.rmtree(this.STORAGE_DIR+filename)
+            # Remove folder
+            shutil.rmtree(this.STORAGE_DIR + filename)
+            # Remove video, if exists
+            if os.path.isfile(this.STORAGE_DIR + video):  # Is video
+                os.remove(this.STORAGE_DIR + video)
 
-            log.info('Remove ',this.STORAGE_DIR+video, ' file successfully.')
+            log.info('Removed ', this.STORAGE_DIR + video, ' file successfully.')
             return True, 'ok', 200
         except OSError:
             log.exception('Error deleting the file')
