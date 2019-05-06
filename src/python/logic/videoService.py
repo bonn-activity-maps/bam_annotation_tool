@@ -71,10 +71,9 @@ class VideoService:
 
     # Return info videos, duration and frames
     def getInfoVideos(this):
-        files = [f for f in os.listdir(this.STORAGE_DIR) if os.path.isfile(os.path.join(this.STORAGE_DIR, f))]
+        files = [f for f in os.listdir(this.STORAGE_DIR) if os.path.isdir(os.path.join(this.STORAGE_DIR, f))]
         duration = this.getDurationVideos(files)
         frames = this.getFramesVideos(files)
-
         # Parse response to json {'name':name, 'duration':duration, 'frames':frames}
         response = []
         for i in range(len(files)):
@@ -85,14 +84,17 @@ class VideoService:
     def getDurationVideos(this, videos):
         duration = []
         for v in videos:
-            sec = mp.VideoFileClip(this.STORAGE_DIR+v).duration
-            # Convert to hh:mm:ss.ss
-            hh = int(sec//(60*60))
-            mm = int((sec-hh*60*60)//60)
-            ss = round(sec-(hh*60*60)-(mm*60),2)
-            mm = '0'+str(mm) if mm < 10 else str(mm)
-            ss = '0'+str(ss) if ss < 10 else str(ss)
-            duration.append(str(hh)+':'+mm+':'+ss)
+            if os.path.isfile(this.STORAGE_DIR+v+".mp4"):
+                sec = mp.VideoFileClip(this.STORAGE_DIR+v+".mp4").duration
+                # Convert to hh:mm:ss.ss
+                hh = int(sec//(60*60))
+                mm = int((sec-hh*60*60)//60)
+                ss = round(sec-(hh*60*60)-(mm*60),2)
+                mm = '0'+str(mm) if mm < 10 else str(mm)
+                ss = '0'+str(ss) if ss < 10 else str(ss)
+                duration.append(str(hh)+':'+mm+':'+ss)
+            else:
+                duration.append(str(0))
         return duration
 
     # Return #frames of videos
@@ -112,7 +114,7 @@ class VideoService:
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
                 encodedImage = base64.b64encode(image_file.read())
-                return True, str(encodedImage).replace("\n", ""), 200
+                return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame':frame}, 200
         else:
             return False, 'Frame does not exist', 500
 

@@ -31,7 +31,7 @@ angular.module('CVGTool')
                       'frame': frame
                   }
               }).then(function successCallback(response) {
-                  callbackSuccess(response.data.msg);
+                  callbackSuccess(response.data.msg.image,response.data.msg.filename,response.data.msg.frame);
               }, function errorCallback(response) {
                   console.log(response.data.msg)
               });
