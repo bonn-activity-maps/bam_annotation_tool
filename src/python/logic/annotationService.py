@@ -19,9 +19,17 @@ class AnnotationService:
         else:
             return True, result, 200
 
+    # Get annotation of object in frame
+    def getAnnotationFrameObject(this, video, frame, obj):
+        result = videoManager.getFrameObject(video, frame, obj)
+        if result == 'Error':
+            return False, 'The object does not exist in frame '+frame, 400
+        else:
+            return True, result, 200
+
     # Save annotation info for given frame
     def uploadAnnotation(this, req):
-        result, e = videoManager.uploadAnnotation(req['video'], req['frame'], req['objects'])
+        result, e = videoManager.uploadAnnotation(req['video'], req['frame'], req['keypointDim'], req['objects'])
         if result == 'ok':
             return True, result, 200
         else:

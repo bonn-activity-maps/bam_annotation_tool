@@ -83,6 +83,12 @@ def getAnnotation():
     success, msg, status = annotationService.getAnnotation(request.headers['fileName'], request.headers['frame'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Get annotation of object in frame
+@app.route('/api/annotation/getframe/object', methods=['GET'])
+def getAnnotationFrameObject():
+    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['fileName'], request.headers['frame'], request.headers['obj'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 # Save annotation info for given frame
 @app.route('/api/annotation/upload', methods=['POST'])
 def uploadAnnotation():
@@ -96,7 +102,7 @@ def getAnnotationObject():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Create annotation object with type, #keypoints and labels for each keypoint
-@app.route('/api/annotation/createobject', methods=['POST'])
+@app.route('/api/annotation/upload/object', methods=['POST'])
 def createAnnotationObject():
     success, msg, status = annotationService.createAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
