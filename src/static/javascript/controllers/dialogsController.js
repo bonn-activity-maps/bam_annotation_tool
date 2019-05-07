@@ -92,7 +92,7 @@ angular.module('CVGTool')
             video: video,
             canvases: canvases
         };
-        
+
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
@@ -110,7 +110,7 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "Add new camera to the camera array" action
      */
-    .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout','homeSrvc', '$mdDialog', function ($scope, $timeout, homeSrvc, $mdDialog) {
+    .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout','toolSrvc', '$mdDialog', function ($scope, $timeout, toolSrvc, $mdDialog) {
         $scope.isVideoSelected = false;
         $scope.videoSelected;
         $scope.search = {};  // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
@@ -186,7 +186,7 @@ angular.module('CVGTool')
 
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
-            homeSrvc.getInfoOfVideos(showListOfVideos);
+            toolSrvc.getInfoOfVideos(showListOfVideos);
         }
 
         // Function to go back from the dialog once the frames have been retrieved from the server
@@ -220,7 +220,7 @@ angular.module('CVGTool')
 
               // Make all the petitions
               for (var i=0; ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
-                homeSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, callbackRetrievingFrame);
+                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, callbackRetrievingFrame);
               }
             }
         }

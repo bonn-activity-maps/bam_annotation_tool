@@ -1,54 +1,28 @@
 <div class="row">
   <div class="col-md-4"></div>
   <div class="col-md-4">
-    <div class="panel panel-default" style="margin-top: 70px">
+    <div class="panel panel-default" style="margin-top: 30%">
       <div class="panel-heading">
-          <h1>User Log In</h1>
+          <h1>Login</h1>
       </div>
       <div class="panel-body">
         <p>
-            Log in as an standard user.
+            Login with your user and password.
         </p>
-        <form role="form" ng-submit="userLogin()">
-          <div ng-if="userError" class="alert alert-danger feedbackMessages">
+        <form role="form" ng-submit="login()">
+          <div ng-if="error" class="alert alert-danger feedbackMessages">
             <strong>&#10008</strong> {{errorMsg}}
           </div>
           <div class="form-group">
-            <input  ng-click="hideError()" type="text" ng-model="userName" class="form-control"
+            <input ng-click="hideError()" type="text" ng-model="userName" class="form-control"
                    placeholder="Provided identification name" required />
           </div>
-          <p style="text-align:center">
-              <md-button type="submit" class="btn btn-default theme-accent">Log In</md-button>
-          </p>
-        </form>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4"></div>
-</div>
-<div class="row">
-  <div class="col-md-4"></div>
-  <div class="col-md-4">
-    <div class="panel panel-default" style="margin-top: 70px">
-      <div class="panel-heading">
-          <h1>Admin Log In</h1>
-      </div>
-      <div class="panel-body">
-        <p>
-            Log in as an administrator.
-        </p>
-        <form role="form" ng-submit="adminLogin()">
-          <div ng-if="adminError" class="alert alert-danger feedbackMessages">
-            <strong>&#10008</strong> {{errorMsg}}
-          </div>
-
           <div class="form-group">
-            <input  ng-click="hideError()" type="text" ng-model="adminPass" class="form-control"
-                   placeholder="Admin password" required />
+            <input ng-click="hideError()" type="password" ng-model="password" class="form-control"
+                  placeholder="Password..." required />
           </div>
-
           <p style="text-align:center">
-              <md-button type="submit" class="btn btn-default theme-accent">Log In</md-button>
+            <button type="submit" class="btn btn-default theme-accent">Login</button>
           </p>
         </form>
       </div>

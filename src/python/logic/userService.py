@@ -9,10 +9,10 @@ userManager = UserManager()
 
 class UserService:
 
-    # Check admin password
-    def loginAdmin(this, pwd):
-        return userManager.loginAdmin(pwd)
-
-    # Check if user is correct
-    def loginUser(this, user):
-        return userManager.loginUser(user)
+    # Check if user exist and return user info
+    def userLogin(this, user, pwd):
+        result = userManager.getUser(user, pwd)
+        if result == 'Error':
+            return False, 'Incorrect user', 400
+        else:
+            return True, result, 200

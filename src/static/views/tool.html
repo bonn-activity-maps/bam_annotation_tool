@@ -77,11 +77,37 @@
             <h4>Tools</h4>
           </div>
           <div class="panel-body">
-              <div class="row" style="padding-top: 5px;">
-                  <button ng-click="switchMode('navigation')" class="btn btn-lg btn-default"><span ng-if="mode != 'navigation'" class=" glyphicon glyphicon-move "></span><span ng-if="mode == 'navigation'" style="color: blue" class=" glyphicon glyphicon-move "></span></button>
+              <!-- Navigation tool -->
+              <div class="panel panel-default panel-tool" ng-click="switchTool('navigation')">
+                <div class="panel-heading panel-heading-tool" ng-if="tool!='navigation'">
+                  <span class=" glyphicon glyphicon-move "></span><p>Navigation</p>
+                </div>
+                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='navigation'">
+                  <span class=" glyphicon glyphicon-move "></span><p>Navigation</p>
+                </div>
               </div>
-              <div class="row" style="padding-top: 5px;">
-                  <button ng-click="switchMode('keypoint')" class="btn btn-lg btn-default"><span ng-if="mode != 'keypoint'" class=" glyphicon glyphicon-screenshot "></span><span ng-if="mode == 'keypoint'" style="color: blue" class=" glyphicon glyphicon-screenshot "></span></button>
+              <!-- Keypoints tool -->
+              <div class="panel panel-default panel-tool" ng-click="switchTool('keypoint')">
+                <div class="panel-heading panel-heading-tool" ng-if="tool!='keypoint'">
+                  <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
+                </div>
+                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='keypoint'">
+                  <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
+                </div>
+                <div class="panel-body" ng-if="tool=='keypoint'">
+                    <button class="btn btn-default" data-toggle="tooltip" title="Add keypoint" data-placement="left" ng-click="switchSubTool('addKeypoint')">
+                        <span ng-if="subTool!='addKeypoint'" class="glyphicon glyphicon-plus"></span>
+                        <span ng-if="subTool=='addKeypoint'" style="color: blue;" class="glyphicon glyphicon-plus"></span>
+                    </button>
+                    <button class="btn btn-default" data-toggle="tooltip" title="Edit keypoint tags" data-placement="left" ng-click="switchSubTool('editKeypointTags')">
+                        <span ng-if="subTool!='editKeypointTags'" class="glyphicon glyphicon-tag"></span>
+                        <span ng-if="subTool=='editKeypointTags'" style="color: blue;" class="glyphicon glyphicon-tag"></span>
+                    </button>
+                    <button class="btn btn-default" data-toggle="tooltip" title="Remove keypoint" data-placement="left" ng-click="switchSubTool('removeKeypoint')">
+                        <span ng-if="subTool!='removeKeypoint'" class="glyphicon glyphicon-remove"></span>
+                        <span ng-if="subTool=='removeKeypoint'" style="color: blue;" class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
               </div>
           </div>
         </div>
