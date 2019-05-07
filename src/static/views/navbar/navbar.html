@@ -12,17 +12,17 @@
       </button>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
-      <div ng-if="user.role=='admin' || user.role=='root'">
-        <select class="form-control" ng-repeat="dataset in user.assignedTo">
-            <option ng-click="switchDataset(dataset)"> {{dataset}} </option>
-        </select>
-        <ul class="nav navbar-nav"  >
-          <li><a href="#!/admin/statistics"> Statistics</a></li>
-          <li><a href="#!/admin/users"> User management</a></li>
-          <li><a href="#!/admin/videos"> Videos</a></li>
-          <li><a href="#!/admin/annotations"> Annotations</a></li>
-        </ul>
-      </div>
+      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
+        <li>
+          <select class="form-control" ng-repeat="dataset in user.assignedTo">
+              <option ng-click="switchDataset(dataset)"> {{dataset}} </option>
+          </select>
+        </li>
+        <li><a href="#!/admin/statistics"> Statistics</a></li>
+        <li><a href="#!/admin/users"> User management</a></li>
+        <li><a href="#!/admin/videos"> Videos</a></li>
+        <li><a href="#!/admin/annotations"> Annotations</a></li>
+      </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
         <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>

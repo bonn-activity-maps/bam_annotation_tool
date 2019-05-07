@@ -6,18 +6,10 @@ class UserManager:
     db = c.cvg
     collection = db.user
 
-    # Check in DB if admin password is correct (hash)
-    def loginAdmin(this, pwd):
-        result = this.collection.find_one({"admin":pwd})
+    # Return info user if exist in DB. Ignore mongo id and pwd
+    def getUser(this, user, pwd):
+        result = this.collection.find_one({"name": user, "password": pwd}, {"_id": 0, "password": 0 })
         if result == None:
-            return False, 'Incorrect password', 400
+            return 'Error'
         else:
-            return True, 'ok', 200
-
-    # Check in DB if user is correct
-    def loginUser(this, user):
-        result = this.collection.find_one({"user": user})
-        if result == None:
-            return False, 'Incorrect user', 400
-        else:
-            return True, user, 200
+            return result

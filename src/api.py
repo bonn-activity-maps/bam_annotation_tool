@@ -18,18 +18,12 @@ userService = UserService()
 def redirect():
      return make_response(open('/usr/src/templates/index.html').read())
 
-#### USER ####
+#### LOGIN ####
 
-# Admin login handler
-@app.route("/api/user/adminLogin", methods=['GET'])
-def adminLogin():
-    success, msg, status = userService.loginAdmin(request.headers['password'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Normal user login handler
-@app.route("/api/user/userLogin", methods=['GET'])
+# User login
+@app.route("/api/user/login", methods=['GET'])
 def userLogin():
-    success, msg, status = userService.loginUser(request.headers['username'])
+    success, msg, status = userService.userLogin(request.headers['username'], request.headers['password'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
@@ -78,27 +72,39 @@ def deleteVideo():
 #### ANNOTATION ####
 
 # Get annotation info for given frame
-@app.route('/api/annotation/getframe', methods=['GET'])
+@app.route('/api/annotation/get/frame', methods=['GET'])
 def getAnnotation():
     success, msg, status = annotationService.getAnnotation(request.headers['fileName'], request.headers['frame'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Save annotation info for given frame
-@app.route('/api/annotation/upload', methods=['POST'])
+# Store annotation info for given frame
+@app.route('/api/annotation/upload/frame', methods=['POST'])
 def uploadAnnotation():
     success, msg, status = annotationService.uploadAnnotation(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Get annotation of object in frame
+@app.route('/api/annotation/get/frame/object', methods=['GET'])
+def getAnnotationFrameObject():
+    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['fileName'], request.headers['frame'], request.headers['obj'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Store annotation for an object in a frame
+@app.route('/api/annotation/upload/frame/object', methods=['POST'])
+def uploadAnnotationFrameObject():
+    success, msg, status = annotationService.uploadAnnotationFrameObject(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 # Get annotation object by type
-@app.route('/api/annotation/getobject', methods=['GET'])
+@app.route('/api/annotation/get/object', methods=['GET'])
 def getAnnotationObject():
     success, msg, status = annotationService.getAnnotationObject(request.headers['type'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Create annotation object with type, #keypoints and labels for each keypoint
-@app.route('/api/annotation/createobject', methods=['POST'])
-def createAnnotationObject():
-    success, msg, status = annotationService.createAnnotationObject(request.get_json())
+@app.route('/api/annotation/upload/object', methods=['POST'])
+def uploadAnnotationObject():
+    success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 

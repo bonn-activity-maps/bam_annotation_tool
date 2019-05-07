@@ -23,6 +23,18 @@ angular.module('CVGTool')
               $state.go('login');
             },
 
+            // Function that gets the list of datasets (used when user in "root" only)
+            getDatasetList: function() {
+              $http({
+                  method: 'GET',
+                  url: '/api/...',
+              }).then(function successCallback(response) {
+                  user.assignedTo = response.data.msg;
+              }, function errorCallback(response) {
+                  console.log(response.data.msg);
+              });
+            },
+
             // Login call
             login: function(userName, password, callbackSuccess, callbackError) {
               $http({
@@ -39,25 +51,12 @@ angular.module('CVGTool')
 
                   // If the user role is 'root', we need to retrieve all datasets
                   if (user.role.localeCompare('root')) {
-                      getDatasetList();
+                      // getDatasetList();
                   }
-
                   callbackSuccess(user.role);
-              }), function errorCallback(response) {
+              }, function errorCallback(response) {
                   callbackError(response.data.msg);
-              }
-            },
-
-            // Function that gets the list of datasets (used when user in "root" only)
-            getDatasetList: function() {
-              $http({
-                  method: 'GET',
-                  url: '/api/...',
-              }).then(function successCallback(response) {
-                  user.assignedTo = response.data.msg;
-              }), function errorCallback(response) {
-                  console.log(response.data.msg);
-              }
+              });
             }
         }
 });
