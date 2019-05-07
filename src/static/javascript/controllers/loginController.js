@@ -8,54 +8,37 @@ angular.module('CVGTool')
           // Feedback handling variables
           $scope.errorMsg = "";
           $scope.successMsg = "";
-          $scope.adminError = false;
-          $scope.userError = false;
+          $scope.error = false;
 
           // Login variables
           $scope.userName = "";
-          $scope.adminPass = "";
+          $scope.password = "";
 
           // Hide the error login message
           $scope.hideError = function () {
               $scope.errorMsg = "";
-              $scope.adminError = false;
-              $scope.userError = false;
+              $scope.error = false;
               $scope.userName = "";
-              $scope.adminPass = "";
+              $scope.password = "";
           };
 
-          // Callback function to show the error message for the admin login
-          var showErrorAdmin = function (error) {
+          // Callback function to show the error message
+          var showError = function (error) {
               $scope.errorMsg = error;
-              $scope.adminError = true;
+              $scope.error = true;
           };
 
-          // Callback function to show the error message for the user login
-          var showErrorUser = function (error) {
-              $scope.errorMsg = error;
-              $scope.userError = true;
+          // Callback function to redirect the user if the login worked
+          var successRedirect = function (role) {
+            if (role.localeCompare('None')) {
+                $state.go('tool')
+            } else {
+                $state.go('adminStatistics')
+            }
           };
 
-          // Callback function to redirect the user if the admin login worked
-          var successRedirectAdmin = function () {
-            $state.go('adminStatistics')
+          // Function to login
+          $scope.login = function() {
+              loginSrvc.login($scope.userName, $scope.password, successRedirect, showError);
           };
-
-          // Callback function to redirect the user if the user login worked
-          var successRedirectUser = function () {
-            $state.go('tool')
-          };
-
-          // Function that makes the call to Login as an administrator
-          $scope.adminLogin = function() {
-            var password = $scope.adminPass;
-            loginSrvc.adminLogin(password, successRedirectAdmin, showErrorAdmin);
-          };
-
-          // Function that makes the call to Login as an ordinary user
-          $scope.userLogin = function() {
-            var username = $scope.userName;
-            loginSrvc.userLogin(username, successRedirectUser, showErrorUser);
-          };
-
 }]);

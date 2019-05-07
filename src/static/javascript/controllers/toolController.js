@@ -2,9 +2,9 @@ angular.module('CVGTool')
 
     .controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', function ($scope, $state, $interval, $mdDialog, toolSrvc) {
 
-      $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
+      // $(document).ready(function() {
+      //       $('[data-toggle="tooltip"]').tooltip();
+      //   });
 
 //////// TOOLS
       $scope.tool = 'navigation';  // navigation = Normal
@@ -14,15 +14,15 @@ angular.module('CVGTool')
 
       $scope.switchSubTool = function (sT) {
         if ($scope.subTool.localeCompare(sT) == 0) {
-            $scope.subTool = "";
+            $scope.subTool = '';
             return;
         }
         $scope.subTool = sT;
-      }
+      };
 
       $scope.switchTool = function (newTool) {
-        $scope.tool = newTool;
-      }
+        $scope.tool = newTool
+      };
 
 //////// TIMELINE
       // Variables to control the timeline
@@ -37,7 +37,7 @@ angular.module('CVGTool')
           step: 1,
           showTicks: true
         }
-      }
+      };
 
       // Function that watches over the value of the slider and calls to redraw the canvases when this variable changes
       $scope.$watch("slider.value", function(){
@@ -156,8 +156,31 @@ angular.module('CVGTool')
       $scope.numberOfCanvases = 4;  // Number of canvases
       $scope.canvases = []   // Initial canvas structure
 
-      function CanvasObject(canvas) {
+      // Shape to represent keypoints
+      // function Shape(x,y) {
+      //   this.x = x;
+      //   this.y = y;
+      //   this.z = 0;
+      //   this.radius = 5;
+      //
+      //   this.fill = '#AAAAAA';
+      //
+      //   // Draws the shape
+      //   Shape.prototype.draw = function(ctx) {
+      //       ctx.fillStyle = this.fill;
+      //
+      //   }
+      //
+      //   // Check if mouse coordinates are contained inside the shape
+      //   Shape.prototype.contains = function(mx, my) {
+      //     var d = Math.sqrt((this.x - mx)*(this.x - mx) + (this.y - my)*(this.y - my))
+      //     if (d <= this.radius) return true;
+      //     else return false;
+      //   }
+      // };
 
+      // Object that controls the canvas and stores its state
+      function CanvasObject(canvas) {
         //----- SETUP -----//
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d')
@@ -192,11 +215,43 @@ angular.module('CVGTool')
         setInterval(function() { canvasObj.draw(); }, 100); // Redraw function
 
         //----- EVENTS -----//
+        // Prevents clicking of selecting text
+        canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false;}, false);
 
-
+        // // MouseDown event, click
+        // canvas.addEventListener('mousedown', function(e) {
+        //     var mouse = canvasObj.getMouse(e);
+        //     var mx = mouse.x;
+        //     var my= mouse.y;
+        //
+        //     if ($scope.subTool.localeCompare('addKeypoint')) {
+        //       var keypoint = {
+        //           shape:
+        //       }
+        //     }
+        //
+        //     var keypoints = $scope.activeCamera.frames[$scope.slider.value-1].keypoints;
+        //     for (var i= 0; i< keypoints.length; i++) {
+        //         if (keypoints[i].shape.contains(mx,my)) {
+        //
+        //         }
+        //
+        //     }
+        // }, true);
 
 
         //----- FUNCTIONS -----//
+        // Adds a keypoint to the stored keypoints
+        CanvasObject.prototype.addKeypoint = function(keypoint) {
+            // TODO: this is temporal, no objects yet
+            $scope.activeCamera.frames[$scope.slider.value-1].keypoints.push(keypoint)
+        }
+
+        // Removes the selected keypoint from the stored keypoints
+        CanvasObject.prototype.removeKeypoint = function(keypoint) {
+
+        }
+
         // Function that set the flag to redraw to false
         CanvasObject.prototype.setRedraw = function() {
           this.valid = false;
@@ -232,6 +287,7 @@ angular.module('CVGTool')
 
           // Set the new camera
           this.activeCamera = camera;
+
 
           // When the video is set in a canvas, remove it from the array of loadedCameras
           for (var i=0; i< $scope.loadedCameras.length; i++) {
