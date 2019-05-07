@@ -18,18 +18,12 @@ userService = UserService()
 def redirect():
      return make_response(open('/usr/src/templates/index.html').read())
 
-#### USER ####
+#### LOGIN ####
 
-# Admin login handler
-@app.route("/api/user/adminLogin", methods=['GET'])
-def adminLogin():
-    success, msg, status = userService.loginAdmin(request.headers['password'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Normal user login handler
-@app.route("/api/user/userLogin", methods=['GET'])
+# User login
+@app.route("/api/user/login", methods=['GET'])
 def userLogin():
-    success, msg, status = userService.loginUser(request.headers['username'])
+    success, msg, status = userService.userLogin(request.headers['username'], request.headers['password'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
