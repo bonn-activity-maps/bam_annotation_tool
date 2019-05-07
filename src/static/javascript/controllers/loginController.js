@@ -43,7 +43,7 @@ angular.module('CVGTool')
 
           // Callback function to redirect the user if the user login worked
           var successRedirectUser = function () {
-            $state.go('home')
+            $state.go('tool')
           };
 
           // Function that makes the call to Login as an administrator

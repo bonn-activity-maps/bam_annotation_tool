@@ -1,6 +1,15 @@
 angular.module('CVGTool')
 
-    .controller('navbarCtrl', ['$scope', '$state', function ($scope, $state) {
+    .controller('navbarCtrl', ['$scope', '$state', 'loginSrvc' ,function ($scope, $state, loginSrvc) {
+        $scope.user = {
+          type: "",
+          name: ""
+        };
+
+        $scope.getUserInfo = function () {
+            $scope.user = loginSrvc.getUser();
+        };
+
         $scope.loggedIn = function () {
           if ($state.current.name != 'login') {
             return true
@@ -8,7 +17,9 @@ angular.module('CVGTool')
         };
 
         $scope.logOut = function () {
-          // TODO: Implement logout when database is up
+          loginSrvc.logout();
           // TODO: Show navbar only when the user is logged in, also different options for normal user and admin
         };
+
+        $scope.getUserInfo();
 }]);

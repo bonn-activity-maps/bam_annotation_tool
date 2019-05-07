@@ -28,3 +28,18 @@
     padding-right:0;
     padding-left:0;
 }
+
+.panel-tool{
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.panel-heading-tool{
+  background: rgb(245,245,245) !important;
+}
+
+.panel-heading-tool-selected{
+  background: rgb(230,230,230) !important;
+}

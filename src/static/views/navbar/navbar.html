@@ -12,14 +12,14 @@
       </button>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav"  ng-if="user.type == 'admin'">
         <li><a href="#!/admin/statistics"> Statistics</a></li>
         <li><a href="#!/admin/users"> User management</a></li>
         <li><a href="#!/admin/videos"> Videos</a></li>
         <li><a href="#!/admin/annotations"> Annotations</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li><a><span class="glyphicon glyphicon-user"></span> Usertype</a></li>
+        <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
         <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
       </ul>
     </div>

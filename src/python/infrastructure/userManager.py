@@ -20,4 +20,4 @@ class UserManager:
         if result == None:
             return False, 'Incorrect user', 400
         else:
-            return True, 'ok', 200
+            return True, user, 200
