@@ -19,6 +19,15 @@ class AnnotationService:
         else:
             return True, result, 200
 
+    # Save annotation info for given frame
+    def uploadAnnotation(this, req):
+        result, e = videoManager.uploadAnnotation(req['video'], req['frame'], req['keypointDim'], req['objects'])
+        if result == 'ok':
+            return True, result, 200
+        else:
+            log.exception(result, e)
+            return False, result, 500
+
     # Get annotation of object in frame
     def getAnnotationFrameObject(this, video, frame, obj):
         result = videoManager.getFrameObject(video, frame, obj)
@@ -27,9 +36,9 @@ class AnnotationService:
         else:
             return True, result, 200
 
-    # Save annotation info for given frame
-    def uploadAnnotation(this, req):
-        result, e = videoManager.uploadAnnotation(req['video'], req['frame'], req['keypointDim'], req['objects'])
+    # Store annotation for an object in a frame
+    def uploadAnnotationFrameObject(this, req):
+        result, e = videoManager.uploadFrameObject(req['video'], req['frame'], req['keypointDim'], req['objects'])
         if result == 'ok':
             return True, result, 200
         else:
@@ -45,7 +54,7 @@ class AnnotationService:
             return True, result, 200
 
     # Create annotation object
-    def createAnnotationObject(this, req):
+    def uploadAnnotationObject(this, req):
         result, e = objectManager.createObject(req['type'], req['nkp'], req['labels'])
         if result == 'ok':
             return True, result, 200
