@@ -24,7 +24,7 @@
                           <td>{{video.extension}}</td>
                           <td>{{video.duration}}</td>
                           <td>{{video.frames}}</td>
-                          <td><md-button ng-click="deleteVideo(video)" class="md-warn md-raised">Delete</md-button> <md-button ng-click="renameVideo(video)" class="md-primary md-raised">Rename</md-button></td>
+                          <td><md-button ng-click="renameVideo(video)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="deleteVideo(video)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                       </tr>
                       <tr ng-if="listOfVideos.length == 0">
                         <td class="text-left">No videos stored</td>

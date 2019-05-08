@@ -40,8 +40,6 @@ angular.module('CVGTool')
           adminVideosSrvc.unwrapVideo(file);
         };
 
-        var re = /(?:\.([^.]+))?$/; // Regular expression used to separate name from extension of a file
-
         // Function to update the list of videos
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];

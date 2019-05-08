@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-    .factory('homeSrvc', function ($state, $http, $httpParamSerializer) {
+    .factory('toolSrvc', function ($state, $http, $httpParamSerializer) {
         return {
           getInfoOfVideos: function (callbackSuccess) {
               $http({

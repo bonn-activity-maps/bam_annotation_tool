@@ -3,10 +3,10 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
     .config(function ($stateProvider, $urlRouterProvider) {
         $stateProvider
 
-            .state('home', {
-                url: "/home",
-                templateUrl: "static/views/home.html",
-                controller: "homeCtrl"
+            .state('tool', {
+                url: "/tool",
+                templateUrl: "static/views/tool.html",
+                controller: "toolCtrl"
             })
 
             .state('login', {
