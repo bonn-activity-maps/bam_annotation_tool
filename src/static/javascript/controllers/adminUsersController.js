@@ -3,12 +3,31 @@ angular.module('CVGTool')
     /*
      * Controller of admin page "Users"
      */
-    .controller('adminVideosCtrl', ['$scope', '$state', 'adminUsersSrvc', '$mdDialog', function ($scope, $state, adminUsersSrvc, $mdDialog) {
+    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'navSrvc', function ($scope, $state, adminUsersSrvc, navSrvc) {
         $scope.listOfUsers = [];
+        $scope.avaiableRoles = [];
+        $scope.userRole = "";
+
+        $scope.activeDataset = "";
 
         $scope.getInfoOfUsers = function() {
             adminUsersSrvc.getInfoOfUsers(showListOfUsers);
         };
+
+        $scope.getUserRole = function() {
+            $scope.userRole = navSrvc.getUserRole();
+
+            if ($scope.userRole.localeCompare('admin') == 0) {
+                $scope.avaiableRoles.push({name: "user"})
+            } else if ($scope.userRole.localeCompare('root') == 0) {
+                $scope.avaiableRoles.push({name: "user"});
+                $scope.avaiableRoles.push({name: "admin"});
+            }
+        }
+
+        $scope.getActiveDataset = function() {
+            $scope.activeDataset = navSrvc.getActiveDataset();
+        }
 
         var showListOfUsers = function (list) {
             $scope.listOfUsers = [];
@@ -37,5 +56,9 @@ angular.module('CVGTool')
         $scope.removeUser = function() {
             adminUsersSrvc.removeUser(userName); //TODO: define userData
         }
+
+        // $scope.getInfoOfUsers();
+        $scope.getUserRole();
+        $scope.getActiveDataset();
 
     }]);

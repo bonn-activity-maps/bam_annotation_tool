@@ -1,3 +1,89 @@
-<div>
-TOOD: User management
+<div style="height: 98%">
+    <div class="row" style="height: 100%">
+        <div class="col-md-6" style="height: 100%">
+          <!-- List of users of the selected dataset -->
+          <div class="panel panel-default" style="height: 98%">
+            <div class="panel-body">
+              <h2>Users</h2>
+              <hr/>
+              <div style="overflow-y: auto; max-height: 100%;">
+                <table class="table table-bordered table-responsive text-center">
+                  <thead>
+                    <tr>
+                      <th class="col-md-4">Username</th>
+                      <th class="col-md-1">Role</th>
+                      <th class="col-md-5">E-mail</th>
+                      <th class="col-md-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
+                        <td class="text-left">{{user.name}}</td>
+                        <td>{{user.role}}</td>
+                        <td>{{user.email}}</td>
+                        <td><md-button ng-click="editUser(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="deleteUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+                    </tr>
+                    <tr ng-if="listOfUsers.length == 0">
+                      <td class="text-left">No users created for this dataset.</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" style="height: 100%">
+          <!-- Panel to create a new user -->
+          <div class="panel panel-default" style="height: 49%">
+            <div class="panel-body" style="height: 49%">
+              <h2>Create User</h2>
+              <hr/>
+              <form role="form" ng-submit="createUser()">
+                <div ng-if="error" class="alert alert-danger feedbackMessages">
+                  <strong>&#10008</strong> {{errorMsg}}
+                </div>
+                <div class="form-group">
+                  <label>Username</label>
+                  <input ng-click="hideError()" type="text" ng-model="username" class="form-control" required />
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input ng-click="hideError()" type="email" ng-model="email" class="form-control" required />
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                       <label>Role</label>
+                       <select class="form-control" ng-model="role">
+                            <option  ng-repeat="r in avaiableRoles" >{{r.name}}</option>
+                       </select>
+                      </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Dataset</label>
+                      <input ng-click="hideError()" type="text" ng-model="activeDataset" class="form-control" disabled/>
+                    </div>
+                  </div>
+                </div>
+                <hr/>
+                <p style="text-align:center">
+                  <button type="submit" class="btn btn-primary theme-accent">Create</button>
+                </p>
+              </form>
+            </div>
+         </div>
+
+         <!-- Panel to upload users file -->
+         <div class="panel panel-default" style="height: 49%">
+           <div class="panel-body" style="height: 49%">
+             <h2>Upload Users file</h2>
+             <hr/>
+               In the future, maybe
+           </div>
+        </div>
+    </div>
 </div>

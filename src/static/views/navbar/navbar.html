@@ -14,8 +14,8 @@
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
         <li>
-          <select class="form-control" ng-repeat="dataset in user.assignedTo">
-              <option ng-click="switchDataset(dataset)"> {{dataset}} </option>
+          <select class="form-control" ng-model="activeDataset" ng-repeat="dataset in user.assignedTo">
+              <option> {{dataset}} </option>
           </select>
         </li>
         <li><a href="#!/admin/statistics"> Statistics</a></li>

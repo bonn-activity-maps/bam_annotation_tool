@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of the "Login" view
      */
-    .controller('loginCtrl', ['$scope', '$state', 'loginSrvc', function ($scope, $state, loginSrvc) {
+    .controller('loginCtrl', ['$scope', '$state', 'loginSrvc', 'navSrvc', function ($scope, $state, loginSrvc, navSrvc) {
 
           // Feedback handling variables
           $scope.errorMsg = "";
@@ -29,8 +29,9 @@ angular.module('CVGTool')
           };
 
           // Callback function to redirect the user if the login worked
-          var successRedirect = function (role) {
-            if (role.localeCompare('None')) {
+          var successRedirect = function (user) {
+            navSrvc.setUser(user);
+            if (user.role.localeCompare('user') == 0) {
                 $state.go('tool')
             } else {
                 $state.go('adminStatistics')

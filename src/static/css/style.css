@@ -9,14 +9,13 @@
       background: rgb(242,242,242);
 }
 
-.panel-default{
-      margin-left: 20px;
-      margin-right: 20px;
-}
-
 .panel{
       /* box-shadow: 5px 5px 5px 5px 5px grey; */
       border-radius: 0 !important;
+      margin-left: 4px !important;
+      margin-right: 4px !important;
+      margin-top: 4px !important;
+      margin-bottom: 4px !important;
 }
 
 .panel-heading{

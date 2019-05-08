@@ -1,12 +1,11 @@
 <div style="height: 98%;">
   <div class="row" style="height: 100%;">
     <!-- Videos panel -->
-      <div class="col-md-1 padding-0" style="height: 100%;">
-        <div class="panel panel-default padding-0" style="height: 100%;">
-          <div class="panel-heading">
-            <h4>Videos</h4>
-          </div>
+      <div class="col-md-1" style="height: 100%;">
+        <div class="panel panel-default" style="height: 100%;">
           <div class="panel-body text-center">
+            <h4>Videos</h4>
+            <hr/>
             <div ng-repeat="video in loadedCameras">
               <div class="container text-center" style="width: 80px; height: width/1.5; padding-bottom: 15px;">
                   <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[0].image}}" />
@@ -17,66 +16,85 @@
         </div>
       </div>
 
-      <!-- Popover selector -->
-      <div id="popover-selector" class="hide">
-        <div class="container-fluid">
-          <div class="row">
-              <div class="col-md-6">
-                  <button type="button" class="btn btn-default">1</button>
-                  <button type="button" class="btn btn-default">2</button>
-              </div>
-          </div>
-          <div class="row">
-              <div class="col-md-6">
-                  <button type="button" class="btn btn-default">3</button>
-                  <button type="button" class="btn btn-default">4</button>
-              </div>
-          </div>
-        </div>
-      </div>
       <!-- Camera panel -->
-      <div class="col-md-10 padding-0" style="height: 100%;">
-        <div class="panel panel-default text-center padding-0" style="height: 90%;">
-          <div class="row" style="height: 50%;">
-            <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
-                <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-            </div>
-            <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
-                <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+      <div class="col-md-10" style="height: 100%;">
+          <div class="row" style="height: 90%">
+            <div class="panel panel-default" style="height: 100%">
+                <div class="panel-body" style="height: 100%">
+                    <div class="row" style="height: 50%;">
+                      <div class="col-md-6" style="height: 100%;">
+                          <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                      </div>
+                      <div class="col-md-6" style="height: 100%;">
+                          <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                      </div>
+                    </div>
+                    <div class="row"style="height: 50%;">
+                      <div class="col-md-6" style="height: 100%;">
+                          <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                      </div>
+                      <div class="col-md-6" style="height: 100%;">
+                          <canvas id="canvas4" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                      </div>
+                    </div>
+                </div>
             </div>
           </div>
-          <div class="row" style="height: 50%;">
-            <div class="col-md-6" style="height: 100%; padding-top: 1px;">
-                <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+          <div class="row" style="height: 10%">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-md-2">
+                      <button ng-click="previousFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                      <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-play"></button>
+                      <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-pause"></button>
+                      <button ng-click="nextFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    </div>
+                    <div class="col-md-10">
+                      <rzslider
+                           rz-slider-model="slider.value"
+                           rz-slider-options="slider.options"></rzslider>
+                    </div>
+                  </div>
+                </div>
             </div>
-            <div class="col-md-6" style="height: 100%; padding-top: 1px;">
-                <canvas id="canvas4" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-            </div>
+          </div>
+        <!-- <div class="row" style="height: 90%;">
+          <div class="panel panel-default text-center" style="height: 90%;">
+            <div class="panel-body"style="height: 90%;">
+              <div class="row" style="height: 50%;">
+                <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
+                    <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                </div>
+                <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
+                    <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                </div>
+              </div>
+              <div class="row" style="height: 50%;">
+                <div class="col-md-6" style="height: 100%; padding-top: 1px;">
+                    <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                </div>
+                <div class="col-md-6" style="height: 100%; padding-top: 1px;">
+                    <canvas id="canvas4" class="playable-canvas" style="border:1px solid #000000;"></canvas>
+                </div>
+              </div>
+            </div
           </div>
         </div>
-        <div class="panel panel-default" style="height: 8%;">
-          <div class="row">
-            <div class="col-md-2">
-              <button ng-click="previousFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left"></span></button>
-              <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-play"></button>
-              <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-pause"></button>
-              <button ng-click="nextFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right"></span></button>
-            </div>
-            <div class="col-md-10">
-              <rzslider
-                   rz-slider-model="slider.value"
-                   rz-slider-options="slider.options"></rzslider>
+        <div class="row" style="height: 8%;">
+          <div class="panel panel-default" style="height: 8%;">
+            <div class="panel-body" style="height: 8%;">
+
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
       <!-- Tools panel -->
-      <div class="col-md-1 padding-0" style="height: 100%;">
-        <div class="panel panel-default text-center padding-0" style="height: 100%;">
-          <div class="panel-heading">
-            <h4>Tools</h4>
-          </div>
+      <div class="col-md-1" style="height: 100%;">
+        <div class="panel panel-default text-center" style="height: 100%;">
           <div class="panel-body">
+            <h4>Tools</h4>
+            <hr/>
               <!-- Navigation tool -->
               <div class="panel panel-default panel-tool" ng-click="switchTool('navigation')">
                 <div class="panel-heading panel-heading-tool" ng-if="tool!='navigation'">

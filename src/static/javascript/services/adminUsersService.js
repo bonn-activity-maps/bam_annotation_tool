@@ -42,7 +42,7 @@ angular.module('CVGTool')
 
             updateUser: function(userName, userEmail, userRole, userDatasets) {
                 $http({
-                    method: 'PUT',
+                    method: 'POST',
                     url: 'api/users/updateUser',
                     data: {
                         'name': userName,
@@ -59,9 +59,9 @@ angular.module('CVGTool')
 
             removeUser: function(userName) {
                 $http({
-                    method:'DELETE',
+                    method:'POST',
                     url: 'api/users/removeUser',
-                    headers: {
+                    data: {
                         'name': userName
                     }
                 }).then(function successCallback(response) {

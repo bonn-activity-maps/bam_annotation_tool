@@ -17,7 +17,8 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
 
             .state('adminUsers', {
               url: "/admin/users",
-              templateUrl: "static/views/adminUsers.html"
+              templateUrl: "static/views/adminUsers.html",
+              controller: "adminUsersCtrl"
             })
 
             .state('adminAnnotations', {
