@@ -44,6 +44,16 @@ class UserManager:
             log.exception('Error finding users in db')
             return 'Error'
 
+    # Return list with info of all users for dataset. Empty list if there are no users
+    # Ignore mongo id and pwd
+    def getUsersByDataset(this, dataset):
+        try:
+            result = this.collection.find({"assignedTo": dataset},{"_id": 0, "password": 0 })
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding users in db')
+            return 'Error'
+
     # Return 'ok' if the user has been created
     def createUser(this, user, pwd, assignedTo, role, email):
         try:
