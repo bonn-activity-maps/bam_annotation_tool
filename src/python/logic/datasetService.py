@@ -5,15 +5,32 @@ from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 import base64
 
-# VideoService logger
-log = logging.getLogger('videoService')
+# DatasetService logger
+log = logging.getLogger('datasetService')
 
 
-class VideoService:
+class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
 
-    # Storage chunked videos in $STORAGE_DIR
+    # Store item of a dataset in corresponding folder in $STORAGE_DIR
+    def storeItemInFolder(this, request):
+        file = request.files['file']
+        print("full path:", file.fullpath)
+        save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.fullpath))
+
+        if os.path.exists(save_path):
+            return False, 'File already exists', 400
+        try:
+            with open(save_path, 'ab') as f:
+                pass
+                # f.write(file.stream.read())
+        except OSError:
+            log.exception('Could not write file')
+            return False, 'Server error while writing file', 500
+        return True, 'ok', 200
+
+    # Store chunked videos in $STORAGE_DIR
     def storeVideo(this, request):
         file = request.files['file']
 
@@ -31,7 +48,7 @@ class VideoService:
                 f.write(file.stream.read())
         except OSError:
             log.exception('Could not write to file')
-            return False, 'Server error writting the file', 500
+            return False, 'Server error while writing to the file', 500
 
         total_chunks = int(request.form['dztotalchunkcount'])
 

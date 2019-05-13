@@ -8,13 +8,14 @@ angular.module('CVGTool')
 
         // Dropzone options
         $scope.dzOptions = {
-          paramName: 'file',
-          chunking: true,
-          forceChunking: true,
-          acceptedFiles: '.mp4',
-          url: '/api/video/upload',
-          maxFilesize: 10240, // mb
-          chunkSize: 20000000 // bytes (chunk: 20mb)
+            paramName: 'file',
+            chunking: true,
+            forceChunking: true,
+            acceptedFiles: '.mp4',
+            url: '/api/video/upload',
+            maxFilesize: 10240, // mb
+            chunkSize: 20000000, // bytes (chunk: 20mb)
+            dictDefaultMessage: 'Drop mp4 file here to upload a video.'
       	};
 
         // Dropzone event handler
@@ -29,6 +30,28 @@ angular.module('CVGTool')
             $scope.getInfoOfVideos();
       		},
       	};
+
+        // Dropzone options
+        $scope.dzFolderOptions = {
+            paramName: 'file',
+            uploadMultiple: true,
+            maxFilesize: 1,
+            acceptedFiles: "image/jpeg, .json",
+            url: '/api/folder/uploadFolder',
+            dictDefaultMessage: 'Drop folder here to upload part of a dataset.'
+        };
+
+        // Dropzone event handler
+        $scope.dzFolderCallbacks = {
+            'addedfile' : function(file){
+                console.log(file);
+                $scope.newFile = file;
+            },
+            'success' : function(file, xhr){
+                console.log(file, xhr);
+                $scope.getInfoOfVideos();
+            },
+        };
 
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {
