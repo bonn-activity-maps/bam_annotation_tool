@@ -1,7 +1,7 @@
 db.user.insertOne({name: "Root", password: "test", assignedTo: [""], role: "root"})
-db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["cvg"], role: "admin", email: ""})
-db.user.insertOne({name: "Dario", password: "test", assignedTo: ["Posetrack"], role: "user", email: "dario@dario.com"})
-db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["cvg"], role: "user", email: "bea@bea.com"})
+db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["cvg", "example2"], role: "admin", email: ""})
+db.user.insertOne({name: "Dario", password: "test", assignedTo: ["Posetrack", "example1"], role: "user", email: "dario@dario.com"})
+db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["cvg", "example3"], role: "user", email: "bea@bea.com"})
 
 db.video.insertOne({
 	"video": "dorian2",
