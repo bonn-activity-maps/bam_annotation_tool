@@ -54,6 +54,19 @@ class UserManager:
             log.exception('Error finding users in db')
             return 'Error'
 
+    # Return info user if exist in DB. Ignore mongo id and pwd
+    def getEmail(this, email):
+        try:
+            result = this.collection.find_one({"email": email}, {"_id": 0, "password": 0 })
+            print(result)
+            if result == None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding email in db')
+            return 'Error'
+
     # Return 'ok' if the user has been created
     def createUser(this, user, pwd, assignedTo, role, email):
         try:
