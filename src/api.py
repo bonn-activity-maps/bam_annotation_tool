@@ -64,6 +64,34 @@ def updateUser():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
+#### DATASET ####
+
+# Get dataset info
+@app.route("/api/dataset/getDataset", methods=['GET'])
+def getDataset():
+    success, msg, status = datasetService.getDataset(request.headers['name'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Get info of all datasets
+@app.route("/api/dataset/getDatasets", methods=['GET'])
+def getDatasets():
+    success, msg, status = datasetService.getDatasets()
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Create new dataset
+@app.route('/api/dataset/createDataset', methods=['POST'])
+def createDataset():
+    success, msg, status = datasetService.createDataset(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Remove existing dataset
+@app.route('/api/dataset/removeDataset', methods=['POST'])
+def removeDataset():
+    req_data = request.get_json()
+    success, msg, status = datasetService.removeDataset(req_data['name'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+
 #### VIDEO ####
 
 # Upload chunked video

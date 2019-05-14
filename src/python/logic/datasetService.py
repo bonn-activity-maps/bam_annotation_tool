@@ -5,9 +5,12 @@ from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 import base64
 
+from python.infrastructure.datasetManager import DatasetManager
+
 # DatasetService logger
 log = logging.getLogger('datasetService')
 
+datasetManager = DatasetManager()
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
@@ -198,3 +201,40 @@ class DatasetService:
         except OSError:
             log.exception('Error deleting the file')
             return False, 'Server error deleting the file', 500
+
+    # Return dataset info
+    def getDataset(this, dataset):
+        result = datasetManager.getDataset(dataset)
+        if result == 'Error':
+            return False, 'Incorrect dataset', 400
+        else:
+            return True, result, 200
+
+    # Return datasets info
+    def getDatasets(this):
+        result = datasetManager.getDatasets()
+        if result == 'Error':
+            return False, 'Error searching datasets', 400
+        else:
+            return True, result, 200
+
+    # Return 'ok' if the dataset has been removed
+    def removeDataset(this, dataset):
+        result = datasetManager.removeDataset(dataset)
+        if result == 'Error':
+            return False, 'Error deleting dataset', 400
+        else:
+            return True, result, 200
+
+    # Return dataset name if it has been created
+    def createDataset(this, req):
+        name = req['name']
+        # Check if datasets exists
+        if datasetManager.getDataset(name) != 'Error':
+            return False, 'The dataset '+name+' already exists', 400
+        else:
+            result = datasetManager.createDataset(name)
+            if result == 'Error':
+                return False, 'Error creating dataset', 400
+            else:
+                return True, {'name':name}, 200
