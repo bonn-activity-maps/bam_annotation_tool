@@ -10,6 +10,11 @@ angular.module('CVGTool')
 
         $scope.activeDataset = "";
 
+
+        $scope.username = "";
+        $scope.email = "";
+        $scope.role = "";
+
         $scope.getInfoOfUsers = function() {
             adminUsersSrvc.getInfoOfUsers(showListOfUsers);
         };
@@ -43,10 +48,11 @@ angular.module('CVGTool')
 
         var showPassword = function (response) {
             //TODO: whatever we will do with the password
+            console.log(response)
         };
 
         $scope.createUser = function() {
-            adminUsersSrvc.createUser(userName, userEmail, userRole, userDatasets, showPassword); //TODO: define userData
+            adminUsersSrvc.createUser($scope.username, $scope.email, $scope.role, $scope.activeDataset, showPassword); //TODO: define userData
         };
 
         $scope.updateUser = function() {
@@ -57,7 +63,7 @@ angular.module('CVGTool')
             adminUsersSrvc.removeUser(userName); //TODO: define userData
         }
 
-        // $scope.getInfoOfUsers();
+        $scope.getInfoOfUsers();
         $scope.getUserRole();
         $scope.getActiveDataset();
 

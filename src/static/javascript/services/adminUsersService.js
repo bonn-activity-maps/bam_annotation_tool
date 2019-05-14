@@ -6,19 +6,20 @@ angular.module('CVGTool')
             getInfoOfUsers: function (callbackSuccess) {
                 $http({
                     method: 'GET',
-                    url: '/api/users/getUsers'
+                    url: '/api/user/getUsers'
                 }).then(function successCallback(response) {
                     if (response.data.msg.length === 0) {
                         callbackSuccess([])
                     } else {
-                        var parsedArray = [];
-                        for (let i = 0; i < response.data.msg.length; i++) {
-                            parsedArray.push(JSON.parse(response.data.msg[i]))
-                        }
-                        callbackSuccess(parsedArray)
+                        // var parsedArray = [];
+                        // for (let i = 0; i < response.data.msg.length; i++) {
+                        //     parsedArray.push(JSON.parse(response.data.msg[i]))
+                        // }
+                        console.log(response.data.msg)
+                        callbackSuccess(response.data.msg)
                     }
                 }, function errorCallBack(response) {
-                    console.log("ERROR while retrieving info from users")
+                    console.log(response.data.msg)
                 });
             },
 
