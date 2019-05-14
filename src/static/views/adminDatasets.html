@@ -53,8 +53,11 @@
         <p>
         To add a new video to the server just drag and drop it on the designated area. You can also click in the area and search for the video in the file system pop-up.
         </p>
-        <div>
+        <div class="col-md-4">
           <ng-dropzone class="dropzone" options="dzOptions" callbacks="dzCallbacks" methods="dzMethods"></ng-dropzone>
+        </div>
+        <div class="col-md-4">
+          <ng-dropzone class="dropzone" options="dzZipOptions" callbacks="dzZipCallbacks" methods="dzZipMethods"></ng-dropzone>
         </div>
       </div>
     </div>
