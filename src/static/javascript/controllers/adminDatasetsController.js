@@ -3,18 +3,19 @@ angular.module('CVGTool')
     /*
      * Controller of the admin page "Videos"
      */
-    .controller('adminVideosCtrl', ['$scope', '$state', 'adminVideosSrvc', '$mdDialog', function ($scope, $state, adminVideosSrvc, $mdDialog) {
+    .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, $mdDialog) {
         $scope.listOfVideos = [];
 
         // Dropzone options
         $scope.dzOptions = {
-          paramName: 'file',
-          chunking: true,
-          forceChunking: true,
-          acceptedFiles: '.mp4',
-          url: '/api/video/upload',
-          maxFilesize: 10240, // mb
-          chunkSize: 20000000 // bytes (chunk: 20mb)
+            paramName: 'file',
+            chunking: true,
+            forceChunking: true,
+            acceptedFiles: '.mp4',
+            url: '/api/video/upload',
+            maxFilesize: 10240, // mb
+            chunkSize: 20000000, // bytes (chunk: 20mb)
+            dictDefaultMessage: 'Drop mp4 file here to upload a video.'
       	};
 
         // Dropzone event handler
@@ -30,14 +31,39 @@ angular.module('CVGTool')
       		},
       	};
 
+        // Dropzone zip options
+        $scope.dzZipOptions = {
+            paramName: 'file',
+            chunking: true,
+            forceChunking: true,
+            uploadMultiple: false,
+            maxFilesize: 10240, // mb
+            chunkSize: 20000000, // bytes (chunk: 20mb)
+            acceptedFiles: ".zip",
+            url: '/api/dataset/uploadZip',
+            dictDefaultMessage: 'Drop zip file here to upload part of a dataset.'
+        };
+
+        // Dropzone zip event handler
+        $scope.dzZipCallbacks = {
+            'addedfile' : function(file){
+                console.log(file);
+                $scope.newFile = file;
+            },
+            'success' : function(file, xhr){
+                console.log(file, xhr);
+                //$scope.getInfoOfVideos();
+            },
+        };
+
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {
-          adminVideosSrvc.getInfoOfVideos(showListOfVideos);
+          adminDatasetsSrvc.getInfoOfVideos(showListOfVideos);
         };
 
         // Function to retrieve unwrap the video
         $scope.unwrapVideo = function(file) {
-          adminVideosSrvc.unwrapVideo(file);
+          adminDatasetsSrvc.unwrapVideo(file);
         };
 
         // Function to update the list of videos

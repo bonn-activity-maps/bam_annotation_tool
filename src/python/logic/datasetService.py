@@ -5,15 +5,55 @@ from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 import base64
 
-# VideoService logger
-log = logging.getLogger('videoService')
+from python.infrastructure.datasetManager import DatasetManager
 
+# DatasetService logger
+log = logging.getLogger('datasetService')
 
-class VideoService:
+datasetManager = DatasetManager()
+
+class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
 
-    # Storage chunked videos in $STORAGE_DIR
+    # Store item of a dataset in corresponding folder in $STORAGE_DIR
+    def storeZip(this, request):
+        file = request.files['file']
+
+        save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.filename))
+        current_chunk = int(request.form['dzchunkindex'])
+
+        # If the file exists and is the first chunk, you cannot overwrite it
+        if os.path.exists(save_path) and current_chunk == 0:
+            return False, 'File already exists', 400
+
+        # Write chunks at the end of the file
+        try:
+            with open(save_path, 'ab') as f:
+                f.seek(int(request.form['dzchunkbyteoffset']))
+                f.write(file.stream.read())
+        except OSError:
+            log.exception('Could not write to file')
+            return False, 'Server error while writing to the file', 500
+
+        total_chunks = int(request.form['dztotalchunkcount'])
+
+        # If it is the last chunk, check if it is complete and unwrap
+        if current_chunk + 1 == total_chunks:
+            if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
+                log.error('File %s was completed, but has a size mismatch.'
+                          ' Was %s but we expected %s', file.filename,
+                          os.path.getsize(save_path), request.form['dztotalfilesize'])
+                return False, 'Error in the size of file', 500
+            else:
+                log.warning('File %s has been uploaded successfully', file.filename)
+                # TODO: Unzip the file
+                return True, 'ok', 200
+        else:
+            log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
+        return True, 'ok', 200
+
+    # Store chunked videos in $STORAGE_DIR
     def storeVideo(this, request):
         file = request.files['file']
 
@@ -31,7 +71,7 @@ class VideoService:
                 f.write(file.stream.read())
         except OSError:
             log.exception('Could not write to file')
-            return False, 'Server error writting the file', 500
+            return False, 'Server error while writing to the file', 500
 
         total_chunks = int(request.form['dztotalchunkcount'])
 
@@ -75,7 +115,7 @@ class VideoService:
         response = []
         for f in os.listdir(this.STORAGE_DIR):
             filename, filextension = os.path.splitext(f)
-            if filename not in files and os.path.isfile(os.path.join(this.STORAGE_DIR, f)):
+            if filename not in files and os.path.isfile(os.path.join(this.STORAGE_DIR, f)) and filextension != ".zip": #TODO: Fix for zip
                 files.append(filename)
                 response.append(json.dumps(
                     {'name': filename, 'extension': filextension, 'duration': this.getDurationVideo(f),
@@ -161,3 +201,40 @@ class VideoService:
         except OSError:
             log.exception('Error deleting the file')
             return False, 'Server error deleting the file', 500
+
+    # Return dataset info
+    def getDataset(this, dataset):
+        result = datasetManager.getDataset(dataset)
+        if result == 'Error':
+            return False, 'Incorrect dataset', 400
+        else:
+            return True, result, 200
+
+    # Return datasets info
+    def getDatasets(this):
+        result = datasetManager.getDatasets()
+        if result == 'Error':
+            return False, 'Error searching datasets', 400
+        else:
+            return True, result, 200
+
+    # Return 'ok' if the dataset has been removed
+    def removeDataset(this, dataset):
+        result = datasetManager.removeDataset(dataset)
+        if result == 'Error':
+            return False, 'Error deleting dataset', 400
+        else:
+            return True, result, 200
+
+    # Return dataset name if it has been created
+    def createDataset(this, req):
+        name = req['name']
+        # Check if datasets exists
+        if datasetManager.getDataset(name) != 'Error':
+            return False, 'The dataset '+name+' already exists', 400
+        else:
+            result = datasetManager.createDataset(name)
+            if result == 'Error':
+                return False, 'Error creating dataset', 400
+            else:
+                return True, {'name':name}, 200

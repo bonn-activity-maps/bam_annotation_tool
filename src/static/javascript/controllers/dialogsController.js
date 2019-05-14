@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "rename stored video as administrator" action
      */
-    .controller('dialogRenameVideoCtrl', ['$scope','adminVideosSrvc', '$mdDialog', 'video', function ($scope, adminVideosSrvc, $mdDialog, video) {
+    .controller('dialogRenameVideoCtrl', ['$scope','adminDatasetsSrvc', '$mdDialog', 'video', function ($scope, adminDatasetsSrvc, $mdDialog, video) {
         $scope.mode = 'normal';
         $scope.msg = '';
         $scope.inputMsg = '';
@@ -47,7 +47,7 @@ angular.module('CVGTool')
           } else {
             var newVideoName = $scope.newName.name + video.extension;
             var oldVideoName = $scope.oldName + video.extension;
-            adminVideosSrvc.renameVideo(oldVideoName, newVideoName, showSuccess, showError)
+            adminDatasetsSrvc.renameVideo(oldVideoName, newVideoName, showSuccess, showError)
           }
         }
     }])
@@ -55,7 +55,7 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "remove stored video as administrator" action
      */
-    .controller('dialogDeleteVideoCtrl', ['$scope','adminVideosSrvc', '$mdDialog', 'video', function ($scope, adminVideosSrvc, $mdDialog, video) {
+    .controller('dialogDeleteVideoCtrl', ['$scope','adminDatasetsSrvc', '$mdDialog', 'video', function ($scope, adminDatasetsSrvc, $mdDialog, video) {
         var videoName = video.name + video.extension;
 
         $scope.mode = 'normal';
@@ -80,7 +80,7 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to delete the file
         $scope.delete = function() {
-          adminVideosSrvc.deleteVideo(videoName, showSuccess, showError)
+          adminDatasetsSrvc.deleteVideo(videoName, showSuccess, showError)
         }
     }])
 

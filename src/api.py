@@ -3,13 +3,13 @@ import os
 import logging
 import json
 
-from python.logic.videoService import VideoService
+from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
 from python.logic.userService import UserService
 
 app = Flask(__name__)
 
-videoService = VideoService()
+datasetService = DatasetService()
 annotationService = AnnotationService()
 userService = UserService()
 
@@ -65,45 +65,73 @@ def updateUser():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
+#### DATASET ####
+
+# Get dataset info
+@app.route("/api/dataset/getDataset", methods=['GET'])
+def getDataset():
+    success, msg, status = datasetService.getDataset(request.headers['name'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Get info of all datasets
+@app.route("/api/dataset/getDatasets", methods=['GET'])
+def getDatasets():
+    success, msg, status = datasetService.getDatasets()
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Create new dataset
+@app.route('/api/dataset/createDataset', methods=['POST'])
+def createDataset():
+    success, msg, status = datasetService.createDataset(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Remove existing dataset
+@app.route('/api/dataset/removeDataset', methods=['POST'])
+def removeDataset():
+    req_data = request.get_json()
+    success, msg, status = datasetService.removeDataset(req_data['name'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+
 #### VIDEO ####
 
 # Upload chunked video
 @app.route('/api/video/upload', methods=['POST'])
 def uploadVideo():
-    success, msg, status = videoService.storeVideo(request)
+    success, msg, status = datasetService.storeVideo(request)
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Unwrap video
 @app.route('/api/video/unwrap', methods=['POST'])
 def unwrapVideo():
     req_data = request.get_json()
-    success, msg, status = videoService.unwrapVideo(req_data['name'])
+    success, msg, status = datasetService.unwrapVideo(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get list of videos and lenght
 @app.route('/api/video/info', methods=['GET'])
 def getVideoList():
-    success, msg, status = videoService.getInfoVideos()
+    success, msg, status = datasetService.getInfoVideos()
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get frame from video
 @app.route('/api/video/getframe', methods=['GET'])
 def getVideoFrame():
-    success, msg, status = videoService.getVideoFrame(request.headers['fileName'], request.headers['frame'])
+    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Rename video
 @app.route('/api/video/rename', methods=['POST'])
 def renameVideo():
     req_data = request.get_json()
-    success, msg, status = videoService.renameVideo(req_data['oldName'], req_data['newName'])
+    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Delete video
 @app.route('/api/video/delete', methods=['POST'])
 def deleteVideo():
     req_data = request.get_json()
-    success, msg, status = videoService.deleteVideo(req_data['name'])
+    success, msg, status = datasetService.deleteVideo(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
@@ -145,8 +173,13 @@ def uploadAnnotationObject():
     success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+#### DATASET ####
 
-
+# Upload part of a dataset
+@app.route('/api/dataset/uploadZip', methods=['POST'])
+def uploadZip():
+    success, msg, status = datasetService.storeZip(request)
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")

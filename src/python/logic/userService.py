@@ -53,9 +53,11 @@ class UserService:
     # Return 'ok' if the user has been created
     def createUser(this, req):
         name = req['name']
-        # Check if user exists
+        # Check if users or email exist
         if userManager.getUser(name) != 'Error':
             return False, 'The username already exists', 400
+        elif userManager.getEmail(req['email']) != 'Error':
+            return False, 'The email already exists', 400
         else:
             # Create random password of lenght 12
             pwd = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))

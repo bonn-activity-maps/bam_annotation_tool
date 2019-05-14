@@ -33,10 +33,10 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
               templateUrl: "static/views/adminAnnotations.html"
             })
 
-            .state('adminVideos', {
-              url: "/admin/videos",
-              templateUrl: "static/views/adminVideos.html",
-              controller: "adminVideosCtrl"
+            .state('adminDatasets', {
+              url: "/admin/datasets",
+              templateUrl: "static/views/adminDatasets.html",
+              controller: "adminDatasetsCtrl"
             })
 
             .state('adminStatistics', {
