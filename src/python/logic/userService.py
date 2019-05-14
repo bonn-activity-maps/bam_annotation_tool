@@ -34,6 +34,14 @@ class UserService:
         else:
             return True, result, 200
 
+    # Return users info by dataset
+    def getUsersByDataset(this, dataset):
+        result = userManager.getUsersByDataset(dataset)
+        if result == 'Error':
+            return False, 'Error searching users by dataset', 400
+        else:
+            return True, result, 200
+
     # Return 'ok' if the user has been removed
     def removeUser(this, user):
         result = userManager.removeUser(user)
