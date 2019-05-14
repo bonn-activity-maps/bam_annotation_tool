@@ -21,7 +21,7 @@
                         <td class="text-left">{{user.name}}</td>
                         <td>{{user.role}}</td>
                         <td>{{user.email}}</td>
-                        <td><md-button ng-click="editUser(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="deleteUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+                        <td><md-button ng-click="editUser(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                     </tr>
                     <tr ng-if="listOfUsers.length == 0">
                       <td class="text-left">No users created for this dataset.</td>

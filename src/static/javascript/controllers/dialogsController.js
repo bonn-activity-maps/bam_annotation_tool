@@ -85,6 +85,40 @@ angular.module('CVGTool')
     }])
 
     /*
+     * Controller of the dialog of the "remove stored user as administrator" action
+     */
+    .controller('dialogDeleteUserCtrl', ['$scope','adminUsersSrvc', '$mdDialog', 'username', function ($scope, adminUsersSrvc, $mdDialog, username) {
+        var user = username;
+
+        console.log(user)
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+          $mdDialog.cancel();
+        }
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+          $scope.mode = 'success';
+          $scope.msg = 'User successfully deleted.'
+        }
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+          $scope.mode = 'error';
+          $scope.msg = 'There was an error when deleting the user.'
+        }
+
+        // Function that generates the call to the server to delete the file
+        $scope.delete = function() {
+          adminUsersSrvc.removeUser(user, showSuccess, showError)
+        }
+    }])
+
+
+    /*
      * Controller of the dialog of the "remove stored video as administrator" action
      */
     .controller('dialogCameraSelectorCtrl', ['$scope','$mdDialog', 'video', 'canvases', function ($scope, $mdDialog, video, canvases) {
@@ -104,6 +138,21 @@ angular.module('CVGTool')
             number: number
           }
           $mdDialog.hide($scope.data);
+        }
+    }])
+
+    /*
+     * Controller of the dialog of show password
+     */
+    .controller('dialogShowPasswordCtrl', ['$scope','$mdDialog', 'username', 'password', function ($scope, $mdDialog, username, password) {
+        $scope.variables = {
+            username: username,
+            password: password
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+          $mdDialog.cancel();
         }
     }])
 

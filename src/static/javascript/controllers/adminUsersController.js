@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of admin page "Users"
      */
-    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'navSrvc', function ($scope, $state, adminUsersSrvc, navSrvc) {
+    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminUsersSrvc, navSrvc, $mdDialog) {
         $scope.listOfUsers = [];
         $scope.avaiableRoles = [];
         $scope.userRole = "";
@@ -46,21 +46,46 @@ angular.module('CVGTool')
             }
         };
 
-        var showPassword = function (response) {
-            //TODO: whatever we will do with the password
-            console.log(response)
+        var successCreation = function (response) {
+            $mdDialog.show({
+              templateUrl: '/static/views/dialogs/showPasswordDialog.html',
+              locals: {
+                username: response.name,
+                password: response.password
+              },
+              controller: 'dialogShowPasswordCtrl',
+              escapeToClose: false,
+              onRemoving: function (event, removePromise) {
+                $scope.username = "";
+                $scope.email = "";
+                $scope.getInfoOfUsers();
+              }
+            });
         };
 
         $scope.createUser = function() {
-            adminUsersSrvc.createUser($scope.username, $scope.email, $scope.role, $scope.activeDataset, showPassword); //TODO: define userData
+            adminUsersSrvc.createUser($scope.username, $scope.email, $scope.role, $scope.activeDataset, successCreation);
         };
 
-        $scope.updateUser = function() {
-            adminUsersSrvc.updateUser(userName, userEmail, userRole, userDatasets); //TODO: define userData
+        $scope.updateUser = function(user) {
+            // adminUsersSrvc.updateUser(userName, userEmail, userRole, userDatasets); //TODO: define userData
+            // This will be a reset password option, nothing more, maybe the root can change the dataset of the user, but thats all
         };
 
-        $scope.removeUser = function() {
-            adminUsersSrvc.removeUser(userName); //TODO: define userData
+        $scope.removeUser = function(user) {
+            console.log(user)
+
+            $mdDialog.show({
+              templateUrl: '/static/views/dialogs/deleteUserDialog.html',
+              locals: {
+                username: user.name
+              },
+              controller: 'dialogDeleteUserCtrl',
+              escapeToClose: false,
+              onRemoving: function (event, removePromise) {
+                $scope.getInfoOfUsers();
+              }
+            });
         }
 
         $scope.getInfoOfUsers();

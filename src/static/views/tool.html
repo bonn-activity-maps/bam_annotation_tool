@@ -104,6 +104,25 @@
                   <span class=" glyphicon glyphicon-move "></span><p>Navigation</p>
                 </div>
               </div>
+              <!-- Zoom tool -->
+              <div class="panel panel-default panel-tool" ng-click="switchTool('zoom')">
+                <div class="panel-heading panel-heading-tool" ng-if="tool!='zoom'">
+                  <span class=" glyphicon glyphicon-search "></span><p>Zoom</p>
+                </div>
+                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='zoom'">
+                  <span class=" glyphicon glyphicon-search "></span><p>Zoom</p>
+                </div>
+                <div class="panel-body" ng-if="tool=='zoom'">
+                    <button class="btn btn-default" data-toggle="tooltip" title="Zoom in" data-placement="left" ng-click="switchSubTool('zoomIn')">
+                        <span ng-if="subTool!='zoomIn'" class="glyphicon glyphicon-zoom-in"></span>
+                        <span ng-if="subTool=='zoomIn'" style="color: blue;" class="glyphicon glyphicon-zoom-in"></span>
+                    </button>
+                    <button class="btn btn-default" data-toggle="tooltip" title="Zoom out" data-placement="left" ng-click="switchSubTool('zoomOut')">
+                        <span ng-if="subTool!='zoomOut'" class="glyphicon glyphicon-zoom-out"></span>
+                        <span ng-if="subTool=='zoomOut'" style="color: blue;" class="glyphicon glyphicon-zoom-out"></span>
+                    </button>
+                </div>
+              </div>
               <!-- Keypoints tool -->
               <div class="panel panel-default panel-tool" ng-click="switchTool('keypoint')">
                 <div class="panel-heading panel-heading-tool" ng-if="tool!='keypoint'">

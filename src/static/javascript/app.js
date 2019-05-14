@@ -9,6 +9,13 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
                 controller: "toolCtrl"
             })
 
+            .state('taskHome', {
+              url: "/taskHome",
+              templateUrl: "static/views/taskHome.html",
+              controller: "taskHomeCtrl"
+
+            })
+
             .state('login', {
                 url: "/login",
                 templateUrl: "static/views/login.html",

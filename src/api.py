@@ -54,6 +54,7 @@ def createUser():
 @app.route('/api/user/removeUser', methods=['POST'])
 def removeUser():
     req_data = request.get_json()
+    print(req_data['name'])
     success, msg, status = userService.removeUser(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 

@@ -18,7 +18,6 @@ angular.module('CVGTool')
           $scope.hideError = function () {
               $scope.errorMsg = "";
               $scope.error = false;
-              $scope.userName = "";
               $scope.password = "";
           };
 
@@ -32,9 +31,9 @@ angular.module('CVGTool')
           var successRedirect = function (user) {
             navSrvc.setUser(user);
             if (user.role.localeCompare('user') == 0) {
-                $state.go('tool')
+                $state.go('taskHome');
             } else {
-                $state.go('adminStatistics')
+                $state.go('adminStatistics');
             }
           };
 

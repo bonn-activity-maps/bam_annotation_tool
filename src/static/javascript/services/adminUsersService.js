@@ -26,7 +26,7 @@ angular.module('CVGTool')
             createUser: function (userName, userEmail, userRole, userDatasets, callbackSuccess) {
                 $http({
                     method: 'POST',
-                    url: 'api/users/createUser',
+                    url: 'api/user/createUser',
                     data: {
                         'name': userName,
                         'email': userEmail,
@@ -44,7 +44,7 @@ angular.module('CVGTool')
             updateUser: function(userName, userEmail, userRole, userDatasets) {
                 $http({
                     method: 'POST',
-                    url: 'api/users/updateUser',
+                    url: 'api/user/updateUser',
                     data: {
                         'name': userName,
                         'email': userEmail,
@@ -58,17 +58,17 @@ angular.module('CVGTool')
                 })
             },
 
-            removeUser: function(userName) {
+            removeUser: function(userName, showSuccess, showError) {
                 $http({
                     method:'POST',
-                    url: 'api/users/removeUser',
+                    url: 'api/user/removeUser',
                     data: {
                         'name': userName
                     }
                 }).then(function successCallback(response) {
-                    console.log('User removed succesfully');
+                    showSuccess();
                 }, function errorCallback(response) {
-                    console.log('Error while removing user: ' + response.data.msg)
+                    showError()
                 })
             }
         }
