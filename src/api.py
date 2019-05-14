@@ -147,9 +147,9 @@ def uploadAnnotationObject():
 #### DATASET ####
 
 # Upload part of a dataset
-@app.route('/api/folder/uploadFolder', methods=['POST'])
-def uploadFolder():
-    success, msg, status = datasetService.storeItemInFolder(request)
+@app.route('/api/dataset/uploadZip', methods=['POST'])
+def uploadZip():
+    success, msg, status = datasetService.storeZip(request)
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 if __name__ == "__main__":
