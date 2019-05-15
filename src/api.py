@@ -92,6 +92,12 @@ def removeDataset():
     success, msg, status = datasetService.removeDataset(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Update existing video
+@app.route('/api/dataset/updateVideo', methods=['POST'])
+def updateVideo():
+    success, msg, status = datasetService.updateVideo(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 
 #### VIDEO ####
 
