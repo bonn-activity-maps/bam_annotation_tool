@@ -76,11 +76,11 @@ angular.module('CVGTool')
             console.log(user)
 
             $mdDialog.show({
-              templateUrl: '/static/views/dialogs/deleteUserDialog.html',
+              templateUrl: '/static/views/dialogs/removeUserDialog.html',
               locals: {
                 username: user.name
               },
-              controller: 'dialogDeleteUserCtrl',
+              controller: 'dialogRemoveUserCtrl',
               escapeToClose: false,
               onRemoving: function (event, removePromise) {
                 $scope.getInfoOfUsers();

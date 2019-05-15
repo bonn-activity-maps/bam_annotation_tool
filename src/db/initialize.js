@@ -3,10 +3,9 @@ db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["example2"], 
 db.user.insertOne({name: "Dario", password: "test", assignedTo: ["example1"], role: "user", email: "dario@dario.com"})
 db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["example3"], role: "user", email: "bea@bea.com"})
 
-db.dataset.insertOne({name: "cvg"})
-db.dataset.insertOne({name: "Posetrack"})
-
-db.video.insertOne({name: "videoExample", extension: ".mp4", duration: "00:01:22", frames: 100, path: "/videos/cvg/"})
+db.dataset.insertOne({name: "example1"})
+db.dataset.insertOne({name: "example2"})
+db.dataset.insertOne({name: "example3"})
 
 db.annotation.insertOne({
 	"video": "dorian2",

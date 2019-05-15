@@ -5,7 +5,7 @@ angular.module('CVGTool')
           getInfoOfVideos: function (callbackSuccess) {
               $http({
                   method: 'GET',
-                  url: '/api/dataset/infoVideos'
+                  url: '/api/dataset/getVideos'
 
               }).then(function successCallback(response) {
                   if (response.data.msg.length == 0) {

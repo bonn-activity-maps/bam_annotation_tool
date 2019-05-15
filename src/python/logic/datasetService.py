@@ -7,42 +7,77 @@ import base64
 import zipfile
 
 from python.infrastructure.datasetManager import DatasetManager
+from python.infrastructure.videoManager import VideoManager
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
 
 datasetManager = DatasetManager()
-
-
-def checkIntegrityOfAnnotations(dirAnnotations, dirImages):
-    hasConsistency = True
-    for f in os.listdir(dirAnnotations):
-        filename, filextension = os.path.splitext(f)
-        if not os.path.isdir(dirImages + filename):
-            hasConsistency = False
-            break
-    return hasConsistency
-
-
-def checkIntegrity(dir):
-    isDir = os.path.isdir(dir)
-    dirAnnotations = dir + "/annotations"
-    dirImages = dir + "/images"
-    hasAnnotations = os.path.isdir(dirAnnotations)
-    hasImages = os.path.isdir(dirImages)
-    hasTest = os.path.isdir(dirImages + "/test") and os.path.isdir(dirAnnotations + "/test")
-    hasTrain = os.path.isdir(dirImages + "/train") and os.path.isdir(dirAnnotations + "/train")
-    hasVal = os.path.isdir(dirImages + "/val") and os.path.isdir(dirAnnotations + "/val")
-    hasConsistency = checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
-    hasConsistency *= checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
-    hasConsistency *= checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
-
-    return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
+videoManager = VideoManager()
 
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
+
+
+    # Return duration of videos hh:mm:ss.ss
+    def getDurationVideo(this, video, dataset): # TODO: check
+        dir = this.STORAGE_DIR + dataset + "/" + video
+        if os.path.isfile(dir):  # Is video
+            sec = mp.VideoFileClip(dir).duration
+            # Convert to hh:mm:ss.ss
+            hh = int(sec // (60 * 60))
+            mm = int((sec - hh * 60 * 60) // 60)
+            ss = round(sec - (hh * 60 * 60) - (mm * 60), 2)
+            mm = '0' + str(mm) if mm < 10 else str(mm)
+            ss = '0' + str(ss) if ss < 10 else str(ss)
+            duration = str(hh) + ':' + mm + ':' + ss
+        return duration
+
+    # Return #frames of videos
+    def getFramesVideo(this, filename, dataset):
+        datasetDir = this.STORAGE_DIR + dataset + "/" #TODO: fix for posetrack
+        frames = 0
+        if os.path.isdir(datasetDir + filename):
+            frames = len(os.listdir(datasetDir + filename))
+        return frames
+
+
+    def checkIntegrityOfAnnotations(this, dirAnnotations, dirImages):
+        hasConsistency = True
+        for f in os.listdir(dirAnnotations):
+            filename, filextension = os.path.splitext(f)
+            if not os.path.isdir(dirImages + filename):
+                hasConsistency = False
+                break
+        return hasConsistency
+
+
+    def checkIntegrity(this, dir):
+        isDir = os.path.isdir(dir)
+        dirAnnotations = dir + "/annotations"
+        dirImages = dir + "/images"
+        hasAnnotations = os.path.isdir(dirAnnotations)
+        hasImages = os.path.isdir(dirImages)
+        hasTest = os.path.isdir(dirImages + "/test") and os.path.isdir(dirAnnotations + "/test")
+        hasTrain = os.path.isdir(dirImages + "/train") and os.path.isdir(dirAnnotations + "/train")
+        hasVal = os.path.isdir(dirImages + "/val") and os.path.isdir(dirAnnotations + "/val")
+        hasConsistency = this.checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
+        hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
+        hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
+
+        return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
+
+
+    def createVideo(this, file, dataset, save_path):
+        duration = this.getDurationVideo(file.filename, dataset)
+        filename, filextension = os.path.splitext(file.filename)
+        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path)
+        if result == 'Error':
+            return False, 'Error creating video', 400
+        else:
+            return True, 'ok', 200
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
     def storeZip(this, request):
@@ -78,7 +113,7 @@ class DatasetService:
                 zip = zipfile.ZipFile(save_path, 'r')
                 zip.extractall(this.STORAGE_DIR)
                 filename, _ = os.path.splitext(file.filename)
-                integrity = checkIntegrity(this.STORAGE_DIR + filename)
+                integrity = this.checkIntegrity(this.STORAGE_DIR + filename) #TODO: add every video to db
                 if integrity:
                     os.remove(this.STORAGE_DIR + file.filename)
                     return True, 'ok', 200
@@ -125,14 +160,13 @@ class DatasetService:
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
-                # TODO: getDuration then create video
-                return True, 'ok', 200
+                return this.createVideo(file, dataset, save_path)
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
 
     # Unwrap video in frames
-    def unwrapVideo(this, v, dataset):
+    def unwrapVideo(this, v, dataset): # TODO: callback when finished
         # Create new directory for storing frames
         filename, _ = os.path.splitext(v)
         dir = this.STORAGE_DIR + dataset + "/" + filename
@@ -153,46 +187,12 @@ class DatasetService:
         return True, 'ok', 200
 
     # Return info videos, duration and frames
-    def getInfoVideos(this, dataset):
-        files = []
-        response = []
-        datasetDir = this.STORAGE_DIR + dataset + "/"
-        for f in os.listdir(
-                datasetDir):  # TODO check folders in datasetDir/Images or ask database?  If folders then move video store dir
-            filename, filextension = os.path.splitext(f)
-            if filename not in files and os.path.isfile(os.path.join(this.STORAGE_DIR, f)) and filextension != ".zip":
-                files.append(filename)
-                response.append(json.dumps(
-                    {'name': filename, 'extension': filextension, 'duration': this.getDurationVideo(f),
-                     'frames': this.getFramesVideo(f)}))
-            elif filename not in files and os.path.isdir(os.path.join(this.STORAGE_DIR, f)):
-                files.append(filename)
-                response.append(json.dumps(
-                    {'name': filename, 'extension': '/', 'duration': this.getDurationVideo(f),
-                     'frames': this.getFramesVideo(f)}))
-        return True, response, 200
-
-    # Return duration of videos hh:mm:ss.ss
-    def getDurationVideo(this, video): # TODO: pasar dataset y arreglar
-        duration = str(0)
-        if os.path.isfile(this.STORAGE_DIR + video):  # Is video
-            sec = mp.VideoFileClip(this.STORAGE_DIR + video).duration
-            # Convert to hh:mm:ss.ss
-            hh = int(sec // (60 * 60))
-            mm = int((sec - hh * 60 * 60) // 60)
-            ss = round(sec - (hh * 60 * 60) - (mm * 60), 2)
-            mm = '0' + str(mm) if mm < 10 else str(mm)
-            ss = '0' + str(ss) if ss < 10 else str(ss)
-            duration = str(hh) + ':' + mm + ':' + ss
-        return duration
-
-    # Return #frames of videos
-    def getFramesVideo(this, video): # TODO: pasar dataset y arreglar
-        folder, _ = os.path.splitext(video)
-        frames = 0
-        if os.path.isdir(this.STORAGE_DIR + folder):
-            frames = len(os.listdir(this.STORAGE_DIR + folder))
-        return frames
+    def getVideos(this, dataset):
+        result = videoManager.getVideos(dataset)
+        if result == 'Error':
+            return False, 'Error pulling videos from database', 400
+        else:
+            return True, result, 200
 
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame):
@@ -208,44 +208,63 @@ class DatasetService:
             return False, 'Frame does not exist', 500
 
     # Rename video and folder with frames
-    def renameVideo(this, name, newName):
+    def renameVideo(this, name, newName, dataset): #TODO: Fix for posetrack USE VIDEO PATH
         try:
             newName = secure_filename(newName)
+            datasetDir = this.STORAGE_DIR + dataset + "/"
 
             # Separate name of file and extension
-            folder, _ = os.path.splitext(name)
-            newFolder, _ = os.path.splitext(newName)
+            filename, _ = os.path.splitext(name)
+            newFilename, _ = os.path.splitext(newName)
 
             # Rename folder
-            os.rename(this.STORAGE_DIR + folder, this.STORAGE_DIR + newFolder)
+            os.rename(datasetDir + filename, datasetDir + newFilename)
 
             # Rename video, if exists
-            if os.path.isfile(this.STORAGE_DIR + name):
-                os.rename(this.STORAGE_DIR + name, this.STORAGE_DIR + newName)
+            if os.path.isfile(datasetDir + name):
+                os.rename(datasetDir + name, datasetDir + newName)
 
-            log.info('Renamed ', this.STORAGE_DIR + name, ' to ', this.STORAGE_DIR + newName, ' successfully.')
-            return True, 'ok', 200
+            log.info('Renamed ', datasetDir + name, ' to ', datasetDir + newName, ' successfully.')
+
+            result = videoManager.updateVideoName(filename, newFilename, dataset)
+            if result == 'Error':
+                return False, 'Error updating video in database', 500
+            else:
+                return True, result, 200
         except OSError:
             log.exception('Error renaming the file')
             return False, 'Server error renaming the file', 500
 
     # Delete video and corresponding folder with frames
-    def removeVideo(this, video):
+    def removeVideo(this, video, dataset):
         try:
             # Separate name of file and extension
-            filename, filextension = os.path.splitext(video)
-
+            filename, filextension = os.path.splitext(video) #TODO: Fix remove for posetrack USE VIDEO PATH
+            datasetDir = this.STORAGE_DIR + dataset + "/"
             # Remove folder
-            shutil.rmtree(this.STORAGE_DIR + filename)
+            shutil.rmtree(datasetDir + filename)
             # Remove video, if exists
-            if os.path.isfile(this.STORAGE_DIR + video):  # Is video
-                os.remove(this.STORAGE_DIR + video)
+            if os.path.isfile(datasetDir + video):  # Is video
+                os.remove(datasetDir + video)
 
-            log.info('Removed ', this.STORAGE_DIR + video, ' file successfully.')
-            return True, 'ok', 200
+            log.info('Removed ', dataset + video, ' file successfully.')
+            result = videoManager.removeVideo(filename, dataset)
+            if result == 'Error':
+                return False, 'Error removing from database', 500
+            else:
+                return True, result, 200
         except OSError:
             log.exception('Error deleting the file')
             return False, 'Server error deleting the file', 500
+
+    def updateVideoFrames(this, video, dataset):
+        filename, _ = os.path.splitext(video)
+        frames = this.getFramesVideo(filename, dataset)
+        result = videoManager.updateVideoFrames(filename, frames, dataset)
+        if result == 'Error':
+            return False, 'Error updating frames in database', 500
+        else:
+            return True, result, 200
 
     # Return dataset info
     def getDataset(this, dataset):

@@ -62,16 +62,21 @@ angular.module('CVGTool')
           adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
         };
 
+        var unwrapFinishedCallback = function(name, dataset) {
+            adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
+        };
+
         // Function to retrieve unwrap the video
         $scope.unwrapVideo = function(file) {
-          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset()); //TODO: añadir callback
+          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
         };
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension, "duration": list[i].duration, "frames": list[i].frames});
+              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension,
+                  "duration": list[i].duration, "frames": list[i].frames});
             }
         };
 
@@ -97,7 +102,7 @@ angular.module('CVGTool')
             locals: {
               video: video
             },
-            controller: 'dialogDeleteVideoCtrl',
+            controller: 'dialogRemoveVideoCtrl',
             escapeToClose: false,
             onRemoving: function (event, removePromise) {
               $scope.getInfoOfVideos();

@@ -54,7 +54,6 @@ def createUser():
 @app.route('/api/user/removeUser', methods=['POST'])
 def removeUser():
     req_data = request.get_json()
-    print(req_data['name'])
     success, msg, status = userService.removeUser(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
@@ -92,10 +91,10 @@ def removeDataset():
     success, msg, status = datasetService.removeDataset(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Update existing video
-@app.route('/api/dataset/updateVideo', methods=['POST'])
-def updateVideo():
-    success, msg, status = datasetService.updateVideo(request.get_json())
+# Upload chunked zip file
+@app.route('/api/dataset/uploadZip', methods=['POST'])
+def uploadZip():
+    success, msg, status = datasetService.storeZip(request)
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
@@ -104,7 +103,6 @@ def updateVideo():
 # Upload chunked video
 @app.route('/api/dataset/uploadVideo', methods=['POST'])
 def uploadVideo():
-    print(request.headers)
     success, msg, status = datasetService.storeVideo(request, request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
@@ -115,11 +113,10 @@ def unwrapVideo():
     success, msg, status = datasetService.unwrapVideo(req_data['name'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Get list of videos and lenght
-@app.route('/api/dataset/infoVideos', methods=['GET'])
-def getVideoList():
-    req_data = request.get_json()
-    success, msg, status = datasetService.getInfoVideos(req_data['dataset'])
+# Get list of videos and length
+@app.route('/api/dataset/getVideos', methods=['GET'])
+def getVideos():
+    success, msg, status = datasetService.getVideos(request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get frame from video
@@ -132,20 +129,21 @@ def getVideoFrame():
 @app.route('/api/dataset/renameVideo', methods=['POST'])
 def renameVideo():
     req_data = request.get_json()
-    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'])
+    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Delete video
 @app.route('/api/dataset/removeVideo', methods=['POST'])
 def removeVideo():
     req_data = request.get_json()
-    success, msg, status = datasetService.removeVideo(req_data['name'])
+    success, msg, status = datasetService.removeVideo(req_data['name'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Upload chunked zip file
-@app.route('/api/dataset/uploadZip', methods=['POST'])
-def uploadZip():
-    success, msg, status = datasetService.storeZip(request)
+# Update existing video
+@app.route('/api/dataset/updateVideoFrames', methods=['POST'])
+def updateVideoFrames():
+    req_data = request.get_json()
+    success, msg, status = datasetService.updateVideoFrames(req_data['name'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
