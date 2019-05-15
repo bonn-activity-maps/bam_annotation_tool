@@ -3,11 +3,11 @@ angular.module('CVGTool')
     .factory('adminDatasetsSrvc', function ($state, $http, $httpParamSerializer) {
 
       return {
-          getInfoOfVideos: function (callbackSuccess) {
+          getInfoOfVideos: function (callbackSuccess, activeDataset) {
               $http({
                   method: 'GET',
-                  url: '/api/video/info'
-
+                  url: '/api/dataset/infoVideos',
+                  dataset: activeDataset
               }).then(function successCallback(response) {
                   if (response.data.msg.length === 0) {
                     callbackSuccess([])
@@ -23,12 +23,13 @@ angular.module('CVGTool')
               });
           },
 
-          unwrapVideo: function (videoName) {
+          unwrapVideo: function (videoName, activeDataset) {
               $http({
                   method: 'POST',
-                  url: '/api/video/unwrap',
+                  url: '/api/dataset/unwrapVideo',
                   data: {
-                    'name': videoName
+                    'name': videoName,
+                    'dataset': activeDataset
                   }
               }).then(function successCallback(response) {
                 // TODO: add action when unwrap is finished
@@ -38,10 +39,10 @@ angular.module('CVGTool')
               });
           },
 
-          deleteVideo: function (videoName, callbackSuccess, callbackError) {
+          removeVideo: function (videoName, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',
-                url: '/api/video/delete',
+                url: '/api/dataset/removeVideo',
                 data: {
                   'name': videoName
                 }
@@ -55,7 +56,7 @@ angular.module('CVGTool')
           renameVideo: function (oldVideoName, newVideoName, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',
-                url: '/api/video/rename',
+                url: '/api/dataset/renameVideo',
                 data: {
                   'oldName': oldVideoName,
                   'newName': newVideoName

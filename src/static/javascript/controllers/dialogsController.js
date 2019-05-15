@@ -80,7 +80,7 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to delete the file
         $scope.delete = function() {
-          adminDatasetsSrvc.deleteVideo(videoName, showSuccess, showError)
+          adminDatasetsSrvc.removeVideo(videoName, showSuccess, showError)
         }
     }])
 
