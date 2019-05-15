@@ -1,11 +1,11 @@
 from pymongo import MongoClient
 from pymongo import errors
 
-class VideoManager:
+class AnnotationManager:
 
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
-    collection = db.video
+    collection = db.annotation
 
     # Get annotation info for given frame
     def getAnnotation(this, video, frame):
