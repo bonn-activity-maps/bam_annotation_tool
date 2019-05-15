@@ -6,8 +6,9 @@ db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["example3"], 
 db.dataset.insertOne({name: "cvg"})
 db.dataset.insertOne({name: "Posetrack"})
 
+db.video.insertOne({name: "videoExample", extension: ".mp4", duration: "00:01:22", frames: 100, path: "/videos/cvg/"})
 
-db.video.insertOne({
+db.annotation.insertOne({
 	"video": "dorian2",
 	"frame": "1",
 	"keypointDim": "3d",
@@ -19,7 +20,7 @@ db.video.insertOne({
 	]
 })
 
-db.video.insertOne({
+db.annotation.insertOne({
 	"video": "dorian2",
 	"frame": "2",
 	"keypointDim": "3d",
