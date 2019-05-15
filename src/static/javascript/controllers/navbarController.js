@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-    .controller('navbarCtrl', ['$scope', '$state', 'loginSrvc' ,function ($scope, $state, loginSrvc) {
+    .controller('navbarCtrl', ['$scope', '$state', 'navSrvc' ,function ($scope,$state, navSrvc) {
         $scope.user = {
           name: "",
           email: "",
@@ -8,10 +8,13 @@ angular.module('CVGTool')
           assignedTo: []
         };
 
+        $scope.activeDataset = "";
+
         $scope.getUserInfo = function () {
-            $scope.user = loginSrvc.getUser();
+            $scope.user = navSrvc.getUser();
+            $scope.activeDataset = navSrvc.getActiveDataset();
         };
-        
+
         $scope.loggedIn = function () {
           if ($state.current.name != 'login') {
             return true
@@ -19,8 +22,16 @@ angular.module('CVGTool')
         };
 
         $scope.logOut = function () {
-          loginSrvc.logout();
+          navSrvc.logout();
         };
 
-        $scope.getUserInfo();
+        // Watcher that detects changes in the state to get the info
+        var watcher = $scope.$watch(function(){
+            return $state.$current.name
+        }, function(newVal, oldVal){
+            if (oldVal.localeCompare('login') == 0) {
+              $scope.getUserInfo();
+            }
+        })
+
 }]);

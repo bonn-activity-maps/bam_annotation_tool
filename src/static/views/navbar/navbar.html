@@ -12,15 +12,22 @@
       </button>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
-      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
-        <li>
-          <select class="form-control" ng-repeat="dataset in user.assignedTo">
-              <option ng-click="switchDataset(dataset)"> {{dataset}} </option>
-          </select>
+      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
+        <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
+      </ul>
+      <ul class="nav navbar-nav" ng-if="user.role=='root'">
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset}}
+          <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
+          </ul>
         </li>
+      </ul>
+      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
         <li><a href="#!/admin/statistics"> Statistics</a></li>
         <li><a href="#!/admin/users"> User management</a></li>
-        <li><a href="#!/admin/videos"> Videos</a></li>
+        <li><a href="#!/admin/datasets"> Videos</a></li>
         <li><a href="#!/admin/annotations"> Annotations</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">

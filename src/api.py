@@ -27,13 +27,13 @@ def userLogin():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get user info
-@app.route("/api/user/getuser", methods=['GET'])
+@app.route("/api/user/getUser", methods=['GET'])
 def getUser():
     success, msg, status = userService.getUser(request.headers['username'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get info of all users
-@app.route("/api/user/getusers", methods=['GET'])
+@app.route("/api/user/getUsers", methods=['GET'])
 def getUsers():
     success, msg, status = userService.getUsers()
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
@@ -54,6 +54,7 @@ def createUser():
 @app.route('/api/user/removeUser', methods=['POST'])
 def removeUser():
     req_data = request.get_json()
+    print(req_data['name'])
     success, msg, status = userService.removeUser(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 

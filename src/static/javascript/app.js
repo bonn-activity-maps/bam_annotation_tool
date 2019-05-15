@@ -9,6 +9,13 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
                 controller: "toolCtrl"
             })
 
+            .state('taskHome', {
+              url: "/taskHome",
+              templateUrl: "static/views/taskHome.html",
+              controller: "taskHomeCtrl"
+
+            })
+
             .state('login', {
                 url: "/login",
                 templateUrl: "static/views/login.html",
@@ -17,7 +24,8 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
 
             .state('adminUsers', {
               url: "/admin/users",
-              templateUrl: "static/views/adminUsers.html"
+              templateUrl: "static/views/adminUsers.html",
+              controller: "adminUsersCtrl"
             })
 
             .state('adminAnnotations', {
@@ -25,10 +33,10 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
               templateUrl: "static/views/adminAnnotations.html"
             })
 
-            .state('adminVideos', {
-              url: "/admin/videos",
+            .state('adminDatasets', {
+              url: "/admin/datasets",
               templateUrl: "static/views/adminDatasets.html",
-              controller: "adminVideosCtrl"
+              controller: "adminDatasetsCtrl"
             })
 
             .state('adminStatistics', {

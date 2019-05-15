@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of the admin page "Videos"
      */
-    .controller('adminVideosCtrl', ['$scope', '$state', 'adminDatasetsSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, $mdDialog) {
+    .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, $mdDialog) {
         $scope.listOfVideos = [];
 
         // Dropzone options

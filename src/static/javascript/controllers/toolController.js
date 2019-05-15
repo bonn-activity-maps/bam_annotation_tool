@@ -207,6 +207,11 @@ angular.module('CVGTool')
         this.dragoffx = 0;
         this.dragoffy = 0;
 
+        // To keep track of the zoom
+        this.zoom = 1;
+        this.zoomOffsetX = 0;
+        this.zoomOffsetY = 0;
+
         var canvasObj = this;
 
         //----- OPTIONS -----//
@@ -218,29 +223,76 @@ angular.module('CVGTool')
         // Prevents clicking of selecting text
         canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false;}, false);
 
-        // // MouseDown event, click
-        // canvas.addEventListener('mousedown', function(e) {
-        //     var mouse = canvasObj.getMouse(e);
-        //     var mx = mouse.x;
-        //     var my= mouse.y;
-        //
-        //     if ($scope.subTool.localeCompare('addKeypoint')) {
-        //       var keypoint = {
-        //           shape:
-        //       }
-        //     }
-        //
-        //     var keypoints = $scope.activeCamera.frames[$scope.slider.value-1].keypoints;
-        //     for (var i= 0; i< keypoints.length; i++) {
-        //         if (keypoints[i].shape.contains(mx,my)) {
-        //
-        //         }
-        //
-        //     }
-        // }, true);
+        // MouseDown event, click
+        canvas.addEventListener('mousedown', function(e) {
+            var mouse = canvasObj.getMouse(e);
+            var mx = mouse.x;
+            var my= mouse.y;
 
+            // If the subtool is 'Zoom Out'
+            if ($scope.subTool.localeCompare('zoomOut') == 0) {
+              var oldZoom = canvasObj.zoom;
+              if (canvasObj.zoom  < 1){
+                canvasObj.zoom += 0.25;
+                if (canvasObj.zoom > 1) {
+                    canvasObj.zoom = 1;
+                }
+              }
+              canvasObj.ctx.scale(oldZoom - canvasObj.zoom, oldZoom - canvasObj.zoom);
+              console.log(canvasObj.zoom)
+            }
+
+            // If the subtool is 'Zoom In'
+            if ($scope.subTool.localeCompare('zoomIn') == 0) {
+              if (canvasObj.zoom  > 0.25){
+                canvasObj.zoom -= 0.25;
+                if (canvasObj.zoom < 1) {
+                    canvasObj.zoom = 0.25;
+                }
+              }
+              canvasObj.ctx.scale(oldZoom - canvasObj.zoom, oldZoom - canvasObj.zoom);
+              console.log(canvasObj.zoom)
+            }
+            // if ($scope.subTool.localeCompare('addKeypoint')) {
+            //   var keypoint = {
+            //       shape:
+            //   }
+            // }
+            //
+            // var keypoints = $scope.activeCamera.frames[$scope.slider.value-1].keypoints;
+            // for (var i= 0; i< keypoints.length; i++) {
+            //     if (keypoints[i].shape.contains(mx,my)) {
+            //
+            //     }
+            //
+            // }
+        }, true);
 
         //----- FUNCTIONS -----//
+        // Returns the coordinates of the mouse
+        CanvasObject.prototype.getMouse = function(e) {
+          var element = this.canvas, offsetX = 0, offsetY = 0, mx, my;
+
+          // Compute the total offset
+          if (element.offsetParent !== undefined) {
+            do {
+              offsetX += element.offsetLeft;
+              offsetY += element.offsetTop;
+            } while ((element = element.offsetParent));
+          }
+
+          // Add padding and border style widths to offset
+          // Also add the <html> offsets in case there's a position:fixed bar
+          offsetX += this.stylePaddingLeft + this.styleBorderLeft + this.htmlLeft;
+          offsetY += this.stylePaddingTop + this.styleBorderTop + this.htmlTop;
+
+          mx = e.pageX - offsetX;
+          my = e.pageY - offsetY;
+
+          // We return a simple javascript object (a hash) with x and y defined
+          return {x: mx, y: my};
+        }
+
         // Adds a keypoint to the stored keypoints
         CanvasObject.prototype.addKeypoint = function(keypoint) {
             // TODO: this is temporal, no objects yet

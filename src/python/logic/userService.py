@@ -66,6 +66,7 @@ class UserService:
             if result == 'Error':
                 return False, 'Error creating user', 400
             else:
+                ## TODO: send password to email
                 return True, {'name':name, 'password':pwd}, 200
 
     # Return 'ok' if the user has been updated
