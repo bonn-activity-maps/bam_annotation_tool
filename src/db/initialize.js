@@ -1,5 +1,5 @@
 db.user.insertOne({name: "Root", password: "test", assignedTo: [""], role: "root"})
-db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["example2"], role: "admin", email: "alberto@alberto.com"})
+db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["example3"], role: "admin", email: "alberto@alberto.com"})
 db.user.insertOne({name: "Dario", password: "test", assignedTo: ["example1"], role: "user", email: "dario@dario.com"})
 db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["example3"], role: "user", email: "bea@bea.com"})
 
@@ -7,8 +7,27 @@ db.dataset.insertOne({name: "example1"})
 db.dataset.insertOne({name: "example2"})
 db.dataset.insertOne({name: "example3"})
 
+db.task.insertOne({
+	"name": "task1",
+	"assignedUser": "Beatriz",
+	"frameFrom": "50",
+	"frameTo": "200",
+	"videos": ["video1", "video4"],
+	"POV": 1,
+	"lastFrame": "50",
+	"finished": "0"
+})
+
+db.video.insertOne({
+	"name": "video1",
+	"dataset": "example3",
+	"path": "example3",
+	"duration": "00:02:10.2",
+	"frames": "3"
+})
+
 db.annotation.insertOne({
-	"video": "dorian2",
+	"video": "video1",
 	"frame": "1",
 	"keypointDim": "3d",
 	"objects": [
@@ -20,7 +39,7 @@ db.annotation.insertOne({
 })
 
 db.annotation.insertOne({
-	"video": "dorian2",
+	"video": "video1",
 	"frame": "2",
 	"keypointDim": "3d",
 	"objects": [

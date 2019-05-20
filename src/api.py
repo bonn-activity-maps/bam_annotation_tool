@@ -1,17 +1,17 @@
-from flask import Flask, render_template, make_response, request
-import os
-import logging
+from flask import Flask, make_response, request
 import json
 
 from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
 from python.logic.userService import UserService
+from python.logic.taskService import TaskService
 
 app = Flask(__name__)
 
 datasetService = DatasetService()
 annotationService = AnnotationService()
 userService = UserService()
+taskService = TaskService()
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
@@ -184,6 +184,53 @@ def getAnnotationObject():
 def uploadAnnotationObject():
     success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+#### TASKS ####
+
+# Get task for specific user
+@app.route("/api/task/getTask", methods=['GET'])
+def getTask():
+    success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get info of all tasks for specific user
+@app.route("/api/task/getTasks", methods=['GET'])
+def getTasks():
+    success, msg, status = taskService.getTasks(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new task for specific user
+@app.route('/api/task/createTask', methods=['POST'])
+def createTask():
+    success, msg, status = taskService.createTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove existing task for specific user
+@app.route('/api/task/removeTask', methods=['POST'])
+def removeTask():
+    req_data = request.get_json()
+    success, msg, status = taskService.removeTask(req_data['name'], req_data['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update existing task for specific user
+@app.route('/api/task/updateTask', methods=['POST'])
+def updateTask():
+    success, msg, status = taskService.updateTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update and finish existing task
+@app.route('/api/task/finishTask', methods=['POST'])
+def finishTask():
+    success, msg, status = taskService.finishTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update last modified frame in task
+@app.route('/api/task/updateFrameTask', methods=['POST'])
+def updateFrameTask():
+    success, msg, status = taskService.updateFrameTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
