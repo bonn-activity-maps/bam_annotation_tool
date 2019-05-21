@@ -317,7 +317,7 @@ class DatasetService:
         if datasetManager.getDataset(name) != 'Error':
             return False, 'The dataset ' + name + ' already exists', 400
         else:
-            result = datasetManager.createDataset(name)
+            result = datasetManager.createDataset(name, req['type'])
             if result == 'Error':
                 return False, 'Error creating dataset', 400
             else:

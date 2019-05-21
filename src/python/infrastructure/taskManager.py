@@ -1,7 +1,7 @@
 from pymongo import MongoClient, errors
 import logging
 
-# VideoService logger
+# TaskManager logger
 log = logging.getLogger('taskManager')
 
 
@@ -12,9 +12,9 @@ class TaskManager:
     collection = db.task
 
     # Return info of task by user if exist in DB. Ignore mongo id
-    def getTask(this, task, user):
+    def getTask(this, task, user, dataset):
         try:
-            result = this.collection.find_one({"name": task, "assignedUser": user}, {"_id": 0})
+            result = this.collection.find_one({"name": task, "assignedUser": user, "dataset": dataset}, {"_id": 0})
             if result == None:
                 return 'Error'
             else:
@@ -25,42 +25,43 @@ class TaskManager:
 
     # Return list with info of all tasks by user. Empty list if there are no tasks
     # Ignore mongo id
-    def getTasks(this, user):
+    def getTasks(this, user, dataset):
         try:
-            result = this.collection.find({"assignedUser": user}, {"_id": 0})
+            result = this.collection.find({"assignedUser": user, "dataset": dataset}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding tasks in db')
             return 'Error'
 
     # Return 'ok' if the task has been created
-    def createTask(this, task, user, frameFrom, frameTo, videos, POV, lastFrame=0, finished=0):
+    def createTask(this, task, user, dataset, frameFrom, frameTo, videos, POV, lastFrame=0, finished=0):
         try:
-            result = this.collection.insert_one({"name": task, "assignedUser": user, "frameFrom": frameFrom, "frameTo": frameTo,
-                                                 "videos": videos, "POV": POV, "finished": finished, "lastFrame": lastFrame})
+            result = this.collection.insert_one({"name": task, "assignedUser": user, "dataset": dataset,
+                                                 "frameFrom": frameFrom, "frameTo": frameTo, "videos": videos,
+                                                 "POV": POV, "finished": finished, "lastFrame": lastFrame})
             if result.acknowledged:
                 return 'ok'
             else:
                 return 'Error'
         except errors.PyMongoError as e:
-            log.exception('Error creating video in db')
+            log.exception('Error creating task in db')
             return 'Error'
 
     # Return 'ok' if the task has been removed
-    def removeTask(this, task, user):
+    def removeTask(this, task, user, dataset):
         try:
-            result = this.collection.delete_one({"name": task, "assignedUser": user})
+            result = this.collection.delete_one({"name": task, "assignedUser": user, "dataset": dataset})
             if result.deleted_count == 1:
                 return 'ok'
             else:
                 return 'Error'
         except errors.PyMongoError as e:
-            log.exception('Error removing video in db')
+            log.exception('Error removing task in db')
             return 'Error'
 
     # Return 'ok' if the task has been updated. if task doesn't exist, it isn't created
-    def updateTask(this, task, user, frameFrom, frameTo, videos, POV, finished, lastFrame):
-        query = {"name": task, "assignedUser": user}      # Search by task name and assigned user
+    def updateTask(this, task, user, dataset, frameFrom, frameTo, videos, POV, finished, lastFrame):
+        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
         # Update all values
         newValues = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo, "videos": videos, "POV": POV,
                               "finished": finished, "lastFrame": lastFrame}}
@@ -75,8 +76,8 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the finished flag has been updated. if task doesn't exist, it isn't created
-    def updateFinished(this, task, user, finished):
-        query = {"name": task, "assignedUser": user}      # Search by task name and assigned user
+    def updateFinished(this, task, user, dataset, finished):
+        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
         newValues = {"$set": {"finished": finished}}      # Update finished flag
         try:
             result = this.collection.update_one(query, newValues, upsert=False)
@@ -89,8 +90,8 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the lastFrame has been updated. if task doesn't exist, it isn't created
-    def updateLastFrame(this, task, user, lastFrame):
-        query = {"name": task, "assignedUser": user}      # Search by task name and assigned user
+    def updateLastFrame(this, task, user, dataset, lastFrame):
+        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
         newValues = {"$set": {"lastFrame": lastFrame}}    # Update lastFrame
         try:
             result = this.collection.update_one(query, newValues, upsert=False)
