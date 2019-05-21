@@ -70,6 +70,14 @@ class DatasetService:
         return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
 
 
+    def addVideosAIK(this, filename):
+        # TODO: create Video entries in DB for AIK dataset
+        pass
+
+    def addVideosPT(this, filename):
+        # TODO: create Video entries in DB for PT dataset
+        pass
+
     def createVideo(this, file, dataset, save_path):
         duration = this.getDurationVideo(file.filename, dataset)
         filename, filextension = os.path.splitext(file.filename)
@@ -80,7 +88,8 @@ class DatasetService:
             return True, 'ok', 200
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
-    def storeZip(this, request):
+    def storeZip(this, request, type):
+        print("TYPE: ", type)
         file = request.files['file']
 
         save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.filename))
@@ -113,14 +122,25 @@ class DatasetService:
                 zip = zipfile.ZipFile(save_path, 'r')
                 zip.extractall(this.STORAGE_DIR)
                 filename, _ = os.path.splitext(file.filename)
-                integrity = this.checkIntegrity(this.STORAGE_DIR + filename) #TODO: add every video to db
-                if integrity:
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return True, 'ok', 200
+
+                result = datasetManager.createDataset(filename, type)
+                if result == 'Error':
+                    return False, 'Error creating dataset in database', 500
                 else:
-                    shutil.rmtree(this.STORAGE_DIR + filename)
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return False, 'Error on folder subsystem, check your file and try again', 400
+                    if type == "actionInKitchen":
+                        this.addVideosAIK(filename)
+                    else:
+                        this.addVideosPT(filename)
+                    return True, result, 200
+
+                #integrity = this.checkIntegrity(this.STORAGE_DIR + filename) #TODO: add every video to db
+                # if integrity:
+                #     os.remove(this.STORAGE_DIR + file.filename)
+                #     return True, 'ok', 200
+                # else:
+                #     shutil.rmtree(this.STORAGE_DIR + filename)
+                #     os.remove(this.STORAGE_DIR + file.filename)
+                #     return False, 'Error on folder subsystem, check your file and try again', 400
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200

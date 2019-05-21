@@ -5,6 +5,7 @@ angular.module('CVGTool')
      */
     .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfVideos = [];
+        $scope.selectType = "actionInKitchen";
 
         // Dropzone options
         $scope.dzOptions = {
@@ -13,7 +14,9 @@ angular.module('CVGTool')
             forceChunking: true,
             acceptedFiles: '.mp4',
             url: '/api/dataset/uploadVideo',
-            headers: {"dataset": navSrvc.getActiveDataset()},
+            headers: {
+                "dataset": navSrvc.getActiveDataset()
+            },
             maxFilesize: 10240, // mb
             chunkSize: 20000000, // bytes (chunk: 20mb)
             dictDefaultMessage: 'Drop mp4 file here to upload a video.'
@@ -40,14 +43,18 @@ angular.module('CVGTool')
             uploadMultiple: false,
             maxFilesize: 10240, // mb
             chunkSize: 20000000, // bytes (chunk: 20mb)
+            headers: {
+                "type": $scope.selectType
+            },
             acceptedFiles: ".zip",
             url: '/api/dataset/uploadZip',
-            dictDefaultMessage: 'Drop zip file here to upload part of a dataset.'
+            dictDefaultMessage: 'Drop zip file here to upload a dataset.'
         };
 
         // Dropzone zip event handler
         $scope.dzZipCallbacks = {
             'addedfile' : function(file){
+                console.log($scope.selectType);
                 console.log(file);
                 $scope.newFile = file;
             },
