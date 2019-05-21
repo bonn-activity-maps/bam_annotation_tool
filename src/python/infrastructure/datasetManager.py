@@ -33,9 +33,9 @@ class DatasetManager:
             return 'Error'
 
     # Return 'ok' if the dataset has been created
-    def createDataset(this, dataset):
+    def createDataset(this, dataset, type):
         try:
-            result = this.collection.insert_one({"name": dataset})
+            result = this.collection.insert_one({"name": dataset, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:

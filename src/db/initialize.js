@@ -3,13 +3,14 @@ db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["example3"], 
 db.user.insertOne({name: "Dario", password: "test", assignedTo: ["example1"], role: "user", email: "dario@dario.com"})
 db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["example3"], role: "user", email: "bea@bea.com"})
 
-db.dataset.insertOne({name: "example1"})
-db.dataset.insertOne({name: "example2"})
-db.dataset.insertOne({name: "example3"})
+db.dataset.insertOne({name: "example1", type: "poseTrack"})
+db.dataset.insertOne({name: "example2", type: "poseTrack"})
+db.dataset.insertOne({name: "example3", type: "actionInKitchen"})
 
 db.task.insertOne({
 	"name": "task1",
 	"assignedUser": "Beatriz",
+	"dataset": "example3",
 	"frameFrom": "50",
 	"frameTo": "200",
 	"videos": ["video1", "video4"],

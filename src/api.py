@@ -190,13 +190,13 @@ def uploadAnnotationObject():
 # Get task for specific user
 @app.route("/api/task/getTask", methods=['GET'])
 def getTask():
-    success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'])
+    success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'], request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get info of all tasks for specific user
 @app.route("/api/task/getTasks", methods=['GET'])
 def getTasks():
-    success, msg, status = taskService.getTasks(request.headers['user'])
+    success, msg, status = taskService.getTasks(request.headers['user'], request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Create new task for specific user
@@ -209,7 +209,7 @@ def createTask():
 @app.route('/api/task/removeTask', methods=['POST'])
 def removeTask():
     req_data = request.get_json()
-    success, msg, status = taskService.removeTask(req_data['name'], req_data['user'])
+    success, msg, status = taskService.removeTask(req_data['name'], req_data['user'], req_data['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update existing task for specific user
