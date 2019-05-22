@@ -22,6 +22,7 @@ angular.module('CVGTool')
 
       $scope.switchTool = function (newTool) {
         $scope.tool = newTool
+
       };
 
 //////// TIMELINE
@@ -204,13 +205,33 @@ angular.module('CVGTool')
         this.valid = true;    // when set to true, the canvas will redraw everything
         this.dragging = false; // Keep track of when we are dragging
         this.selection = null; // Current selected object
-        this.dragoffx = 0;
-        this.dragoffy = 0;
+
+        // Mouse variable
+        this.mouse = {
+           pos : {x : 0, y : 0},
+           worldPos : {x : 0, y : 0},
+           posLast : {x : 0, y : 0},
+           dragging : false
+        }
+
+        // View transform
+        this.m = [1, 0, 0, 1, 0, 0];  // Current view transform
+        this.im = [1, 0, 0, 1, 0, 0]; // Current inverse view transform
+        this.bounds = {
+          top: 0,
+          left: 0,
+          right: this.canvas.width,
+          bottom: this.canvas.height
+        }
+        this.pos = {x: 0, y: 0}; // Initial position
+        this.wp1 = {x: 0, y: 0};
+        this.wp2 = {x: 0, y: 0};
+        this.dirty = true;
 
         // To keep track of the zoom
         this.zoom = 1;
-        this.zoomOffsetX = 0;
-        this.zoomOffsetY = 0;
+        this.maxZoom = 4;
+        this.minZoom = 1;
 
         var canvasObj = this;
 
@@ -223,73 +244,153 @@ angular.module('CVGTool')
         // Prevents clicking of selecting text
         canvas.addEventListener('selectstart', function(e) { e.preventDefault(); return false;}, false);
 
-        // MouseDown event, click
+        // MouseDown event
         canvas.addEventListener('mousedown', function(e) {
             var mouse = canvasObj.getMouse(e);
-            var mx = mouse.x;
-            var my= mouse.y;
+            canvasObj.mouse.pos.x = mouse.x;
+            canvasObj.mouse.pos.y = mouse.y;
+            console.log(mouse)
+
+            canvasObj.toWorld(canvasObj.mouse.pos, canvasObj.mouse.worldPos); // gets the world coords
+
+            // If the tool is navigation
+            if ($scope.tool.localeCompare('navigation') == 0) {
+              // TODO: Search in the keypoints (shapes) array to see if we clicked in a shape or in the background
+              // TODO: this will tell us what are we are trying to drag
+
+              canvasObj.dragging = true;
+            }
 
             // If the subtool is 'Zoom Out'
-            if ($scope.subTool.localeCompare('zoomOut') == 0) {
-              var oldZoom = canvasObj.zoom;
-              if (canvasObj.zoom  < 1){
-                canvasObj.zoom += 0.25;
-                if (canvasObj.zoom > 1) {
-                    canvasObj.zoom = 1;
-                }
-              }
-              canvasObj.ctx.scale(oldZoom - canvasObj.zoom, oldZoom - canvasObj.zoom);
-              console.log(canvasObj.zoom)
+            if ($scope.subTool.localeCompare('zoomIn') == 0) {
+              canvasObj.scaleAt(canvasObj.mouse.pos,0.5);
             }
 
             // If the subtool is 'Zoom In'
-            if ($scope.subTool.localeCompare('zoomIn') == 0) {
-              if (canvasObj.zoom  > 0.25){
-                canvasObj.zoom -= 0.25;
-                if (canvasObj.zoom < 1) {
-                    canvasObj.zoom = 0.25;
-                }
-              }
-              canvasObj.ctx.scale(oldZoom - canvasObj.zoom, oldZoom - canvasObj.zoom);
-              console.log(canvasObj.zoom)
+            if ($scope.subTool.localeCompare('zoomOut') == 0) {
+              canvasObj.scaleAt(canvasObj.mouse.pos, -0.5);
             }
-            // if ($scope.subTool.localeCompare('addKeypoint')) {
-            //   var keypoint = {
-            //       shape:
-            //   }
-            // }
-            //
-            // var keypoints = $scope.activeCamera.frames[$scope.slider.value-1].keypoints;
-            // for (var i= 0; i< keypoints.length; i++) {
-            //     if (keypoints[i].shape.contains(mx,my)) {
-            //
-            //     }
-            //
-            // }
+        }, true);
+
+        // MouseMove event
+        canvas.addEventListener('mousemove', function(e) {
+          var mouse = canvasObj.getMouse(e);
+
+          if (canvasObj.dragging){
+            canvasObj.mouse.posLast.x = canvasObj.mouse.pos.x;
+            canvasObj.mouse.posLast.y = canvasObj.mouse.pos.y;
+
+            canvasObj.mouse.pos.x = mouse.x;
+            canvasObj.mouse.pos.y = mouse.y;
+
+            canvasObj.toWorld(canvasObj.mouse.pos, canvasObj.mouse.worldPos); // gets the world coords
+
+            canvasObj.move(canvasObj.mouse.pos.x - canvasObj.mouse.posLast.x, canvasObj.mouse.pos.y - canvasObj.mouse.posLast.y);
+          }
+
+        }, true);
+
+        // MouseUp event
+        canvas.addEventListener('mouseup', function(e) {
+            canvasObj.dragging = false; // Stop dragging
         }, true);
 
         //----- FUNCTIONS -----//
-        // Returns the coordinates of the mouse
+        // Fits the image to the canvas depending of the zoom
+        CanvasObject.prototype.canvasDefault = function() {
+           this.ctx.setTransform(1,0,0,1,0,0);
+        }
+
+        // Apply transformation to context
+        CanvasObject.prototype.apply = function() {
+          if(!this.valid){ this.update() }
+          this.ctx.setTransform(this.m[0],this.m[1],this.m[2],this.m[3],this.m[4],this.m[5]);
+        }
+
+        // Update transformation matrix
+        CanvasObject.prototype.update = function() {
+            this.valid = true;
+            this.m[3] = this.m[0] = this.zoom;
+            this.m[1] = this.m[2] = 0;
+            this.m[4] = this.pos.x;
+            this.m[5] = this.pos.y;
+
+            this.constrain();
+
+            // Calculate the inverse transformation
+            var cross = this.m[0] * this.m[3] - this.m[1] * this.m[2];
+            this.im[0] =  this.m[3] / cross;
+            this.im[1] = -this.m[1] / cross;
+            this.im[2] = -this.m[2] / cross;
+            this.im[3] =  this.m[0] / cross;
+        }
+
+        // Apply the constraints to the image
+        CanvasObject.prototype.constrain = function() {
+          this.maxZoom = Math.min(
+                this.canvas.width / (this.bounds.right - this.bounds.left) ,
+                this.canvas.height / (this.bounds.bottom - this.bounds.top)
+            );
+            if (this.zoom < this.maxZoom) {  this.m[0] = this.m[3] = this.zoom = this.maxZoom }
+            this.wp1.x = this.bounds.left;
+            this.wp1.y = this.bounds.top;
+            this.toScreen(this.wp1,this.wp2);
+            if (this.wp2.x > 0) { this.m[4] = this.pos.x -= this.wp2.x }
+            if (this.wp2.y > 0) { this.m[5] = this.pos.y -= this.wp2.y }
+            this.wp1.x = this.bounds.right;
+            this.wp1.y = this.bounds.bottom;
+            this.toScreen(this.wp1,this.wp2);
+            if (this.wp2.x < this.canvas.width) { this.m[4] = (this.pos.x -= this.wp2.x -  this.canvas.width) }
+            if (this.wp2.y < this.canvas.height) { this.m[5] = (this.pos.y -= this.wp2.y -  this.canvas.height) }
+        }
+
+        // Convert from screen coordinates to world coordinates
+        CanvasObject.prototype.toWorld = function(from, point = {}) {
+            var xx, yy;
+            if(!this.valid){ this.update() }
+            xx = from.x - this.m[4];
+            yy = from.y - this.m[5];
+            point.x = xx * this.im[0] + yy * this.im[2];
+            point.y = xx * this.im[1] + yy * this.im[3];
+            return point;
+        }
+
+        // Convert from world coordinates to string coordinates
+        CanvasObject.prototype.toScreen = function(from, point = {}) {
+          if(!this.valid){ this.update() }
+          point.x =  from.x * this.m[0] + from.y * this.m[2] + this.m[4];
+          point.y = from.x * this.m[1] + from.y * this.m[3] + this.m[5];
+          return point;
+        }
+
+        // Apply zoom (scale) centered in the "at" point
+        CanvasObject.prototype.scaleAt = function(at, amount) {
+          if(!this.valid){ this.update() }
+            var oldZoom = this.zoom;
+            this.zoom += amount;
+            if (this.zoom < 1) this.zoom = 1;
+            if (this.zoom > 4) this.zoom = 4;
+
+            if (this.zoom != oldZoom) {
+              this.pos.x = at.x - (at.x - this.pos.x) * amount;
+              this.pos.y = at.y - (at.y - this.pos.y) * amount;
+            }
+            this.setRedraw();
+        }
+
+        // Move the context
+        CanvasObject.prototype.move = function(x, y) {
+            this.pos.x += x;
+            this.pos.y += y;
+            this.setRedraw();
+        }
+
+        // Returns the coordinates of the mouse of the event e
         CanvasObject.prototype.getMouse = function(e) {
-          var element = this.canvas, offsetX = 0, offsetY = 0, mx, my;
+          var rect = this.canvas.getBoundingClientRect();
+          var mx = e.clientX - rect.left;
+          var my = e.clientY - rect.top;
 
-          // Compute the total offset
-          if (element.offsetParent !== undefined) {
-            do {
-              offsetX += element.offsetLeft;
-              offsetY += element.offsetTop;
-            } while ((element = element.offsetParent));
-          }
-
-          // Add padding and border style widths to offset
-          // Also add the <html> offsets in case there's a position:fixed bar
-          offsetX += this.stylePaddingLeft + this.styleBorderLeft + this.htmlLeft;
-          offsetY += this.stylePaddingTop + this.styleBorderTop + this.htmlTop;
-
-          mx = e.pageX - offsetX;
-          my = e.pageY - offsetY;
-
-          // We return a simple javascript object (a hash) with x and y defined
           return {x: mx, y: my};
         }
 
@@ -309,18 +410,26 @@ angular.module('CVGTool')
           this.valid = false;
         }
 
+        // Function that clears the context
+        CanvasObject.prototype.clear = function() {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
         // Function that redraws everything associated to the actual canvas
         CanvasObject.prototype.draw = function() {
           if (!this.valid) {
+            this.canvasDefault();
+            this.apply();
+
             var ctx = this.ctx;
             var canvas = this.canvas;
 
-            // Redraw background first
+            //Redraw background first
             if (this.activeCamera !== null) {
               var image = new Image();
               image.onload = function() {
-                ctx.drawImage(this, 0, 0, this.width, this.height, 0, 0, canvas.width, canvas.height);
-
+                // ctx.drawImage(this, bgX, bgY, this.width, this.height, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(this, 0 ,0, canvas.width, canvas.height)
               };
               image.src= this.activeCamera.frames[$scope.slider.value-1].image;
             }
