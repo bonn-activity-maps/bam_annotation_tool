@@ -3,67 +3,84 @@ angular.module('CVGTool')
     .factory('adminDatasetsSrvc', function ($state, $http, $httpParamSerializer) {
 
       return {
-          getInfoOfVideos: function (callbackSuccess) {
+          getInfoOfVideos: function (callbackSuccess, activeDataset) {
               $http({
                   method: 'GET',
-                  url: '/api/video/info'
-
+                  url: '/api/dataset/getVideos',
+                  headers: {
+                      'dataset': activeDataset
+                  }
               }).then(function successCallback(response) {
                   if (response.data.msg.length === 0) {
                     callbackSuccess([])
                   } else {
-                    var parsedArray = [];
-                    for (i = 0; i < response.data.msg.length; i++) {
-                      parsedArray.push(JSON.parse(response.data.msg[i]))
-                    }
-                    callbackSuccess(parsedArray)
+                    callbackSuccess(response.data.msg)
                   }
                 }, function errorCallback(response) {
                   console.log("ERROR while retrieving info from videos.")
               });
           },
 
-          unwrapVideo: function (videoName) {
+          unwrapVideo: function (videoName, dataset, callbackFinished) {
               $http({
                   method: 'POST',
-                  url: '/api/video/unwrap',
+                  url: '/api/dataset/unwrapVideo',
                   data: {
-                    'name': videoName
+                    'name': videoName,
+                    'dataset': dataset
                   }
               }).then(function successCallback(response) {
                 // TODO: add action when unwrap is finished
-                  console.log(response.data.msg)
+                  callbackFinished(videoName, dataset)
                 }, function errorCallback(response) {
                   console.log(response.data.msg)
               });
           },
 
-          deleteVideo: function (videoName, callbackSuccess, callbackError) {
+          removeVideo: function (videoName, dataset, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',
-                url: '/api/video/delete',
+                url: '/api/dataset/removeVideo',
                 data: {
-                  'name': videoName
+                    'name': videoName,
+                    'dataset': dataset
                 }
               }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg)
+                  callbackSuccess(response.data.msg)
               }, function errorCallback(response) {
                   callbackError(response.data.msg)
               });
           },
 
-          renameVideo: function (oldVideoName, newVideoName, callbackSuccess, callbackError) {
+          renameVideo: function (oldVideoName, newVideoName, dataset, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',
-                url: '/api/video/rename',
+                url: '/api/dataset/renameVideo',
                 data: {
-                  'oldName': oldVideoName,
-                  'newName': newVideoName
+                    'oldName': oldVideoName,
+                    'newName': newVideoName,
+                    'dataset': dataset
                 }
               }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg)
+                    callbackSuccess(response.data.msg)
               }, function errorCallback(response) {
-                  callbackError(response.data.msg)
+                    callbackError(response.data.msg)
+              });
+          },
+
+          updateVideoFrames: function(videoName, dataset, callback) {
+              $http({
+                  method: 'POST',
+                  url: '/api/dataset/updateVideoFrames',
+                  data: {
+                      'name': videoName,
+                      'dataset': dataset
+                  }
+              }).then(function successCallback(response) {
+                  callback();
+                  console.log("Updated frames for video ", videoName, " in database")
+              }, function errorCallback(response) {
+                  console.log(response.data.msg)
               });
           }
       }

@@ -1,5 +1,8 @@
-from pymongo import MongoClient
-from pymongo import errors
+from pymongo import MongoClient, errors
+import logging
+
+# VideoService logger
+log = logging.getLogger('videoManager')
 
 class VideoManager:
 
@@ -7,44 +10,77 @@ class VideoManager:
     db = c.cvg
     collection = db.video
 
-    # Get annotation info for given frame
-    def getAnnotation(this, video, frame):
-        # Not return mongo id
-        result = this.collection.find_one({"video":video, "frame":frame}, {'_id': 0})
-        if result == None:
-            return 'Error'
-        else:
-            return result
-
-    # Save annotation info for given frame
-    def uploadAnnotation(this, video, frame, kpdim, objects):
+    # Return info video if exist in DB. Ignore mongo id
+    def getVideo(this, video, dataset):
         try:
-            this.collection.insert_one({"video":video, "frame":frame, "keypointDim": kpdim, "objects": objects})
-            return 'ok', ''
+            result = this.collection.find_one({"name": video, "dataset": dataset}, {"_id": 0})
+            if result == None:
+                return 'Error'
+            else:
+                return result
         except errors.PyMongoError as e:
-            return 'Error inserting annotation', e
-
-    # Get annotation for object in frame, without mongo id
-    def getFrameObject(this, video, frame, obj):
-        result = this.collection.find_one({"video":video, "frame":frame, "objects.uid":obj}, {'_id': 0})
-        if result == None:
+            log.exception('Error finding video in db')
             return 'Error'
-        else:
-            return result
 
-    # Store annotation for an object in a frame. Insert if not exist
-    def uploadFrameObject(this, video, frame, kpdim, objects):
-        uidObj = objects[0]["uid"]
-        type = objects[0]["type"]
-        keypoints = objects[0]["keypoints"]
-        labels = objects[0]["labels"]
-
-        query = {"video":video, "frame":frame, "keypointDim": kpdim, "objects.uid":uidObj}
-        # Update object (type, kps, labels)
-        newValues = {"$set": {"objects.$[elem].type":type, "objects.$[elem].keypoints":keypoints, "objects.$[elem].labels":labels}}
-        arrayFilter = [{ "elem.uid": { "$eq":uidObj }}]     # Filter by object uid
+    # Return list with info of all videos. Empty list if there are no videos
+    # Ignore mongo id
+    def getVideos(this, dataset):
         try:
-            this.collection.update_one(query, newValues, upsert=True, array_filters=arrayFilter)
-            return 'ok', ''
+            result = this.collection.find({"dataset": dataset},{"_id": 0})
+            return list(result)
         except errors.PyMongoError as e:
-            return 'Error inserting annotation for object in frame', e
+            log.exception('Error finding videos in db')
+            return 'Error'
+
+    # Return 'ok' if the video has been created
+    def createVideo(this, video, dataset, extension, duration, path, type=None, frames=0):
+        try:
+            result = this.collection.insert_one({"name": video, "dataset": dataset, "extension": extension,
+                                                 "duration": duration, "frames": frames, "path": path, "type": type})
+            if result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error creating video in db')
+            return 'Error'
+
+    # Return 'ok' if the video has been updated.
+    def updateVideoFrames(this, video, frames, dataset):
+        query = {"name": video, "dataset": dataset}   # Search by video name and dataset
+        newValues = {"$set": {"frames": frames}}       # Update frames
+        try:
+            result = this.collection.update_one(query, newValues, upsert=False)
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating video in db')
+            return 'Error'
+
+
+    def updateVideoName(this, video, newName, dataset):
+        query = {"name": video, "dataset": dataset}   # Search by video name and dataset
+        newValues = {"$set": {"name": newName}}        # Update name
+        try:
+            result = this.collection.update_one(query, newValues, upsert=False)
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating video in db')
+            return 'Error'
+
+    # Return 'ok' if the video has been removed
+    def removeVideo(this, video, dataset):
+        try:
+            result = this.collection.delete_one({"name": video, "dataset": dataset})
+            if result.deleted_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error removing video in db')
+            return 'Error'

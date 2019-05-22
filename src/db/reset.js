@@ -1,3 +1,6 @@
 db.user.drop()
-db.video.drop()
+db.annotation.drop()
+db.dataset.drop()
 db.object.drop()
+db.video.drop()
+db.task.drop()

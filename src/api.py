@@ -1,17 +1,17 @@
-from flask import Flask, render_template, make_response, request
-import os
-import logging
+from flask import Flask, make_response, request
 import json
 
 from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
 from python.logic.userService import UserService
+from python.logic.taskService import TaskService
 
 app = Flask(__name__)
 
 datasetService = DatasetService()
 annotationService = AnnotationService()
 userService = UserService()
+taskService = TaskService()
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
@@ -54,7 +54,6 @@ def createUser():
 @app.route('/api/user/removeUser', methods=['POST'])
 def removeUser():
     req_data = request.get_json()
-    print(req_data['name'])
     success, msg, status = userService.removeUser(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
@@ -92,46 +91,59 @@ def removeDataset():
     success, msg, status = datasetService.removeDataset(req_data['name'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Upload chunked zip file
+@app.route('/api/dataset/uploadZip', methods=['POST'])
+def uploadZip():
+    success, msg, status = datasetService.storeZip(request)
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 
 #### VIDEO ####
 
 # Upload chunked video
-@app.route('/api/video/upload', methods=['POST'])
+@app.route('/api/dataset/uploadVideo', methods=['POST'])
 def uploadVideo():
-    success, msg, status = datasetService.storeVideo(request)
+    success, msg, status = datasetService.storeVideo(request, request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Unwrap video
-@app.route('/api/video/unwrap', methods=['POST'])
+@app.route('/api/dataset/unwrapVideo', methods=['POST'])
 def unwrapVideo():
     req_data = request.get_json()
-    success, msg, status = datasetService.unwrapVideo(req_data['name'])
+    success, msg, status = datasetService.unwrapVideo(req_data['name'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Get list of videos and lenght
-@app.route('/api/video/info', methods=['GET'])
-def getVideoList():
-    success, msg, status = datasetService.getInfoVideos()
+# Get list of videos and length
+@app.route('/api/dataset/getVideos', methods=['GET'])
+def getVideos():
+    success, msg, status = datasetService.getVideos(request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get frame from video
-@app.route('/api/video/getframe', methods=['GET'])
+@app.route('/api/dataset/getFrameVideo', methods=['GET'])
 def getVideoFrame():
     success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Rename video
-@app.route('/api/video/rename', methods=['POST'])
+@app.route('/api/dataset/renameVideo', methods=['POST'])
 def renameVideo():
     req_data = request.get_json()
-    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'])
+    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Delete video
-@app.route('/api/video/delete', methods=['POST'])
-def deleteVideo():
+@app.route('/api/dataset/removeVideo', methods=['POST'])
+def removeVideo():
     req_data = request.get_json()
-    success, msg, status = datasetService.deleteVideo(req_data['name'])
+    success, msg, status = datasetService.removeVideo(req_data['name'], req_data['dataset'])
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Update existing video
+@app.route('/api/dataset/updateVideoFrames', methods=['POST'])
+def updateVideoFrames():
+    req_data = request.get_json()
+    success, msg, status = datasetService.updateVideoFrames(req_data['name'], req_data['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
@@ -173,13 +185,52 @@ def uploadAnnotationObject():
     success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-#### DATASET ####
+#### TASKS ####
 
-# Upload part of a dataset
-@app.route('/api/dataset/uploadZip', methods=['POST'])
-def uploadZip():
-    success, msg, status = datasetService.storeZip(request)
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+# Get task for specific user
+@app.route("/api/task/getTask", methods=['GET'])
+def getTask():
+    success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'], request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get info of all tasks for specific user
+@app.route("/api/task/getTasks", methods=['GET'])
+def getTasks():
+    success, msg, status = taskService.getTasks(request.headers['user'], request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new task for specific user
+@app.route('/api/task/createTask', methods=['POST'])
+def createTask():
+    success, msg, status = taskService.createTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove existing task for specific user
+@app.route('/api/task/removeTask', methods=['POST'])
+def removeTask():
+    req_data = request.get_json()
+    success, msg, status = taskService.removeTask(req_data['name'], req_data['user'], req_data['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update existing task for specific user
+@app.route('/api/task/updateTask', methods=['POST'])
+def updateTask():
+    success, msg, status = taskService.updateTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update and finish existing task
+@app.route('/api/task/finishTask', methods=['POST'])
+def finishTask():
+    success, msg, status = taskService.finishTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update last modified frame in task
+@app.route('/api/task/updateFrameTask', methods=['POST'])
+def updateFrameTask():
+    success, msg, status = taskService.updateFrameTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")

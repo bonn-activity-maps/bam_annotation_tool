@@ -4,3 +4,4 @@
 .vsc/
 __pycache__/
 venv
+*.iml

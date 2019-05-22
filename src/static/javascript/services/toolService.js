@@ -5,7 +5,7 @@ angular.module('CVGTool')
           getInfoOfVideos: function (callbackSuccess) {
               $http({
                   method: 'GET',
-                  url: '/api/video/info'
+                  url: '/api/dataset/getVideos'
 
               }).then(function successCallback(response) {
                   if (response.data.msg.length == 0) {
@@ -25,7 +25,7 @@ angular.module('CVGTool')
           getFrame: function (fileName, frame, callbackSuccess) {
               $http({
                   method: 'GET',
-                  url: '/api/video/getframe',
+                  url: '/api/dataset/getFrameVideo',
                   headers: {
                       'fileName': fileName,
                       'frame': frame

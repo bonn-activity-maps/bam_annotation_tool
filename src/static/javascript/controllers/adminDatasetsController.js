@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of the admin page "Videos"
      */
-    .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, $mdDialog) {
+    .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfVideos = [];
 
         // Dropzone options
@@ -12,7 +12,8 @@ angular.module('CVGTool')
             chunking: true,
             forceChunking: true,
             acceptedFiles: '.mp4',
-            url: '/api/video/upload',
+            url: '/api/dataset/uploadVideo',
+            headers: {"dataset": navSrvc.getActiveDataset()},
             maxFilesize: 10240, // mb
             chunkSize: 20000000, // bytes (chunk: 20mb)
             dictDefaultMessage: 'Drop mp4 file here to upload a video.'
@@ -52,25 +53,30 @@ angular.module('CVGTool')
             },
             'success' : function(file, xhr){
                 console.log(file, xhr);
-                //$scope.getInfoOfVideos();
+                //$scope.getInfoOfVideos(); TODO descomentar cuando funcione
             },
         };
 
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {
-          adminDatasetsSrvc.getInfoOfVideos(showListOfVideos);
+          adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
+        };
+
+        var unwrapFinishedCallback = function(name, dataset) {
+            adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
         // Function to retrieve unwrap the video
         $scope.unwrapVideo = function(file) {
-          adminDatasetsSrvc.unwrapVideo(file);
+          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
         };
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension, "duration": list[i].duration, "frames": list[i].frames});
+              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension,
+                  "duration": list[i].duration, "frames": list[i].frames});
             }
         };
 
@@ -90,13 +96,13 @@ angular.module('CVGTool')
         };
 
         // Function that opens the dialog that manages the file removal functionality
-        $scope.deleteVideo = function(video) {
+        $scope.removeVideo = function(video) {
           $mdDialog.show({
-            templateUrl: '/static/views/dialogs/deleteVideoDialog.html',
+            templateUrl: '/static/views/dialogs/removeVideoDialog.html',
             locals: {
               video: video
             },
-            controller: 'dialogDeleteVideoCtrl',
+            controller: 'dialogRemoveVideoCtrl',
             escapeToClose: false,
             onRemoving: function (event, removePromise) {
               $scope.getInfoOfVideos();

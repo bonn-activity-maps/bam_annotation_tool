@@ -3,7 +3,8 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "rename stored video as administrator" action
      */
-    .controller('dialogRenameVideoCtrl', ['$scope','adminDatasetsSrvc', '$mdDialog', 'video', function ($scope, adminDatasetsSrvc, $mdDialog, video) {
+    .controller('dialogRenameVideoCtrl', ['$scope','adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
+        function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
         $scope.mode = 'normal';
         $scope.msg = '';
         $scope.inputMsg = '';
@@ -47,7 +48,7 @@ angular.module('CVGTool')
           } else {
             var newVideoName = $scope.newName.name + video.extension;
             var oldVideoName = $scope.oldName + video.extension;
-            adminDatasetsSrvc.renameVideo(oldVideoName, newVideoName, showSuccess, showError)
+            adminDatasetsSrvc.renameVideo(oldVideoName, newVideoName, navSrvc.getActiveDataset(), showSuccess, showError)
           }
         }
     }])
@@ -55,7 +56,8 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "remove stored video as administrator" action
      */
-    .controller('dialogDeleteVideoCtrl', ['$scope','adminDatasetsSrvc', '$mdDialog', 'video', function ($scope, adminDatasetsSrvc, $mdDialog, video) {
+    .controller('dialogRemoveVideoCtrl', ['$scope','adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
+        function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
         var videoName = video.name + video.extension;
 
         $scope.mode = 'normal';
@@ -69,7 +71,7 @@ angular.module('CVGTool')
         // Recall function if the rename worked
         var showSuccess = function(response) {
           $scope.mode = 'success';
-          $scope.msg = 'Video successfully deleted.'
+          $scope.msg = 'Video successfully removed.'
         }
 
         // Recall function if the rename didnt worked
@@ -78,16 +80,16 @@ angular.module('CVGTool')
           $scope.msg = 'There was an error when deleting the video.'
         }
 
-        // Function that generates the call to the server to delete the file
-        $scope.delete = function() {
-          adminDatasetsSrvc.deleteVideo(videoName, showSuccess, showError)
+        // Function that generates the call to the server to remove the file
+        $scope.remove = function() {
+          adminDatasetsSrvc.removeVideo(videoName, navSrvc.getActiveDataset(), showSuccess, showError)
         }
     }])
 
     /*
      * Controller of the dialog of the "remove stored user as administrator" action
      */
-    .controller('dialogDeleteUserCtrl', ['$scope','adminUsersSrvc', '$mdDialog', 'username', function ($scope, adminUsersSrvc, $mdDialog, username) {
+    .controller('dialogRemoveUserCtrl', ['$scope','adminUsersSrvc', '$mdDialog', 'username', function ($scope, adminUsersSrvc, $mdDialog, username) {
         var user = username;
 
         console.log(user)
@@ -102,7 +104,7 @@ angular.module('CVGTool')
         // Recall function if the rename worked
         var showSuccess = function(response) {
           $scope.mode = 'success';
-          $scope.msg = 'User successfully deleted.'
+          $scope.msg = 'User successfully removed.'
         }
 
         // Recall function if the rename didnt worked
@@ -111,8 +113,8 @@ angular.module('CVGTool')
           $scope.msg = 'There was an error when deleting the user.'
         }
 
-        // Function that generates the call to the server to delete the file
-        $scope.delete = function() {
+        // Function that generates the call to the server to remove the file
+        $scope.remove = function() {
           adminUsersSrvc.removeUser(user, showSuccess, showError)
         }
     }])
