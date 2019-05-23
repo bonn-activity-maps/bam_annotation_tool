@@ -22,10 +22,10 @@ class DatasetService:
     aik = 'actionInKitchen'
     pt = 'poseTrack'
 
-
     # Return duration of videos hh:mm:ss.ss
-    def getDurationVideo(this, video, dataset): # TODO: check
+    def getDurationVideo(this, video, dataset):
         dir = this.STORAGE_DIR + dataset + "/" + video
+        duration = 0
         if os.path.isfile(dir):  # Is video
             sec = mp.VideoFileClip(dir).duration
             # Convert to hh:mm:ss.ss
@@ -44,7 +44,6 @@ class DatasetService:
             frames = len(os.listdir(dir))
         return frames
 
-
     def checkIntegrityOfAnnotations(this, dirAnnotations, dirImages):
         hasConsistency = True
         for f in os.listdir(dirAnnotations):
@@ -53,7 +52,6 @@ class DatasetService:
                 hasConsistency = False
                 break
         return hasConsistency
-
 
     def checkIntegrity(this, dir):
         isDir = os.path.isdir(dir)
@@ -80,23 +78,43 @@ class DatasetService:
                 print("videoDir: ", videoDir)
                 print("is file: ", os.path.isfile(videoDir))
                 if not os.path.isfile(videoDir):
-                    return 'Error'
+                    return False, "Error creating video", 400
                 else:
                     result = this.createVideo(f, dataset, videoDir, this.aik)
                     r, _, _ = result
                     if not r:
                         return result
-        return 'ok'
+        return True, 'ok', 200
 
+    def addVideosPT(this, dataset):
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        print("Adding poseTrack videos to db...")
+        if this.checkIntegrity(datasetDir):
+            dirs = ["train", "test", "val"]
+            for type in dirs:
+                imagesDir = os.path.join(datasetDir, "images/" + type)
+                listDir = os.listdir(imagesDir)
+                for f in listDir:
+                    save_path = os.path.join(imagesDir, f)
+                    print("Adding videos in ", save_path)
+                    if os.path.isdir(save_path):
+                        result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
+                        r, _, _ = result
+                        print("Adding video: ", f, " of ", dataset, " located in ", save_path, " type: ", type, " with result ", r)
+                        if not r:
+                            return result
+            return True, 'ok', 200
+        else:
+            return False, 'Error: Incomplete data.', 400
 
-    def addVideosPT(this, filename):
-        # TODO: create Video entries in DB for PT dataset
-        pass
-
-    def createVideo(this, file, dataset, save_path, type):
+    def createVideo(this, file, dataset, save_path, type, frames=0):
         duration = this.getDurationVideo(file, dataset)
-        filename, filextension = os.path.splitext(file)
-        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path, type=type)
+        filename = file
+        filextension = "/"
+        if os.path.isfile(save_path):
+            filename, filextension = os.path.splitext(file)
+        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path, type=type,
+                                          frames=frames)
         if result == 'Error':
             return False, 'Error creating video', 400
         else:
@@ -148,14 +166,14 @@ class DatasetService:
                 #         this.addVideosPT(filename)
                 #     return True, result, 200
 
-                #integrity = this.checkIntegrity(this.STORAGE_DIR + filename) #TODO: add every video to db
-                # if integrity:
-                #     os.remove(this.STORAGE_DIR + file.filename)
-                #     return True, 'ok', 200
-                # else:
-                #     shutil.rmtree(this.STORAGE_DIR + filename)
-                #     os.remove(this.STORAGE_DIR + file.filename)
-                #     return False, 'Error on folder subsystem, check your file and try again', 400
+                integrity = this.checkIntegrity(this.STORAGE_DIR + filename)
+                if integrity:
+                    os.remove(this.STORAGE_DIR + file.filename)
+                    return True, 'ok', 200
+                else:
+                    shutil.rmtree(this.STORAGE_DIR + filename)
+                    os.remove(this.STORAGE_DIR + file.filename)
+                    return False, 'Error on folder subsystem, check your file and try again', 400
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
@@ -215,7 +233,7 @@ class DatasetService:
         return True, 'ok', 200
 
     # Unwrap video in frames
-    def unwrapVideo(this, v, dataset): # TODO: callback when finished
+    def unwrapVideo(this, v, dataset):  # TODO: callback when finished
         # Create new directory for storing frames
         filename, _ = os.path.splitext(v)
         dir = this.STORAGE_DIR + dataset + "/" + filename
@@ -257,7 +275,7 @@ class DatasetService:
             return False, 'Frame does not exist', 500
 
     # Rename video and folder with frames
-    def renameVideo(this, name, newName, dataset): #TODO: Fix for posetrack USE VIDEO PATH
+    def renameVideo(this, name, newName, dataset):  # TODO: Fix for posetrack USE VIDEO PATH
         try:
             newName = secure_filename(newName)
             datasetDir = this.STORAGE_DIR + dataset + "/"
@@ -288,7 +306,7 @@ class DatasetService:
     def removeVideo(this, video, dataset):
         try:
             # Separate name of file and extension
-            filename, filextension = os.path.splitext(video) #TODO: Fix remove for posetrack USE VIDEO PATH
+            filename, filextension = os.path.splitext(video)  # TODO: Fix remove for posetrack USE VIDEO PATH
             datasetDir = this.STORAGE_DIR + dataset + "/"
             # Remove folder
             shutil.rmtree(datasetDir + filename)
@@ -321,7 +339,7 @@ class DatasetService:
 
     # def updateVideoFrames(this, video, dataset):
     #     filename, _ = os.path.splitext(video)
-    #     frames = this.getFramesVideo(filename) #TODO this is broken but it's aight
+    #     frames = this.getFramesVideo(filename)
     #     result = videoManager.updateVideoFrames(filename, frames, dataset)
     #     if result == 'Error':
     #         return False, 'Error updating frames in database', 500
@@ -364,8 +382,11 @@ class DatasetService:
             if result == 'Error':
                 return False, 'Error creating dataset', 400
             else:
-                result = this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)
-                if result == 'Error':
-                    return False, 'Error creating videos in the dataset', 400
-                else:
-                    return True, result, 200
+                print("Adding videos of type: ", type)
+                return this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)
+                # r, msg, code = result
+                # if not r:
+                #     return result
+                #     #return False, 'Error creating videos in the dataset', 400
+                # else:
+                #     return True, result, 200
