@@ -19,6 +19,8 @@ videoManager = VideoManager()
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
 
 
     # Return duration of videos hh:mm:ss.ss
@@ -36,11 +38,10 @@ class DatasetService:
         return duration
 
     # Return #frames of videos
-    def getFramesVideo(this, filename, dataset):
-        datasetDir = this.STORAGE_DIR + dataset + "/" #TODO: fix for posetrack
+    def getFramesVideo(this, dir):
         frames = 0
-        if os.path.isdir(datasetDir + filename):
-            frames = len(os.listdir(datasetDir + filename))
+        if os.path.isdir(dir):
+            frames = len(os.listdir(dir))
         return frames
 
 
@@ -69,26 +70,40 @@ class DatasetService:
 
         return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
 
+    def addVideosAIK(this, dataset):
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        listDir = os.listdir(datasetDir)
+        for f in listDir:
+            if f.endswith(".mp4"):
+                videoDir = os.path.join(datasetDir, f)
+                print("dataset: ", dataset)
+                print("videoDir: ", videoDir)
+                print("is file: ", os.path.isfile(videoDir))
+                if not os.path.isfile(videoDir):
+                    return 'Error'
+                else:
+                    result = this.createVideo(f, dataset, videoDir, this.aik)
+                    r, _, _ = result
+                    if not r:
+                        return result
+        return 'ok'
 
-    def addVideosAIK(this, filename):
-        # TODO: create Video entries in DB for AIK dataset
-        pass
 
     def addVideosPT(this, filename):
         # TODO: create Video entries in DB for PT dataset
         pass
 
-    def createVideo(this, file, dataset, save_path):
-        duration = this.getDurationVideo(file.filename, dataset)
-        filename, filextension = os.path.splitext(file.filename)
-        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path)
+    def createVideo(this, file, dataset, save_path, type):
+        duration = this.getDurationVideo(file, dataset)
+        filename, filextension = os.path.splitext(file)
+        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path, type=type)
         if result == 'Error':
             return False, 'Error creating video', 400
         else:
             return True, 'ok', 200
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
-    def storeZip(this, request, type):
+    def storeZip(this, request):
         print("TYPE: ", type)
         file = request.files['file']
 
@@ -123,15 +138,15 @@ class DatasetService:
                 zip.extractall(this.STORAGE_DIR)
                 filename, _ = os.path.splitext(file.filename)
 
-                result = datasetManager.createDataset(filename, type)
-                if result == 'Error':
-                    return False, 'Error creating dataset in database', 500
-                else:
-                    if type == "actionInKitchen":
-                        this.addVideosAIK(filename)
-                    else:
-                        this.addVideosPT(filename)
-                    return True, result, 200
+                # result = datasetManager.createDataset(filename, type)
+                # if result == 'Error':
+                #     return False, 'Error creating dataset in database', 500
+                # else:
+                #     if type == "actionInKitchen":
+                #         this.addVideosAIK(filename)
+                #     else:
+                #         this.addVideosPT(filename)
+                #     return True, result, 200
 
                 #integrity = this.checkIntegrity(this.STORAGE_DIR + filename) #TODO: add every video to db
                 # if integrity:
@@ -183,6 +198,20 @@ class DatasetService:
                 return this.createVideo(file, dataset, save_path)
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
+        return True, 'ok', 200
+
+    # Unwrap video in frames
+    def unwrapVideos(this, dataset):
+        # Create new directory for storing frames
+        dataset, _ = os.path.splitext(dataset)
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        listDir = os.listdir(datasetDir)
+        for f in listDir:
+            if f.endswith(".mp4"):
+                result = this.unwrapVideo(f, dataset)
+                r, _, _ = result
+                if not r:
+                    return result
         return True, 'ok', 200
 
     # Unwrap video in frames
@@ -277,14 +306,27 @@ class DatasetService:
             log.exception('Error deleting the file')
             return False, 'Server error deleting the file', 500
 
-    def updateVideoFrames(this, video, dataset):
-        filename, _ = os.path.splitext(video)
-        frames = this.getFramesVideo(filename, dataset)
-        result = videoManager.updateVideoFrames(filename, frames, dataset)
-        if result == 'Error':
-            return False, 'Error updating frames in database', 500
-        else:
-            return True, result, 200
+    def updateVideosFrames(this, dataset):
+        dataset, _ = os.path.splitext(dataset)
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        listDir = os.listdir(datasetDir)
+        for f in listDir:
+            if os.path.isdir(f):
+                frames = this.getFramesVideo(os.path.join(datasetDir, f))
+                result = videoManager.updateVideoFrames(f, frames, dataset)
+                r, _, _ = result
+                if not r:
+                    return result
+        return True, 'ok', 200
+
+    # def updateVideoFrames(this, video, dataset):
+    #     filename, _ = os.path.splitext(video)
+    #     frames = this.getFramesVideo(filename) #TODO this is broken but it's aight
+    #     result = videoManager.updateVideoFrames(filename, frames, dataset)
+    #     if result == 'Error':
+    #         return False, 'Error updating frames in database', 500
+    #     else:
+    #         return True, result, 200
 
     # Return dataset info
     def getDataset(this, dataset):
@@ -312,13 +354,18 @@ class DatasetService:
 
     # Return dataset name if it has been created
     def createDataset(this, req):
-        name = req['name']
+        name, _ = os.path.splitext(req['name'])
+        type = req['type']
         # Check if datasets exists
         if datasetManager.getDataset(name) != 'Error':
             return False, 'The dataset ' + name + ' already exists', 400
         else:
-            result = datasetManager.createDataset(name, req['type'])
+            result = datasetManager.createDataset(name, type)
             if result == 'Error':
                 return False, 'Error creating dataset', 400
             else:
-                return True, {'name': name}, 200
+                result = this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)
+                if result == 'Error':
+                    return False, 'Error creating videos in the dataset', 400
+                else:
+                    return True, result, 200
