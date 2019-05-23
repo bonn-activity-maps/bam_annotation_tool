@@ -59,13 +59,13 @@ angular.module('CVGTool')
             },
             'success' : function(file, xhr){
                 console.log(file, xhr);
-                adminDatasetsSrvc.createDataset(file.name, $scope.selectType);
+                adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
                 console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
                 if($scope.selectType === "actionInKitchen"){
                     console.log("True, unwrapping videos of dataset: " + file.name);
                     $scope.unwrapVideos(file.name)
                 }
-                //$scope.getInfoOfVideos(); TODO descomentar cuando funcione
+                $scope.getInfoOfVideos();
             },
         };
 
@@ -97,8 +97,8 @@ angular.module('CVGTool')
         var showListOfVideos = function (list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name, "extension": list[i].extension,
-                  "duration": list[i].duration, "frames": list[i].frames});
+              $scope.listOfVideos.push({"name": list[i].name, "dataset": list[i].dataset, "extension": list[i].extension,
+                  "duration": list[i].duration, "frames": list[i].frames, "type": list[i].type});
             }
         };
 

@@ -114,7 +114,7 @@ angular.module('CVGTool')
               });
           },
 
-          createDataset: function(name, type) {
+          createDataset: function(name, type, callback) {
               $http({
                   method: 'POST',
                   url: '/api/dataset/createDataset',
@@ -123,7 +123,8 @@ angular.module('CVGTool')
                       'type': type
                   }
               }).then(function successCallback(response) {
-                  console.log("Created dataset in database")
+                  console.log("Created dataset and videos in database");
+                  callback();
               }, function errorCallback(response) {
                   console.log(response.data.msg)
               });

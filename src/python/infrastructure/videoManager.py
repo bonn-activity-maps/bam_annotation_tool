@@ -26,7 +26,10 @@ class VideoManager:
     # Ignore mongo id
     def getVideos(this, dataset):
         try:
-            result = this.collection.find({"dataset": dataset}, {"_id": 0})
+            if dataset == "root":
+                result = this.collection.find({}, {"_id": 0})
+            else:
+                result = this.collection.find({"dataset": dataset}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding videos in db')

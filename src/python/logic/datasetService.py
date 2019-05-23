@@ -122,8 +122,8 @@ class DatasetService:
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
     def storeZip(this, request):
-        print("TYPE: ", type)
         file = request.files['file']
+        # type = request.headers['type']
 
         save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.filename))
         current_chunk = int(request.form['dzchunkindex'])
@@ -166,14 +166,15 @@ class DatasetService:
                 #         this.addVideosPT(filename)
                 #     return True, result, 200
 
-                integrity = this.checkIntegrity(this.STORAGE_DIR + filename)
-                if integrity:
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return True, 'ok', 200
-                else:
-                    shutil.rmtree(this.STORAGE_DIR + filename)
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return False, 'Error on folder subsystem, check your file and try again', 400
+                # TODO: uncomment when fixed
+                # integrity = this.checkIntegrity(this.STORAGE_DIR + filename)
+                # if integrity:
+                #     os.remove(this.STORAGE_DIR + file.filename)
+                #     return True, 'ok', 200
+                # else:
+                #     shutil.rmtree(this.STORAGE_DIR + filename)
+                #     os.remove(this.STORAGE_DIR + file.filename)
+                #     return False, 'Error on folder subsystem, check your file and try again', 400
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
