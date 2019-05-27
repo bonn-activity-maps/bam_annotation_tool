@@ -1,8 +1,9 @@
 from pymongo import MongoClient, errors
 import logging
 
-# DatasetService logger
+# DatasetManager logger
 log = logging.getLogger('datasetManager')
+
 
 class DatasetManager:
 

@@ -30,7 +30,10 @@ db.video.insertOne({
 db.annotation.insertOne({
 	"video": "video1",
 	"frame": "1",
+	"user": "Beatriz",
 	"keypointDim": "3d",
+	"dataset": "example3",
+	"validated": "uncheck",
 	"objects": [
 		{	"uid": "1",
 			"type": "person",
@@ -42,11 +45,14 @@ db.annotation.insertOne({
 db.annotation.insertOne({
 	"video": "video1",
 	"frame": "2",
+	"user": "Beatriz",
 	"keypointDim": "3d",
+	"dataset": "example3",
+	"validated": "uncheck",
 	"objects": [
 		{	"uid": "1",
 			"type": "person",
-			"keypoints": [ [3,1,1,""], [3,2,2,""]],
+			"keypoints": [ [3,3,1,""], [4,4,4,""]],
 			"labels": ["l1", "l2"]}
 	]
 })

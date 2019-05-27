@@ -9,15 +9,49 @@ log = logging.getLogger('annotationService')
 annotationManager = AnnotationManager()
 objectManager = ObjectManager()
 
+
 class AnnotationService:
 
-    # Get annotation info for given frame
-    def getAnnotation(this, video, frame):
-        result = annotationManager.getAnnotation(video, frame)
+    # Get annotation info for given frame, dataset, video and user
+    def getAnnotation(this, dataset, video, frame, user):
+        result = annotationManager.getAnnotation(dataset, video, frame, user)
         if result == 'Error':
             return False, 'The frame does not have an annotation', 400
         else:
             return True, result, 200
+
+    # Return 'ok' if the annotation has been updated
+    def createAnnotation(this, req):
+        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
+                                                    req['objects'], req['validated'], req['keypointDim'])
+        if result == 'Error':
+            return False, 'Error creating annotation', 400
+        else:
+            return True, result, 200
+
+    # Return 'ok' if the annotation has been updated
+    def updateAnnotation(this, req):
+        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+        if result == 'Error':
+            return False, 'Error updating annotation', 400
+        else:
+            return True, result, 200
+
+    # Return 'ok' if the annotation has been removed
+    def removeAnnotation(this, req):
+        result = annotationManager.removeAnnotation(req['dataset'], req['video'], req['frame'], req['user'])
+        if result == 'Error':
+            return False, 'Error deleting annotation', 400
+        else:
+            return True, result, 200
+
+    # Return 'ok' if the validated flag of an annotation has been updated
+    # def updateValidation(this, req):
+    #     result = annotationManager.updateValidation(req['dataset'], req['video'], req['frame'],  req['user'], req['validated'])
+    #     if result == 'Error':
+    #         return False, 'Error updating validated flag of annotation', 400
+    #     else:
+    #         return True, result, 200
 
     # Save annotation info for given frame
     def uploadAnnotation(this, req):
