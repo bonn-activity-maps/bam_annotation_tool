@@ -1,5 +1,6 @@
 from pymongo import MongoClient, errors
 import logging
+import os
 
 # DatasetManager logger
 log = logging.getLogger('datasetManager')
@@ -36,7 +37,8 @@ class DatasetManager:
     # Return 'ok' if the dataset has been created
     def createDataset(this, dataset, type):
         try:
-            result = this.collection.insert_one({"name": dataset, "type": type})
+            filename, filextension = os.path.splitext(dataset)
+            result = this.collection.insert_one({"name": filename, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:

@@ -5,7 +5,7 @@ angular.module('CVGTool')
         role: "",
         email: "",
         assignedTo: []
-    }
+    };
 
     var activeDataset = "";
 
@@ -32,7 +32,10 @@ angular.module('CVGTool')
 
         // Return current dataset
         getActiveDataset: function() {
-          return activeDataset;
+            if(user.role === "root"){
+                return "root"
+            }
+            else return activeDataset;
         },
 
         // Set user as u

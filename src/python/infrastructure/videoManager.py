@@ -4,8 +4,8 @@ import logging
 # VideoService logger
 log = logging.getLogger('videoManager')
 
-class VideoManager:
 
+class VideoManager:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
     collection = db.video
@@ -14,7 +14,7 @@ class VideoManager:
     def getVideo(this, video, dataset):
         try:
             result = this.collection.find_one({"name": video, "dataset": dataset}, {"_id": 0})
-            if result == None:
+            if result is None:
                 return 'Error'
             else:
                 return result
@@ -26,7 +26,10 @@ class VideoManager:
     # Ignore mongo id
     def getVideos(this, dataset):
         try:
-            result = this.collection.find({"dataset": dataset},{"_id": 0})
+            if dataset == "root":
+                result = this.collection.find({}, {"_id": 0})
+            else:
+                result = this.collection.find({"dataset": dataset}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding videos in db')
@@ -47,8 +50,8 @@ class VideoManager:
 
     # Return 'ok' if the video has been updated.
     def updateVideoFrames(this, video, frames, dataset):
-        query = {"name": video, "dataset": dataset}   # Search by video name and dataset
-        newValues = {"$set": {"frames": frames}}       # Update frames
+        query = {"name": video, "dataset": dataset}  # Search by video name and dataset
+        newValues = {"$set": {"frames": frames}}  # Update frames
         try:
             result = this.collection.update_one(query, newValues, upsert=False)
             if result.modified_count == 1:
@@ -59,10 +62,9 @@ class VideoManager:
             log.exception('Error updating video in db')
             return 'Error'
 
-
     def updateVideoName(this, video, newName, dataset):
-        query = {"name": video, "dataset": dataset}   # Search by video name and dataset
-        newValues = {"$set": {"name": newName}}        # Update name
+        query = {"name": video, "dataset": dataset}  # Search by video name and dataset
+        newValues = {"$set": {"name": newName}}  # Update name
         try:
             result = this.collection.update_one(query, newValues, upsert=False)
             if result.modified_count == 1:
