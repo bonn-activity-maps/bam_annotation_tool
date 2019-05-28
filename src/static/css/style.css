@@ -1,11 +1,11 @@
-.body{ overflow-x: hidden;
+.body{
       font-family: 'Roboto', sans-serif !important;
       padding-top: 65px;
       height: 100%%;
       width: 100%;
       position: absolute;
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: hidden;
       background: rgb(242,242,242);
 }
 
@@ -17,11 +17,12 @@
       margin-top: 4px !important;
       margin-bottom: 4px !important;
 }
-/* 
+
 .panel-heading{
   background-image: none !important;
-  background: rgb(255,255,255) !important;
-} */
+  background: rgb(34,34,34) !important;
+  color: rgb(255,255,255) !important;
+}
 
 .padding-0{
     padding-right:0;
@@ -33,12 +34,19 @@
   margin-right: 0px;
   margin-bottom: 4px;
   width: 100%;
+
+}
+
+.btn-invisible {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: rgb(255,255,255) !important;
 }
 
 .panel-heading-tool{
-  background: rgb(245,245,245) !important;
+  background: rgb(34,34,34) !important;
 }
 
 .panel-heading-tool-selected{
-  background: rgb(230,230,230) !important;
+  background: rgb(76,80,89) !important;
 }

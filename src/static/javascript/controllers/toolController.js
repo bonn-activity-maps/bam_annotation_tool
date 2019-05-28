@@ -30,9 +30,14 @@ angular.module('CVGTool')
         }
       };
 
-      // Function that sets the panel to manage keypoints
+      // Function that opens the panel to manage keypoints
       $scope.openKeyPointEditor = function() {
         $scope.keyPointEditTab = true;
+      }
+
+      // Function that closes the panel to manage keypoints
+      $scope.closeKeyPointEditor = function() {
+        $scope.keyPointEditTab = false;
       }
 
       $scope.dragOptions = {}
