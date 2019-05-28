@@ -62,11 +62,15 @@ class DatasetService:
         hasTest = os.path.isdir(dirImages + "/test") and os.path.isdir(dirAnnotations + "/test")
         hasTrain = os.path.isdir(dirImages + "/train") and os.path.isdir(dirAnnotations + "/train")
         hasVal = os.path.isdir(dirImages + "/val") and os.path.isdir(dirAnnotations + "/val")
-        hasConsistency = this.checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
-        hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
-        hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
 
-        return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
+        try:
+            hasConsistency = this.checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
+            hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
+            hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
+
+            return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
+        except:
+            return False
 
     def addVideosAIK(this, dataset):
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
@@ -100,7 +104,8 @@ class DatasetService:
                     if os.path.isdir(save_path):
                         result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
                         r, _, _ = result
-                        print("Adding video: ", f, " of ", dataset, " located in ", save_path, " type: ", type, " with result ", r)
+                        print("Adding video: ", f, " of ", dataset, " located in ", save_path, " type: ", type,
+                              " with result ", r)
                         if not r:
                             return result
             return True, 'ok', 200
@@ -156,25 +161,23 @@ class DatasetService:
                 zip.extractall(this.STORAGE_DIR)
                 filename, _ = os.path.splitext(file.filename)
 
-                # result = datasetManager.createDataset(filename, type)
-                # if result == 'Error':
-                #     return False, 'Error creating dataset in database', 500
-                # else:
-                #     if type == "actionInKitchen":
-                #         this.addVideosAIK(filename)
-                #     else:
-                #         this.addVideosPT(filename)
-                #     return True, result, 200
-
-                # TODO: uncomment when fixed
-                integrity = this.checkIntegrity(this.STORAGE_DIR + filename)
+                integrity = this.checkIntegrity(this.STORAGE_DIR + filename) if type == this.pt else True
                 if integrity:
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return True, 'ok', 200
+                    os.remove(this.STORAGE_DIR + file.filename)  # Remove zip file
+                    result = datasetManager.createDataset(filename, type)
+                    if result == 'Error':
+                        return False, 'Error creating dataset in database', 500
+                    else:
+                        if type == "actionInKitchen":
+                            this.addVideosAIK(filename)
+                        else:
+                            this.addVideosPT(filename)
+                        return True, result, 200
                 else:
                     shutil.rmtree(this.STORAGE_DIR + filename)
                     os.remove(this.STORAGE_DIR + file.filename)
                     return False, 'Error on folder subsystem, check your file and try again', 400
+
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200

@@ -31,12 +31,12 @@ angular.module('CVGTool')
             },
             'success' : function(file, xhr){
                 console.log(file, xhr);
-                adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
-                console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
-                if($scope.selectType === "actionInKitchen"){
-                    console.log("True, unwrapping videos of dataset: " + file.name);
-                    $scope.unwrapVideos(file.name)
-                }
+                // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
+                // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
+                // if($scope.selectType === "actionInKitchen"){
+                //     console.log("True, unwrapping videos of dataset: " + file.name);
+                $scope.unwrapVideos(file.name);
+                // }
                 $scope.getInfoOfVideos();
             },
         };
