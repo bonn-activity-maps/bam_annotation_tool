@@ -59,35 +59,6 @@
                 </div>
             </div>
           </div>
-        <!-- <div class="row" style="height: 90%;">
-          <div class="panel panel-default text-center" style="height: 90%;">
-            <div class="panel-body"style="height: 90%;">
-              <div class="row" style="height: 50%;">
-                <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
-                    <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-                </div>
-                <div class="col-md-6" style="height: 100%; padding-bottom: 1px;">
-                    <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-                </div>
-              </div>
-              <div class="row" style="height: 50%;">
-                <div class="col-md-6" style="height: 100%; padding-top: 1px;">
-                    <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-                </div>
-                <div class="col-md-6" style="height: 100%; padding-top: 1px;">
-                    <canvas id="canvas4" class="playable-canvas" style="border:1px solid #000000;"></canvas>
-                </div>
-              </div>
-            </div
-          </div>
-        </div>
-        <div class="row" style="height: 8%;">
-          <div class="panel panel-default" style="height: 8%;">
-            <div class="panel-body" style="height: 8%;">
-
-            </div>
-          </div>
-        </div> -->
       </div>
       <!-- Tools panel -->
       <div class="col-md-1" style="height: 100%;">
@@ -124,27 +95,33 @@
                 </div>
               </div>
               <!-- Keypoints tool -->
-              <div class="panel panel-default panel-tool" ng-click="switchTool('keypoint')">
+              <div class="panel panel-default panel-tool" ng-click="switchTool('keypoint');">
                 <div class="panel-heading panel-heading-tool" ng-if="tool!='keypoint'">
                   <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
                 </div>
                 <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='keypoint'">
                   <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
                 </div>
-                <div class="panel-body" ng-if="tool=='keypoint'">
-                    <button class="btn btn-default" data-toggle="tooltip" title="Add keypoint" data-placement="left" ng-click="switchSubTool('addKeypoint')">
-                        <span ng-if="subTool!='addKeypoint'" class="glyphicon glyphicon-plus"></span>
-                        <span ng-if="subTool=='addKeypoint'" style="color: blue;" class="glyphicon glyphicon-plus"></span>
-                    </button>
-                    <button class="btn btn-default" data-toggle="tooltip" title="Edit keypoint tags" data-placement="left" ng-click="switchSubTool('editKeypointTags')">
-                        <span ng-if="subTool!='editKeypointTags'" class="glyphicon glyphicon-tag"></span>
-                        <span ng-if="subTool=='editKeypointTags'" style="color: blue;" class="glyphicon glyphicon-tag"></span>
-                    </button>
-                    <button class="btn btn-default" data-toggle="tooltip" title="Remove keypoint" data-placement="left" ng-click="switchSubTool('removeKeypoint')">
-                        <span ng-if="subTool!='removeKeypoint'" class="glyphicon glyphicon-remove"></span>
-                        <span ng-if="subTool=='removeKeypoint'" style="color: blue;" class="glyphicon glyphicon-remove"></span>
-                    </button>
-                </div>
+              </div>
+              <div class="panel panel-default" ng-draggable='dragOptions' style="position: absolute; width: 500px; height: 750px;" ng-show="keyPointEditTab==true">
+                  <div class="panel-heading">
+                      <div class="row">
+                          <div class="col-sm-1">
+
+                          </div>
+                          <div class="col-sm-10">
+                              Keypoint Manager
+                          </div>
+                          <div class="col-sm-1">
+                              <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span class="glyphicon glyphicon-remove"></span></button>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="panel-body">
+                    <p>
+                        Test draggable
+                    </p>
+                  </div>
               </div>
           </div>
         </div>

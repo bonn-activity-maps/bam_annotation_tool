@@ -103,7 +103,7 @@ angular.module('CVGTool')
               $http({
                   method: 'POST',
                   url: '/api/dataset/updateVideosFrames',
-                  data: {
+                  headers: {
                       'dataset': dataset
                   }
               }).then(function successCallback(response) {

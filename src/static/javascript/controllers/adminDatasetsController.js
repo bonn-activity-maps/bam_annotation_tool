@@ -5,35 +5,7 @@ angular.module('CVGTool')
      */
     .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfVideos = [];
-        $scope.selectType = "actionInKitchen";
-
-        // // Dropzone options
-        // $scope.dzOptions = {
-        //     paramName: 'file',
-        //     chunking: true,
-        //     forceChunking: true,
-        //     acceptedFiles: '.mp4',
-        //     url: '/api/dataset/uploadVideo',
-        //     headers: {
-        //         "dataset": navSrvc.getActiveDataset()
-        //     },
-        //     maxFilesize: 10240, // mb
-        //     chunkSize: 20000000, // bytes (chunk: 20mb)
-        //     dictDefaultMessage: 'Drop mp4 file here to upload a video.'
-      	// };
-        //
-        // // Dropzone event handler
-        // $scope.dzCallbacks = {
-      	// 	'addedfile' : function(file){
-      	// 		console.log(file);
-      	// 		$scope.newFile = file;
-      	// 	},
-      	// 	'success' : function(file, xhr){
-      	// 		console.log(file, xhr);
-        //     $scope.unwrapVideo(file.name);
-        //     $scope.getInfoOfVideos();
-      	// 	},
-      	// };
+        $scope.datasetType = 'actionInKitchen';
 
         // Dropzone zip options
         $scope.dzZipOptions = {
@@ -43,9 +15,9 @@ angular.module('CVGTool')
             uploadMultiple: false,
             maxFilesize: 10240, // mb
             chunkSize: 20000000, // bytes (chunk: 20mb)
-            // headers: {
-            //     "type": $scope.selectType
-            // },
+            headers: {
+                "type": ""
+            },
             acceptedFiles: ".zip",
             url: '/api/dataset/uploadZip',
             dictDefaultMessage: 'Drop zip file here to upload a dataset.'
@@ -59,15 +31,22 @@ angular.module('CVGTool')
             },
             'success' : function(file, xhr){
                 console.log(file, xhr);
-                adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
-                console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
-                if($scope.selectType === "actionInKitchen"){
-                    console.log("True, unwrapping videos of dataset: " + file.name);
-                    $scope.unwrapVideos(file.name)
-                }
+                // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
+                // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
+                // if($scope.selectType === "actionInKitchen"){
+                //     console.log("True, unwrapping videos of dataset: " + file.name);
+                $scope.unwrapVideos(file.name);
+                // }
                 $scope.getInfoOfVideos();
             },
         };
+
+        // Set watcher to control the selector
+        $scope.$watch(function(){
+            return $scope.datasetType;
+        }, function(newVal, oldVal){
+            $scope.dzZipOptions.headers.type = $scope.datasetType;
+        })
 
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {

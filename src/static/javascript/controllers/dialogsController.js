@@ -161,7 +161,8 @@ angular.module('CVGTool')
     /*
      * Controller of the dialog of the "Add new camera to the camera array" action
      */
-    .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout','toolSrvc', '$mdDialog', function ($scope, $timeout, toolSrvc, $mdDialog) {
+    .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout','toolSrvc', 'navSrvc', '$mdDialog',
+                                    function ($scope, $timeout, toolSrvc, navSrvc, $mdDialog) {
         $scope.isVideoSelected = false;
         $scope.videoSelected;
         $scope.search = {};  // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
@@ -237,7 +238,7 @@ angular.module('CVGTool')
 
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
-            toolSrvc.getInfoOfVideos(showListOfVideos);
+            toolSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
         }
 
         // Function to go back from the dialog once the frames have been retrieved from the server
@@ -271,7 +272,8 @@ angular.module('CVGTool')
 
               // Make all the petitions
               for (var i=0; ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
-                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, callbackRetrievingFrame);
+                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset(),
+                    callbackRetrievingFrame);
               }
             }
         }

@@ -95,6 +95,7 @@ def removeDataset():
 @app.route('/api/dataset/uploadZip', methods=['POST'])
 def uploadZip():
     success, msg, status = datasetService.storeZip(request)
+    print(request.headers["type"])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
@@ -129,7 +130,8 @@ def getVideos():
 # Get frame from video
 @app.route('/api/dataset/getFrameVideo', methods=['GET'])
 def getVideoFrame():
-    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'])
+    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'],
+                                                        request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Rename video
@@ -156,8 +158,7 @@ def updateVideoFrames():
 # Update existing video
 @app.route('/api/dataset/updateVideosFrames', methods=['POST'])
 def updateVideosFrames():
-    req_data = request.get_json()
-    success, msg, status = datasetService.updateVideosFrames(req_data['dataset'])
+    success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
