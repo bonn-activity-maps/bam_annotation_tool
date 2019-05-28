@@ -1,21 +1,20 @@
 angular.module('CVGTool')
 
     .factory('toolSrvc', function ($state, $http, $httpParamSerializer) {
+
         return {
-          getInfoOfVideos: function (callbackSuccess) {
+          getInfoOfVideos: function (callbackSuccess, dataset) {
               $http({
                   method: 'GET',
-                  url: '/api/dataset/getVideos'
-
+                  url: '/api/dataset/getVideos',
+                  headers: {
+                      'dataset': dataset
+                  }
               }).then(function successCallback(response) {
-                  if (response.data.msg.length == 0) {
+                  if (response.data.msg.length === 0) {
                     callbackSuccess([])
                   } else {
-                    var parsedArray = []
-                    for (i = 0; i < response.data.msg.length; i++) {
-                      parsedArray.push(JSON.parse(response.data.msg[i]))
-                    }
-                    callbackSuccess(parsedArray)
+                    callbackSuccess(response.data.msg)
                   }
                 }, function errorCallback(response) {
                   console.log(response.data.msg);

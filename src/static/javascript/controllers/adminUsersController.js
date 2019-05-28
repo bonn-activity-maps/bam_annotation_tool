@@ -5,7 +5,7 @@ angular.module('CVGTool')
      */
     .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminUsersSrvc, navSrvc, $mdDialog) {
         $scope.listOfUsers = [];
-        $scope.avaiableRoles = [];
+        $scope.availableRoles = [];
         $scope.userRole = "";
 
         $scope.activeDataset = "";
@@ -23,10 +23,10 @@ angular.module('CVGTool')
             $scope.userRole = navSrvc.getUserRole();
 
             if ($scope.userRole.localeCompare('admin') == 0) {
-                $scope.avaiableRoles.push({name: "user"})
+                $scope.availableRoles.push({name: "user"})
             } else if ($scope.userRole.localeCompare('root') == 0) {
-                $scope.avaiableRoles.push({name: "user"});
-                $scope.avaiableRoles.push({name: "admin"});
+                $scope.availableRoles.push({name: "user"});
+                $scope.availableRoles.push({name: "admin"});
             }
         }
 
