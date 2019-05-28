@@ -21,6 +21,21 @@ angular.module('CVGTool')
               });
           },
 
+          unwrapVideos: function (dataset, callbackFinished) {
+              $http({
+                  method: 'POST',
+                  url: '/api/dataset/unwrapVideos',
+                  data: {
+                      'dataset': dataset
+                  }
+              }).then(function successCallback(response) {
+                  // TODO: add action when unwrap is finished
+                  callbackFinished(dataset)
+              }, function errorCallback(response) {
+                  console.log(response.data.msg)
+              });
+          },
+
           unwrapVideo: function (videoName, dataset, callbackFinished) {
               $http({
                   method: 'POST',
@@ -79,6 +94,37 @@ angular.module('CVGTool')
               }).then(function successCallback(response) {
                   callback();
                   console.log("Updated frames for video ", videoName, " in database")
+              }, function errorCallback(response) {
+                  console.log(response.data.msg)
+              });
+          },
+
+          updateVideosFrames: function(dataset, callback) {
+              $http({
+                  method: 'POST',
+                  url: '/api/dataset/updateVideosFrames',
+                  data: {
+                      'dataset': dataset
+                  }
+              }).then(function successCallback(response) {
+                  callback();
+                  console.log("Updated frames for videos of" + dataset + " in database")
+              }, function errorCallback(response) {
+                  console.log(response.data.msg)
+              });
+          },
+
+          createDataset: function(name, type, callback) {
+              $http({
+                  method: 'POST',
+                  url: '/api/dataset/createDataset',
+                  data: {
+                      'name': name,
+                      'type': type
+                  }
+              }).then(function successCallback(response) {
+                  console.log("Created dataset and videos in database");
+                  callback();
               }, function errorCallback(response) {
                   console.log(response.data.msg)
               });
