@@ -272,7 +272,8 @@ angular.module('CVGTool')
 
               // Make all the petitions
               for (var i=0; ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
-                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, callbackRetrievingFrame);
+                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset(),
+                    callbackRetrievingFrame);
               }
             }
         }

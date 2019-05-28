@@ -21,13 +21,14 @@ angular.module('CVGTool')
               });
           },
 
-          getFrame: function (fileName, frame, callbackSuccess) {
+          getFrame: function (fileName, frame, dataset, callbackSuccess) {
               $http({
                   method: 'GET',
                   url: '/api/dataset/getFrameVideo',
                   headers: {
                       'fileName': fileName,
-                      'frame': frame
+                      'frame': frame,
+                      'dataset': dataset
                   }
               }).then(function successCallback(response) {
                   callbackSuccess(response.data.msg.image,response.data.msg.filename,response.data.msg.frame);

@@ -246,7 +246,7 @@ class DatasetService:
             return False, 'The directory for extracting frames exists', 500
 
         # Unwrap video in subfolder
-        outFile = dir + '/' + '%08d.jpg'
+        outFile = dir + '/' + '%06d.jpg'
         cmd = [this.ffmpeg, '-i', datasetDir + v, '-qscale:v', '2', outFile]
         # Extract frames from 10000 to 20000
         # cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-vf','select=\'between(n\,10000\,20000)\'','-qscale:v','2',outFile]
@@ -263,10 +263,11 @@ class DatasetService:
             return True, result, 200
 
     # Return the corresponding frame of video
-    def getVideoFrame(this, video, frame):
-        frame = str(frame).zfill(8)  # Fill with 0 until 8 digits
-        file = os.path.join(this.STORAGE_DIR, video, frame + '.jpg')
-
+    def getVideoFrame(this, video, frame, dataset):
+        videoObject = videoManager.getVideo(video, dataset)
+        frame = str(frame).zfill(6)  # Fill with 0 until 8 digits
+        file = os.path.join(videoObject['path'], frame + '.jpg')
+        print(file)
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
