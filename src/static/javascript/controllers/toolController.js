@@ -5,13 +5,14 @@ angular.module('CVGTool')
       // $(document).ready(function() {
       //       $('[data-toggle="tooltip"]').tooltip();
       //   });
-
 //////// TOOLS
       $scope.tool = 'navigation';  // navigation = Normal
                                    // keypoint = Key-Point mode
 
       $scope.subTool = '';         // Subtool inside tool, for example "addKeypoint";
+      $scope.keyPointEditTab = false; // Boolean to control if the keypoint edit panel is activated
 
+      // Switches the value of the secondary tool
       $scope.switchSubTool = function (sT) {
         if ($scope.subTool.localeCompare(sT) == 0) {
             $scope.subTool = '';
@@ -20,10 +21,21 @@ angular.module('CVGTool')
         $scope.subTool = sT;
       };
 
+      // Switches the value of the principal tool
       $scope.switchTool = function (newTool) {
         $scope.tool = newTool
 
+        if ($scope.tool.localeCompare("keypoint")) {
+            $scope.openKeyPointEditor();
+        }
       };
+
+      // Function that sets the panel to manage keypoints
+      $scope.openKeyPointEditor = function() {
+        $scope.keyPointEditTab = true;
+      }
+
+      $scope.dragOptions = {}
 
 //////// TIMELINE
       // Variables to control the timeline
@@ -116,8 +128,8 @@ angular.module('CVGTool')
                   number: successData[i].frame,
                   image: stringImage
                 });
-
               }
+
               // Short frames once loaded
               frames.sort(function(a, b) {
                   return a.number - b.number;
