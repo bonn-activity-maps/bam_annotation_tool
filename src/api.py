@@ -158,8 +158,7 @@ def updateVideoFrames():
 # Update existing video
 @app.route('/api/dataset/updateVideosFrames', methods=['POST'])
 def updateVideosFrames():
-    req_data = request.get_json()
-    success, msg, status = datasetService.updateVideosFrames(req_data['dataset'])
+    success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 

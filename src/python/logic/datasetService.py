@@ -78,13 +78,11 @@ class DatasetService:
         for f in listDir:
             if f.endswith(".mp4"):
                 videoDir = os.path.join(datasetDir, f)
-                print("dataset: ", dataset)
-                print("videoDir: ", videoDir)
-                print("is file: ", os.path.isfile(videoDir))
                 if not os.path.isfile(videoDir):
                     return False, "Error creating video", 400
                 else:
-                    result = this.createVideo(f, dataset, videoDir, this.aik)
+                    filename, _ = os.path.splitext(videoDir)
+                    result = this.createVideo(f, dataset, filename, this.aik)
                     r, _, _ = result
                     if not r:
                         return result
@@ -92,7 +90,6 @@ class DatasetService:
 
     def addVideosPT(this, dataset):
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        print("Adding poseTrack videos to db...")
         if this.checkIntegrity(datasetDir):
             dirs = ["train", "test", "val"]
             for type in dirs:
@@ -100,12 +97,9 @@ class DatasetService:
                 listDir = os.listdir(imagesDir)
                 for f in listDir:
                     save_path = os.path.join(imagesDir, f)
-                    print("Adding videos in ", save_path)
                     if os.path.isdir(save_path):
                         result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
                         r, _, _ = result
-                        print("Adding video: ", f, " of ", dataset, " located in ", save_path, " type: ", type,
-                              " with result ", r)
                         if not r:
                             return result
             return True, 'ok', 200
@@ -270,7 +264,6 @@ class DatasetService:
         videoObject = videoManager.getVideo(video, dataset)
         frame = str(frame).zfill(6)  # Fill with 0 until 8 digits
         file = os.path.join(videoObject['path'], frame + '.jpg')
-        print(file)
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
@@ -329,27 +322,19 @@ class DatasetService:
             log.exception('Error deleting the file')
             return False, 'Server error deleting the file', 500
 
+    # Update frames of videos in DB
     def updateVideosFrames(this, dataset):
         dataset, _ = os.path.splitext(dataset)
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        listDir = os.listdir(datasetDir)
-        for f in listDir:
-            if os.path.isdir(f):
-                frames = this.getFramesVideo(os.path.join(datasetDir, f))
-                result = videoManager.updateVideoFrames(f, frames, dataset)
-                r, _, _ = result
-                if not r:
-                    return result
-        return True, 'ok', 200
-
-    # def updateVideoFrames(this, video, dataset):
-    #     filename, _ = os.path.splitext(video)
-    #     frames = this.getFramesVideo(filename)
-    #     result = videoManager.updateVideoFrames(filename, frames, dataset)
-    #     if result == 'Error':
-    #         return False, 'Error updating frames in database', 500
-    #     else:
-    #         return True, result, 200
+        videosInDataset = videoManager.getVideos(dataset)
+        if videosInDataset != 'Error':
+            for video in videosInDataset:
+                frames = this.getFramesVideo(video['path'])
+                result = videoManager.updateVideoFrames(video['name'], frames, dataset)
+                if result == 'Error':
+                    return False, 'Error updating video frames'
+            return True, 'ok', 200
+        else:
+            return False, 'No videos for this dataset', 400
 
     # Return dataset info
     def getDataset(this, dataset):
