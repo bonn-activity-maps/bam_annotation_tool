@@ -23,6 +23,15 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get all annotations for given dataset, video, user and val. Not return mongo id
+    def getAnnotations(this, dataset, video, user, val):
+        try:
+            result = this.collection.find({"dataset": dataset, "video": video, "user": user, "validated": val}, {'_id': 0})
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
     # Return 'ok' if the annotation has been updated.
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to uncheck if is not received in params
@@ -57,19 +66,19 @@ class AnnotationManager:
             log.exception('Error removing annotation in db')
             return 'Error'
 
-    # Return 'ok' if the validated flag has been updated. if annotation doesn't exist, it isn't created
-    # def updateValidation(this, dataset, video, frame, user, validated):
-    #     query = {"dataset": dataset, "video": video, "frame": frame, "user": user}   # Search by dataset, video, frame, user
-    #     # Update validated flag
-    #     newValues = {"$set": {"validated": validated}}
-    #     try:
-    #         result = this.collection.update_one(query, newValues, upsert=False)
-    #         if result.modified_count == 1:
-    #             return 'ok'
-    #         else:
-    #             return 'Error'
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error updating validated annotation in db')
+    # Return 'ok' if the validated flag has been updated in all frames. if annotation doesn't exist, it isn't created
+    def updateValidation(this, dataset, video, frames, user, val):
+        query = {"dataset": dataset, "video": video, "user": user, "frame": {"$in": frames}}   # Search by dataset, video, user, and all frames in array
+        # Update validated flag
+        newValues = {"$set": {"validated": val}}
+        try:
+            result = this.collection.update_many(query, newValues, upsert=False)
+            if result.modified_count == len(frames):
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating validated annotation in db')
             return 'Error'
 
     # Save annotation info for given frame

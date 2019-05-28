@@ -15,7 +15,6 @@ class ObjectManager:
         else:
             return result
 
-
     # Create new object for annotations with type, nKeypoints and labels for each kp
     def createObject(this, type, nkp, labels):
         try:
