@@ -25,7 +25,7 @@ angular.module('CVGTool')
       $scope.switchTool = function (newTool) {
         $scope.tool = newTool
 
-        if ($scope.tool.localeCompare("keypoint")) {
+        if ($scope.tool.localeCompare("keypoint") == 0) {
             $scope.openKeyPointEditor();
         }
       };

@@ -103,10 +103,21 @@
                   <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
                 </div>
               </div>
-              <div class="panel panel-default" ng-draggable='dragOptions' style="position: absolute; width: 500px; height: 750px;" ng-show="keyPointEditTab">
+              <div class="panel panel-default" ng-draggable='dragOptions' style="position: absolute; width: 500px; height: 750px;" ng-show="keyPointEditTab==true">
+                  <div class="panel-heading">
+                      <div class="row">
+                          <div class="col-sm-1">
+
+                          </div>
+                          <div class="col-sm-10">
+                              Keypoint Manager
+                          </div>
+                          <div class="col-sm-1">
+                              <button><span class="glyphicon glyphicon-remove"></span></button>
+                          </div>
+                      </div>
+                  </div>
                   <div class="panel-body">
-                    <h4>Keypoints</h4>
-                    <hr/>
                     <p>
                         Test draggable
                     </p>
