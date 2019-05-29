@@ -3,6 +3,7 @@ import json
 
 from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
+from python.logic.objectService import ObjectService
 from python.logic.userService import UserService
 from python.logic.taskService import TaskService
 
@@ -10,6 +11,7 @@ app = Flask(__name__)
 
 datasetService = DatasetService()
 annotationService = AnnotationService()
+objectService = ObjectService()
 userService = UserService()
 taskService = TaskService()
 
@@ -222,6 +224,44 @@ def getAnnotationObject():
 def uploadAnnotationObject():
     success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+
+#### OBJECTS ####
+
+# Get object info
+@app.route('/api/object/getObject', methods=['GET'])
+def getObject():
+    success, msg, status = objectService.getObject(request.headers['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get all objects
+@app.route('/api/object/getObjects', methods=['GET'])
+def getObjects():
+    success, msg, status = objectService.getObjects()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new object
+@app.route('/api/object/createObject', methods=['POST'])
+def createObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.createObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update existing object
+@app.route('/api/object/updateObject', methods=['POST'])
+def updateObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.updateObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Delete object
+@app.route('/api/object/removeObject', methods=['POST'])
+def removeObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.removeObject(req_data['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 #### TASKS ####
 
