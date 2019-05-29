@@ -27,7 +27,7 @@
       <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
         <li><a href="#!/admin/statistics"> Statistics</a></li>
         <li><a href="#!/admin/users"> User management</a></li>
-        <li><a href="#!/admin/datasets"> Dataset</a></li>
+        <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
         <li><a href="#!/admin/annotations"> Annotations</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">

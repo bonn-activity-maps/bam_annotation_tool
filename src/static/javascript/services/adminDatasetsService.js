@@ -112,6 +112,18 @@ angular.module('CVGTool')
               }, function errorCallback(response) {
                   console.log(response.data.msg)
               });
+          },
+
+          getDatasets: function(callback) {
+              $http({
+                  method: 'GET',
+                  url: '/api/dataset/getDatasets'
+              }).then(function successCallback(response) {
+                  callback(response.data.msg);
+                  console.log("Successfully retrieved list of users")
+              }, function errorCallback(response) {
+                  console.log(response.data.msg)
+              });
           }
       }
 });

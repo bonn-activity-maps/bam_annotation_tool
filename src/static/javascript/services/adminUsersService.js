@@ -41,7 +41,7 @@ angular.module('CVGTool')
                 })
             },
 
-            updateUser: function(userName, userEmail, userRole, userDatasets) {
+            updateUser: function(oldName, userName, userEmail, userRole, userDatasets, callback) {
                 $http({
                     method: 'POST',
                     url: 'api/user/updateUser',
@@ -49,9 +49,11 @@ angular.module('CVGTool')
                         'name': userName,
                         'email': userEmail,
                         'role': userRole,
-                        'assignedTo': userDatasets
+                        'assignedTo': userDatasets,
+                        'oldName': oldName
                     }
                 }).then(function successCallback(response) {
+                    callback();
                     console.log('User updated succesfully');
                 }, function errorCallback(response) {
                     console.log('Error while updating user: ' + response.data.msg)

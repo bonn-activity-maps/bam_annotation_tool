@@ -6,12 +6,13 @@
             <div class="panel-body">
               <h2>Users</h2>
               <hr/>
-              <div style="overflow-y: auto; max-height: 100%;">
+              <div style="overflow-y: auto; max-height: 80%;">
                 <table class="table table-bordered table-responsive text-center">
                   <thead>
                     <tr>
-                      <th class="col-md-4">Username</th>
+                      <th class="col-md-2">Username</th>
                       <th class="col-md-1">Role</th>
+                      <th class="col-md-2">Dataset</th>
                       <th class="col-md-5">E-mail</th>
                       <th class="col-md-2">Actions</th>
                     </tr>
@@ -20,8 +21,9 @@
                     <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
                         <td class="text-left">{{user.name}}</td>
                         <td>{{user.role}}</td>
+                        <td>{{user.dataset[0]}}</td>
                         <td>{{user.email}}</td>
-                        <td><md-button ng-click="editUser(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+                        <td><md-button ng-click="enableEdit(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                     </tr>
                     <tr ng-if="listOfUsers.length == 0">
                       <td class="text-left">No users created for this dataset.</td>
@@ -39,7 +41,8 @@
           <!-- Panel to create a new user -->
           <div class="panel panel-default" style="height: 49%">
             <div class="panel-body" style="height: 49%">
-              <h2>Create User</h2>
+              <h2 ng-if="mode == 'creation'">Create User</h2>
+              <h2 ng-if="mode == 'edit'">Edit User</h2>
               <hr/>
               <form role="form" ng-submit="createUser()">
                 <div ng-if="error" class="alert alert-danger feedbackMessages">
@@ -47,31 +50,45 @@
                 </div>
                 <div class="form-group">
                   <label>Username</label>
-                  <input ng-click="hideError()" type="text" ng-model="username" class="form-control" required />
+                  <input ng-click="hideError()" type="text" ng-model="editUser.username" class="form-control" required />
                 </div>
                 <div class="form-group">
                   <label>Email</label>
-                  <input ng-click="hideError()" type="email" ng-model="email" class="form-control" required />
+                  <input ng-click="hideError()" type="email" ng-model="editUser.email" class="form-control" required />
                 </div>
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
                        <label>Role</label>
-                       <select class="form-control" ng-model="role">
+                       <select class="form-control" ng-model="editUser.role">
                             <option  ng-repeat="r in availableRoles" >{{r.name}}</option>
                        </select>
                       </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="form-group">
+
+                    <div ng-if="user.role == 'admin'" class="form-group">
                       <label>Dataset</label>
-                      <input ng-click="hideError()" type="text" ng-model="activeDataset" class="form-control" disabled/>
+                      <input ng-click="hideError()" type="text" ng-model="editUser.dataset" class="form-control" disabled/>
                     </div>
+
+                    <div ng-if="user.role == 'root'" class="form-group">
+                      <label>Dataset</label>
+                      <select class="form-control" ng-model="editUser.dataset">
+                        <option  ng-repeat="d in listOfDatasets" >{{d.name}}</option>
+                      </select>
+                    </div>
+
                   </div>
                 </div>
                 <hr/>
                 <p style="text-align:center">
-                  <button type="submit" class="btn btn-primary theme-accent">Create</button>
+                  <button ng-if="mode == 'creation'" type="submit" class="btn btn-primary theme-accent">Create</button>
+                  <button ng-if="mode == 'creation'" type="reset" class="btn btn-primary theme-accent">Reset</button>
+                  <button ng-if="mode == 'edit'" ng-click="updateUser()" class="btn btn-primary theme-accent">Update</button>
+                  <button ng-if="mode == 'edit'" ng-click="resetPassword()" class="btn btn-primary theme-accent">Reset Password</button>
+                  <button ng-if="mode == 'edit'" ng-click="cancelEdit()" class="btn btn-primary theme-accent">Cancel</button>
+
                 </p>
               </form>
             </div>

@@ -63,6 +63,14 @@ def updateUser():
     success, msg, status = userService.updateUser(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
+# Update existing user
+@app.route('/api/user/updateUserPassword', methods=['POST'])
+def updateUserPassword():
+    # TODO
+    success, msg, status = userService.updateUser(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+
 
 #### DATASET ####
 

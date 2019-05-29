@@ -71,7 +71,7 @@ class UserService:
 
     # Return 'ok' if the user has been updated
     def updateUser(this, req):
-        result = userManager.updateUser(req['name'], req['password'], req['assignedTo'], req['role'], req['email'])
+        result = userManager.updateUser(req['oldName'], req['name'], req['assignedTo'], req['role'], req['email'])
         if result == 'Error':
             return False, 'Error updating user', 400
         else:
