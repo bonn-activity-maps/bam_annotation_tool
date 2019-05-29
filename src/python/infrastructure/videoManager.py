@@ -86,3 +86,16 @@ class VideoManager:
         except errors.PyMongoError as e:
             log.exception('Error removing video in db')
             return 'Error'
+
+    # Remove all videos associated to dataset
+    # Return 'ok' if the videos have been removed
+    def removeVideosByDataset(this, dataset):
+        try:
+            result = this.collection.delete_many({"dataset": dataset})
+            if result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error removing video in db')
+            return 'Error'

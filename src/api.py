@@ -89,7 +89,7 @@ def createDataset():
 def removeDataset():
     req_data = request.get_json()
     success, msg, status = datasetService.removeDataset(req_data['name'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Upload chunked zip file
 @app.route('/api/dataset/uploadZip', methods=['POST'])
@@ -100,19 +100,6 @@ def uploadZip():
 
 
 #### VIDEO ####
-
-# Upload chunked video
-@app.route('/api/dataset/uploadVideo', methods=['POST'])
-def uploadVideo():
-    success, msg, status = datasetService.storeVideo(request, request.headers['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Unwrap video
-@app.route('/api/dataset/unwrapVideo', methods=['POST'])
-def unwrapVideo():
-    req_data = request.get_json()
-    success, msg, status = datasetService.unwrapVideo(req_data['name'], req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Unwrap videos of a dataset
 @app.route('/api/dataset/unwrapVideos', methods=['POST'])
@@ -164,11 +151,47 @@ def updateVideosFrames():
 
 #### ANNOTATION ####
 
-# Get annotation info for given frame
-@app.route('/api/annotation/get/frame', methods=['GET'])
+# Get annotation info for given frame, dataset, video and user
+@app.route('/api/annotation/getAnnotation', methods=['GET'])
 def getAnnotation():
-    success, msg, status = annotationService.getAnnotation(request.headers['fileName'], request.headers['frame'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers['video'],
+                                                           request.headers['frame'], request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
+@app.route('/api/annotation/getAnnotations', methods=['GET'])
+def getAnnotations():
+    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new annotation
+@app.route('/api/annotation/createAnnotation', methods=['POST'])
+def createAnnotation():
+    success, msg, status = annotationService.createAnnotation(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update existing annotation for given frame, dataset, video and user
+@app.route('/api/annotation/updateAnnotation', methods=['POST'])
+def updateAnnotation():
+    success, msg, status = annotationService.updateAnnotation(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Delete annotation
+# TODO: do we need to filter in remove by validated flag?
+@app.route('/api/annotation/removeAnnotation', methods=['POST'])
+def removeAnnotation():
+    success, msg, status = annotationService.removeAnnotation(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Validate frames for given dataset, video and user
+# frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]
+# Each validated flag corresponds to an array of frames (the same position)
+@app.route('/api/annotation/updateAnnotation/validate', methods=['POST'])
+def updateAnnotationValidation():
+    success, msg, status = annotationService.updateValidation(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+#####
 
 # Store annotation info for given frame
 @app.route('/api/annotation/upload/frame', methods=['POST'])
