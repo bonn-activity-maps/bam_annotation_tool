@@ -62,6 +62,6 @@ db.annotation.insertOne({
 
 db.object.insertOne({
 	"type": "person",
-	"nkp": "6",
+	"numKeypoints": "6",
 	"labels": ["nose", "right-hand", "left-hand", "hip", "left-foot", "right-foot"]
 })

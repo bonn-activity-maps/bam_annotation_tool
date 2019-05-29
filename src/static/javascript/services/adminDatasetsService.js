@@ -36,22 +36,6 @@ angular.module('CVGTool')
               });
           },
 
-          unwrapVideo: function (videoName, dataset, callbackFinished) {
-              $http({
-                  method: 'POST',
-                  url: '/api/dataset/unwrapVideo',
-                  data: {
-                    'name': videoName,
-                    'dataset': dataset
-                  }
-              }).then(function successCallback(response) {
-                // TODO: add action when unwrap is finished
-                  callbackFinished(videoName, dataset)
-                }, function errorCallback(response) {
-                  console.log(response.data.msg)
-              });
-          },
-
           removeVideo: function (videoName, dataset, callbackSuccess, callbackError) {
               $http({
                 method: 'POST',

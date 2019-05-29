@@ -104,7 +104,7 @@ class AnnotationService:
 
     # Create annotation object
     def uploadAnnotationObject(this, req):
-        result, e = objectManager.createObject(req['type'], req['nkp'], req['labels'])
+        result, e = objectManager.createObject(req['type'], req['numKeypoints'], req['labels'])
         if result == 'ok':
             return True, result, 200
         else:

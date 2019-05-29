@@ -352,13 +352,28 @@ class DatasetService:
         else:
             return True, result, 200
 
+    # Remove dataset and videos in DB and folder corresponding to dataset
     # Return 'ok' if the dataset has been removed
     def removeDataset(this, dataset):
-        result = datasetManager.removeDataset(dataset)
-        if result == 'Error':
-            return False, 'Error deleting dataset', 400
-        else:
-            return True, result, 200
+        try:
+            datasetDir = this.STORAGE_DIR + dataset + "/"
+
+            # Remove folder
+            shutil.rmtree(datasetDir)
+            log.info('Removed ', dataset, ' successfully.')
+
+            # Remove videos and dataset in DB
+            result = videoManager.removeVideosByDataset(dataset)
+            if result == 'Error':
+                return False, 'Error deleting videos in dataset', 400
+            else:
+                result = datasetManager.removeDataset(dataset)
+                if result == 'Error':
+                    return False, 'Error deleting dataset', 400
+                return True, result, 200
+        except OSError:
+            log.exception('Error deleting the dataset in file system')
+            return False, 'Server error deleting the dataset', 500
 
     # Return dataset name if it has been created
     def createDataset(this, req):
