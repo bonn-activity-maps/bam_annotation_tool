@@ -35,8 +35,9 @@ class UserService:
             return True, result, 200
 
     # Return users info by dataset
-    def getUsersByDataset(this, dataset):
-        result = userManager.getUsersByDataset(dataset)
+    def getUsersByDataset(this, dataset, role):
+        result = userManager.getUsersByDataset(dataset, role)
+        print("user service: ", result)
         if result == 'Error':
             return False, 'Error searching users by dataset', 400
         else:

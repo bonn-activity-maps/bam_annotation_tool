@@ -22,8 +22,13 @@ angular.module('CVGTool')
 
         $scope.mode = "creation";
 
-        $scope.getInfoOfUsers = function() {
-            adminUsersSrvc.getInfoOfUsers(showListOfUsers);
+        $scope.getUsers = function() {
+            console.log($scope.userRole);
+            if ($scope.userRole.localeCompare('root') === 0){
+                adminUsersSrvc.getUsers(showListOfUsers);
+            } else {
+                adminUsersSrvc.getUsersByDataset($scope.activeDataset, "user", showListOfUsers);
+            }
         };
 
         $scope.getUserRole = function() {
@@ -80,7 +85,7 @@ angular.module('CVGTool')
               onRemoving: function (event, removePromise) {
                 $scope.username = "";
                 $scope.email = "";
-                $scope.getInfoOfUsers();
+                $scope.getUsers();
               }
             });
         };
@@ -102,7 +107,7 @@ angular.module('CVGTool')
               controller: 'dialogRemoveUserCtrl',
               escapeToClose: false,
               onRemoving: function (event, removePromise) {
-                $scope.getInfoOfUsers();
+                $scope.getUsers();
               }
             });
         };
@@ -110,7 +115,7 @@ angular.module('CVGTool')
         $scope.updateUser = function() {
             let datasets = [];
             datasets.push($scope.editUser.dataset);
-            adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, $scope.getInfoOfUsers);
+            adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, $scope.getUsers);
             $scope.mode = "creation";
             $scope.oldName = "";
             $scope.editUser = {
@@ -145,9 +150,9 @@ angular.module('CVGTool')
             // TODO
         };
 
-        $scope.getInfoOfUsers();
         $scope.getUserRole();
         $scope.getActiveDataset();
+        $scope.getUsers();
         $scope.getListOfDatasets();
 
     }]);

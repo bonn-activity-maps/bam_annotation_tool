@@ -46,9 +46,9 @@ class UserManager:
 
     # Return list with info of all users for dataset. Empty list if there are no users
     # Ignore mongo id and pwd
-    def getUsersByDataset(this, dataset):
+    def getUsersByDataset(this, dataset, role):
         try:
-            result = this.collection.find({"assignedTo": dataset}, {"_id": 0, "password": 0})
+            result = this.collection.find({"assignedTo": dataset, "role": role}, {"_id": 0, "password": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding users in db')

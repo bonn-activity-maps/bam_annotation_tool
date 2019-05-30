@@ -39,9 +39,9 @@ def getUsers():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get info users by dataset
-@app.route("/api/user/getusersbydataset", methods=['GET'])
-def getUsersDataset():
-    success, msg, status = userService.getUsersByDataset(request.headers['dataset'])
+@app.route("/api/user/getUsersByDataset", methods=['GET'])
+def getUsersByDataset():
+    success, msg, status = userService.getUsersByDataset(request.headers['dataset'], request.headers['role'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Create new user
