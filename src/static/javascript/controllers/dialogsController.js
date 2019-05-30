@@ -96,6 +96,11 @@ angular.module('CVGTool')
         $scope.mode = 'normal';
         $scope.msg = '';
 
+        // Function that generates the call to the server to remove the file
+        $scope.remove = function() {
+            adminUsersSrvc.removeUser(user, showSuccess, showError)
+        }
+
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
@@ -113,10 +118,6 @@ angular.module('CVGTool')
           $scope.msg = 'There was an error when deleting the user.'
         }
 
-        // Function that generates the call to the server to remove the file
-        $scope.remove = function() {
-          adminUsersSrvc.removeUser(user, showSuccess, showError)
-        }
     }])
 
 
