@@ -27,7 +27,6 @@ angular.module('CVGTool')
                         role: role
                     }
                 }).then(function successCallback(response) {
-                    console.log("service: ", response.data.msg);
                     if (response.data.msg.length === 0) {
                         callbackSuccess([])
                     } else {

@@ -23,7 +23,6 @@ angular.module('CVGTool')
         $scope.mode = "creation";
 
         $scope.getUsers = function() {
-            console.log($scope.userRole);
             if ($scope.userRole.localeCompare('root') === 0){
                 adminUsersSrvc.getUsers(showListOfUsers);
             } else {
@@ -58,7 +57,6 @@ angular.module('CVGTool')
                     "name": datasets[i].name
                 })
             }
-            console.log($scope.listOfDatasets)
         };
 
         var showListOfUsers = function (list) {
@@ -97,8 +95,6 @@ angular.module('CVGTool')
         };
 
         $scope.removeUser = function(user) {
-            console.log(user);
-
             $mdDialog.show({
               templateUrl: '/static/views/dialogs/removeUserDialog.html',
               locals: {
