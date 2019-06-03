@@ -42,7 +42,7 @@ angular.module('CVGTool')
           if ($scope.newName.name === undefined) {
             $scope.inputError = true;
             $scope.inputMsg = "The new name can't be blank.";
-          } else if ($scope.newName.name.localeCompare($scope.oldName) == 0 ) {
+          } else if ($scope.newName.name.localeCompare($scope.oldName) === 0 ) {
             $scope.inputError = true;
             $scope.inputMsg = "The new name must be different from the old name.";
           } else {
@@ -87,6 +87,37 @@ angular.module('CVGTool')
     }])
 
     /*
+    * Controller of the dialog of the "remove stored video as administrator" action
+    */
+        .controller('dialogRemoveDatasetCtrl', ['$scope','adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name',
+            function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name) {
+                $scope.mode = 'normal';
+                $scope.msg = '';
+
+                // Function to cancel all actions and close the dialog
+                $scope.cancel = function() {
+                    $mdDialog.cancel();
+                };
+
+                // Recall function if the rename worked
+                var showSuccess = function(response) {
+                    $scope.mode = 'success';
+                    $scope.msg = 'Dataset successfully removed.'
+                };
+
+                // Recall function if the rename didnt worked
+                var showError = function(response) {
+                    $scope.mode = 'error';
+                    $scope.msg = 'There was an error when deleting the dataset.'
+                };
+
+                // Function that generates the call to the server to remove the file
+                $scope.remove = function() {
+                    adminDatasetsSrvc.removeDataset(name, showSuccess, showError)
+                }
+            }])
+
+    /*
      * Controller of the dialog of the "remove stored user as administrator" action
      */
     .controller('dialogRemoveUserCtrl', ['$scope','adminUsersSrvc', '$mdDialog', 'username', function ($scope, adminUsersSrvc, $mdDialog, username) {
@@ -95,6 +126,11 @@ angular.module('CVGTool')
         console.log(user)
         $scope.mode = 'normal';
         $scope.msg = '';
+
+        // Function that generates the call to the server to remove the file
+        $scope.remove = function() {
+            adminUsersSrvc.removeUser(user, showSuccess, showError)
+        }
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
@@ -113,10 +149,6 @@ angular.module('CVGTool')
           $scope.msg = 'There was an error when deleting the user.'
         }
 
-        // Function that generates the call to the server to remove the file
-        $scope.remove = function() {
-          adminUsersSrvc.removeUser(user, showSuccess, showError)
-        }
     }])
 
 

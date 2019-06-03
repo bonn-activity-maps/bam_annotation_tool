@@ -176,46 +176,6 @@ class DatasetService:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
 
-    # Store chunked videos in $STORAGE_DIR
-    def storeVideo(this, request, dataset):
-        file = request.files['file']
-        datasetDir = this.STORAGE_DIR + dataset + "/"
-
-        save_path = os.path.join(datasetDir, secure_filename(file.filename))
-        current_chunk = int(request.form['dzchunkindex'])
-
-        # If the file exists and is the first chunk, you cannot overwrite it
-        if os.path.exists(save_path) and current_chunk == 0:
-            return False, 'File already exists', 400
-
-        if not os.path.exists(datasetDir):
-            os.mkdir(datasetDir)
-
-        # Write chunks at the end of the file
-        try:
-            with open(save_path, 'ab') as f:
-                f.seek(int(request.form['dzchunkbyteoffset']))
-                f.write(file.stream.read())
-        except OSError:
-            log.exception('Could not write to file')
-            return False, 'Server error while writing to the file', 500
-
-        total_chunks = int(request.form['dztotalchunkcount'])
-
-        # If it is the last chunk, check if it is complete and unwrap
-        if current_chunk + 1 == total_chunks:
-            if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
-                log.error('File %s was completed, but has a size mismatch.'
-                          ' Was %s but we expected %s', file.filename,
-                          os.path.getsize(save_path), request.form['dztotalfilesize'])
-                return False, 'Error in the size of file', 500
-            else:
-                log.warning('File %s has been uploaded successfully', file.filename)
-                return this.createVideo(file, dataset, save_path)
-        else:
-            log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
-        return True, 'ok', 200
-
     # Unwrap video in frames
     def unwrapVideos(this, dataset):
         # Create new directory for storing frames
@@ -389,9 +349,3 @@ class DatasetService:
             else:
                 print("Adding videos of type: ", type)
                 return this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)
-                # r, msg, code = result
-                # if not r:
-                #     return result
-                #     #return False, 'Error creating videos in the dataset', 400
-                # else:
-                #     return True, result, 200

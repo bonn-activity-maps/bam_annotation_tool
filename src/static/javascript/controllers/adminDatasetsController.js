@@ -5,6 +5,11 @@ angular.module('CVGTool')
      */
     .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfVideos = [];
+        $scope.listOfDatasets = [];
+        $scope.selectedDataset = {
+            name: 'none',
+            type: 'none'
+        };
         $scope.datasetType = 'actionInKitchen';
 
         // Dropzone zip options
@@ -37,6 +42,7 @@ angular.module('CVGTool')
                 //     console.log("True, unwrapping videos of dataset: " + file.name);
                 $scope.unwrapVideos(file.name);
                 // }
+                $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
             },
         };
@@ -46,11 +52,54 @@ angular.module('CVGTool')
             return $scope.datasetType;
         }, function(newVal, oldVal){
             $scope.dzZipOptions.headers.type = $scope.datasetType;
-        })
+        });
+
+        // Retrieve list of datasets in the system
+        $scope.getListOfDatasets = function() {
+            adminDatasetsSrvc.getDatasets(updateListOfDatasets)
+        };
+
+        var updateListOfDatasets = function(datasets) {
+            $scope.listOfDatasets = datasets;
+        };
+
+        $scope.selectDataset = function(dataset) {
+            $scope.selectedDataset = dataset;
+            $scope.getInfoOfVideos();
+        };
+
+        $scope.deselectDataset = function() {
+            $scope.selectedDataset = {
+                name: 'none',
+                type: 'none'
+            };
+            $scope.getInfoOfVideos();
+        };
+
+        // Function that opens the dialog that manages the dataset removal functionality
+        $scope.removeDataset = function(dataset) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/removeDatasetDialog.html',
+                locals: {
+                    name: dataset.name
+                },
+                controller: 'dialogRemoveDatasetCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+
+        };
 
         // Function to retrieve from the server all information from the videos stored there
         $scope.getInfoOfVideos = function() {
-          adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
+            if ($scope.selectedDataset.name.localeCompare('none') === 0){
+                $scope.listOfVideos = [];
+            } else {
+                adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, $scope.selectedDataset.name);
+            }
         };
 
         var unwrapFinishedCallback = function(name, dataset) {
@@ -74,11 +123,7 @@ angular.module('CVGTool')
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
-            $scope.listOfVideos = [];
-            for (i = 0; i < list.length; i++) {
-              $scope.listOfVideos.push({"name": list[i].name, "dataset": list[i].dataset, "extension": list[i].extension,
-                  "duration": list[i].duration, "frames": list[i].frames, "type": list[i].type});
-            }
+            $scope.listOfVideos = list;
         };
 
         // Function that opens the dialog that manages the file rename functionality
@@ -112,5 +157,7 @@ angular.module('CVGTool')
 
         };
 
+        $scope.getListOfDatasets();
         $scope.getInfoOfVideos();
-}]);
+
+    }]);

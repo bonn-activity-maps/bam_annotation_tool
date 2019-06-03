@@ -39,9 +39,9 @@ def getUsers():
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get info users by dataset
-@app.route("/api/user/getusersbydataset", methods=['GET'])
-def getUsersDataset():
-    success, msg, status = userService.getUsersByDataset(request.headers['dataset'])
+@app.route("/api/user/getUsersByDataset", methods=['GET'])
+def getUsersByDataset():
+    success, msg, status = userService.getUsersByDataset(request.headers['dataset'], request.headers['role'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Create new user
@@ -62,6 +62,14 @@ def removeUser():
 def updateUser():
     success, msg, status = userService.updateUser(request.get_json())
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+# Update existing user
+@app.route('/api/user/updateUserPassword', methods=['POST'])
+def updateUserPassword():
+    # TODO
+    success, msg, status = userService.updateUser(request.get_json())
+    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
 
 
 #### DATASET ####
@@ -89,6 +97,7 @@ def createDataset():
 def removeDataset():
     req_data = request.get_json()
     success, msg, status = datasetService.removeDataset(req_data['name'])
+
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Upload chunked zip file
