@@ -42,7 +42,7 @@ angular.module('CVGTool')
           if ($scope.newName.name === undefined) {
             $scope.inputError = true;
             $scope.inputMsg = "The new name can't be blank.";
-          } else if ($scope.newName.name.localeCompare($scope.oldName) == 0 ) {
+          } else if ($scope.newName.name.localeCompare($scope.oldName) === 0 ) {
             $scope.inputError = true;
             $scope.inputMsg = "The new name must be different from the old name.";
           } else {
