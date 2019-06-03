@@ -1,69 +1,98 @@
 <div style="height: 98%">
-  <div class="row" style="height: 49%;">
+  <div class="row" style="height: 66%;">
     <div class="panel panel-default" style="height: 100%">
         <div class="panel-body">
-          <h2>Datasets</h2>
+          <h2 class="col-md-6">Datasets</h2>
+          <h2 class="col-md-6">Videos</h2>
           <hr/>
           <div class="row">
-              <div class="col-md-8">
-                <div style="overflow-y: auto; max-height: 250px;">
+
+              <div class="col-md-6">
+                <div style="overflow-y: auto; max-height: 450px;">
                   <table class="table table-bordered table-responsive text-center">
                     <thead>
-                      <tr>
-                        <th class="col-md-5">Name</th>
-                        <th class="col-md-1">Dataset</th>
-                        <th class="col-md-1">Extension</th>
-                        <th class="col-md-2">Duration</th>
-                        <th class="col-md-2">Frames</th>
-                        <th class="col-md-2">Type</th>
-                        <th class="col-md-2">Actions</th>
-                      </tr>
+                    <tr>
+                      <th class="col-md-3">Name</th>
+                      <th class="col-md-3">Type</th>
+                      <th class="col-md-3">Actions</th>
+                      <th class="col-md-3">Select</th>
+                    </tr>
                     </thead>
                     <tbody>
-                      <tr ng-if="listOfVideos.length > 0" ng-repeat="video in listOfVideos">
-                        <td class="text-left">{{video.name}}</td>
-                        <td>{{video.dataset}}</td>
-                        <td>{{video.extension}}</td>
-                        <td>{{video.duration}}</td>
-                        <td>{{video.frames}}</td>
-                        <td>{{video.type}}</td>
-                        <td><md-button ng-click="renameVideo(video)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeVideo(video)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
-                      </tr>
-                      <tr ng-if="listOfVideos.length == 0">
-                        <td class="text-left">No videos stored</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
+                    <tr ng-if="listOfDatasets.length > 0" ng-repeat="dataset in listOfDatasets">
+                      <td class="text-left">{{dataset.name}}</td>
+                      <td>{{dataset.type}}</td>
+                      <td><md-button ng-click="removeDataset(dataset)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+                      <td ng-if="selectedDataset.name != dataset.name"><md-button ng-click="selectDataset(dataset)" class="md-primary md-raised"><span class="glyphicon glyphicon-plus"></md-button></td>
+                      <td ng-if="selectedDataset.name == dataset.name"><md-button ng-click="deselectDataset()" class="md-warn md-raised"><span class="glyphicon glyphicon-minus"></md-button></td>
+                    </tr>
+                    <tr ng-if="listOfDatasets.length == 0">
+                      <td class="text-left">No datasets</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                    </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
-              <div class="col-md-4">
-                TODO: add info
+
+              <div class="col-md-6">
+                <div style="overflow-y: auto; max-height: 450px;">
+                  <table class="table table-bordered table-responsive text-center">
+                    <thead>
+                    <tr>
+                      <th class="col-md-5">Name</th>
+                      <th class="col-md-1">Dataset</th>
+                      <th class="col-md-1">Extension</th>
+                      <th class="col-md-2">Duration</th>
+                      <th class="col-md-2">Frames</th>
+                      <th class="col-md-2">Type</th>
+                      <th class="col-md-2">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-if="listOfVideos.length > 0" ng-repeat="video in listOfVideos">
+                      <td class="text-left">{{video.name}}</td>
+                      <td>{{video.dataset}}</td>
+                      <td>{{video.extension}}</td>
+                      <td>{{video.duration}}</td>
+                      <td>{{video.frames}}</td>
+                      <td>{{video.type}}</td>
+                      <td><!--                        <md-button ng-click="renameVideo(video)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit">--></md-button><md-button ng-click="removeVideo(video)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+                    </tr>
+                    <tr ng-if="listOfVideos.length == 0 || selectedDataset.name == 'none'">
+                      <td class="text-left" ng-if="selectedDataset.name != 'none'">No videos in this dataset.</td>
+                      <td class="text-left" ng-if="selectedDataset.name == 'none'">Select a dataset.</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
           </div>
         </div>
     </div>
   </div>
 
-  <div class="row" style="height: 49%;">
+  <div class="row" style="height: 33%;">
     <div class="panel panel-default" style="height: 100%">
       <div class="panel-body">
-        <h2>Upload new video</h2>
+        <h2>Upload new Dataset</h2>
         <hr/>
         <p>
         To add a new dataset to the server just drag and drop a Zip file on the designated area. You can also click in the area and search for the file in the pop-up.
-          Don't forget to select the type of dataset.
+          <b>Don't forget to select the type of dataset.</b>
         </p>
         <select name="Type" ng-model="datasetType">
           <option value ="actionInKitchen" selected>Action In Kitchen</option>
           <option value ="poseTrack">Pose Track</option>
         </select>
-
-        <!--        <div class="col-md-4">-->
-<!--          <ng-dropzone class="dropzone" options="dzOptions" callbacks="dzCallbacks" methods="dzMethods"></ng-dropzone>-->
-<!--        </div>-->
         <div class="col-md-6">
           <ng-dropzone class="dropzone" options="dzZipOptions" callbacks="dzZipCallbacks" methods="dzZipMethods"></ng-dropzone>
         </div>

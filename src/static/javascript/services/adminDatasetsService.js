@@ -124,6 +124,20 @@ angular.module('CVGTool')
               }, function errorCallback(response) {
                   console.log(response.data.msg)
               });
-          }
+          },
+
+          removeDataset: function (name, callbackSuccess, callbackError) {
+              $http({
+                  method: 'POST',
+                  url: '/api/dataset/removeDataset',
+                  data: {
+                      'name': name
+                  }
+              }).then(function successCallback(response) {
+                  callbackSuccess(response.data.msg)
+              }, function errorCallback(response) {
+                  callbackError(response.data.msg)
+              });
+          },
       }
 });

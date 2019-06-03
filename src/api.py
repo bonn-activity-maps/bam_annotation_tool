@@ -97,6 +97,7 @@ def createDataset():
 def removeDataset():
     req_data = request.get_json()
     success, msg, status = datasetService.removeDataset(req_data['name'])
+
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Upload chunked zip file

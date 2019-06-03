@@ -41,13 +41,13 @@ angular.module('CVGTool')
             }
         };
 
-        $scope.getListOfDatasets = function() {
-            adminDatasetsSrvc.getDatasets(updateListOfDatasets)
-        };
-
         $scope.getActiveDataset = function() {
             $scope.activeDataset = navSrvc.getActiveDataset();
             $scope.editUser.dataset = $scope.activeDataset;
+        };
+
+        $scope.getListOfDatasets = function() {
+            adminDatasetsSrvc.getDatasets(updateListOfDatasets)
         };
 
         var updateListOfDatasets = function(datasets) {
