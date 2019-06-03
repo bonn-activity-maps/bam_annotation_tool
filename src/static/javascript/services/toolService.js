@@ -36,5 +36,16 @@ angular.module('CVGTool')
                   console.log(response.data.msg)
               });
           },
+
+          retrieveAvaiableObjects: function(callbackSuccess) {
+              $http({
+                  method: 'GET',
+                  url: ''
+              }).then(function successCallback(response)) {
+                  callbackSuccess(response.data);
+              }, function errorCallback(response) {
+                  console.log(response.data.msg);
+              });
+          },
         }
 });

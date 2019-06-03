@@ -334,7 +334,8 @@ angular.module('CVGTool')
        *    loadedCameras:
        *        cameraX:
        *            arrayOfFrames: []
-       *                  frameY: image, key-points: []
+       *                  frameY: image
+       *                  Objects: [object1(id, type, keypoints), object2(id, type, keypoints)]
        */
 
       // Function that opens the dialog in charge of adding a new camera
@@ -353,11 +354,12 @@ angular.module('CVGTool')
 
                 frames.push({
                   number: successData[i].frame,
-                  image: stringImage
+                  image: stringImage,
+                  objects: []
                 });
               }
 
-              // Short frames once loaded
+              // Sort frames once loaded
               frames.sort(function(a, b) {
                   return a.number - b.number;
               });
@@ -365,9 +367,8 @@ angular.module('CVGTool')
               // Create new camera
               $scope.loadedCameras.push({
                 filename: filename,
-                frames: frames
+                frames: frames,
               })
-
           });
       }
 
@@ -401,30 +402,32 @@ angular.module('CVGTool')
       }
 
 //////// CANVASES
-      $scope.canvases = []   // Initial canvas structure
+      $scope.canvases = []          // Initial canvas structure
+      $scope.avaiableObjects = []   // Avaiable objects to work with
 
-      // Shape to represent keypoints
-      // function Shape(x,y) {
-      //   this.x = x;
-      //   this.y = y;
-      //   this.z = 0;
-      //   this.radius = 5;
-      //
-      //   this.fill = '#AAAAAA';
-      //
-      //   // Draws the shape
-      //   Shape.prototype.draw = function(ctx) {
-      //       ctx.fillStyle = this.fill;
-      //
-      //   }
-      //
-      //   // Check if mouse coordinates are contained inside the shape
-      //   Shape.prototype.contains = function(mx, my) {
-      //     var d = Math.sqrt((this.x - mx)*(this.x - mx) + (this.y - my)*(this.y - my))
-      //     if (d <= this.radius) return true;
-      //     else return false;
-      //   }
-      // };
+      // Object that controls the keypoints representation
+      function KeypointObject(x,y) {
+        this.x = x;
+        this.y = y;
+        this.z = 0;
+        this.radius = 5;
+
+        this.fill = '#AAAAAA';
+
+        // Draws the shape
+        KeypointObject.prototype.draw = function(ctx) {
+            ctx.fillStyle = this.fill;
+            ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+            ctx.fill();
+        }
+
+        // Check if mouse coordinates are contained inside the shape
+        KeypointObject.prototype.contains = function(mx, my) {
+          var d = Math.sqrt((this.x - mx)*(this.x - mx) + (this.y - my)*(this.y - my))
+          if (d <= this.radius) return true;
+          else return false;
+        }
+      };
 
       // Object that controls the canvas and stores its state
       function CanvasObject(canvas) {
@@ -739,6 +742,11 @@ angular.module('CVGTool')
           var canvas4 = document.getElementById('canvas4');
           $scope.canvases.push(new CanvasObject(canvas4))
         }
+      }
+
+      // Retrieve avaiable objects and fill the array
+      $scope.retrieveAvaiableObjects = function() {
+          return;
       }
 
       $scope.initializeCanvases();
