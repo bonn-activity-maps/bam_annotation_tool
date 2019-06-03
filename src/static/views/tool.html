@@ -20,7 +20,8 @@
       <div class="col-md-10" style="height: 100%;">
           <div class="row" style="height: 90%">
             <div class="panel panel-default" style="height: 100%">
-                <div class="panel-body" style="height: 100%">
+                <!-- Canvases -->
+                <div id="canvas-container" class="panel-body" style="height: 100%">
                     <div class="row" style="height: 50%;">
                       <div class="col-md-6" style="height: 100%;">
                           <canvas id="canvas1" class="playable-canvas" style="border:1px solid #000000;"></canvas>
@@ -29,7 +30,7 @@
                           <canvas id="canvas2" class="playable-canvas" style="border:1px solid #000000;"></canvas>
                       </div>
                     </div>
-                    <div class="row"style="height: 50%;">
+                    <div class="row"style="height: 50%; ">
                       <div class="col-md-6" style="height: 100%;">
                           <canvas id="canvas3" class="playable-canvas" style="border:1px solid #000000;"></canvas>
                       </div>
@@ -67,47 +68,69 @@
             <h4>Tools</h4>
             <hr/>
               <!-- Navigation tool -->
-              <div class="panel panel-default panel-tool" ng-click="switchTool('navigation')">
-                <div class="panel-heading panel-heading-tool" ng-if="tool!='navigation'">
-                  <span class=" glyphicon glyphicon-move "></span><p>Navigation</p>
-                </div>
-                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='navigation'">
-                  <span class=" glyphicon glyphicon-move "></span><p>Navigation</p>
-                </div>
+              <div ng-click="switchTool('navigation')">
+                  <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='navigation'"><span class=" glyphicon glyphicon-move"></button>
+                  <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='navigation'"><span class=" glyphicon glyphicon-move"></button>
               </div>
+              <hr/>
+              <!-- Number of panels tool -->
+              <div ng-click="switchTool('numCanvas')">
+                  <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='numCanvas'"><span class=" glyphicon glyphicon-th-large "></button>
+                  <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='numCanvas'"><span class=" glyphicon glyphicon-th-large "></button>
+              </div>
+              <div ng-if="tool=='numCanvas'">
+                  <!-- One panel -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=1" ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==1" ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
+                  </div>
+                  <!-- Two panels -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=2" ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==2" ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
+                  </div>
+                  <!-- Three panels -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=3" ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==3" ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
+                  </div>
+                  <!-- Two panels -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=4" ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==4" ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
+                  </div>
+              </div>
+              <hr/>
               <!-- Zoom tool -->
-              <div class="panel panel-default panel-tool" ng-click="switchTool('zoom')">
-                <div class="panel-heading panel-heading-tool" ng-if="tool!='zoom'">
-                  <span class=" glyphicon glyphicon-search "></span><p>Zoom</p>
-                </div>
-                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='zoom'">
-                  <span class=" glyphicon glyphicon-search "></span><p>Zoom</p>
-                </div>
-                <div class="panel-body" ng-if="tool=='zoom'">
-                    <button class="btn btn-default" data-toggle="tooltip" title="Zoom in" data-placement="left" ng-click="switchSubTool('zoomIn')">
-                        <span ng-if="subTool!='zoomIn'" class="glyphicon glyphicon-zoom-in"></span>
-                        <span ng-if="subTool=='zoomIn'" style="color: blue;" class="glyphicon glyphicon-zoom-in"></span>
-                    </button>
-                    <button class="btn btn-default" data-toggle="tooltip" title="Zoom out" data-placement="left" ng-click="switchSubTool('zoomOut')">
-                        <span ng-if="subTool!='zoomOut'" class="glyphicon glyphicon-zoom-out"></span>
-                        <span ng-if="subTool=='zoomOut'" style="color: blue;" class="glyphicon glyphicon-zoom-out"></span>
-                    </button>
-                </div>
+              <div ng-click="switchTool('zoom')">
+                  <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='zoom'"><span class=" glyphicon glyphicon-search "></button>
+                  <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='zoom'"><span class=" glyphicon glyphicon-search "></button>
               </div>
+              <div ng-if="tool=='zoom'">
+                  <!-- Zoom In sub tool -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="subTool!='zoomIn'" ng-click="switchSubTool('zoomIn')"><span class=" glyphicon glyphicon-zoom-in" ></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomIn'" ng-click="switchSubTool('')"><span class=" glyphicon glyphicon-zoom-in "></button>
+                  </div>
+                  <!-- Zoom Out sub tool -->
+                  <div class="row">
+                    <button class="btn btn-default btn-circle" ng-if="subTool!='zoomOut'" ng-click="switchSubTool('zoomOut')"> <span class=" glyphicon glyphicon-zoom-out" ></button>
+                    <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomOut'" ng-click="switchSubTool('')"> <span class=" glyphicon glyphicon-zoom-out"></button>
+                  </div>
+              </div>
+              <hr/>
               <!-- Keypoints tool -->
-              <div class="panel panel-default panel-tool" ng-click="switchTool('keypoint');">
-                <div class="panel-heading panel-heading-tool" ng-if="tool!='keypoint'">
-                  <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
-                </div>
-                <div class="panel-heading panel-heading-tool-selected" ng-if="tool=='keypoint'">
-                  <span class=" glyphicon glyphicon-screenshot "></span><p>Keypoints</p>
-                </div>
+              <div ng-click="switchTool('keypoint')">
+                <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='keypoint'"><span class=" glyphicon glyphicon-screenshot "></button>
+                <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='keypoint'"><span class=" glyphicon glyphicon-screenshot "></button>
               </div>
+
+              <!-- Kepoint Manager Panel -->
               <div class="panel panel-default" ng-draggable='dragOptions' style="position: absolute; width: 500px; height: 750px;" ng-show="keyPointEditTab==true">
                   <div class="panel-heading">
                       <div class="row">
                           <div class="col-sm-1">
-
+                              <span class="glyphicon glyphicon-move"></span>
                           </div>
                           <div class="col-sm-10">
                               Keypoint Manager

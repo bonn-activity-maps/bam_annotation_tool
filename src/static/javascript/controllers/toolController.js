@@ -2,9 +2,11 @@ angular.module('CVGTool')
 
     .controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', function ($scope, $state, $interval, $mdDialog, toolSrvc) {
 
-      // $(document).ready(function() {
-      //       $('[data-toggle="tooltip"]').tooltip();
-      //   });
+      // Enable tooltips
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+      })
+
 //////// TOOLS
       $scope.tool = 'navigation';  // navigation = Normal
                                    // keypoint = Key-Point mode
@@ -24,6 +26,7 @@ angular.module('CVGTool')
       // Switches the value of the principal tool
       $scope.switchTool = function (newTool) {
         $scope.tool = newTool
+        $scope.subTool = '';
 
         if ($scope.tool.localeCompare("keypoint") == 0) {
             $scope.openKeyPointEditor();
@@ -40,7 +43,226 @@ angular.module('CVGTool')
         $scope.keyPointEditTab = false;
       }
 
+
+      // Auxiliar function to swith between number of canvases
+      function cleanCanvasContainerElement() {
+          var canvasContainer = document.getElementById("canvas-container");
+          while (canvasContainer.firstChild) {
+              canvasContainer.removeChild(canvasContainer.firstChild);
+          }
+      }
+
+      // Function to set the new canvas distribution reconstructing HTML
+      function setCanvasDistribution(numCanvases) {
+          var canvasContainer = document.getElementById("canvas-container");
+          switch (numCanvases) {
+            case 1:
+                    var row = document.createElement("div");
+                    row.classList.add('row');
+                    row.setAttribute('style', 'height: 100%');
+                    var colOffset1 = document.createElement("div");
+                    var colOffset2 = document.createElement("div");
+                    colOffset1.classList.add("col-md-1");
+                    colOffset2.classList.add("col-md-1");
+                    colOffset1.setAttribute('style', 'height: 100%');
+                    colOffset2.setAttribute('style', 'height: 100%');
+                    var col = document.createElement("div");
+                    col.classList.add("col-md-10");
+                    col.setAttribute('style', 'height: 100%');
+                    var canvasE1 = document.createElement("canvas");
+                    canvasE1.classList.add("playable-canvas");
+                    canvasE1.setAttribute("id", "canvas1");
+                    canvasE1.setAttribute("style", "border:1px solid #000000;");
+                    col.appendChild(canvasE1);
+                    row.appendChild(colOffset1);
+                    row.appendChild(col);
+                    row.appendChild(colOffset2);
+                    canvasContainer.appendChild(row)
+                    break;
+            case 2:
+                    var row1 = document.createElement("div");
+                    row1.classList.add('row');
+                    row1.setAttribute('style', 'height: 50%');
+                    var row2 = document.createElement("div");
+                    row2.classList.add('row');
+                    row2.setAttribute('style', 'height: 50%');
+                    var colOffset1 = document.createElement("div");
+                    var colOffset2 = document.createElement("div");
+                    colOffset1.classList.add("col-md-3");
+                    colOffset2.classList.add("col-md-3");
+                    colOffset1.setAttribute('style', 'height: 100%');
+                    colOffset2.setAttribute('style', 'height: 100%');
+                    var colOffset3 = document.createElement("div");
+                    var colOffset4 = document.createElement("div");
+                    colOffset3.classList.add("col-md-3");
+                    colOffset4.classList.add("col-md-3");
+                    colOffset3.setAttribute('style', 'height: 100%');
+                    colOffset4.setAttribute('style', 'height: 100%');
+                    var col1 = document.createElement("div");
+                    col1.classList.add("col-md-6");
+                    col1.setAttribute('style', 'height: 100%');
+                    var col2 = document.createElement("div");
+                    col2.classList.add("col-md-6");
+                    col2.setAttribute('style', 'height: 100%');
+                    var canvasE1 = document.createElement("canvas");
+                    canvasE1.classList.add("playable-canvas");
+                    canvasE1.setAttribute("id", "canvas1");
+                    canvasE1.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE2 = document.createElement("canvas");
+                    canvasE2.classList.add("playable-canvas");
+                    canvasE2.setAttribute("id", "canvas2");
+                    canvasE2.setAttribute("style", "border:1px solid #000000;");
+                    col1.appendChild(canvasE1);
+                    col2.appendChild(canvasE2);
+                    row1.appendChild(colOffset1);
+                    row1.appendChild(col1);
+                    row1.appendChild(colOffset2);
+                    row2.appendChild(colOffset3);
+                    row2.appendChild(col2);
+                    row2.appendChild(colOffset4);
+                    canvasContainer.appendChild(row1)
+                    canvasContainer.appendChild(row2)
+                    break;
+            case 3:
+                    var row1 = document.createElement("div");
+                    row1.classList.add('row');
+                    row1.setAttribute('style', 'height: 50%');
+                    var row2 = document.createElement("div");
+                    row2.classList.add('row');
+                    row2.setAttribute('style', 'height: 50%');
+                    var colOffset1 = document.createElement("div");
+                    var colOffset2 = document.createElement("div");
+                    colOffset1.classList.add("col-md-3");
+                    colOffset2.classList.add("col-md-3");
+                    colOffset1.setAttribute('style', 'height: 100%');
+                    colOffset2.setAttribute('style', 'height: 100%');
+                    var col1 = document.createElement("div");
+                    col1.classList.add("col-md-6");
+                    col1.setAttribute('style', 'height: 100%');
+                    var col2 = document.createElement("div");
+                    col2.classList.add("col-md-6");
+                    col2.setAttribute('style', 'height: 100%');
+                    var col3 = document.createElement("div");
+                    col3.classList.add("col-md-6");
+                    col3.setAttribute('style', 'height: 100%');
+                    var canvasE1 = document.createElement("canvas");
+                    canvasE1.classList.add("playable-canvas");
+                    canvasE1.setAttribute("id", "canvas1");
+                    canvasE1.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE2 = document.createElement("canvas");
+                    canvasE2.classList.add("playable-canvas");
+                    canvasE2.setAttribute("id", "canvas2");
+                    canvasE2.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE3 = document.createElement("canvas");
+                    canvasE3.classList.add("playable-canvas");
+                    canvasE3.setAttribute("id", "canvas3");
+                    canvasE3.setAttribute("style", "border:1px solid #000000;");
+                    col1.appendChild(canvasE1);
+                    col2.appendChild(canvasE2);
+                    col3.appendChild(canvasE3);
+                    row1.appendChild(col1);
+                    row1.appendChild(col2);
+                    row2.appendChild(colOffset1);
+                    row2.appendChild(col3);
+                    row2.appendChild(colOffset2);
+                    canvasContainer.appendChild(row1)
+                    canvasContainer.appendChild(row2)
+                    break;
+            case 4:
+                    var row1 = document.createElement("div");
+                    row1.classList.add('row');
+                    row1.setAttribute('style', 'height: 50%');
+                    var row2 = document.createElement("div");
+                    row2.classList.add('row');
+                    row2.setAttribute('style', 'height: 50%');
+                    var col1 = document.createElement("div");
+                    col1.classList.add("col-md-6");
+                    col1.setAttribute('style', 'height: 100%');
+                    var col2 = document.createElement("div");
+                    col2.classList.add("col-md-6");
+                    col2.setAttribute('style', 'height: 100%');
+                    var col3 = document.createElement("div");
+                    col3.classList.add("col-md-6");
+                    col3.setAttribute('style', 'height: 100%');
+                    var col4 = document.createElement("div");
+                    col4.classList.add("col-md-6");
+                    col4.setAttribute('style', 'height: 100%');
+                    var canvasE1 = document.createElement("canvas");
+                    canvasE1.classList.add("playable-canvas");
+                    canvasE1.setAttribute("id", "canvas1");
+                    canvasE1.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE2 = document.createElement("canvas");
+                    canvasE2.classList.add("playable-canvas");
+                    canvasE2.setAttribute("id", "canvas2");
+                    canvasE2.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE3 = document.createElement("canvas");
+                    canvasE3.classList.add("playable-canvas");
+                    canvasE3.setAttribute("id", "canvas3");
+                    canvasE3.setAttribute("style", "border:1px solid #000000;");
+                    var canvasE4 = document.createElement("canvas");
+                    canvasE4.classList.add("playable-canvas");
+                    canvasE4.setAttribute("id", "canvas4");
+                    canvasE4.setAttribute("style", "border:1px solid #000000;");
+                    col1.appendChild(canvasE1);
+                    col2.appendChild(canvasE2);
+                    col3.appendChild(canvasE3);
+                    col4.appendChild(canvasE4);
+                    row1.appendChild(col1);
+                    row1.appendChild(col2);
+                    row2.appendChild(col3);
+                    row2.appendChild(col4);
+                    canvasContainer.appendChild(row1)
+                    canvasContainer.appendChild(row2)
+                    break;
+          }
+      }
+
+      // Function that changes the number of canvases two show in the tool
+      $scope.switchNumberOfCanvases = function(newNumber) {
+          if ($scope.numberOfCanvases == newNumber) return; // If no change, exit
+
+          // Save all active cameras
+          for (var i=0; i<$scope.numberOfCanvases; i++) {
+              if ($scope.canvases[i].hasActiveCamera()) {
+                console.log(i)
+                console.log($scope.canvases[i].getActiveCamera())
+                $scope.tempCameraStorage[i] = $scope.canvases[i].getActiveCamera();
+              }
+          }
+
+          // Clear the whole html element
+          cleanCanvasContainerElement();
+
+          // Create the whole html element again
+          setCanvasDistribution(newNumber);
+
+          // Update number of canvases
+          $scope.numberOfCanvases = newNumber;
+
+          // Get the canvas objects again
+          $scope.initializeCanvases();
+
+          // Put the cameras in the canvas where they were
+          for (var i=0; i<$scope.numberOfCanvases; i++) {
+              if ($scope.tempCameraStorage[i]!==null) {
+                $scope.switchVideo($scope.tempCameraStorage[i], i+1);
+                $scope.tempCameraStorage[i] = null;
+              }
+          }
+          // Send the cameras without a canvas to the camera array
+          for (var i=$scope.numberOfCanvases; i<$scope.tempCameraStorage.length; i++) {
+              if ($scope.tempCameraStorage[i]!==null) {
+                $scope.loadedCameras.push($scope.tempCameraStorage[i]);
+                $scope.tempCameraStorage[i] = null;
+              }
+          }
+      }
+
       $scope.dragOptions = {}
+      $scope.numberOfCanvases = 4;  // Number of canvases
+
+      $scope.tempCameraStorage = [null, null, null, null];
+
 
 //////// TIMELINE
       // Variables to control the timeline
@@ -167,11 +389,18 @@ angular.module('CVGTool')
 
       // Switches the video "video" to the canvas specified by "number"
       $scope.switchVideo = function(video, number){
-        $scope.canvases[number-1].setCamera(video);
+          $scope.canvases[number-1].setCamera(video); // Set the camera
+
+          // When the video is set in a canvas, remove it from the array of loadedCameras
+          for (var i=0; i< $scope.loadedCameras.length; i++) {
+            if($scope.loadedCameras[i].filename.localeCompare(video.filename) == 0){
+              $scope.loadedCameras.splice(i,1);
+              break;
+            }
+          }
       }
 
 //////// CANVASES
-      $scope.numberOfCanvases = 4;  // Number of canvases
       $scope.canvases = []   // Initial canvas structure
 
       // Shape to represent keypoints
@@ -466,21 +695,34 @@ angular.module('CVGTool')
           // Set the new camera
           this.activeCamera = camera;
 
-
-          // When the video is set in a canvas, remove it from the array of loadedCameras
-          for (var i=0; i< $scope.loadedCameras.length; i++) {
-            if($scope.loadedCameras[i].filename.localeCompare(camera.filename) == 0){
-              $scope.loadedCameras.splice(i,1);
-              break;
-            }
-          }
           // Set the flag to redraw
           this.valid = false;
+        }
+
+        // Puts the active camera in the array of cameras
+        CanvasObject.prototype.removeCamera = function() {
+          if (this.activeCamera !== null) {
+              $scope.loadedCameras.push(this.activeCamera); // Store actual camera
+              this.activeCamera = null;                     // Set canvas camera to null
+          }
+        }
+
+        // Returns true if the canvas has an active camera
+        CanvasObject.prototype.hasActiveCamera = function() {
+            if (this.activeCamera !== null) {
+                return true;
+            } else return false;
+        }
+
+        // Returns the active camera
+        CanvasObject.prototype.getActiveCamera = function() {
+            return this.activeCamera;
         }
       }
 
       // Initializator of canvases
       $scope.initializeCanvases = function() {
+        $scope.canvases = []
         if ($scope.numberOfCanvases >= 1) {
           var canvas1 = document.getElementById('canvas1');
           $scope.canvases.push(new CanvasObject(canvas1))

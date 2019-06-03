@@ -1,5 +1,6 @@
 <md-dialog style="width: 400px; height: 200px;">
-    <md-dialog-content style="width: 100%; height: 100%"ng-if="variables.canvases==4">
+    <md-dialog-content style="width: 100%; height: 100%">
+      <div class="panel panel-default" style="width: 100%; height: 100%" ng-if="variables.canvases==4">
         <div class="row" style="width: 100%; height: 50%">
           <div class="col-md-6" style="width: 50%; height: 50%">
             <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(1)">1</button>
@@ -16,5 +17,48 @@
             <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(4)">4</button>
           </div>
         </div>
+      </div>
+      <div class="panel panel-default" style="width: 100%; height: 100%" ng-if="variables.canvases==3">
+        <div class="row" style="width: 100%; height: 50%">
+          <div class="col-md-6" style="width: 50%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(1)">1</button>
+          </div>
+          <div class="col-md-6" style="width: 50%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(2)">2</button>
+          </div>
+        </div>
+        <div class="row" style="width: 100%; height: 50%">
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+          <div class="col-md-6" style="width: 33%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(3)">3</button>
+          </div>
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+        </div>
+      </div>
+      <div class="panel panel-default" style="width: 100%; height: 100%" ng-if="variables.canvases==2">
+        <div class="row" style="width: 100%; height: 50%">
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+          <div class="col-md-6" style="width: 33%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(1)">1</button>
+          </div>
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+        </div>
+        <div class="row" style="width: 100%; height: 50%">
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+          <div class="col-md-6" style="width: 33%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(2)">2</button>
+          </div>
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+        </div>
+      </div>
+      <div class="panel panel-default" style="width: 100%; height: 100%" ng-if="variables.canvases==1">
+        <div class="row" style="width: 100%; height: 100%">
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+          <div class="col-md-6" style="width: 33%; height: 50%">
+            <button style="width: 100%; height: 100%" class="btn btn-default" ng-click="switchTo(1)">1</button>
+          </div>
+          <div class="col-md-3" style="width: 33%; height: 50%"></div>
+        </div>
+      </div>
     </md-dialog-content>
 </md-dialog>
