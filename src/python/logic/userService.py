@@ -35,8 +35,8 @@ class UserService:
             return True, result, 200
 
     # Return users info by dataset
-    def getUsersByDataset(this, dataset):
-        result = userManager.getUsersByDataset(dataset)
+    def getUsersByDataset(this, dataset, role):
+        result = userManager.getUsersByDataset(dataset, role)
         if result == 'Error':
             return False, 'Error searching users by dataset', 400
         else:
@@ -71,7 +71,7 @@ class UserService:
 
     # Return 'ok' if the user has been updated
     def updateUser(this, req):
-        result = userManager.updateUser(req['name'], req['password'], req['assignedTo'], req['role'], req['email'])
+        result = userManager.updateUser(req['oldName'], req['name'], req['assignedTo'], req['role'], req['email'])
         if result == 'Error':
             return False, 'Error updating user', 400
         else:

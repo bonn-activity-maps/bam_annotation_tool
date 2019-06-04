@@ -3,36 +3,61 @@ angular.module('CVGTool')
     /*
      * Controller of admin page "Users"
      */
-    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminUsersSrvc, navSrvc, $mdDialog) {
+    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog',
+                        function ($scope, $state, adminUsersSrvc, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfUsers = [];
         $scope.availableRoles = [];
         $scope.userRole = "";
 
         $scope.activeDataset = "";
+        $scope.listOfDatasets = [];
 
+        $scope.editUser = {
+            username: "",
+            email: "",
+            role: "",
+            dataset: ""
+        };
+        $scope.oldName = "";
 
-        $scope.username = "";
-        $scope.email = "";
-        $scope.role = "";
+        $scope.mode = "creation";
 
-        $scope.getInfoOfUsers = function() {
-            adminUsersSrvc.getInfoOfUsers(showListOfUsers);
+        $scope.getUsers = function() {
+            if ($scope.userRole.localeCompare('root') === 0){
+                adminUsersSrvc.getUsers(showListOfUsers);
+            } else {
+                adminUsersSrvc.getUsersByDataset($scope.activeDataset, "user", showListOfUsers);
+            }
         };
 
         $scope.getUserRole = function() {
             $scope.userRole = navSrvc.getUserRole();
 
-            if ($scope.userRole.localeCompare('admin') == 0) {
+            if ($scope.userRole.localeCompare('admin') === 0) {
                 $scope.availableRoles.push({name: "user"})
-            } else if ($scope.userRole.localeCompare('root') == 0) {
+            } else if ($scope.userRole.localeCompare('root') === 0) {
                 $scope.availableRoles.push({name: "user"});
                 $scope.availableRoles.push({name: "admin"});
             }
-        }
+        };
 
         $scope.getActiveDataset = function() {
             $scope.activeDataset = navSrvc.getActiveDataset();
-        }
+            $scope.editUser.dataset = $scope.activeDataset;
+        };
+
+        $scope.getListOfDatasets = function() {
+            adminDatasetsSrvc.getDatasets(updateListOfDatasets)
+        };
+
+        var updateListOfDatasets = function(datasets) {
+            $scope.listOfDatasets = [];
+            for (let i = 0; i < datasets.length; i++) {
+                $scope.listOfDatasets.push({
+                    "name": datasets[i].name
+                })
+            }
+        };
 
         var showListOfUsers = function (list) {
             $scope.listOfUsers = [];
@@ -41,7 +66,7 @@ angular.module('CVGTool')
                     "name": list[i].name,
                     "email": list[i].email,
                     "role": list[i].role,
-                    "assignedTo": list[i].assignedTo
+                    "dataset": list[i].assignedTo
                 })
             }
         };
@@ -58,23 +83,18 @@ angular.module('CVGTool')
               onRemoving: function (event, removePromise) {
                 $scope.username = "";
                 $scope.email = "";
-                $scope.getInfoOfUsers();
+                $scope.getUsers();
               }
             });
         };
 
         $scope.createUser = function() {
-            adminUsersSrvc.createUser($scope.username, $scope.email, $scope.role, $scope.activeDataset, successCreation);
-        };
-
-        $scope.updateUser = function(user) {
-            // adminUsersSrvc.updateUser(userName, userEmail, userRole, userDatasets); //TODO: define userData
-            // This will be a reset password option, nothing more, maybe the root can change the dataset of the user, but thats all
+            let datasets = [];
+            datasets.push($scope.editUser.dataset);
+            adminUsersSrvc.createUser($scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, successCreation);
         };
 
         $scope.removeUser = function(user) {
-            console.log(user)
-
             $mdDialog.show({
               templateUrl: '/static/views/dialogs/removeUserDialog.html',
               locals: {
@@ -83,13 +103,52 @@ angular.module('CVGTool')
               controller: 'dialogRemoveUserCtrl',
               escapeToClose: false,
               onRemoving: function (event, removePromise) {
-                $scope.getInfoOfUsers();
+                $scope.getUsers();
               }
             });
-        }
+        };
 
-        $scope.getInfoOfUsers();
+        $scope.updateUser = function() {
+            let datasets = [];
+            datasets.push($scope.editUser.dataset);
+            adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, $scope.getUsers);
+            $scope.mode = "creation";
+            $scope.oldName = "";
+            $scope.editUser = {
+                username: "",
+                email: "",
+                role: "",
+                dataset: ""
+            };
+        };
+
+        $scope.enableEdit = function(user) {
+            $scope.oldName = user.name;
+            $scope.editUser.username = user.name;
+            $scope.editUser.email = user.email;
+            $scope.editUser.role = user.role;
+            $scope.editUser.dataset = user.dataset[0];
+            $scope.mode = "edit";
+        };
+
+        $scope.cancelEdit = function(){
+            $scope.oldName = "";
+            $scope.editUser = {
+                username: "",
+                email: "",
+                role: "",
+                dataset: ""
+            };
+            $scope.mode = "creation";
+        };
+
+        $scope.resetPassword = function() {
+            // TODO
+        };
+
         $scope.getUserRole();
         $scope.getActiveDataset();
+        $scope.getUsers();
+        $scope.getListOfDatasets();
 
     }]);
