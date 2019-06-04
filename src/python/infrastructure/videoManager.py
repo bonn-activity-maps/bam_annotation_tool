@@ -1,7 +1,7 @@
 from pymongo import MongoClient, errors
 import logging
 
-# VideoService logger
+# VideoManager logger
 log = logging.getLogger('videoManager')
 
 

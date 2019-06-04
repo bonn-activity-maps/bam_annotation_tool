@@ -3,6 +3,7 @@ import json
 
 from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
+from python.logic.objectService import ObjectService
 from python.logic.userService import UserService
 from python.logic.taskService import TaskService
 
@@ -10,6 +11,7 @@ app = Flask(__name__)
 
 datasetService = DatasetService()
 annotationService = AnnotationService()
+objectService = ObjectService()
 userService = UserService()
 taskService = TaskService()
 
@@ -181,35 +183,64 @@ def updateAnnotationValidation():
 
 #####
 
-# Store annotation info for given frame
-@app.route('/api/annotation/upload/frame', methods=['POST'])
-def uploadAnnotation():
-    success, msg, status = annotationService.uploadAnnotation(request.get_json())
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Get annotation of object in frame
-@app.route('/api/annotation/get/frame/object', methods=['GET'])
+# Get annotation of one object in frame for given frame, dataset, video and user
+@app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def getAnnotationFrameObject():
-    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['fileName'], request.headers['frame'], request.headers['obj'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers['video'],
+                                                                      request.headers['frame'], request.headers['user'],
+                                                                      request.headers['uidObject'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Store annotation for an object in a frame
-@app.route('/api/annotation/upload/frame/object', methods=['POST'])
-def uploadAnnotationFrameObject():
-    success, msg, status = annotationService.uploadAnnotationFrameObject(request.get_json())
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+# Update object in annotation for given frame, dataset, video and user
+# Create new one if the annotation for this objects does not exist
+@app.route('/api/annotation/updateAnnotation/object', methods=['POST'])
+def updateAnnotationFrameObject():
+    success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get annotation object by type
-@app.route('/api/annotation/get/object', methods=['GET'])
-def getAnnotationObject():
-    success, msg, status = annotationService.getAnnotationObject(request.headers['type'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+# Remove object in annotation for given frame, dataset, video and user
+@app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
+def removeAnnotationFrameObject():
+    success, msg, status = annotationService.removeAnnotationFrameObject(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Create annotation object with type, #keypoints and labels for each keypoint
-@app.route('/api/annotation/upload/object', methods=['POST'])
-def uploadAnnotationObject():
-    success, msg, status = annotationService.uploadAnnotationObject(request.get_json())
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+
+#### OBJECTS ####
+
+# Get object info
+@app.route('/api/object/getObject', methods=['GET'])
+def getObject():
+    success, msg, status = objectService.getObject(request.headers['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get all objects
+@app.route('/api/object/getObjects', methods=['GET'])
+def getObjects():
+    success, msg, status = objectService.getObjects()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new object
+@app.route('/api/object/createObject', methods=['POST'])
+def createObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.createObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update existing object
+@app.route('/api/object/updateObject', methods=['POST'])
+def updateObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.updateObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Delete object
+@app.route('/api/object/removeObject', methods=['POST'])
+def removeObject():
+    req_data = request.get_json()
+    success, msg, status = objectService.removeObject(req_data['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 #### TASKS ####
 
