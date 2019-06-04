@@ -81,35 +81,55 @@ class AnnotationManager:
             log.exception('Error updating validated annotation in db')
             return 'Error'
 
-    # Save annotation info for given frame
-    def uploadAnnotation(this, video, frame, kpdim, objects):
-        try:
-            this.collection.insert_one({"video":video, "frame":frame, "keypointDim": kpdim, "objects": objects})
-            return 'ok', ''
-        except errors.PyMongoError as e:
-            return 'Error inserting annotation', e
+###########################
 
     # Get annotation for object in frame, without mongo id
-    def getFrameObject(this, video, frame, obj):
-        result = this.collection.find_one({"video":video, "frame":frame, "objects.uid":obj}, {'_id': 0})
-        if result == None:
+    def getFrameObject(this, dataset, video, frame, user, obj):
+        try:
+            result = this.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user,
+                                               "objects.uid": obj}, {'_id': 0})
+            if result == None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
             return 'Error'
-        else:
-            return result
 
-    # Store annotation for an object in a frame. Insert if not exist
-    def uploadFrameObject(this, video, frame, kpdim, objects):
+    # Return 'ok' if the annotation for an object in a frame has been updated.
+    # The annotation is created if it doesn't exist and return 'ok
+    def updateFrameObject(this, dataset, video, frame, user, objects):
         uidObj = objects[0]["uid"]
         type = objects[0]["type"]
         keypoints = objects[0]["keypoints"]
         labels = objects[0]["labels"]
-
-        query = {"video":video, "frame":frame, "keypointDim": kpdim, "objects.uid":uidObj}
+        #TODO: check how to insert new object
+        query = {"dataset": dataset, "video": video, "frame": frame, "user": user, "objects.uid": uidObj}
         # Update object (type, kps, labels)
-        newValues = {"$set": {"objects.$[elem].type":type, "objects.$[elem].keypoints":keypoints, "objects.$[elem].labels":labels}}
-        arrayFilter = [{ "elem.uid": { "$eq":uidObj }}]     # Filter by object uid
+        newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
+        arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
         try:
-            this.collection.update_one(query, newValues, upsert=True, array_filters=arrayFilter)
-            return 'ok', ''
+            result = this.collection.update_one(query, newValues, upsert=True, array_filters=arrayFilter)
+            # ok if object has been modified or new annotation has been created
+            if result.modified_count == 1 or result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
         except errors.PyMongoError as e:
-            return 'Error inserting annotation for object in frame', e
+            log.exception('Error updating object in annotation in db')
+            return 'Error'
+
+    # Return 'ok' if the annotation for an object in a frame has been removed.
+    def removeFrameObject(this, dataset, video, frame, user, uidObject):
+        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}
+        # Remove object where object.uid == uidObject
+        newValues = {"$pull": {"objects": {"uid": uidObject}}}
+        try:
+            result = this.collection.update_one(query, newValues, upsert=False)
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating object in annotation in db')
+            return 'Error'
