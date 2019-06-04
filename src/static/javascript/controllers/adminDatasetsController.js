@@ -10,7 +10,10 @@ angular.module('CVGTool')
             name: 'none',
             type: 'none'
         };
+
         $scope.datasetType = 'actionInKitchen';
+
+        $scope.unwrapping = false;
 
         // Dropzone zip options
         $scope.dzZipOptions = {
@@ -36,12 +39,7 @@ angular.module('CVGTool')
             },
             'success' : function(file, xhr){
                 console.log(file, xhr);
-                // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
-                // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
-                // if($scope.selectType === "actionInKitchen"){
-                //     console.log("True, unwrapping videos of dataset: " + file.name);
                 $scope.unwrapVideos(file.name);
-                // }
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
             },
@@ -107,11 +105,13 @@ angular.module('CVGTool')
 
         // Funcion called when unwrapping finished to update frames of every video in a dataset.
         var unwrapFinishedCallback = function(dataset) {
+            $scope.unwrapping = false;
             adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
         };
 
         // Function to retrieve unwrap the video
         $scope.unwrapVideos = function(dataset) {
+            $scope.unwrapping = true;
             console.log("Unwrapping...");
             adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback); //TODO: añadir callback
         };
