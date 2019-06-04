@@ -48,7 +48,6 @@
                       <th class="col-md-2">Duration</th>
                       <th class="col-md-2">Frames</th>
                       <th class="col-md-2">Type</th>
-                      <th class="col-md-2">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -59,7 +58,6 @@
                       <td>{{video.duration}}</td>
                       <td>{{video.frames}}</td>
                       <td>{{video.type}}</td>
-                      <td><!--                        <md-button ng-click="renameVideo(video)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit">--></md-button><md-button ng-click="removeVideo(video)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                     </tr>
                     <tr ng-if="listOfVideos.length == 0 || selectedDataset.name == 'none'">
                       <td class="text-left" ng-if="selectedDataset.name != 'none'">No videos in this dataset.</td>

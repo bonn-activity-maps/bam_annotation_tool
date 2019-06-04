@@ -31,26 +31,11 @@ angular.module('CVGTool')
         };
 
         // Function to hide the error messages on click
-        $scope.hiddeError = function() {
+        $scope.hideError = function() {
           $scope.inputError = false;
           $scope.inputMsg = '';
         };
 
-        // Function that generates the call to the server to rename the file
-        // It does some simple checking (not blank and different from the old name)
-        $scope.rename = function() {
-          if ($scope.newName.name === undefined) {
-            $scope.inputError = true;
-            $scope.inputMsg = "The new name can't be blank.";
-          } else if ($scope.newName.name.localeCompare($scope.oldName) === 0 ) {
-            $scope.inputError = true;
-            $scope.inputMsg = "The new name must be different from the old name.";
-          } else {
-            var newVideoName = $scope.newName.name + video.extension;
-            var oldVideoName = $scope.oldName + video.extension;
-            adminDatasetsSrvc.renameVideo(oldVideoName, newVideoName, navSrvc.getActiveDataset(), showSuccess, showError)
-          }
-        }
     }])
 
     /*

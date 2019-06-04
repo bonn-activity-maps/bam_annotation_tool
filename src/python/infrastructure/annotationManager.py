@@ -14,7 +14,8 @@ class AnnotationManager:
     # Get annotation info for given frame, dataset, video and user. Not return mongo id
     def getAnnotation(this, dataset, video, frame, user):
         try:
-            result = this.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user}, {'_id': 0})
+            result = this.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user},
+                                              {'_id': 0})
             if result == None:
                 return 'Error'
             else:
@@ -26,7 +27,8 @@ class AnnotationManager:
     # Get all annotations for given dataset, video, user and val. Not return mongo id
     def getAnnotations(this, dataset, video, user, val):
         try:
-            result = this.collection.find({"dataset": dataset, "video": video, "user": user, "validated": val}, {'_id': 0})
+            result = this.collection.find({"dataset": dataset, "video": video, "user": user, "validated": val},
+                                          {'_id': 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
@@ -36,7 +38,8 @@ class AnnotationManager:
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to uncheck if is not received in params
     def updateAnnotation(this, dataset, video, frame, user, objects, val='uncheck', kpDim=None):
-        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}   # Search by dataset, video, frame, user
+        # Search by dataset, video, frame, user
+        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}
         # Update all objects of the frame and validated flag. Update kpDim if it's received in params
         if kpDim is not None:
             newValues = {"$set": {"objects": objects, "validated": val, "keypointDim": kpDim}}

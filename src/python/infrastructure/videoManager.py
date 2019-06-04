@@ -62,31 +62,6 @@ class VideoManager:
             log.exception('Error updating video in db')
             return 'Error'
 
-    def updateVideoName(this, video, newName, dataset):
-        query = {"name": video, "dataset": dataset}  # Search by video name and dataset
-        newValues = {"$set": {"name": newName}}  # Update name
-        try:
-            result = this.collection.update_one(query, newValues, upsert=False)
-            if result.modified_count == 1:
-                return 'ok'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error updating video in db')
-            return 'Error'
-
-    # Return 'ok' if the video has been removed
-    def removeVideo(this, video, dataset):
-        try:
-            result = this.collection.delete_one({"name": video, "dataset": dataset})
-            if result.deleted_count == 1:
-                return 'ok'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error removing video in db')
-            return 'Error'
-
     # Remove all videos associated to dataset
     # Return 'ok' if the videos have been removed
     def removeVideosByDataset(this, dataset):

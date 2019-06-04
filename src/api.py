@@ -130,27 +130,6 @@ def getVideoFrame():
                                                         request.headers['dataset'])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Rename video
-@app.route('/api/dataset/renameVideo', methods=['POST'])
-def renameVideo():
-    req_data = request.get_json()
-    success, msg, status = datasetService.renameVideo(req_data['oldName'], req_data['newName'], req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Delete video
-@app.route('/api/dataset/removeVideo', methods=['POST'])
-def removeVideo():
-    req_data = request.get_json()
-    success, msg, status = datasetService.removeVideo(req_data['name'], req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Update existing video
-@app.route('/api/dataset/updateVideoFrames', methods=['POST'])
-def updateVideoFrames():
-    req_data = request.get_json()
-    success, msg, status = datasetService.updateVideoFrames(req_data['name'], req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
 # Update existing video
 @app.route('/api/dataset/updateVideosFrames', methods=['POST'])
 def updateVideosFrames():
