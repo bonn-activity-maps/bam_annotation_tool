@@ -59,15 +59,18 @@ angular.module('CVGTool')
             adminDatasetsSrvc.getDatasets(updateListOfDatasets)
         };
 
+        // Update list of datasets variable
         var updateListOfDatasets = function(datasets) {
             $scope.listOfDatasets = datasets;
         };
 
+        // Function to select a dataset and show its videos
         $scope.selectDataset = function(dataset) {
             $scope.selectedDataset = dataset;
             $scope.getInfoOfVideos();
         };
 
+        // Function to deselect a dataset and stop showing its videos
         $scope.deselectDataset = function() {
             $scope.selectedDataset = {
                 name: 'none',
@@ -102,23 +105,15 @@ angular.module('CVGTool')
             }
         };
 
-        var unwrapFinishedCallback = function(name, dataset) {
-            adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
-        };
-
-        var unwrapFinishedCallback2 = function(dataset) {
+        // Funcion called when unwrapping finished to update frames of every video in a dataset.
+        var unwrapFinishedCallback = function(dataset) {
             adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
         };
 
         // Function to retrieve unwrap the video
         $scope.unwrapVideos = function(dataset) {
             console.log("Unwrapping...");
-            adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
-        };
-
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideo = function(file) {
-          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
+            adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback); //TODO: añadir callback
         };
 
         // Function to update the list of videos

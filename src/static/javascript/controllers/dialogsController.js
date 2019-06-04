@@ -16,25 +16,25 @@ angular.module('CVGTool')
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
-        }
+        };
 
         // Callback function if the rename worked
         var showSuccess = function(response) {
           $scope.mode = 'success';
           $scope.msg = 'Video successfully renamed.'
-        }
+        };
 
         // Callback function if the rename didnt worked
         var showError = function(response) {
           $scope.mode = 'error';
           $scope.msg = 'There was an error when renaming the video.'
-        }
+        };
 
         // Function to hide the error messages on click
         $scope.hiddeError = function() {
           $scope.inputError = false;
           $scope.inputMsg = '';
-        }
+        };
 
         // Function that generates the call to the server to rename the file
         // It does some simple checking (not blank and different from the old name)
@@ -66,19 +66,19 @@ angular.module('CVGTool')
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
-        }
+        };
 
         // Recall function if the rename worked
         var showSuccess = function(response) {
           $scope.mode = 'success';
           $scope.msg = 'Video successfully removed.'
-        }
+        };
 
         // Recall function if the rename didnt worked
         var showError = function(response) {
           $scope.mode = 'error';
           $scope.msg = 'There was an error when deleting the video.'
-        }
+        };
 
         // Function that generates the call to the server to remove the file
         $scope.remove = function() {
@@ -123,25 +123,25 @@ angular.module('CVGTool')
     .controller('dialogRemoveUserCtrl', ['$scope','adminUsersSrvc', '$mdDialog', 'username', function ($scope, adminUsersSrvc, $mdDialog, username) {
         var user = username;
 
-        console.log(user)
+        console.log(user);
         $scope.mode = 'normal';
         $scope.msg = '';
 
         // Function that generates the call to the server to remove the file
         $scope.remove = function() {
             adminUsersSrvc.removeUser(user, showSuccess, showError)
-        }
+        };
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
-        }
+        };
 
         // Recall function if the rename worked
         var showSuccess = function(response) {
           $scope.mode = 'success';
           $scope.msg = 'User successfully removed.'
-        }
+        };
 
         // Recall function if the rename didnt worked
         var showError = function(response) {
@@ -164,13 +164,13 @@ angular.module('CVGTool')
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
-        }
+        };
 
         $scope.switchTo = function(number) {
           $scope.data = {
             video: $scope.variables.video,
             number: number
-          }
+          };
           $mdDialog.hide($scope.data);
         }
     }])
@@ -213,7 +213,7 @@ angular.module('CVGTool')
             ceil: 1,
             step: 1
           },
-        }
+        };
 
         // Function called everytime the number input of the slider is changed to check those values
         $scope.checkSlider = function() {
@@ -230,17 +230,17 @@ angular.module('CVGTool')
               $scope.slider.from = $scope.slider.to;
               $scope.slider.to = aux;
             }
-        }
+        };
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
           $mdDialog.cancel();
-        }
+        };
 
         // Function to update the list of videos using the searchbar
         $scope.searchInListOfVideos = function () {
             if ($scope.search.str === undefined) {
-                return;
+
             } else {
               $scope.listOfVideosToShow = [];
 
@@ -250,14 +250,14 @@ angular.module('CVGTool')
                 }
               });
             }
-        }
+        };
 
         // Function that manages item selection
         $scope.selectItem = function (video) {
             $scope.isVideoSelected = true;      // TODO: FInish the selection of the video, I have to use the bypass (the same way than with search)
-            $scope.videoSelected = video.video
+            $scope.videoSelected = video.video;
             $scope.slider.options.ceil = $scope.videoSelected.frames;
-        }
+        };
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
@@ -271,12 +271,12 @@ angular.module('CVGTool')
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
             toolSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
-        }
+        };
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
           $mdDialog.hide($scope.retrievedFrames);
-        }
+        };
 
         // Function that will be called everytime a frame has been retrieved from the server
         var callbackRetrievingFrame = function(image, fileName, frame) {
@@ -290,7 +290,7 @@ angular.module('CVGTool')
           if ($scope.retrievedFrames.length == $scope.targetFrames) {
             $scope.end();
           }
-        }
+        };
 
         // Function to retrieve the selected frame range from the selected video
         $scope.accept = function() {
@@ -308,7 +308,7 @@ angular.module('CVGTool')
                     callbackRetrievingFrame);
               }
             }
-        }
+        };
 
         $scope.getListOfVideos();
 
