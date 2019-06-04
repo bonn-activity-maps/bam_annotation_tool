@@ -10,7 +10,7 @@ taskManager = TaskManager()
 
 class TaskService:
 
-    # Return user info
+    # Return task info
     def getTask(this, name, user, dataset):
         result = taskManager.getTask(name, user, dataset)
         if result == 'Error':
@@ -18,7 +18,7 @@ class TaskService:
         else:
             return True, result, 200
 
-    # Return users info
+    # Return tasks info
     def getTasks(this, user, dataset):
         result = taskManager.getTasks(user, dataset)
         if result == 'Error':
@@ -43,7 +43,7 @@ class TaskService:
             else:
                 return True, {'name': name}, 200
 
-    # Return 'ok' if the user has been removed
+    # Return 'ok' if the task has been removed
     def removeTask(this, name, user, dataset):
         result = taskManager.removeTask(name, user, dataset)
         if result == 'Error':
