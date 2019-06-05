@@ -205,6 +205,7 @@ def updateAnnotationValidation():
 #####
 
 # Get annotation of one object in frame for given frame, dataset, video and user
+# TODO: The method returns all objects -> it should return only the object we ask for
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def getAnnotationFrameObject():
     success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers['video'],

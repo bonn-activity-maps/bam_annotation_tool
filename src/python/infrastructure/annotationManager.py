@@ -87,7 +87,7 @@ class AnnotationManager:
     def getFrameObject(this, dataset, video, frame, user, obj):
         try:
             result = this.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user,
-                                               "objects.uid": obj}, {'_id': 0})
+                                               "objects": {"$elemMatch": {"uid": obj}}}, {'_id': 0})
             if result == None:
                 return 'Error'
             else:
@@ -96,22 +96,41 @@ class AnnotationManager:
             log.exception('Error finding object in annotation in db')
             return 'Error'
 
+    # Return 'ok' if the annotation for an object in a frame has been created.
+    def createFrameObject(this, dataset, video, frame, user, objects):
+        uidObj = objects[0]["uid"]
+        type = objects[0]["type"]
+        keypoints = objects[0]["keypoints"]
+        labels = objects[0]["labels"]
+        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}
+        # Add object (uid, type, kps, labels)
+        newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}}}
+        try:
+            result = this.collection.update_one(query, newValues, upsert=False)
+            # ok if object has been modified
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error creating object in annotation in db')
+            return 'Error'
+
     # Return 'ok' if the annotation for an object in a frame has been updated.
-    # The annotation is created if it doesn't exist and return 'ok
+    # The annotation is not created if it doesn't exist and return Error
     def updateFrameObject(this, dataset, video, frame, user, objects):
         uidObj = objects[0]["uid"]
         type = objects[0]["type"]
         keypoints = objects[0]["keypoints"]
         labels = objects[0]["labels"]
-        #TODO: check how to insert new object
         query = {"dataset": dataset, "video": video, "frame": frame, "user": user, "objects.uid": uidObj}
         # Update object (type, kps, labels)
         newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
         arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
         try:
-            result = this.collection.update_one(query, newValues, upsert=True, array_filters=arrayFilter)
+            result = this.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
             # ok if object has been modified or new annotation has been created
-            if result.modified_count == 1 or result.acknowledged:
+            if result.modified_count == 1:
                 return 'ok'
             else:
                 return 'Error'

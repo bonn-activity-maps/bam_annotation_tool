@@ -79,8 +79,17 @@ class AnnotationService:
             return True, result, 200
 
     # Store annotation for an object for given frame, dataset, video and user
+    # If the object does not exist, it's stored in db
     def updateAnnotationFrameObject(this, req):
-        result = annotationManager.updateFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+        # Read uid object  and check if it exists
+        uidObj = req['objects'][0]["uid"]
+        found = annotationManager.getFrameObject(req['dataset'], req['video'], req['frame'], req['user'], uidObj)
+
+        if found == 'ok':   # Update existing object in frame
+            result = annotationManager.updateFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+        else:               # Add new object in frame
+            result = annotationManager.createFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+
         if result == 'ok':
             return True, result, 200
         else:
