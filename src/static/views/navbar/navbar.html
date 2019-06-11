@@ -13,14 +13,14 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
-        <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
+        <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>
       </ul>
       <ul class="nav navbar-nav" ng-if="user.role=='root'">
         <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset}}
+          <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset.name}}
           <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
+            <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>
           </ul>
         </li>
       </ul>

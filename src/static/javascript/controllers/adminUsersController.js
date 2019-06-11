@@ -9,7 +9,10 @@ angular.module('CVGTool')
         $scope.availableRoles = []; // Contains the list of roles that the user is allowed to create.
         $scope.userRole = ""; // Role of the actual user.
 
-        $scope.activeDataset = ""; // Dataset of the actual user, if root, then it's 'root'
+        $scope.activeDataset = { // Dataset of the actual user, if root, then it's 'root'
+            name: "",
+            type: ""
+        };
         $scope.listOfDatasets = []; // Ironically, contains the list of datasets in the system.
 
         // User object to store data while editing
@@ -30,7 +33,7 @@ angular.module('CVGTool')
             if ($scope.userRole.localeCompare('root') === 0){
                 adminUsersSrvc.getUsers(showListOfUsers);
             } else {
-                adminUsersSrvc.getUsersByDataset($scope.activeDataset, "user", showListOfUsers);
+                adminUsersSrvc.getUsersByDataset($scope.activeDataset.name, "user", showListOfUsers);
             }
         };
 
@@ -49,7 +52,7 @@ angular.module('CVGTool')
         // Function to retrieve the user dataset
         $scope.getActiveDataset = function() {
             $scope.activeDataset = navSrvc.getActiveDataset();
-            $scope.editUser.dataset.push($scope.activeDataset);
+            $scope.editUser.dataset.push($scope.activeDataset.name);
         };
 
         // Function to retrieve the list of dataset

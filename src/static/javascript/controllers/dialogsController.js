@@ -67,7 +67,7 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to remove the file
         $scope.remove = function() {
-          adminDatasetsSrvc.removeVideo(videoName, navSrvc.getActiveDataset(), showSuccess, showError)
+          adminDatasetsSrvc.removeVideo(videoName, navSrvc.getActiveDataset().name, showSuccess, showError)
         }
     }])
 
@@ -255,7 +255,7 @@ angular.module('CVGTool')
 
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
-            toolSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset());
+            toolSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset().name);
         };
 
         // Function to go back from the dialog once the frames have been retrieved from the server
@@ -289,7 +289,7 @@ angular.module('CVGTool')
 
               // Make all the petitions
               for (var i=0; ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
-                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset(),
+                toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset().name,
                     callbackRetrievingFrame);
               }
             }

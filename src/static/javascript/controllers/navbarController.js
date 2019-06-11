@@ -8,7 +8,10 @@ angular.module('CVGTool')
           assignedTo: []
         };
 
-        $scope.activeDataset = "";
+        $scope.activeDataset = {
+            name: "",
+            type: ""
+        };
 
         $scope.getUserInfo = function () {
             $scope.user = navSrvc.getUser();
@@ -16,7 +19,7 @@ angular.module('CVGTool')
         };
 
         $scope.loggedIn = function () {
-          if ($state.current.name != 'login') {
+          if ($state.current.name !== 'login') {
             return true
           } else return false
         };
