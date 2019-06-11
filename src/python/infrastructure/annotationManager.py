@@ -54,6 +54,24 @@ class AnnotationManager:
             log.exception('Error updating annotation in db')
             return 'Error'
 
+    # Return 'ok' if the camera params of annotation has been updated.
+    # The annotation is created if it doesn't exist and return 'ok
+    def updateCameraParameters(this, dataset, video, frame, user, k, rvec, tvec, distCoef, w, h):
+        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}   # Search by dataset, video, frame, user
+        # Update all camera parameters
+        newValues = {"$set": {"k": k, "rvec": rvec, "tvec": tvec, "distCoef": distCoef, "w": w, "h": h}}
+
+        try:
+            result = this.collection.update_one(query, newValues, upsert=True)
+            # ok if object has been modified or new annotation has been created
+            if result.modified_count == 1 or result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating camera parameters of annotation in db')
+            return 'Error'
+
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(this, dataset, video, frame, user):
         try:
@@ -64,6 +82,18 @@ class AnnotationManager:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error removing annotation in db')
+            return 'Error'
+
+    # Return 'ok' if the annotations of dataset has been removed
+    def removeAnnotationsByDataset(this, dataset):
+        try:
+            result = this.collection.delete_many({"dataset": dataset})
+            if result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error removing annotations in db')
             return 'Error'
 
     # Return 'ok' if the validated flag has been updated in all frames. if annotation doesn't exist, it isn't created

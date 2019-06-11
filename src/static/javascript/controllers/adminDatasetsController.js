@@ -35,12 +35,12 @@ angular.module('CVGTool')
                 $scope.newFile = file;
             },
             'success' : function(file, xhr){
-                console.log(file, xhr);
+                // console.log(file, xhr);
                 // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
                 // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
                 // if($scope.selectType === "actionInKitchen"){
                 //     console.log("True, unwrapping videos of dataset: " + file.name);
-                $scope.unwrapVideos(file.name);
+                // $scope.unwrapVideos(file.name);
                 // }
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
@@ -102,24 +102,25 @@ angular.module('CVGTool')
             }
         };
 
-        var unwrapFinishedCallback = function(name, dataset) {
-            adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
-        };
-
-        var unwrapFinishedCallback2 = function(dataset) {
-            adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
-        };
-
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideos = function(dataset) {
-            console.log("Unwrapping...");
-            adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
-        };
-
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideo = function(file) {
-          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
-        };
+        // TODO: remove it if we don't need to extract frames at the end!!
+        // var unwrapFinishedCallback = function(name, dataset) {
+        //     adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
+        // };
+        //
+        // var unwrapFinishedCallback2 = function(dataset) {
+        //     adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
+        // };
+        //
+        // // Function to retrieve unwrap the video
+        // $scope.unwrapVideos = function(dataset) {
+        //     console.log("Unwrapping...");
+        //     adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
+        // };
+        //
+        // // Function to retrieve unwrap the video
+        // $scope.unwrapVideo = function(file) {
+        //   adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
+        // };
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {

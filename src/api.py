@@ -106,18 +106,18 @@ def removeDataset():
 @app.route('/api/dataset/uploadZip', methods=['POST'])
 def uploadZip():
     success, msg, status = datasetService.storeZip(request)
-    print(request.headers["type"])
     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
 #### VIDEO ####
 
-# Unwrap videos of a dataset
-@app.route('/api/dataset/unwrapVideos', methods=['POST'])
-def unwrapVideos():
-    req_data = request.get_json()
-    success, msg, status = datasetService.unwrapVideos(req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+# TODO: remove it if we don't need to extract frames at the end!!
+# # Unwrap videos of a dataset
+# @app.route('/api/dataset/unwrapVideos', methods=['POST'])
+# def unwrapVideos():
+#     req_data = request.get_json()
+#     success, msg, status = datasetService.unwrapVideos(req_data['dataset'])
+#     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 # Get list of videos and length
 @app.route('/api/dataset/getVideos', methods=['GET'])

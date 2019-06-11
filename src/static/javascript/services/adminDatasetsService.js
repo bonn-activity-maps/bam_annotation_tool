@@ -21,20 +21,21 @@ angular.module('CVGTool')
               });
           },
 
-          unwrapVideos: function (dataset, callbackFinished) {
-              $http({
-                  method: 'POST',
-                  url: '/api/dataset/unwrapVideos',
-                  data: {
-                      'dataset': dataset
-                  }
-              }).then(function successCallback(response) {
-                  // TODO: add action when unwrap is finished
-                  callbackFinished(dataset)
-              }, function errorCallback(response) {
-                  console.log(response.data.msg)
-              });
-          },
+          // TODO: remove it if we don't need to extract frames at the end!!
+          // unwrapVideos: function (dataset, callbackFinished) {
+          //     $http({
+          //         method: 'POST',
+          //         url: '/api/dataset/unwrapVideos',
+          //         data: {
+          //             'dataset': dataset
+          //         }
+          //     }).then(function successCallback(response) {
+          //         // TODO: add action when unwrap is finished
+          //         callbackFinished(dataset)
+          //     }, function errorCallback(response) {
+          //         console.log(response.data.msg)
+          //     });
+          // },
 
           removeVideo: function (videoName, dataset, callbackSuccess, callbackError) {
               $http({
