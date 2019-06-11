@@ -34,17 +34,17 @@ angular.module('CVGTool')
                 console.log(file);
                 $scope.newFile = file;
             },
-            'success' : function(file, xhr){
-                // console.log(file, xhr);
-                // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
-                // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
-                // if($scope.selectType === "actionInKitchen"){
-                //     console.log("True, unwrapping videos of dataset: " + file.name);
-                // $scope.unwrapVideos(file.name);
-                // }
+            'success' : function(file, xhr) {
+                console.log('finish upload, datasettype: ', $scope.datasetType)
+                console.log('dataset: ', file.name.split(".zip")[0])
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
-            },
+                // TODO: Check this --> doesn't work for big datasets
+                // Request to read/store in db AIK information
+                if ($scope.datasetType === "actionInKitchen") {
+                    $scope.readAIKData(file.name.split(".zip")[0]);
+                }
+            }
         };
 
         // Set watcher to control the selector
@@ -102,25 +102,28 @@ angular.module('CVGTool')
             }
         };
 
-        // TODO: remove it if we don't need to extract frames at the end!!
-        // var unwrapFinishedCallback = function(name, dataset) {
-        //     adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
-        // };
-        //
+        // TODO: do we need this??
+        var readAIKDataCallback = function(dataset) {
+            console.log("Finish reading AIK data");
+            // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
+        };
+
+        // Function to retrieve data of AIK dataset
+        $scope.readAIKData = function(file) {
+            adminDatasetsSrvc.readAIKData(file, navSrvc.getActiveDataset(), readAIKDataCallback); //TODO: añadir callback
+        };
+
         // var unwrapFinishedCallback2 = function(dataset) {
         //     adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
         // };
-        //
+
         // // Function to retrieve unwrap the video
         // $scope.unwrapVideos = function(dataset) {
         //     console.log("Unwrapping...");
         //     adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
         // };
-        //
-        // // Function to retrieve unwrap the video
-        // $scope.unwrapVideo = function(file) {
-        //   adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
-        // };
+
+
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {

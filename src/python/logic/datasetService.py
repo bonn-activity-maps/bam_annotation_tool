@@ -82,10 +82,23 @@ class DatasetService:
         camerasDir = os.path.join(datasetDir, 'cameras/')
         annotationsDir = os.path.join(datasetDir, 'tracks3d/')
 
-        result = this.addVideosAIK(dataset, videosDir)
-        result = this.addCameraParametersAIK(dataset, camerasDir)
+        # Store info in DB
+        resultVideos = this.addVideosAIK(dataset, videosDir)
+        print('finish videos')
+        resultCameras = this.addCameraParametersAIK(dataset, camerasDir)
+        print('finish cameras')
+        resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
+        print('finish annotations')
 
-        return result
+        if resultVideos == 'Error':
+            return False, 'Error saving videos in database', 400
+        elif resultCameras == 'Error':
+            return False, 'Error saving camera parameters in database', 400
+        elif resultAnnotations == 'Error':
+            return False, 'Error saving annotations in database', 400
+
+        return True, 'ok', 200
+
 
     # Add videos to database from videos directory
     # Return true if all videos have been updated, False ow
@@ -128,6 +141,38 @@ class DatasetService:
                         return False
         return True
 
+    # Add annotation of objects to database from videos directory
+    # Return true if all annotation have been updated, False if has been some problem
+    def addAnnotationsAIK(this, dataset, dir):
+        listDir = os.listdir(dir)   # List of all objects/persons
+        type = 'personAIK'          # Type of objects
+        kpDim = '3D'                # Keypoints dimension TODO: add it
+        finalResult = True
+
+        for f in listDir:
+            trackFile = os.path.join(dir, f)
+
+            # Read uid/number of object
+            uid = int(os.path.splitext(f)[0].split('track')[1])
+
+            # Read data from file
+            try:
+                with open(trackFile) as jsonFile:
+                    tracks = json.load(jsonFile)
+            except OSError:
+                log.exception('Could not read from file')
+                return False
+
+            # Transform annotation to our format and store in db
+            frames = tracks['frames']
+            poses = tracks['poses']
+            for i, frame in enumerate(frames):
+                keypoints = poses[i]
+                objects = {"uid": uid, "type": type, "keypoints": keypoints}
+                result = annotationManager.createFrameObject(dataset, None, frame, 'root', objects)
+                if result == 'Error': finalResult = False   # finalResult False if there is some problem
+
+        return finalResult
 
     def addVideosPT(this, dataset):
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
@@ -204,9 +249,7 @@ class DatasetService:
                     if result == 'Error':
                         return False, 'Error creating dataset in database', 500
                     else:
-                        if type == "actionInKitchen":
-                            this.addInfoAIK(filename)
-                        else:
+                        if type == this.pt:
                             this.addVideosPT(filename)
                         return True, result, 200
                 else:
