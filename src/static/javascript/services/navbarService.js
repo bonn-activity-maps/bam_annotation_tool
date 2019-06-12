@@ -36,7 +36,10 @@ angular.module('CVGTool')
             // Return current active dataset
             getActiveDataset: function () {
                 if (user.role === "root") {
-                    return "root"
+                    return {
+                        name: "root",
+                        type: "root"
+                    }
                 } else return activeDataset;
             },
 
@@ -50,10 +53,12 @@ angular.module('CVGTool')
 
             // Set active dataset to dataset
             setActiveDataset: function (dataset) {
+                console.log(dataset);
                 activeDataset = {
                     name: dataset.name,
                     type: dataset.type
                 }
+                console.log(activeDataset)
             }
         }
     });

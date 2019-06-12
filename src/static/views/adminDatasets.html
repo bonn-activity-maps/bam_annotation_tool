@@ -56,8 +56,8 @@
                       <td>{{video.dataset}}</td>
                       <td>{{video.extension}}</td>
                       <td>{{video.duration}}</td>
-                      <td ng-if="unwrapping == false">{{video.frames}}</td>
-                      <td ng-if="unwrapping == true"><i class="glyphicon glyphicon-refresh gly-spin"></i></td>
+                      <td ng-if="video.frames != 0">{{video.frames}}</td>
+                      <td ng-if="video.frames == 0 && unwrapping"><i class="glyphicon glyphicon-refresh gly-spin"></i></td>
                       <td>{{video.type}}</td>
                     </tr>
                     <tr ng-if="listOfVideos.length == 0 || selectedDataset.name == 'none'">

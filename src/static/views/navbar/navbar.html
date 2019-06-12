@@ -1,39 +1,46 @@
 <!--menu -->
 <nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong" ng-show="loggedIn()">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="" rel="home" id="hombeButton">
-         CVG Tool
-      </a>
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="" rel="home" id="hombeButton">
+                CVG Tool
+            </a>
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
+                <li><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</li>
+            </ul>
+            <ul class="nav navbar-nav" ng-if="user.role=='root'">
+                <li><span class="glyphicon glyphicon-hdd"></span></li>
+            </ul>
+<!--            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">-->
+<!--                <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>-->
+<!--            </ul>-->
+<!--            <ul class="nav navbar-nav" ng-if="user.role=='root'">-->
+<!--                <li class="dropdown">-->
+<!--                    <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset.name}}-->
+<!--                        <span class="caret"></span></a>-->
+<!--                    <ul class="dropdown-menu">-->
+<!--                        <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span>-->
+<!--                            {{activeDataset.name}}</a></li>-->
+<!--                    </ul>-->
+<!--                </li>-->
+<!--            </ul>-->
+            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
+                <li><a href="#!/admin/statistics"> Statistics</a></li>
+                <li><a href="#!/admin/users"> User management</a></li>
+                <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
+                <li><a href="#!/admin/annotations"> Annotations</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
+                <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+            </ul>
+        </div>
     </div>
-    <div class="collapse navbar-collapse" id="myNavbar">
-      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
-        <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>
-      </ul>
-      <ul class="nav navbar-nav" ng-if="user.role=='root'">
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset.name}}
-          <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
-        <li><a href="#!/admin/statistics"> Statistics</a></li>
-        <li><a href="#!/admin/users"> User management</a></li>
-        <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
-        <li><a href="#!/admin/annotations"> Annotations</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
-        <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
-      </ul>
-    </div>
-  </div>
 </nav>

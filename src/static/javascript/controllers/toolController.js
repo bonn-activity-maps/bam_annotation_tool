@@ -260,9 +260,7 @@ angular.module('CVGTool')
 
         $scope.dragOptions = {};
         $scope.numberOfCanvases = 4;  // Number of canvases
-        if (navSrvc.getActiveDataset().type === 'poseTrack') {
-            $scope.numberOfCanvases = 1;
-        }
+        $scope.activeDataset = navSrvc.getActiveDataset();
 
         $scope.tempCameraStorage = [null, null, null, null];
 
@@ -770,6 +768,9 @@ angular.module('CVGTool')
         }
 
         $scope.initializeCanvases();
-
+        if ($scope.activeDataset.type === 'poseTrack') { // If poseTrack type, only one canvas.
+            // $scope.numberOfCanvases = 1;        // This works, but somehow it doesn't change anything.
+            $scope.switchNumberOfCanvases(1);   // Change to 1 canvas
+        }
 
     }]);

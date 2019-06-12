@@ -23,9 +23,11 @@ angular.module('CVGTool')
         };
 
         var setActiveDataset = function (dataset) {
+            console.log("ACTUALIZACION");
             console.log(dataset);
             navSrvc.setActiveDataset(dataset);
-
+            console.log("PETISIó")
+            console.log(navSrvc.getActiveDataset())
         };
 
         // Callback function to show the error message
@@ -41,6 +43,8 @@ angular.module('CVGTool')
                 adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
                 $state.go('taskHome');
             } else {
+                console.log("LLAMADA");
+                adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
                 $state.go('adminStatistics');
             }
         };

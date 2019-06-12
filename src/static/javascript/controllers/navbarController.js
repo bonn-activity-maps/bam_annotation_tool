@@ -16,6 +16,7 @@ angular.module('CVGTool')
         $scope.getUserInfo = function () {
             $scope.user = navSrvc.getUser();
             $scope.activeDataset = navSrvc.getActiveDataset();
+            console.log($scope.activeDataset.name);
         };
 
         $scope.loggedIn = function () {
