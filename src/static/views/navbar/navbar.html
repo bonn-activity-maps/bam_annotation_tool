@@ -12,26 +12,31 @@
             </button>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
-<!--            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">-->
-<!--                <li><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</li>-->
-<!--            </ul>-->
-<!--            <ul class="nav navbar-nav" ng-if="user.role=='root'">-->
-<!--                <li><span class="glyphicon glyphicon-hdd"></span></li>-->
-<!--            </ul>-->
 
-            <ul class="nav navbar-nav" ng-if="user.role=='root'">
+            <!--            IF user is ROOT, no option, all datasets by default -->
+            <ul class="nav navbar-nav" ng-if="user.role == 'root'">
                 <li><a><span class="glyphicon glyphicon-hdd"></span>Root</a></li>
             </ul>
-            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
+
+            <!--            IF user can switch dataset -->
+            <ul class="nav navbar-nav" ng-if="(user.role=='user' && activeState === 'taskHome') || user.role == 'admin'">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" ng-model="user.assignedTo"> {{activeDataset.name}}
                         <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li ng-click="selectDataset(dataset)" ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span>
+                        <li ng-click="selectDataset(dataset)" ng-repeat="dataset in user.assignedTo"><a><span
+                                class="glyphicon glyphicon-hdd"></span>
                             {{dataset}}</a></li>
                     </ul>
                 </li>
             </ul>
+
+            <!--            IF user is not allowed to switch dataset. I.E.: user not in taskHome -->
+            <ul class="nav navbar-nav" ng-if="user.role=='user' && activeState !== 'taskHome'">
+                <li><a><span class="glyphicon glyphicon-hdd"></span>{{activeDataset.name}}</a></li>
+
+            </ul>
+
             <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
                 <li><a href="#!/admin/statistics"> Statistics</a></li>
                 <li><a href="#!/admin/users"> User management</a></li>

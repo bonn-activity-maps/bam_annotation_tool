@@ -14,6 +14,8 @@ angular.module('CVGTool')
                 type: ""
             };
 
+            $scope.activeState = "";
+
             // Set activeDataset to dataset
             $scope.setActiveDataset = function(dataset) {
                 $scope.activeDataset = dataset;
@@ -23,7 +25,6 @@ angular.module('CVGTool')
             $scope.getUserInfo = function () {
                 $scope.user = navSrvc.getUser();
                 $scope.activeDataset = navSrvc.getActiveDataset();
-                console.log($scope.activeDataset.name);
             };
 
             $scope.loggedIn = function () {
@@ -43,9 +44,9 @@ angular.module('CVGTool')
             var watcher = $scope.$watch(function () {
                 return $state.$current.name
             }, function (newVal, oldVal) {
+                $scope.activeState = newVal;
                 if (oldVal.localeCompare('login') === 0) {
                     $scope.getUserInfo();
                 }
-            })
-
+            });
         }]);

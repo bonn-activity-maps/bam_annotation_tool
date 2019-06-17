@@ -22,13 +22,9 @@ angular.module('CVGTool')
             $scope.password = "";
         };
 
-        var setActiveDataset = function (dataset) {
-            console.log("ACTUALIZACION");
-            console.log(dataset);
-            navSrvc.setActiveDataset(dataset);
-            console.log("PETISIó")
-            console.log(navSrvc.getActiveDataset())
-        };
+        // var setActiveDataset = function (dataset) {
+        //     navSrvc.setActiveDataset(dataset);
+        // };
 
         // Callback function to show the error message
         var showError = function (error) {
@@ -39,12 +35,11 @@ angular.module('CVGTool')
         // Callback function to redirect the user if the login worked
         var successRedirect = function (user) {
             navSrvc.setUser(user);
-            if (user.role.localeCompare('user') === 0) {
-                adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
+            if (user.role.localeCompare('user') === 0) { // NOT assign dataset automatically, select in task page
+                // adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
                 $state.go('taskHome');
             } else {
-                console.log("LLAMADA");
-                adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
+                // adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
                 $state.go('adminStatistics');
             }
         };

@@ -53,12 +53,10 @@ angular.module('CVGTool')
 
             // Set active dataset to dataset
             setActiveDataset: function (dataset) {
-                console.log(dataset);
                 activeDataset = {
                     name: dataset.name,
                     type: dataset.type
                 };
-                console.log(activeDataset)
             }
         }
     });
