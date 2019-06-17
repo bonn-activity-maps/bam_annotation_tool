@@ -57,7 +57,7 @@ angular.module('CVGTool')
                 activeDataset = {
                     name: dataset.name,
                     type: dataset.type
-                }
+                };
                 console.log(activeDataset)
             }
         }

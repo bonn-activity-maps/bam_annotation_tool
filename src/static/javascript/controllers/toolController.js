@@ -769,7 +769,6 @@ angular.module('CVGTool')
 
         $scope.initializeCanvases();
         if ($scope.activeDataset.type === 'poseTrack') { // If poseTrack type, only one canvas.
-            // $scope.numberOfCanvases = 1;        // This works, but somehow it doesn't change anything.
             $scope.switchNumberOfCanvases(1);   // Change to 1 canvas
         }
 

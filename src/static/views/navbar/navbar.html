@@ -12,25 +12,26 @@
             </button>
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
-            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
-                <li><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</li>
-            </ul>
-            <ul class="nav navbar-nav" ng-if="user.role=='root'">
-                <li><span class="glyphicon glyphicon-hdd"></span></li>
-            </ul>
 <!--            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">-->
-<!--                <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</a></li>-->
+<!--                <li><span class="glyphicon glyphicon-hdd"></span> {{activeDataset.name}}</li>-->
 <!--            </ul>-->
 <!--            <ul class="nav navbar-nav" ng-if="user.role=='root'">-->
-<!--                <li class="dropdown">-->
-<!--                    <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset.name}}-->
-<!--                        <span class="caret"></span></a>-->
-<!--                    <ul class="dropdown-menu">-->
-<!--                        <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span>-->
-<!--                            {{activeDataset.name}}</a></li>-->
-<!--                    </ul>-->
-<!--                </li>-->
+<!--                <li><span class="glyphicon glyphicon-hdd"></span></li>-->
 <!--            </ul>-->
+
+            <ul class="nav navbar-nav" ng-if="user.role=='root'">
+                <li><a><span class="glyphicon glyphicon-hdd"></span>Root</a></li>
+            </ul>
+            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" ng-model="user.assignedTo"> {{activeDataset.name}}
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li ng-click="selectDataset(dataset)" ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span>
+                            {{dataset}}</a></li>
+                    </ul>
+                </li>
+            </ul>
             <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
                 <li><a href="#!/admin/statistics"> Statistics</a></li>
                 <li><a href="#!/admin/users"> User management</a></li>
