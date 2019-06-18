@@ -35,10 +35,10 @@ class DatasetManager:
             return 'Error'
 
     # Return 'ok' if the dataset has been created
-    def createDataset(this, dataset, type):
+    def createDataset(this, dataset, type, kpDim):
         try:
             filename, filextension = os.path.splitext(dataset)
-            result = this.collection.insert_one({"name": filename, "type": type})
+            result = this.collection.insert_one({"name": filename, "type": type, "keypointDim": kpDim})
             if result.acknowledged:
                 return 'ok'
             else:

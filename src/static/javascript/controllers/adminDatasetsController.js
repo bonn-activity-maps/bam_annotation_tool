@@ -40,10 +40,8 @@ angular.module('CVGTool')
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
                 // TODO: Check this --> doesn't work for big datasets
-                // Request to read/store in db AIK information
-                if ($scope.datasetType === "actionInKitchen") {
-                    $scope.readAIKData(file.name.split(".zip")[0]);
-                }
+                // Request to read/store in db information of dataset
+                $scope.readData(file.name.split(".zip")[0], $scope.datasetType);
             }
         };
 
@@ -103,14 +101,14 @@ angular.module('CVGTool')
         };
 
         // TODO: do we need this??
-        var readAIKDataCallback = function(dataset) {
+        var readDataCallback = function(dataset) {
             console.log("Finish reading AIK data");
             // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
-        // Function to retrieve data of AIK dataset
-        $scope.readAIKData = function(file) {
-            adminDatasetsSrvc.readAIKData(file, navSrvc.getActiveDataset(), readAIKDataCallback); //TODO: añadir callback
+        // Function to retrieve data of dataset
+        $scope.readData = function(file, type) {
+            adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
         };
 
         // var unwrapFinishedCallback2 = function(dataset) {

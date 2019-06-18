@@ -21,15 +21,16 @@ angular.module('CVGTool')
               });
           },
 
-          readAIKData: function (dataset, callbackFinished) {
+          readData: function (dataset, type, callbackFinished) {
               $http({
                   method: 'POST',
-                  url: '/api/dataset/readAIKData',
+                  url: '/api/dataset/readData',
                   data: {
-                      'dataset': dataset
+                      'dataset': dataset,
+                      'type': type
                   }
               }).then(function successCallback(response) {
-                  console.log('read data AIK finished')
+                  console.log('read data finished')
                   //callbackFinished(dataset)
               }, function errorCallback(response) {
                   console.log(response.data.msg)

@@ -119,12 +119,11 @@ def uploadZip():
 #     success, msg, status = datasetService.unwrapVideos(req_data['dataset'])
 #     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
-# Unwrap videos of a dataset
-@app.route('/api/dataset/readAIKData', methods=['POST'])
-def readAIKData():
+# Read data from stored zip
+@app.route('/api/dataset/readData', methods=['POST'])
+def readData():
     req_data = request.get_json()
-    print('reading AIK ', req_data['dataset'])
-    success, msg, status = datasetService.addInfoAIK(req_data['dataset'])
+    success, msg, status = datasetService.addInfo(req_data['dataset'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get list of videos and length

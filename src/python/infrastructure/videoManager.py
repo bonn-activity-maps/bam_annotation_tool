@@ -36,10 +36,9 @@ class VideoManager:
             return 'Error'
 
     # Return 'ok' if the video has been created
-    def createVideo(this, video, dataset, extension, duration, path, type=None, frames=0):
+    def createVideo(this, video, dataset, path, type=None, frames=0):
         try:
-            result = this.collection.insert_one({"name": video, "dataset": dataset, "extension": extension,
-                                                 "duration": duration, "frames": frames, "path": path, "type": type})
+            result = this.collection.insert_one({"name": video, "dataset": dataset, "frames": frames, "path": path, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:
