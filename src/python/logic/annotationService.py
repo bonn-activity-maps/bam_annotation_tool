@@ -13,6 +13,7 @@ objectManager = ObjectManager()
 class AnnotationService:
 
     # Get annotation info for given frame, dataset, video and user
+    # TODO: pass objects to 2d for AIK
     def getAnnotation(this, dataset, video, frame, user):
         result = annotationManager.getAnnotation(dataset, video, frame, user)
         if result == 'Error':
@@ -28,18 +29,23 @@ class AnnotationService:
         else:
             return True, result, 200
 
-    # Return 'ok' if the annotation has been updated
-    def createAnnotation(this, req):
-        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
-                                                    req['objects'], req['validated'], req['keypointDim'])
-        if result == 'Error':
-            return False, 'Error creating annotation', 400
-        else:
-            return True, result, 200
+    # # Return 'ok' if the annotation has been updated
+    # def createAnnotation(this, req):
+    #     result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
+    #                                                 req['objects'], req['validated'], req['keypointDim'])
+    #     if result == 'Error':
+    #         return False, 'Error creating annotation', 400
+    #     else:
+    #         return True, result, 200
 
     # Return 'ok' if the annotation has been updated
-    def updateAnnotation(this, req):
-        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+    # TODO: pass objects to 3d for AIK
+    def updateAnnotation(this, dataset, video, frame, user, objects):
+        # print(objects)
+        # Create new objects uid
+        # Get max of this dataset
+
+        result = annotationManager.updateAnnotation(dataset, video, frame, user, objects)
         if result == 'Error':
             return False, 'Error updating annotation', 400
         else:
@@ -67,6 +73,15 @@ class AnnotationService:
             return True, 'ok', 200
         else:
             return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
+
+    # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
+    def getNewUidObject(this, dataset):
+        result = annotationManager.maxUidObjectDataset(dataset)
+        if result == 'Error':
+            return False, 'Error getting max uid object for dataset in db', 400
+        else:
+            return True, result+1, 200
+
 
 ##############################
 

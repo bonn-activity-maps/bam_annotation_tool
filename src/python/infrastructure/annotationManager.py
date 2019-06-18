@@ -111,7 +111,20 @@ class AnnotationManager:
             log.exception('Error updating validated annotation in db')
             return 'Error'
 
-###########################
+    # Return max uid of objects in dataset
+    def maxUidObjectDataset(this, dataset):
+        try:
+            result = this.collection.find({"dataset": dataset, "video": video, "frame": frame, "user": user}, {'_id': 0})
+            if result == None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
+
+    ###########################
 
     # Get annotation for object in frame, without mongo id
     def getFrameObject(this, dataset, video, frame, user, obj):

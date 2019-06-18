@@ -183,16 +183,18 @@ def getAnnotations():
     success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Create new annotation
-@app.route('/api/annotation/createAnnotation', methods=['POST'])
-def createAnnotation():
-    success, msg, status = annotationService.createAnnotation(request.get_json())
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# # Create new annotation
+# @app.route('/api/annotation/createAnnotation', methods=['POST'])
+# def createAnnotation():
+#     success, msg, status = annotationService.createAnnotation(request.get_json())
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update existing annotation for given frame, dataset, video and user
 @app.route('/api/annotation/updateAnnotation', methods=['POST'])
 def updateAnnotation():
-    success, msg, status = annotationService.updateAnnotation(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['video'], req_data['frame'],
+                                                              req_data['user'], req_data['objects'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Delete annotation
@@ -209,6 +211,13 @@ def removeAnnotation():
 def updateAnnotationValidation():
     success, msg, status = annotationService.updateValidation(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get new uid for an object in annotations for a dataset to avoid duplicated uid objects
+@app.route('/api/annotation/getNewUidObject', methods=['GET'])
+def getNewUidObject():
+    success, msg, status = annotationService.getNewUidObject(request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #####
 
