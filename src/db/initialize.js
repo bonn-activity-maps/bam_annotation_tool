@@ -3,7 +3,7 @@ db.user.insertOne({name: "Alberto", password: "test", assignedTo: ["example3"], 
 db.user.insertOne({name: "Dario", password: "test", assignedTo: ["example1"], role: "user", email: "dario@dario.com"})
 db.user.insertOne({name: "Beatriz", password: "test", assignedTo: ["example3"], role: "user", email: "bea@bea.com"})
 db.user.insertOne({name: "pt", password: "test", assignedTo: ["posetrack_example"], role: "user", email: "albeasdo@alberto.com"})
-db.user.insertOne({name: "aik", password: "test", assignedTo: ["aik_test"], role: "user", email: "albeaasihdvo@alberto.com"})
+db.user.insertOne({name: "aik", password: "test", assignedTo: ["aik_kitchen_test2"], role: "user", email: "albeaasihdvo@alberto.com"})
 db.user.insertOne({name: "aik2", password: "test", assignedTo: ["Testing_2"], role: "user", email: "albeaasihdvo@alberto.com"})
 
 // db.dataset.insertOne({name: "example1", type: "poseTrack"})

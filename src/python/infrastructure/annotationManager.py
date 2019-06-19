@@ -14,7 +14,7 @@ class AnnotationManager:
     # Get annotation info for given frame, dataset, scene and user. Not return mongo id
     def getAnnotation(this, dataset, scene, frame, user):
         try:
-            result = this.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user}, {'_id': 0})
+            result = this.collection.find_one({"dataset": dataset, "scene": scene, "frame": int(frame), "user": user}, {'_id': 0})
             if result == None:
                 return 'Error'
             else:
@@ -26,7 +26,8 @@ class AnnotationManager:
     # Get all annotations for given dataset, scene, user and val. Not return mongo id
     def getAnnotations(this, dataset, scene, user, val):
         try:
-            result = this.collection.find({"dataset": dataset, "scene": scene, "user": user, "validated": val}, {'_id': 0})
+            # result = this.collection.find({"dataset": dataset, "scene": scene, "user": user, "validated": val}, {'_id': 0})
+            result = this.collection.find({"dataset": dataset, "scene": scene, "user": user}, {'_id': 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
@@ -36,7 +37,7 @@ class AnnotationManager:
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to unchecked if is not received in params
     def updateAnnotation(this, dataset, scene, frame, user, objects, val='unchecked'):
-        query = {"dataset": dataset, "scene": scene, "frame": frame, "user": user}   # Search by dataset, scene, frame, user
+        query = {"dataset": dataset, "scene": scene, "frame": int(frame), "user": user}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
         newValues = {"$set": {"objects": objects, "validated": val}}
 
@@ -51,28 +52,10 @@ class AnnotationManager:
             log.exception('Error updating annotation in db')
             return 'Error'
 
-    # # Return 'ok' if the camera params of annotation has been updated.
-    # # The annotation is created if it doesn't exist and return 'ok
-    # def updateCameraParameters(this, dataset, video, frame, user, k, rvec, tvec, distCoef, w, h):
-    #     query = {"dataset": dataset, "video": video, "frame": frame, "user": user}   # Search by dataset, video, frame, user
-    #     # Update all camera parameters
-    #     newValues = {"$set": {"k": k, "rvec": rvec, "tvec": tvec, "distCoef": distCoef, "w": w, "h": h}}
-    #
-    #     try:
-    #         result = this.collection.update_one(query, newValues, upsert=True)
-    #         # ok if object has been modified or new annotation has been created
-    #         if result.modified_count == 1 or result.acknowledged:
-    #             return 'ok'
-    #         else:
-    #             return 'Error'
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error updating camera parameters of annotation in db')
-    #         return 'Error'
-
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(this, dataset, scene, frame, user):
         try:
-            result = this.collection.delete_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user})
+            result = this.collection.delete_one({"dataset": dataset, "scene": scene, "frame": int(frame), "user": user})
             if result.deleted_count == 1:
                 return 'ok'
             else:

@@ -267,9 +267,20 @@ class DatasetService:
 
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
+        print('video: ',video,' frame: ',frame,  ' dataset: ',dataset)
         videoObject = videoManager.getVideo(video, dataset)
-        frame = str(frame).zfill(6)  # Fill with 0 until 8 digits
-        file = os.path.join(videoObject['path'], frame + '.jpg')
+        print('videoobject: ' , videoObject)
+
+        #TODO: change this to be general
+        if videoObject['type'] == this.aik:
+            frame = str(frame).zfill(9)  # Fill with 0 until 9 digits
+            file = os.path.join(videoObject['path'], 'frame' + frame + '.png')
+        else:       # posetrack
+            frame = str(frame).zfill(6)  # Fill with 0 until 6 digits
+            file = os.path.join(videoObject['path'], frame + '.jpg')
+
+        print(file)
+
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:

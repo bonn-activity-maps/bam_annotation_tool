@@ -144,34 +144,34 @@ def getVideoFrame():
 #     req_data = request.get_json()
 #     success, msg, status = datasetService.removeVideo(req_data['name'], req_data['dataset'])
 #     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Update existing video
-@app.route('/api/dataset/updateVideoFrames', methods=['POST'])
-def updateVideoFrames():
-    req_data = request.get_json()
-    success, msg, status = datasetService.updateVideoFrames(req_data['name'], req_data['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
-# Update existing video
-@app.route('/api/dataset/updateVideosFrames', methods=['POST'])
-def updateVideosFrames():
-    success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
-    return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+#
+# # Update existing video
+# @app.route('/api/dataset/updateVideoFrames', methods=['POST'])
+# def updateVideoFrames():
+#     req_data = request.get_json()
+#     success, msg, status = datasetService.updateVideoFrames(req_data['name'], req_data['dataset'])
+#     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
+#
+# # Update existing video
+# @app.route('/api/dataset/updateVideosFrames', methods=['POST'])
+# def updateVideosFrames():
+#     success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
+#     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
 
 
 #### ANNOTATION ####
 
-# Get annotation info for given frame, dataset, video and user
+# Get annotation info for given frame, dataset, scene and user
 @app.route('/api/annotation/getAnnotation', methods=['GET'])
 def getAnnotation():
-    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers['video'],
+    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers['scene'],
                                                            request.headers['frame'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
 def getAnnotations():
-    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['video'])
+    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['scene'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # # Create new annotation
@@ -184,7 +184,7 @@ def getAnnotations():
 @app.route('/api/annotation/updateAnnotation', methods=['POST'])
 def updateAnnotation():
     req_data = request.get_json()
-    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['video'], req_data['frame'],
+    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
                                                               req_data['user'], req_data['objects'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -192,7 +192,9 @@ def updateAnnotation():
 # TODO: do we need to filter in remove by validated flag?
 @app.route('/api/annotation/removeAnnotation', methods=['POST'])
 def removeAnnotation():
-    success, msg, status = annotationService.removeAnnotation(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = annotationService.removeAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
+                                                              req_data['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Validate frames for given dataset, video and user

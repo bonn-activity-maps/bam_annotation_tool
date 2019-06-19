@@ -14,8 +14,8 @@ class AnnotationService:
 
     # Get annotation info for given frame, dataset, video and user
     # TODO: pass objects to 2d for AIK
-    def getAnnotation(this, dataset, video, frame, user):
-        result = annotationManager.getAnnotation(dataset, video, frame, user)
+    def getAnnotation(this, dataset, scene, frame, user):
+        result = annotationManager.getAnnotation(dataset, scene, frame, user)
         if result == 'Error':
             return False, 'The frame does not have an annotation', 400
         else:
@@ -23,7 +23,7 @@ class AnnotationService:
 
     # Get annotations  (all frames) for given dataset, video which are validated and ready to export (user = Root)
     def getAnnotations(this, dataset, video):
-        result = annotationManager.getAnnotations(dataset, video, "Root", "correct")
+        result = annotationManager.getAnnotations(dataset, video, "root", "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
         else:
@@ -40,20 +40,20 @@ class AnnotationService:
 
     # Return 'ok' if the annotation has been updated
     # TODO: pass objects to 3d for AIK
-    def updateAnnotation(this, dataset, video, frame, user, objects):
+    def updateAnnotation(this, dataset, scene, frame, user, objects):
         # print(objects)
         # Create new objects uid
         # Get max of this dataset
 
-        result = annotationManager.updateAnnotation(dataset, video, frame, user, objects)
+        result = annotationManager.updateAnnotation(dataset, scene, frame, user, objects)
         if result == 'Error':
             return False, 'Error updating annotation', 400
         else:
             return True, result, 200
 
     # Return 'ok' if the annotation has been removed
-    def removeAnnotation(this, req):
-        result = annotationManager.removeAnnotation(req['dataset'], req['video'], req['frame'], req['user'])
+    def removeAnnotation(this, dataset, scene, frame, user):
+        result = annotationManager.removeAnnotation(dataset, scene, frame, user)
         if result == 'Error':
             return False, 'Error deleting annotation', 400
         else:
