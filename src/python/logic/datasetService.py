@@ -267,9 +267,7 @@ class DatasetService:
 
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
-        print('video: ',video,' frame: ',frame,  ' dataset: ',dataset)
         videoObject = videoManager.getVideo(video, dataset)
-        print('videoobject: ' , videoObject)
 
         #TODO: change this to be general
         if videoObject['type'] == this.aik:
@@ -279,8 +277,6 @@ class DatasetService:
             frame = str(frame).zfill(6)  # Fill with 0 until 6 digits
             file = os.path.join(videoObject['path'], frame + '.jpg')
 
-        print(file)
-
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
@@ -288,56 +284,6 @@ class DatasetService:
                 return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame}, 200
         else:
             return False, 'Frame does not exist', 500
-
-    # # Rename video and folder with frames
-    # def renameVideo(this, name, newName, dataset):  # TODO: Fix for posetrack USE VIDEO PATH
-    #     try:
-    #         newName = secure_filename(newName)
-    #         datasetDir = this.STORAGE_DIR + dataset + "/"
-    #
-    #         # Separate name of file and extension
-    #         filename, _ = os.path.splitext(name)
-    #         newFilename, _ = os.path.splitext(newName)
-    #
-    #         # Rename folder
-    #         os.rename(datasetDir + filename, datasetDir + newFilename)
-    #
-    #         # Rename video, if exists
-    #         if os.path.isfile(datasetDir + name):
-    #             os.rename(datasetDir + name, datasetDir + newName)
-    #
-    #         log.info('Renamed ', datasetDir + name, ' to ', datasetDir + newName, ' successfully.')
-    #
-    #         result = videoManager.updateVideoName(filename, newFilename, dataset)
-    #         if result == 'Error':
-    #             return False, 'Error updating video in database', 500
-    #         else:
-    #             return True, result, 200
-    #     except OSError:
-    #         log.exception('Error renaming the file')
-    #         return False, 'Server error renaming the file', 500
-    #
-    # # Delete video and corresponding folder with frames
-    # def removeVideo(this, video, dataset):
-    #     try:
-    #         # Separate name of file and extension
-    #         filename, filextension = os.path.splitext(video)  # TODO: Fix remove for posetrack USE VIDEO PATH
-    #         datasetDir = this.STORAGE_DIR + dataset + "/"
-    #         # Remove folder
-    #         shutil.rmtree(datasetDir + filename)
-    #         # Remove video, if exists
-    #         if os.path.isfile(datasetDir + video):  # Is video
-    #             os.remove(datasetDir + video)
-    #
-    #         log.info('Removed ', dataset + video, ' file successfully.')
-    #         result = videoManager.removeVideo(filename, dataset)
-    #         if result == 'Error':
-    #             return False, 'Error removing from database', 500
-    #         else:
-    #             return True, result, 200
-    #     except OSError:
-    #         log.exception('Error deleting the file')
-    #         return False, 'Server error deleting the file', 500
 
     # Update frames of videos in DB
     def updateVideosFrames(this, dataset):

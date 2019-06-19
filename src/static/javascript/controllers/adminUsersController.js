@@ -5,31 +5,39 @@ angular.module('CVGTool')
      */
     .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog',
                         function ($scope, $state, adminUsersSrvc, adminDatasetsSrvc, navSrvc, $mdDialog) {
-        $scope.listOfUsers = [];
-        $scope.availableRoles = [];
-        $scope.userRole = "";
+        $scope.listOfUsers = []; // Contains the list of users to show, this varies depending on the user.
+        $scope.availableRoles = []; // Contains the list of roles that the user is allowed to create.
+        $scope.userRole = ""; // Role of the actual user.
 
-        $scope.activeDataset = "";
-        $scope.listOfDatasets = [];
+        $scope.activeDataset = { // Dataset of the actual user, if root, then it's 'root'
+            name: "",
+            type: ""
+        };
+        $scope.listOfDatasets = []; // Ironically, contains the list of datasets in the system.
 
+        // User object to store data while editing
         $scope.editUser = {
             username: "",
             email: "",
             role: "",
-            dataset: ""
+            dataset: []
         };
+        // Variable that stores the previous name for updating purposes
         $scope.oldName = "";
 
+        // Switch between editing and creating user.
         $scope.mode = "creation";
 
+        // Function that retrieves the list of users from the database.
         $scope.getUsers = function() {
             if ($scope.userRole.localeCompare('root') === 0){
                 adminUsersSrvc.getUsers(showListOfUsers);
             } else {
-                adminUsersSrvc.getUsersByDataset($scope.activeDataset, "user", showListOfUsers);
+                adminUsersSrvc.getUsersByDataset($scope.activeDataset.name, "user", showListOfUsers);
             }
         };
 
+        // Function to retrieve the user role
         $scope.getUserRole = function() {
             $scope.userRole = navSrvc.getUserRole();
 
@@ -41,15 +49,18 @@ angular.module('CVGTool')
             }
         };
 
+        // Function to retrieve the user dataset
         $scope.getActiveDataset = function() {
             $scope.activeDataset = navSrvc.getActiveDataset();
-            $scope.editUser.dataset = $scope.activeDataset;
+            $scope.editUser.dataset.push($scope.activeDataset.name);
         };
 
+        // Function to retrieve the list of dataset
         $scope.getListOfDatasets = function() {
             adminDatasetsSrvc.getDatasets(updateListOfDatasets)
         };
 
+        // Function to update the list of datasets (the variable)
         var updateListOfDatasets = function(datasets) {
             $scope.listOfDatasets = [];
             for (let i = 0; i < datasets.length; i++) {
@@ -59,6 +70,7 @@ angular.module('CVGTool')
             }
         };
 
+        // Function to update the list of users (the variable)
         var showListOfUsers = function (list) {
             $scope.listOfUsers = [];
             for (let i = 0; i < list.length; i++) {
@@ -71,6 +83,7 @@ angular.module('CVGTool')
             }
         };
 
+        // Function that pops up the modal when the user is created succesfully
         var successCreation = function (response) {
             $mdDialog.show({
               templateUrl: '/static/views/dialogs/showPasswordDialog.html',
@@ -88,12 +101,17 @@ angular.module('CVGTool')
             });
         };
 
+        // Function that sends the order to create a user in the backend.
         $scope.createUser = function() {
-            let datasets = [];
-            datasets.push($scope.editUser.dataset);
-            adminUsersSrvc.createUser($scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, successCreation);
+            // let datasets = [];
+            // datasets.push($scope.editUser.dataset);
+
+            console.log($scope.editUser);
+            adminUsersSrvc.createUser($scope.editUser.username, $scope.editUser.email, $scope.editUser.role,
+                $scope.editUser.dataset, successCreation);
         };
 
+        // Function that pops up the dialog to confirm if the user *really* wants to delete a user.
         $scope.removeUser = function(user) {
             $mdDialog.show({
               templateUrl: '/static/views/dialogs/removeUserDialog.html',
@@ -108,42 +126,47 @@ angular.module('CVGTool')
             });
         };
 
+        // Function that sends the order to update a user in the backend.
         $scope.updateUser = function() {
-            let datasets = [];
-            datasets.push($scope.editUser.dataset);
-            adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email, $scope.editUser.role, datasets, $scope.getUsers);
+            // let datasets = [];
+            // datasets.push($scope.editUser.dataset);
+            adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email,
+                $scope.editUser.role, $scope.editUser.dataset, $scope.getUsers);
             $scope.mode = "creation";
             $scope.oldName = "";
             $scope.editUser = {
                 username: "",
                 email: "",
                 role: "",
-                dataset: ""
+                dataset: []
             };
         };
 
+        // Function that switches the mode to editing, so it fills up the editUser variable with the selected user data.
         $scope.enableEdit = function(user) {
             $scope.oldName = user.name;
             $scope.editUser.username = user.name;
             $scope.editUser.email = user.email;
             $scope.editUser.role = user.role;
-            $scope.editUser.dataset = user.dataset[0];
+            $scope.editUser.dataset = user.dataset;
             $scope.mode = "edit";
         };
 
+        // Function that switches back to creation mode, so it resets everything.
         $scope.cancelEdit = function(){
             $scope.oldName = "";
             $scope.editUser = {
                 username: "",
                 email: "",
                 role: "",
-                dataset: ""
+                dataset: []
             };
             $scope.mode = "creation";
         };
 
+        // Function that resets the password, TODO
         $scope.resetPassword = function() {
-            // TODO
+            // pf pf pf prrr tututuu pap pap paap
         };
 
         $scope.getUserRole();

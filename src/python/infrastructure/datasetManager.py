@@ -7,7 +7,6 @@ log = logging.getLogger('datasetManager')
 
 
 class DatasetManager:
-
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
     collection = db.dataset
@@ -16,7 +15,7 @@ class DatasetManager:
     def getDataset(this, dataset):
         try:
             result = this.collection.find_one({"name": dataset}, {"_id": 0})
-            if result == None:
+            if result is None:
                 return 'Error'
             else:
                 return result
@@ -28,7 +27,7 @@ class DatasetManager:
     # Ignore mongo id
     def getDatasets(this):
         try:
-            result = this.collection.find({},{"_id": 0})
+            result = this.collection.find({}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding datasets in db')

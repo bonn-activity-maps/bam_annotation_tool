@@ -10,7 +10,10 @@ angular.module('CVGTool')
             name: 'none',
             type: 'none'
         };
+
         $scope.datasetType = 'actionInKitchen';
+
+        $scope.unwrapping = false;
 
         // Dropzone zip options
         $scope.dzZipOptions = {
@@ -57,15 +60,18 @@ angular.module('CVGTool')
             adminDatasetsSrvc.getDatasets(updateListOfDatasets)
         };
 
+        // Update list of datasets variable
         var updateListOfDatasets = function(datasets) {
             $scope.listOfDatasets = datasets;
         };
 
+        // Function to select a dataset and show its videos
         $scope.selectDataset = function(dataset) {
             $scope.selectedDataset = dataset;
             $scope.getInfoOfVideos();
         };
 
+        // Function to deselect a dataset and stop showing its videos
         $scope.deselectDataset = function() {
             $scope.selectedDataset = {
                 name: 'none',
@@ -102,12 +108,14 @@ angular.module('CVGTool')
 
         // TODO: do we need this??
         var readDataCallback = function(dataset) {
+            $scope.unwrapping = false;
             console.log("Finish reading AIK data");
             // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
         // Function to retrieve data of dataset
         $scope.readData = function(file, type) {
+            $scope.unwrapping = true;
             adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
         };
 
@@ -127,37 +135,6 @@ angular.module('CVGTool')
         var showListOfVideos = function (list) {
             $scope.listOfVideos = list;
         };
-
-        // // Function that opens the dialog that manages the file rename functionality
-        // $scope.renameVideo = function(video) {
-        //   $mdDialog.show({
-        //     templateUrl: '/static/views/dialogs/renameVideoDialog.html',
-        //     locals: {
-        //       video: video
-        //     },
-        //     controller: 'dialogRenameVideoCtrl',
-        //     escapeToClose: false,
-        //     onRemoving: function(event, removePromise) {
-        //       $scope.getInfoOfVideos();
-        //     }
-        //   });
-        // };
-        //
-        // // Function that opens the dialog that manages the file removal functionality
-        // $scope.removeVideo = function(video) {
-        //   $mdDialog.show({
-        //     templateUrl: '/static/views/dialogs/removeVideoDialog.html',
-        //     locals: {
-        //       video: video
-        //     },
-        //     controller: 'dialogRemoveVideoCtrl',
-        //     escapeToClose: false,
-        //     onRemoving: function (event, removePromise) {
-        //       $scope.getInfoOfVideos();
-        //     }
-        //   });
-        //
-        // };
 
         $scope.getListOfDatasets();
         $scope.getInfoOfVideos();

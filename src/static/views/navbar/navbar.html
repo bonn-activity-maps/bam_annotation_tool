@@ -1,39 +1,52 @@
 <!--menu -->
 <nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong" ng-show="loggedIn()">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="" rel="home" id="hombeButton">
-         CVG Tool
-      </a>
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="" rel="home" id="hombeButton">
+                CVG Tool
+            </a>
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+
+            <!--            IF user is ROOT, no option, all datasets by default -->
+            <ul class="nav navbar-nav" ng-if="user.role == 'root'">
+                <li><a><span class="glyphicon glyphicon-hdd"></span>Root</a></li>
+            </ul>
+
+            <!--            IF user can switch dataset -->
+            <ul class="nav navbar-nav" ng-if="(user.role=='user' && activeState === 'taskHome') || user.role == 'admin'">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" ng-model="user.assignedTo"> {{activeDataset.name}}
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li ng-click="selectDataset(dataset)" ng-repeat="dataset in user.assignedTo"><a><span
+                                class="glyphicon glyphicon-hdd"></span>
+                            {{dataset}}</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!--            IF user is not allowed to switch dataset. I.E.: user not in taskHome -->
+            <ul class="nav navbar-nav" ng-if="user.role=='user' && activeState !== 'taskHome'">
+                <li><a><span class="glyphicon glyphicon-hdd"></span>{{activeDataset.name}}</a></li>
+
+            </ul>
+
+            <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
+                <li><a href="#!/admin/statistics"> Statistics</a></li>
+                <li><a href="#!/admin/users"> User management</a></li>
+                <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
+                <li><a href="#!/admin/annotations"> Annotations</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
+                <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+            </ul>
+        </div>
     </div>
-    <div class="collapse navbar-collapse" id="myNavbar">
-      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='user'">
-        <li><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
-      </ul>
-      <ul class="nav navbar-nav" ng-if="user.role=='root'">
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" ng-model="activeDataset"> {{activeDataset}}
-          <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li ng-repeat="dataset in user.assignedTo"><a><span class="glyphicon glyphicon-hdd"></span> {{activeDataset}}</a></li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
-        <li><a href="#!/admin/statistics"> Statistics</a></li>
-        <li><a href="#!/admin/users"> User management</a></li>
-        <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
-        <li><a href="#!/admin/annotations"> Annotations</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a><span class="glyphicon glyphicon-user"></span> {{user.name}}</a></li>
-        <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
-      </ul>
-    </div>
-  </div>
 </nav>
