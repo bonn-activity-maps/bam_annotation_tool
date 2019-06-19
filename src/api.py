@@ -3,7 +3,7 @@ import json
 
 from python.logic.datasetService import DatasetService
 from python.logic.annotationService import AnnotationService
-from python.logic.objectService import ObjectService
+from python.logic.objectTypeService import ObjectTypeService
 from python.logic.userService import UserService
 from python.logic.taskService import TaskService
 
@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 datasetService = DatasetService()
 annotationService = AnnotationService()
-objectService = ObjectService()
+objectTypeService = ObjectTypeService()
 userService = UserService()
 taskService = TaskService()
 
@@ -111,14 +111,6 @@ def uploadZip():
 
 #### VIDEO ####
 
-# TODO: remove it if we don't need to extract frames at the end!!
-# # Unwrap videos of a dataset
-# @app.route('/api/dataset/unwrapVideos', methods=['POST'])
-# def unwrapVideos():
-#     req_data = request.get_json()
-#     success, msg, status = datasetService.unwrapVideos(req_data['dataset'])
-#     return json.dumps({'success':success, 'msg':msg}), status, {'ContentType':'application/json'}
-
 # Read data from stored zip
 @app.route('/api/dataset/readData', methods=['POST'])
 def readData():
@@ -212,7 +204,7 @@ def updateAnnotationValidation():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get new uid for an object in annotations for a dataset to avoid duplicated uid objects
-@app.route('/api/annotation/getNewUidObject', methods=['GET'])
+@app.route('/api/annotation/getNewUidObjectType', methods=['GET'])
 def getNewUidObject():
     success, msg, status = annotationService.getNewUidObject(request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
@@ -243,39 +235,41 @@ def removeAnnotationFrameObject():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-#### OBJECTS ####
+#### OBJECT TYPE ####
 
-# Get object info
-@app.route('/api/object/getObject', methods=['GET'])
-def getObject():
-    success, msg, status = objectService.getObject(request.headers['type'])
+# Get object type info
+@app.route('/api/objectType/getObjectType', methods=['GET'])
+def getObjectType():
+    success, msg, status = objectTypeService.getObjectType(request.headers['type'], request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get all objects
-@app.route('/api/object/getObjects', methods=['GET'])
-def getObjects():
-    success, msg, status = objectService.getObjects()
+# Get all object types
+@app.route('/api/objectType/getObjectTypes', methods=['GET'])
+def getObjectTypes():
+    success, msg, status = objectTypeService.getObjectTypes(request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Create new object
-@app.route('/api/object/createObject', methods=['POST'])
-def createObject():
+# Create new object type
+@app.route('/api/objectType/createObjectType', methods=['POST'])
+def createObjectType():
     req_data = request.get_json()
-    success, msg, status = objectService.createObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    success, msg, status = objectTypeService.createObjectType(req_data['type'], req_data['datasetType'],
+                                                              req_data['numKeypoints'], req_data['labels'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Update existing object
-@app.route('/api/object/updateObject', methods=['POST'])
-def updateObject():
+# Update existing object type
+@app.route('/api/objectType/updateObjectType', methods=['POST'])
+def updateObjectType():
     req_data = request.get_json()
-    success, msg, status = objectService.updateObject(req_data['type'], req_data['numKeypoints'], req_data['labels'])
+    success, msg, status = objectTypeService.updateObjectType(req_data['type'], req_data['datasetType'],
+                                                              req_data['numKeypoints'], req_data['labels'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Delete object
-@app.route('/api/object/removeObject', methods=['POST'])
-def removeObject():
+@app.route('/api/objectType/removeObjectType', methods=['POST'])
+def removeObjectType():
     req_data = request.get_json()
-    success, msg, status = objectService.removeObject(req_data['type'])
+    success, msg, status = objectTypeService.removeObjectType(req_data['type'], req_data['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

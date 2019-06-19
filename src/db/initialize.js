@@ -60,8 +60,9 @@ db.annotation.insertOne({
 	]
 })
 
-db.object.insertOne({
+db.objectType.insertOne({
 	"type": "person",
+	"datasetType": "AIK",
 	"numKeypoints": "6",
 	"labels": ["nose", "right-hand", "left-hand", "hip", "left-foot", "right-foot"]
 })

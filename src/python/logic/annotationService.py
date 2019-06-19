@@ -1,13 +1,13 @@
 import logging
 
 from python.infrastructure.annotationManager import AnnotationManager
-from python.infrastructure.objectManager import ObjectManager
+from python.infrastructure.objectTypeManager import ObjectTypeManager
 
 # AnnotationService logger
 log = logging.getLogger('annotationService')
 
 annotationManager = AnnotationManager()
-objectManager = ObjectManager()
+objectTypeManager = ObjectTypeManager()
 
 
 class AnnotationService:

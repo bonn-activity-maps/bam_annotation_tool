@@ -123,6 +123,7 @@ class AnnotationManager:
 
     ###########################
 
+    # TODO: change methods for adapting them to new scene attribute
     # Get annotation for object in frame, without mongo id
     def getFrameObject(this, dataset, video, frame, user, obj):
         try:
