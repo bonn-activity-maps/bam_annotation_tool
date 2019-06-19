@@ -128,36 +128,36 @@ angular.module('CVGTool')
             $scope.listOfVideos = list;
         };
 
-        // Function that opens the dialog that manages the file rename functionality
-        $scope.renameVideo = function(video) {
-          $mdDialog.show({
-            templateUrl: '/static/views/dialogs/renameVideoDialog.html',
-            locals: {
-              video: video
-            },
-            controller: 'dialogRenameVideoCtrl',
-            escapeToClose: false,
-            onRemoving: function(event, removePromise) {
-              $scope.getInfoOfVideos();
-            }
-          });
-        };
-
-        // Function that opens the dialog that manages the file removal functionality
-        $scope.removeVideo = function(video) {
-          $mdDialog.show({
-            templateUrl: '/static/views/dialogs/removeVideoDialog.html',
-            locals: {
-              video: video
-            },
-            controller: 'dialogRemoveVideoCtrl',
-            escapeToClose: false,
-            onRemoving: function (event, removePromise) {
-              $scope.getInfoOfVideos();
-            }
-          });
-
-        };
+        // // Function that opens the dialog that manages the file rename functionality
+        // $scope.renameVideo = function(video) {
+        //   $mdDialog.show({
+        //     templateUrl: '/static/views/dialogs/renameVideoDialog.html',
+        //     locals: {
+        //       video: video
+        //     },
+        //     controller: 'dialogRenameVideoCtrl',
+        //     escapeToClose: false,
+        //     onRemoving: function(event, removePromise) {
+        //       $scope.getInfoOfVideos();
+        //     }
+        //   });
+        // };
+        //
+        // // Function that opens the dialog that manages the file removal functionality
+        // $scope.removeVideo = function(video) {
+        //   $mdDialog.show({
+        //     templateUrl: '/static/views/dialogs/removeVideoDialog.html',
+        //     locals: {
+        //       video: video
+        //     },
+        //     controller: 'dialogRemoveVideoCtrl',
+        //     escapeToClose: false,
+        //     onRemoving: function (event, removePromise) {
+        //       $scope.getInfoOfVideos();
+        //     }
+        //   });
+        //
+        // };
 
         $scope.getListOfDatasets();
         $scope.getInfoOfVideos();
