@@ -119,6 +119,25 @@ class DatasetService:
         else:
             return True, 'ok', 200
 
+    def processDataset(this, file, type):
+        filename, _ = os.path.splitext(file)
+        integrity = this.checkIntegrity(this.STORAGE_DIR + filename) if type == this.pt else True
+        if integrity:
+            os.remove(this.STORAGE_DIR + file)  # Remove zip file
+            result = datasetManager.createDataset(filename, type)
+            if result == 'Error':
+                return False, 'Error creating dataset in database', 500
+            else:
+                if type == "actionInKitchen":
+                    this.addVideosAIK(filename)
+                else:
+                    this.addVideosPT(filename)
+                return True, result, 200
+        else:
+            shutil.rmtree(this.STORAGE_DIR + filename)
+            os.remove(this.STORAGE_DIR + file) #TODO Fix filenames .zip problems
+            return False, 'Error on folder subsystem, check your file and try again', 400
+
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
     def storeZip(this, request):
         file = request.files['file']
@@ -153,28 +172,38 @@ class DatasetService:
                 log.warning('File %s has been uploaded successfully', file.filename)
                 zip = zipfile.ZipFile(save_path, 'r')
                 zip.extractall(this.STORAGE_DIR)
-                filename, _ = os.path.splitext(file.filename)
 
-                integrity = this.checkIntegrity(this.STORAGE_DIR + filename) if type == this.pt else True
-                if integrity:
-                    os.remove(this.STORAGE_DIR + file.filename)  # Remove zip file
-                    result = datasetManager.createDataset(filename, type)
-                    if result == 'Error':
-                        return False, 'Error creating dataset in database', 500
-                    else:
-                        if type == "actionInKitchen":
-                            this.addVideosAIK(filename)
-                        else:
-                            this.addVideosPT(filename)
-                        return True, result, 200
-                else:
-                    shutil.rmtree(this.STORAGE_DIR + filename)
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return False, 'Error on folder subsystem, check your file and try again', 400
+                return this.processDataset(file.filename, type)
 
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
+
+    # Convert bytes to MB, GB, etc
+    def convert_bytes(this, num):
+        """
+        this function will convert bytes to MB.... GB... etc
+        """
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return "%3.1f %s" % (num, x)
+            num /= 1024.0
+
+    # Return a list of zip files in the root file system
+    def getZipFiles(this):
+        listDir = os.listdir(this.STORAGE_DIR)
+        zipFiles = []
+        for file in listDir:
+            if file.endswith(".zip"):
+                size = os.stat(os.path.join(this.STORAGE_DIR, file)).st_size
+                zipFiles.append({
+                    "name": file,
+                    "size": this.convert_bytes(size)
+                })
+        return True, zipFiles, 200
+
+    def loadZip(this, filename, type):
+        return this.processDataset(filename, type)
 
     # Unwrap video in frames
     def unwrapVideos(this, dataset):

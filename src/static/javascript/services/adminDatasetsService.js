@@ -106,5 +106,33 @@ angular.module('CVGTool')
                     callbackError(response.data.msg)
                 });
             },
+
+            getZipFiles: function(callback) {
+                console.log("service");
+                $http({
+                    method: 'GET',
+                    url: 'api/dataset/getZipFiles'
+                }).then(function successCallback(response) {
+                    callback(response.data.msg)
+                }, function errorCallback(response) {
+                    console.log(response.data.msg)
+                })
+            },
+
+            loadZip: function(name, type, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: 'api/dataset/loadZip',
+                    data: {
+                        'name': name,
+                        'type': type
+                    }
+                }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                }, function errorCallback(response) {
+                    callbackError(response.data.msg);
+                    console.log(response.data.msg)
+                })
+            }
         }
     });

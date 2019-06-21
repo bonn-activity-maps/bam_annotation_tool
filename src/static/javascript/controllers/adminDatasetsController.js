@@ -91,7 +91,26 @@ angular.module('CVGTool')
                     $scope.getInfoOfVideos();
                 }
             });
+        };
 
+        $scope.showZipFilesDialog = function(files) {
+            console.log("DIALOGO");
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/showZipFilesDialog.html',
+                locals: {
+                    files: files
+                },
+                controller: 'dialogShowZipFilesCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        };
+
+        $scope.getZipFiles = function() {
+            adminDatasetsSrvc.getZipFiles($scope.showZipFilesDialog)
         };
 
         // Function to retrieve from the server all information from the videos stored there

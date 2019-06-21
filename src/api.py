@@ -113,14 +113,24 @@ def removeDataset():
 
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
 # Upload chunked zip file
 @app.route('/api/dataset/uploadZip', methods=['POST'])
 def uploadZip():
     success, msg, status = datasetService.storeZip(request)
-    print(request.headers["type"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get list of zip files in file system
+@app.route('/api/dataset/getZipFiles', methods=['GET'])
+def getZipFiles():
+    success, msg, status = datasetService.getZipFiles()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Load a zip file already in the file system
+@app.route('/api/dataset/loadZip', methods=['POST'])
+def loadZip():
+    req_data = request.get_json()
+    success, msg, status = datasetService.loadZip(req_data['name'], req_data['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #### VIDEO ####
 
