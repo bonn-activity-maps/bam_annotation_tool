@@ -1,20 +1,21 @@
 import logging
 
 from python.infrastructure.annotationManager import AnnotationManager
-from python.infrastructure.objectManager import ObjectManager
+from python.infrastructure.objectTypeManager import ObjectTypeManager
 
 # AnnotationService logger
 log = logging.getLogger('annotationService')
 
 annotationManager = AnnotationManager()
-objectManager = ObjectManager()
+objectTypeManager = ObjectTypeManager()
 
 
 class AnnotationService:
 
     # Get annotation info for given frame, dataset, video and user
-    def getAnnotation(this, dataset, video, frame, user):
-        result = annotationManager.getAnnotation(dataset, video, frame, user)
+    # TODO: pass objects to 2d for AIK
+    def getAnnotation(this, dataset, scene, frame, user):
+        result = annotationManager.getAnnotation(dataset, scene, frame, user)
         if result == 'Error':
             return False, 'The frame does not have an annotation', 400
         else:
@@ -22,32 +23,37 @@ class AnnotationService:
 
     # Get annotations  (all frames) for given dataset, video which are validated and ready to export (user = Root)
     def getAnnotations(this, dataset, video):
-        result = annotationManager.getAnnotations(dataset, video, "Root", "correct")
+        result = annotationManager.getAnnotations(dataset, video, "root", "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
         else:
             return True, result, 200
 
-    # Return 'ok' if the annotation has been updated
-    def createAnnotation(this, req):
-        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
-                                                    req['objects'], req['validated'], req['keypointDim'])
-        if result == 'Error':
-            return False, 'Error creating annotation', 400
-        else:
-            return True, result, 200
+    # # Return 'ok' if the annotation has been updated
+    # def createAnnotation(this, req):
+    #     result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
+    #                                                 req['objects'], req['validated'], req['keypointDim'])
+    #     if result == 'Error':
+    #         return False, 'Error creating annotation', 400
+    #     else:
+    #         return True, result, 200
 
     # Return 'ok' if the annotation has been updated
-    def updateAnnotation(this, req):
-        result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+    # TODO: pass objects to 3d for AIK
+    def updateAnnotation(this, dataset, scene, frame, user, objects):
+        # print(objects)
+        # Create new objects uid
+        # Get max of this dataset
+
+        result = annotationManager.updateAnnotation(dataset, scene, frame, user, objects)
         if result == 'Error':
             return False, 'Error updating annotation', 400
         else:
             return True, result, 200
 
     # Return 'ok' if the annotation has been removed
-    def removeAnnotation(this, req):
-        result = annotationManager.removeAnnotation(req['dataset'], req['video'], req['frame'], req['user'])
+    def removeAnnotation(this, dataset, scene, frame, user):
+        result = annotationManager.removeAnnotation(dataset, scene, frame, user)
         if result == 'Error':
             return False, 'Error deleting annotation', 400
         else:
@@ -68,6 +74,15 @@ class AnnotationService:
         else:
             return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
 
+    # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
+    def getNewUidObject(this, dataset):
+        result = annotationManager.maxUidObjectDataset(dataset)
+        if result == 'Error':
+            return False, 'Error getting max uid object for dataset in db', 400
+        else:
+            return True, result+1, 200
+
+
 ##############################
 
     # Get annotation of object in frame
@@ -79,8 +94,17 @@ class AnnotationService:
             return True, result, 200
 
     # Store annotation for an object for given frame, dataset, video and user
+    # If the object does not exist, it's stored in db
     def updateAnnotationFrameObject(this, req):
-        result = annotationManager.updateFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+        # Read uid object  and check if it exists
+        uidObj = req['objects'][0]["uid"]
+        found = annotationManager.getFrameObject(req['dataset'], req['video'], req['frame'], req['user'], uidObj)
+
+        if found == 'ok':   # Update existing object in frame
+            result = annotationManager.updateFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+        else:               # Add new object in frame
+            result = annotationManager.createFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+
         if result == 'ok':
             return True, result, 200
         else:

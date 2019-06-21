@@ -53,9 +53,7 @@
                                 <tr>
                                     <th class="col-md-5">Name</th>
                                     <th class="col-md-1">Dataset</th>
-                                    <th class="col-md-1">Extension</th>
-                                    <th class="col-md-2">Duration</th>
-                                    <th class="col-md-2">Frames</th>
+                                    <th  class="col-md-2">Frames</th>
                                     <th class="col-md-2">Type</th>
                                 </tr>
                                 </thead>
@@ -63,8 +61,6 @@
                                 <tr ng-if="listOfVideos.length > 0" ng-repeat="video in listOfVideos">
                                     <td class="text-left">{{video.name}}</td>
                                     <td>{{video.dataset}}</td>
-                                    <td>{{video.extension}}</td>
-                                    <td>{{video.duration}}</td>
                                     <td ng-if="video.frames != 0">{{video.frames}}</td>
                                     <td ng-if="video.frames == 0 && unwrapping"><i
                                             class="glyphicon glyphicon-refresh gly-spin"></i></td>
@@ -75,8 +71,7 @@
                                         dataset.
                                     </td>
                                     <td class="text-left" ng-if="selectedDataset.name == 'none'">Select a dataset.</td>
-                                    <td>-</td>
-                                    <td>-</td>
+
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>

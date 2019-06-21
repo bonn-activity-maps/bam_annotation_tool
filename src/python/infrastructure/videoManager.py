@@ -36,16 +36,54 @@ class VideoManager:
             return 'Error'
 
     # Return 'ok' if the video has been created
-    def createVideo(this, video, dataset, extension, duration, path, type=None, frames=0):
+    def createVideo(this, video, dataset, path, type=None, frames=0):
         try:
-            result = this.collection.insert_one({"name": video, "dataset": dataset, "extension": extension,
-                                                 "duration": duration, "frames": frames, "path": path, "type": type})
+            result = this.collection.insert_one({"name": video, "dataset": dataset, "frames": frames, "path": path, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error creating video in db')
+            return 'Error'
+
+    # # Return 'ok' if the video has been updated.
+    # def updateVideoFrames(this, video, frames, dataset):
+    #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
+    #     newValues = {"$set": {"frames": frames}}  # Update frames
+    #     try:
+    #         result = this.collection.update_one(query, newValues, upsert=False)
+    #         if result.modified_count == 1:
+    #             return 'ok'
+    #         else:
+    #             return 'Error'
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error updating video in db')
+    #         return 'Error'
+    #
+    # def updateVideoName(this, video, newName, dataset):
+    #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
+    #     newValues = {"$set": {"name": newName}}  # Update name
+    #     try:
+    #         result = this.collection.update_one(query, newValues, upsert=False)
+    #         if result.modified_count == 1:
+    #             return 'ok'
+    #         else:
+    #             return 'Error'
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error updating video in db')
+    #         return 'Error'
+
+    # Return 'ok' if the video has been removed
+    def removeVideo(this, video, dataset):
+        try:
+            result = this.collection.delete_one({"name": video, "dataset": dataset})
+            if result.deleted_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error removing video in db')
             return 'Error'
 
     # Return 'ok' if the video has been updated.

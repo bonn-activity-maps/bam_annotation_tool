@@ -37,12 +37,15 @@ angular.module('CVGTool')
                 console.log(file);
                 $scope.newFile = file;
             },
-            'success' : function(file, xhr){
-                console.log(file, xhr);
-                $scope.unwrapVideos(file.name);
+            'success' : function(file, xhr) {
+                console.log('finish upload, datasettype: ', $scope.datasetType)
+                console.log('dataset: ', file.name.split(".zip")[0])
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
-            },
+                // TODO: Check this --> doesn't work for big datasets
+                // Request to read/store in db information of dataset
+                $scope.readData(file.name.split(".zip")[0], $scope.datasetType);
+            }
         };
 
         // Set watcher to control the selector
@@ -122,18 +125,30 @@ angular.module('CVGTool')
             }
         };
 
-        // Funcion called when unwrapping finished to update frames of every video in a dataset.
-        var unwrapFinishedCallback = function(dataset) {
+        // TODO: do we need this??
+        var readDataCallback = function(dataset) {
             $scope.unwrapping = false;
-            adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
+            console.log("Finish reading AIK data");
+            // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideos = function(dataset) {
+        // Function to retrieve data of dataset
+        $scope.readData = function(file, type) {
             $scope.unwrapping = true;
-            console.log("Unwrapping...");
-            adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback); //TODO: añadir callback
+            adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
         };
+
+        // var unwrapFinishedCallback2 = function(dataset) {
+        //     adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
+        // };
+
+        // // Function to retrieve unwrap the video
+        // $scope.unwrapVideos = function(dataset) {
+        //     console.log("Unwrapping...");
+        //     adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
+        // };
+
+
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
