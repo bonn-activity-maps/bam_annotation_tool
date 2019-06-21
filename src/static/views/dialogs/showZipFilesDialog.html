@@ -24,6 +24,16 @@
             <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
         </md-dialog-actions>
     </div>
+    <div class="panel" ng-if="mode == 'progress'">
+        <md-dialog-content>
+            <div class="alert alert-secondary">
+                <i class="glyphicon glyphicon-refresh gly-spin col-md-2"></i>
+                <p class="col-md-10">
+                    Loading, please wait. <br/> If the file is bigger than 1GB, go get a coffee.
+                </p>
+            </div>
+        </md-dialog-content>
+    </div>
     <div class="panel" ng-if="mode == 'error'">
         <md-dialog-content>
             <div class="alert alert-danger">

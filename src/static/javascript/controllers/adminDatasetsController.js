@@ -97,7 +97,6 @@ angular.module('CVGTool')
         };
 
         $scope.showZipFilesDialog = function(files) {
-            console.log("DIALOGO");
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/showZipFilesDialog.html',
                 locals: {
@@ -108,6 +107,10 @@ angular.module('CVGTool')
                 onRemoving: function (event, removePromise) {
                     $scope.getListOfDatasets();
                     $scope.getInfoOfVideos();
+                }
+            }).then(function (successData) {
+                if (successData.success) {
+                    $scope.readData(successData.filename.split(".zip")[0], successData.type)
                 }
             });
         };
@@ -137,18 +140,6 @@ angular.module('CVGTool')
             $scope.unwrapping = true;
             adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
         };
-
-        // var unwrapFinishedCallback2 = function(dataset) {
-        //     adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
-        // };
-
-        // // Function to retrieve unwrap the video
-        // $scope.unwrapVideos = function(dataset) {
-        //     console.log("Unwrapping...");
-        //     adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
-        // };
-
-
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {

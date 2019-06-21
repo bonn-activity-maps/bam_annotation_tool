@@ -201,29 +201,40 @@ angular.module('CVGTool')
             datasetType: ''
         };
 
+        $scope.filename = '';
+        $scope.success = false;
         $scope.mode = 'normal';
         $scope.msg = '';
 
         // Select a zip to load
         $scope.selectZip = function(file) {
+            $scope.filename = file.name;
+            $scope.mode = 'progress';
             adminDatasetsSrvc.loadZip(file.name, $scope.variables.datasetType, showSuccess, showError);
         };
 
         // Recall function if the rename worked
         var showSuccess = function (response) {
             $scope.mode = 'success';
-            $scope.msg = response
+            $scope.msg = response;
+            $scope.success = true;
         };
 
         // Recall function if the rename didnt worked
         var showError = function (response) {
             $scope.mode = 'error';
-            $scope.msg = response
+            $scope.msg = response;
+            $scope.success = false;
         };
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function () {
-            $mdDialog.cancel();
+            $scope.successData = {
+                success: $scope.success,
+                filename: $scope.filename,
+                type: $scope.variables.datasetType
+            };
+            $mdDialog.hide($scope.successData);
         }
     }])
 

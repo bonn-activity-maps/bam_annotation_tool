@@ -202,23 +202,24 @@ class DatasetService:
         else:
             return True, 'ok', 200
 
-    def processDataset(this, file, type): #TODO reformat
-        # filename, _ = os.path.splitext(file)
-        # integrity = this.checkIntegrity(this.STORAGE_DIR + filename) if type == this.pt else True
-        # if integrity:
-        #     os.remove(this.STORAGE_DIR + file)  # Remove zip file
-        #     result = datasetManager.createDataset(filename, type)
-        #     if result == 'Error':
-        #         return False, 'Error creating dataset in database', 500
-        #     else:
-        #         if type == "actionInKitchen":
-        #             this.addVideosAIK(filename)
-        #         else:
-        #             this.addVideosPT(filename)
-        #         return True, result, 200
-        # else:
-        #     shutil.rmtree(this.STORAGE_DIR + filename)
-        #     os.remove(this.STORAGE_DIR + file) #TODO Fix filenames .zip problems
+    def processDataset(this, save_path, filename, type):
+        zip = zipfile.ZipFile(save_path, 'r')
+        zip.extractall(this.STORAGE_DIR)
+        dataset, _ = os.path.splitext(filename)
+        kpDim = '3D'    # TODO: how to check this?
+
+        # TODO: check integrity for AIK
+        integrity = this.checkIntegrity(this.STORAGE_DIR + dataset) if type == this.pt else True
+        if integrity:
+            os.remove(this.STORAGE_DIR + filename)  # Remove zip file
+            result = datasetManager.createDataset(dataset, type, kpDim)
+            if result == 'Error':
+                return False, 'Error creating dataset in database', 500
+            else:
+                return True, result, 200
+        else:
+            shutil.rmtree(this.STORAGE_DIR + dataset)
+            os.remove(this.STORAGE_DIR + filename)
             return False, 'Error on folder subsystem, check your file and try again', 400
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
@@ -253,24 +254,7 @@ class DatasetService:
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
-                zip = zipfile.ZipFile(save_path, 'r')
-                zip.extractall(this.STORAGE_DIR)
-                dataset, _ = os.path.splitext(file.filename)
-                kpDim = '3D'    # TODO: how to check this?
-
-                # TODO: check integrity for AIK
-                integrity = this.checkIntegrity(this.STORAGE_DIR + dataset) if type == this.pt else True
-                if integrity:
-                    os.remove(this.STORAGE_DIR + file.filename)  # Remove zip file
-                    result = datasetManager.createDataset(dataset, type, kpDim)
-                    if result == 'Error':
-                        return False, 'Error creating dataset in database', 500
-                    else:
-                        return True, result, 200
-                else:
-                    shutil.rmtree(this.STORAGE_DIR + dataset)
-                    os.remove(this.STORAGE_DIR + file.filename)
-                    return False, 'Error on folder subsystem, check your file and try again', 400
+                return this.processDataset(save_path, file.filename, type)
 
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
@@ -300,7 +284,8 @@ class DatasetService:
         return True, zipFiles, 200
 
     def loadZip(this, filename, type):
-        return this.processDataset(filename, type)
+        save_path = os.path.join(this.STORAGE_DIR, secure_filename(filename))
+        return this.processDataset(save_path, filename, type)
 
     # Return info videos, duration and frames
     def getVideos(this, dataset):
