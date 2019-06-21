@@ -16,7 +16,7 @@ class AnnotationManager:
         try:
             result = this.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user}, {'_id': 0})
             if result == None:
-                return 'Error'
+                return {}
             else:
                 return result
         except errors.PyMongoError as e:

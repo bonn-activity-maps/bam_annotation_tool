@@ -10,7 +10,7 @@
               <div class="col-md-6">
                 <div style="overflow-y: auto; max-height: 450px;">
                   <table class="table table-bordered table-responsive text-center">
-                    <thead>
+                    <thead style="position: fixed;">
                     <tr>
                       <th class="col-md-3">Name</th>
                       <th class="col-md-3">Type</th>
@@ -23,8 +23,8 @@
                       <td class="text-left">{{dataset.name}}</td>
                       <td>{{dataset.type}}</td>
                       <td><md-button ng-click="removeDataset(dataset)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
-                      <td ng-if="selectedDataset.name != dataset.name"><md-button ng-click="selectDataset(dataset)" class="md-primary md-raised"><span class="glyphicon glyphicon-plus"></md-button></td>
-                      <td ng-if="selectedDataset.name == dataset.name"><md-button ng-click="deselectDataset()" class="md-warn md-raised"><span class="glyphicon glyphicon-minus"></md-button></td>
+                      <td ng-if="selectedDataset.name != dataset.name"><md-button ng-click="selectDataset(dataset)" class="md-primary md-raised"><span class="glyphicon glyphicon-chevron-right"></md-button></td>
+                      <td ng-if="selectedDataset.name == dataset.name"><md-button ng-click="deselectDataset()" class="md-warn md-raised"><span class="glyphicon glyphicon-chevron-left"></md-button></td>
                     </tr>
                     <tr ng-if="listOfDatasets.length == 0">
                       <td class="text-left">No datasets</td>
