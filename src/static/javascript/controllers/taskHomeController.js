@@ -6,5 +6,5 @@ angular.module('CVGTool')
     .controller('taskHomeCtrl', ['$scope', '$state', '$mdDialog', function ($scope, $state, $mdDialog) {
           $scope.goToTool = function() {
             $state.go('tool');
-          }
+          };
     }]);

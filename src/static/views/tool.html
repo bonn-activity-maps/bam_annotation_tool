@@ -67,14 +67,18 @@
                     <hr/>
                     <!-- Navigation tool -->
                     <div ng-click="switchTool('navigation')">
-                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='navigation'"><span class=" glyphicon glyphicon-move"></button>
-                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='navigation'"><span class=" glyphicon glyphicon-move"></button>
+                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='navigation'"><span
+                                class=" glyphicon glyphicon-move"></button>
+                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='navigation'"><span
+                                class=" glyphicon glyphicon-move"></button>
                     </div>
                     <hr/>
                     <!-- Number of panels tool -->
-                    <div ng-click="switchTool('numCanvas')">
-                        <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='numCanvas'"><span class=" glyphicon glyphicon-th-large "></button>
-                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='numCanvas'"><span class=" glyphicon glyphicon-th-large "></button>
+                    <div ng-if="activeDataset.type !== 'poseTrack'" ng-click="switchTool('numCanvas')">
+                        <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='numCanvas'"><span
+                                class=" glyphicon glyphicon-th-large "></button>
+                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='numCanvas'"><span
+                                class=" glyphicon glyphicon-th-large "></button>
                     </div>
                     <div ng-if="tool=='numCanvas'">
                         <!-- One panel -->

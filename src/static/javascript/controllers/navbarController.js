@@ -1,37 +1,52 @@
 angular.module('CVGTool')
 
-    .controller('navbarCtrl', ['$scope', '$state', 'navSrvc' ,function ($scope,$state, navSrvc) {
-        $scope.user = {
-          name: "",
-          email: "",
-          role: "",
-          assignedTo: []
-        };
+    .controller('navbarCtrl', ['$scope', '$state', 'navSrvc', 'adminDatasetsSrvc',
+        function ($scope, $state, navSrvc, adminDatasetsSrvc) {
+            $scope.user = {
+                name: "",
+                email: "",
+                role: "",
+                assignedTo: []
+            };
 
-        $scope.activeDataset = "";
+            $scope.activeDataset = {
+                name: "",
+                type: ""
+            };
 
-        $scope.getUserInfo = function () {
-            $scope.user = navSrvc.getUser();
-            $scope.activeDataset = navSrvc.getActiveDataset();
-        };
+            $scope.activeState = "";
 
-        $scope.loggedIn = function () {
-          if ($state.current.name != 'login') {
-            return true
-          } else return false
-        };
+            // Set activeDataset to dataset
+            $scope.setActiveDataset = function(dataset) {
+                $scope.activeDataset = dataset;
+                navSrvc.setActiveDataset(dataset);
+            };
 
-        $scope.logOut = function () {
-          navSrvc.logout();
-        };
+            $scope.getUserInfo = function () {
+                $scope.user = navSrvc.getUser();
+                $scope.activeDataset = navSrvc.getActiveDataset();
+            };
 
-        // Watcher that detects changes in the state to get the info
-        var watcher = $scope.$watch(function(){
-            return $state.$current.name
-        }, function(newVal, oldVal){
-            if (oldVal.localeCompare('login') == 0) {
-              $scope.getUserInfo();
-            }
-        })
+            $scope.loggedIn = function () {
+                return $state.current.name !== 'login';
+            };
 
-}]);
+            $scope.logOut = function () {
+                navSrvc.logout();
+            };
+
+            // Activated when clicked on dropdown
+            $scope.selectDataset = function (name) {
+                adminDatasetsSrvc.getDataset(name, $scope.setActiveDataset);
+            };
+
+            // Watcher that detects changes in the state to get the info
+            var watcher = $scope.$watch(function () {
+                return $state.$current.name
+            }, function (newVal, oldVal) {
+                $scope.activeState = newVal;
+                if (oldVal.localeCompare('login') === 0) {
+                    $scope.getUserInfo();
+                }
+            });
+        }]);

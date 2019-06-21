@@ -21,7 +21,7 @@
                     <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
                         <td class="text-left">{{user.name}}</td>
                         <td>{{user.role}}</td>
-                        <td>{{user.dataset[0]}}</td>
+                        <td>{{user.dataset.toString()}}</td>
                         <td>{{user.email}}</td>
                         <td ng-if ="user.role != 'root'"><md-button ng-click="enableEdit(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                     </tr>
@@ -73,8 +73,8 @@
                     </div>
 
                     <div ng-if="user.role == 'root'" class="form-group">
-                      <label>Dataset</label>
-                      <select class="form-control" ng-model="editUser.dataset">
+                      <label>Dataset (hold shift or ctrl to select more than one)</label>
+                      <select multiple class="form-control" ng-model="editUser.dataset">
                         <option  ng-repeat="d in listOfDatasets" >{{d.name}}</option>
                       </select>
                     </div>

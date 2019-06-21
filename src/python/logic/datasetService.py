@@ -8,34 +8,22 @@ import zipfile
 
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
+from python.infrastructure.annotationManager import AnnotationManager
+from python.infrastructure.frameManager import FrameManager
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
 
 datasetManager = DatasetManager()
 videoManager = VideoManager()
-
+annotationManager = AnnotationManager()
+frameManager = FrameManager()
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
     aik = 'actionInKitchen'
     pt = 'poseTrack'
-
-    # Return duration of videos hh:mm:ss.ss
-    def getDurationVideo(this, video, dataset):
-        dir = this.STORAGE_DIR + dataset + "/" + video
-        duration = 0
-        if os.path.isfile(dir):  # Is video
-            sec = mp.VideoFileClip(dir).duration
-            # Convert to hh:mm:ss.ss
-            hh = int(sec // (60 * 60))
-            mm = int((sec - hh * 60 * 60) // 60)
-            ss = round(sec - (hh * 60 * 60) - (mm * 60), 2)
-            mm = '0' + str(mm) if mm < 10 else str(mm)
-            ss = '0' + str(ss) if ss < 10 else str(ss)
-            duration = str(hh) + ':' + mm + ':' + ss
-        return duration
 
     # Return #frames of videos
     def getFramesVideo(this, dir):
@@ -72,22 +60,123 @@ class DatasetService:
         except:
             return False
 
-    def addVideosAIK(this, dataset):
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        listDir = os.listdir(datasetDir)
-        for f in listDir:
-            if f.endswith(".mp4"):
-                videoDir = os.path.join(datasetDir, f)
-                if not os.path.isfile(videoDir):
-                    return False, "Error creating video", 400
-                else:
-                    filename, _ = os.path.splitext(videoDir)
-                    result = this.createVideo(f, dataset, filename, this.aik)
-                    r, _, _ = result
-                    if not r:
-                        return result
-        return True, 'ok', 200
+    # Return the result of storing info wrt different types of datasets
+    def addInfo(this, dataset, type):
+        if type == this.aik:
+            result = this.addInfoAIK(dataset)
+        elif type == this.pt:
+            result = this.addInfoPt(dataset)
+        else:
+            result = False, 'Incorrect dataset type', 500
+        return result
 
+    # Store info of AIK datasets: videos, annotations and camera params by frame
+    def addInfoAIK(this, dataset):
+        # Directories for AIK datasets
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        videosDir = os.path.join(datasetDir, 'videos/')
+        camerasDir = os.path.join(datasetDir, 'cameras/')
+        annotationsDir = os.path.join(datasetDir, 'tracks3d/')
+
+        # Store info in DB
+        resultVideos = this.addVideosAIK(dataset, videosDir)
+        resultCameras = this.addCameraParametersAIK(dataset, camerasDir)
+        resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
+
+        if resultVideos == 'Error':
+            return False, 'Error saving videos in database', 400
+        elif resultCameras == 'Error':
+            return False, 'Error saving camera parameters in database', 400
+        elif resultAnnotations == 'Error':
+            return False, 'Error saving annotations in database', 400
+        else:
+            return True, 'ok', 200
+
+    # Store info of posetrack datasets: videos ....
+    # TODO: read data
+    def addInfoPt(this, dataset):
+        # Store info in DB
+        resultVideos = this.addVideosPT(dataset)
+
+        if resultVideos == 'Error':
+            return False, 'Error saving videos in database', 400
+        else:
+            return True, 'ok', 200
+
+    # Add videos to database from videos directory
+    # Return true if all videos have been updated, False ow
+    def addVideosAIK(this, dataset, dir):
+        listDir = os.listdir(dir)
+        for f in listDir:
+            videoDir = os.path.join(dir, f)
+            if os.path.isdir(videoDir):
+                result = this.createVideo(f, dataset, videoDir, this.aik, frames=this.getFramesVideo(videoDir))
+                r, _, _ = result
+                if not r:
+                    return False
+        return True
+
+    # Add camera parameters to annotations in database from camera directory
+    # Return true if all have been updated, False ow
+    def addCameraParametersAIK(this, dataset, dir):
+        listDir = os.listdir(dir)
+        for video in listDir:                   # for all cameras/videos
+            videoDir = os.path.join(dir, video)
+            if os.path.isdir(videoDir):         # each frame in each camera
+                frames = os.listdir(videoDir)
+                for fr in frames:
+                    # Read number of frame
+                    frame = int(os.path.splitext(fr)[0].split('frame')[1])
+
+                    # Read file and store in db
+                    frameFile = os.path.join(videoDir, fr)
+                    try:
+                        with open(frameFile) as jsonFile:
+                            camParams = json.load(jsonFile)
+                    except OSError:
+                        log.exception('Could not read from file')
+                        return False
+
+                    result = frameManager.createFrame(frame, video, dataset, camParams['K'], camParams['rvec'],
+                                                      camParams['tvec'], camParams['distCoef'], camParams['w'], camParams['h'])
+                    if result == 'Error':
+                        return False
+        return True
+
+    # Add annotation of objects to database from videos directory
+    # Return true if all annotation have been updated, False if has been some problem
+    def addAnnotationsAIK(this, dataset, dir):
+        listDir = os.listdir(dir)   # List of all objects/persons
+        type = 'personAIK'          # Type of objects
+        finalResult = True
+
+        for f in listDir:
+            trackFile = os.path.join(dir, f)
+
+            # Read uid/number of object
+            uid = int(os.path.splitext(f)[0].split('track')[1])
+
+            # Read data from file
+            try:
+                with open(trackFile) as jsonFile:
+                    tracks = json.load(jsonFile)
+            except OSError:
+                log.exception('Could not read from file')
+                return False
+
+            # Transform annotation to our format and store in db
+            frames = tracks['frames']
+            poses = tracks['poses']
+            for i, frame in enumerate(frames):
+                keypoints = poses[i]
+                objects = {"uid": uid, "type": type, "keypoints": keypoints}
+                result = annotationManager.updateAnnotation(dataset, dataset, frame, 'root', objects)
+                if result == 'Error': finalResult = False   # finalResult False if there is some problem
+
+        return finalResult
+
+    # Add videos to database from posetrack directory
+    # Return true if all videos have been updated, False ow
     def addVideosPT(this, dataset):
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
         if this.checkIntegrity(datasetDir):
@@ -107,13 +196,7 @@ class DatasetService:
             return False, 'Error: Incomplete data.', 400
 
     def createVideo(this, file, dataset, save_path, type, frames=0):
-        duration = this.getDurationVideo(file, dataset)
-        filename = file
-        filextension = "/"
-        if os.path.isfile(save_path):
-            filename, filextension = os.path.splitext(file)
-        result = videoManager.createVideo(filename, dataset, filextension, duration, save_path, type=type,
-                                          frames=frames)
+        result = videoManager.createVideo(file, dataset, save_path, type=type, frames=frames)
         if result == 'Error':
             return False, 'Error creating video', 400
         else:
@@ -153,62 +236,25 @@ class DatasetService:
                 log.warning('File %s has been uploaded successfully', file.filename)
                 zip = zipfile.ZipFile(save_path, 'r')
                 zip.extractall(this.STORAGE_DIR)
-                filename, _ = os.path.splitext(file.filename)
+                dataset, _ = os.path.splitext(file.filename)
+                kpDim = '3D'    # TODO: how to check this?
 
-                integrity = this.checkIntegrity(this.STORAGE_DIR + filename) if type == this.pt else True
+                # TODO: check integrity for AIK
+                integrity = this.checkIntegrity(this.STORAGE_DIR + dataset) if type == this.pt else True
                 if integrity:
                     os.remove(this.STORAGE_DIR + file.filename)  # Remove zip file
-                    result = datasetManager.createDataset(filename, type)
+                    result = datasetManager.createDataset(dataset, type, kpDim)
                     if result == 'Error':
                         return False, 'Error creating dataset in database', 500
                     else:
-                        if type == "actionInKitchen":
-                            this.addVideosAIK(filename)
-                        else:
-                            this.addVideosPT(filename)
                         return True, result, 200
                 else:
-                    shutil.rmtree(this.STORAGE_DIR + filename)
+                    shutil.rmtree(this.STORAGE_DIR + dataset)
                     os.remove(this.STORAGE_DIR + file.filename)
                     return False, 'Error on folder subsystem, check your file and try again', 400
 
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
-        return True, 'ok', 200
-
-    # Unwrap video in frames
-    def unwrapVideos(this, dataset):
-        # Create new directory for storing frames
-        dataset, _ = os.path.splitext(dataset)
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        listDir = os.listdir(datasetDir)
-        for f in listDir:
-            if f.endswith(".mp4"):
-                result = this.unwrapVideo(f, dataset)
-                r, _, _ = result
-                if not r:
-                    return result
-        return True, 'ok', 200
-
-    # Unwrap video in frames
-    def unwrapVideo(this, v, dataset):  # TODO: callback when finished
-        # Create new directory for storing frames
-        filename, _ = os.path.splitext(v)
-        dir = this.STORAGE_DIR + dataset + "/" + filename
-        datasetDir = this.STORAGE_DIR + dataset + "/"
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-        else:
-            log.warning('The directory %s for extracting frames exists', dir)
-            return False, 'The directory for extracting frames exists', 500
-
-        # Unwrap video in subfolder
-        outFile = dir + '/' + '%06d.jpg'
-        cmd = [this.ffmpeg, '-i', datasetDir + v, '-qscale:v', '2', outFile]
-        # Extract frames from 10000 to 20000
-        # cmd = [this.ffmpeg,'-i',this.STORAGE_DIR+v,'-vf','select=\'between(n\,10000\,20000)\'','-qscale:v','2',outFile]
-        subprocess.call(cmd)
-        log.warning('File %s has been unwraped successfully', filename)
         return True, 'ok', 200
 
     # Return info videos, duration and frames
@@ -222,8 +268,15 @@ class DatasetService:
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
         videoObject = videoManager.getVideo(video, dataset)
-        frame = str(frame).zfill(6)  # Fill with 0 until 8 digits
-        file = os.path.join(videoObject['path'], frame + '.jpg')
+
+        #TODO: change this to be general
+        if videoObject['type'] == this.aik:
+            frame = str(frame).zfill(9)  # Fill with 0 until 9 digits
+            file = os.path.join(videoObject['path'], 'frame' + frame + '.png')
+        else:       # posetrack
+            frame = str(frame).zfill(6)  # Fill with 0 until 6 digits
+            file = os.path.join(videoObject['path'], frame + '.jpg')
+
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(file):
             with open(file, "rb") as image_file:
@@ -231,56 +284,6 @@ class DatasetService:
                 return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame}, 200
         else:
             return False, 'Frame does not exist', 500
-
-    # Rename video and folder with frames
-    def renameVideo(this, name, newName, dataset):  # TODO: Fix for posetrack USE VIDEO PATH
-        try:
-            newName = secure_filename(newName)
-            datasetDir = this.STORAGE_DIR + dataset + "/"
-
-            # Separate name of file and extension
-            filename, _ = os.path.splitext(name)
-            newFilename, _ = os.path.splitext(newName)
-
-            # Rename folder
-            os.rename(datasetDir + filename, datasetDir + newFilename)
-
-            # Rename video, if exists
-            if os.path.isfile(datasetDir + name):
-                os.rename(datasetDir + name, datasetDir + newName)
-
-            log.info('Renamed ', datasetDir + name, ' to ', datasetDir + newName, ' successfully.')
-
-            result = videoManager.updateVideoName(filename, newFilename, dataset)
-            if result == 'Error':
-                return False, 'Error updating video in database', 500
-            else:
-                return True, result, 200
-        except OSError:
-            log.exception('Error renaming the file')
-            return False, 'Server error renaming the file', 500
-
-    # Delete video and corresponding folder with frames
-    def removeVideo(this, video, dataset):
-        try:
-            # Separate name of file and extension
-            filename, filextension = os.path.splitext(video)  # TODO: Fix remove for posetrack USE VIDEO PATH
-            datasetDir = this.STORAGE_DIR + dataset + "/"
-            # Remove folder
-            shutil.rmtree(datasetDir + filename)
-            # Remove video, if exists
-            if os.path.isfile(datasetDir + video):  # Is video
-                os.remove(datasetDir + video)
-
-            log.info('Removed ', dataset + video, ' file successfully.')
-            result = videoManager.removeVideo(filename, dataset)
-            if result == 'Error':
-                return False, 'Error removing from database', 500
-            else:
-                return True, result, 200
-        except OSError:
-            log.exception('Error deleting the file')
-            return False, 'Server error deleting the file', 500
 
     # Update frames of videos in DB
     def updateVideosFrames(this, dataset):
@@ -312,7 +315,8 @@ class DatasetService:
         else:
             return True, result, 200
 
-    # Remove dataset and videos in DB and folder corresponding to dataset
+    # Remove dataset, videos and frames in DB and folder corresponding to dataset
+    # Remove corresponding annotations
     # Return 'ok' if the dataset has been removed
     def removeDataset(this, dataset):
         try:
@@ -323,14 +327,21 @@ class DatasetService:
             log.info('Removed ', dataset, ' successfully.')
 
             # Remove videos and dataset in DB
-            result = videoManager.removeVideosByDataset(dataset)
-            if result == 'Error':
+            resultVideos = videoManager.removeVideosByDataset(dataset)
+            resultDataset = datasetManager.removeDataset(dataset)
+            resultAnnotations = annotationManager.removeAnnotationsByDataset(dataset)
+            resultFrames = frameManager.removeFramesByDataset(dataset)
+
+            if resultVideos == 'Error':
                 return False, 'Error deleting videos in dataset', 400
+            elif resultDataset == 'Error':
+                return False, 'Error deleting dataset', 400
+            elif resultAnnotations == 'Error':
+                return False, 'Error deleting annotations', 400
+            elif resultFrames == 'Error':
+                return False, 'Error deleting frames', 400
             else:
-                result = datasetManager.removeDataset(dataset)
-                if result == 'Error':
-                    return False, 'Error deleting dataset', 400
-                return True, result, 200
+                return True, 'ok', 200
         except OSError:
             log.exception('Error deleting the dataset in file system')
             return False, 'Server error deleting the dataset', 500
@@ -347,5 +358,4 @@ class DatasetService:
             if result == 'Error':
                 return False, 'Error creating dataset', 400
             else:
-                print("Adding videos of type: ", type)
                 return this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)

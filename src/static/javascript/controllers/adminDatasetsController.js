@@ -10,7 +10,10 @@ angular.module('CVGTool')
             name: 'none',
             type: 'none'
         };
+
         $scope.datasetType = 'actionInKitchen';
+
+        $scope.unwrapping = false;
 
         // Dropzone zip options
         $scope.dzZipOptions = {
@@ -34,17 +37,15 @@ angular.module('CVGTool')
                 console.log(file);
                 $scope.newFile = file;
             },
-            'success' : function(file, xhr){
-                console.log(file, xhr);
-                // adminDatasetsSrvc.createDataset(file.name, $scope.selectType, $scope.getInfoOfVideos);
-                // console.log("unwrapping videos if " + $scope.selectType + " === " + " actionInKitchen ");
-                // if($scope.selectType === "actionInKitchen"){
-                //     console.log("True, unwrapping videos of dataset: " + file.name);
-                $scope.unwrapVideos(file.name);
-                // }
+            'success' : function(file, xhr) {
+                console.log('finish upload, datasettype: ', $scope.datasetType)
+                console.log('dataset: ', file.name.split(".zip")[0])
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
-            },
+                // TODO: Check this --> doesn't work for big datasets
+                // Request to read/store in db information of dataset
+                $scope.readData(file.name.split(".zip")[0], $scope.datasetType);
+            }
         };
 
         // Set watcher to control the selector
@@ -59,15 +60,18 @@ angular.module('CVGTool')
             adminDatasetsSrvc.getDatasets(updateListOfDatasets)
         };
 
+        // Update list of datasets variable
         var updateListOfDatasets = function(datasets) {
             $scope.listOfDatasets = datasets;
         };
 
+        // Function to select a dataset and show its videos
         $scope.selectDataset = function(dataset) {
             $scope.selectedDataset = dataset;
             $scope.getInfoOfVideos();
         };
 
+        // Function to deselect a dataset and stop showing its videos
         $scope.deselectDataset = function() {
             $scope.selectedDataset = {
                 name: 'none',
@@ -102,59 +106,34 @@ angular.module('CVGTool')
             }
         };
 
-        var unwrapFinishedCallback = function(name, dataset) {
-            adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
+        // TODO: do we need this??
+        var readDataCallback = function(dataset) {
+            $scope.unwrapping = false;
+            console.log("Finish reading AIK data");
+            // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
-        var unwrapFinishedCallback2 = function(dataset) {
-            adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
+        // Function to retrieve data of dataset
+        $scope.readData = function(file, type) {
+            $scope.unwrapping = true;
+            adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
         };
 
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideos = function(dataset) {
-            console.log("Unwrapping...");
-            adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
-        };
+        // var unwrapFinishedCallback2 = function(dataset) {
+        //     adminDatasetsSrvc.updateVideosFrames(dataset, $scope.getInfoOfVideos)
+        // };
 
-        // Function to retrieve unwrap the video
-        $scope.unwrapVideo = function(file) {
-          adminDatasetsSrvc.unwrapVideo(file, navSrvc.getActiveDataset(), unwrapFinishedCallback); //TODO: añadir callback
-        };
+        // // Function to retrieve unwrap the video
+        // $scope.unwrapVideos = function(dataset) {
+        //     console.log("Unwrapping...");
+        //     adminDatasetsSrvc.unwrapVideos(dataset, unwrapFinishedCallback2); //TODO: añadir callback
+        // };
+
+
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
             $scope.listOfVideos = list;
-        };
-
-        // Function that opens the dialog that manages the file rename functionality
-        $scope.renameVideo = function(video) {
-          $mdDialog.show({
-            templateUrl: '/static/views/dialogs/renameVideoDialog.html',
-            locals: {
-              video: video
-            },
-            controller: 'dialogRenameVideoCtrl',
-            escapeToClose: false,
-            onRemoving: function(event, removePromise) {
-              $scope.getInfoOfVideos();
-            }
-          });
-        };
-
-        // Function that opens the dialog that manages the file removal functionality
-        $scope.removeVideo = function(video) {
-          $mdDialog.show({
-            templateUrl: '/static/views/dialogs/removeVideoDialog.html',
-            locals: {
-              video: video
-            },
-            controller: 'dialogRemoveVideoCtrl',
-            escapeToClose: false,
-            onRemoving: function (event, removePromise) {
-              $scope.getInfoOfVideos();
-            }
-          });
-
         };
 
         $scope.getListOfDatasets();
