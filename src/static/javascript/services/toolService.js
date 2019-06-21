@@ -62,7 +62,7 @@ angular.module('CVGTool')
         retrieveAvailableObjectTypes: function(callbackSuccess) {
             $http({
                 method: 'GET',
-                url: '/api/object/getObjects'
+                url: '/api/objectType/getObjectTypes'
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
