@@ -10,6 +10,7 @@ from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.frameManager import FrameManager
+from python.logic.annotationService import AnnotationService
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
@@ -18,6 +19,8 @@ datasetManager = DatasetManager()
 videoManager = VideoManager()
 annotationManager = AnnotationManager()
 frameManager = FrameManager()
+annotationService = AnnotationService()
+
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
@@ -170,7 +173,7 @@ class DatasetService:
             for i, frame in enumerate(frames):
                 keypoints = poses[i]
                 objects = {"uid": uid, "type": type, "keypoints": keypoints}
-                result = annotationManager.updateAnnotation(dataset, dataset, frame, 'root', objects)
+                result = annotationService.updateAnnotationFrameObject(dataset, dataset, frame, 'root', objects)
                 if result == 'Error': finalResult = False   # finalResult False if there is some problem
 
         return finalResult

@@ -75,12 +75,21 @@ class AnnotationService:
             return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
 
     # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
-    def getNewUidObject(this, dataset):
-        result = annotationManager.maxUidObjectDataset(dataset)
-        if result == 'Error':
+    def createNewUidObject(this, dataset, scene, frame, user):
+        maxUid = annotationManager.maxUidObjectDataset(dataset)
+
+        if maxUid == 'Error':
             return False, 'Error getting max uid object for dataset in db', 400
         else:
-            return True, result+1, 200
+            # Create new object with maxUid+1
+            newUid = maxUid + 1
+            objects = {'uid': newUid, 'type': '', 'keypoints': []}
+            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
+
+            if result == 'Error':
+                return False, 'Error creating new object in annotation', 400
+            else:
+                return True, {'maxUid': newUid}, 200
 
 
 ##############################
@@ -95,15 +104,15 @@ class AnnotationService:
 
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db
-    def updateAnnotationFrameObject(this, req):
+    def updateAnnotationFrameObject(this, dataset, scene, frame, user, objects):
         # Read uid object  and check if it exists
-        uidObj = req['objects'][0]["uid"]
-        found = annotationManager.getFrameObject(req['dataset'], req['video'], req['frame'], req['user'], uidObj)
+        uidObj = objects["uid"]
+        found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
 
         if found == 'ok':   # Update existing object in frame
-            result = annotationManager.updateFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+            result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
         else:               # Add new object in frame
-            result = annotationManager.createFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['objects'])
+            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
 
         if result == 'ok':
             return True, result, 200
