@@ -2,6 +2,9 @@ angular.module('CVGTool')
 
 .controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc) {
 
+    // Parameters received from the task
+    $scope.numberOfFrames = 10; // TODO: hardcoded for the time being
+
     // Enable tooltips
     $(function() {
         $('[data-toggle="tooltip"]').tooltip()
@@ -296,7 +299,7 @@ angular.module('CVGTool')
         value: 1,
         options: {
             floor: 1,
-            ceil: 100,
+            ceil: $scope.numberOfFrames,
             step: 1,
             showTicks: true
         }
@@ -351,7 +354,6 @@ angular.module('CVGTool')
     $scope.loadedCameras = [];
     $scope.recommendedFrames = "";
 
-
     /*
      * Structure:
      *    loadedCameras:
@@ -366,7 +368,7 @@ angular.module('CVGTool')
             templateUrl: '/static/views/dialogs/addNewCameraDialog.html',
             controller: 'dialogAddNewCameraCtrl',
             escapeToClose: false
-        }).then(function(successData, retrievedObjects) {
+        }).then(function(successData) {
             var filename = successData[0].filename; // Get the name of the camera from the first frame
             var frames = [];
 
@@ -392,6 +394,8 @@ angular.module('CVGTool')
             })
         });
     }
+
+
 
     // Function that opens the dialog in charge of moving one camera to one canvas
     $scope.openSelector = function(video) {
@@ -907,35 +911,26 @@ angular.module('CVGTool')
         }
     }
 
-
-    $scope.objectManager = { // Object to store all information about the pose objects
-        availableObjectTypes: [],
-        selectedObjectType: null,
-        availableObjects: [],
-        displayableObjects: [],
+    // Object to store all information about the objects. Each position of the array is an object type. Inside each object
+    // type we have an "objects" with all the objects of that type
+    $scope.objectManager = {
+        objectTypes: [],
+        selectedType: {},
         selectedObject: null
     }
 
     // Function that resets the object Manager object
     $scope.resetObjectManager = function() {
         $scope.objectManager = {
-            availableObjectTypes: [],
-            selectedObjectType: null,
-            availableObjects: [],
-            displayableObjects: [],
+            objectTypes: {},
+            selectedType: {},
             selectedObject: null
         }
     }
 
     // Function that updates the selected object type
-    $scope.updateSelectedObjectType = function(object) {
-        $scope.objectManager.selectedObjectType = object;
-        $scope.updateDisplayableObjects();
-    }
-
-    // Function that updates the selected object
-    $scope.updateSelectedObject = function(object) {
-        $scope.objectManager.selectedObject = object;
+    $scope.updateSelectedObjectType = function(type) {
+        $scope.objectManager.selectedType = $scope.objectManager.objectTypes[type];
     }
 
     // Function that fills a blank object to create
@@ -943,49 +938,56 @@ angular.module('CVGTool')
         return;
     }
 
-    // Function that updates the available object IDs based on the video, the frame and the type
-    $scope.updateavailableIDs = function() {
-        var ids = []
-            // First we go through the cameras in the camera array
-        for (var i = 0; i < $scope.loadedCameras.length; i++) {
-            for (var j = 0; j < $scope.loadedCameras[i].frames[$scope.slider.value - 1].objects.length; j++) {
-                ids.push($scope.loadedCameras[i].frames[$scope.slider.value - 1].objects[j]);
-            }
-        }
-
-        // Then go through all selected cameras
-        for (var i = 0; i < $scope.canvases; i++) {
-            for (var j = 0; j < $scope.canvases[i].activeCamera.frames[$scope.slider.value - 1].objects.length; j++) {
-                ids.push($scope.canvases[i].activeCamera.frames[$scope.slider.value - 1].objects[j]);
-            }
-        }
-        // TODO: Maybe remove duplicates?
-        // Update value
-        $scope.objectManager.availableObjects = ids;
-    }
-
-    // Function that selects the displayable IDS between all the available IDS depending on the selected object type
-    $scope.updateDisplayableObjects = function() {
-        $scope.objectManager.displayableObjects = [];
-        $scope.objectManager.selectedObject = null;
-        for (var i = 0; i < $scope.objectManager.availableObjects.length; i++) {
-            if ($scope.objectManager.availableObjects[i].type.localeCompare($scope.objectManager.selectedObjectType.type) == 0) {
-                $scope.objectManager.displayableObjects.push($scope.objectManager.availableObjects.uid);
-            }
-        }
-    }
-
     // Callback function to fill the availableObjects array with the retrieved data
-    var callbackSuccessRetrieveAvailableObjectTypes = function(objects) {
+    var callbackSuccessRetrieveAvailableObjectTypes = function(obj) {
         $scope.resetObjectManager();
-        for (var i = 0; i < objects.length; i++) {
-            $scope.objectManager.availableObjectTypes.push(objects[i]);
+        for (var i = 0; i < obj.length; i++) {
+            $scope.objectManager.objectTypes[obj[i].type] = {
+                type: obj[i].type,
+                datasetType: obj[i].datasetType,
+                numKeypoints: obj[i].numKeypoints,
+                labels: obj[i].labels,
+                frames: []
+            }
+
+            // Fill the frames array with an empty array for each frame
+            for (var j = 0; j < $scope.numberOfFrames; j++) {
+                $scope.objectManager.objectTypes[obj[i].type].frames.push([])
+            }
         }
     }
 
     // Retrieve available objects and fill the array
     $scope.retrieveAvailableObjectTypes = function() {
-        toolSrvc.retrieveAvailableObjectTypes(callbackSuccessRetrieveAvailableObjectTypes);
+        toolSrvc.retrieveAvailableObjectTypes(navSrvc.getActiveDataset().type, callbackSuccessRetrieveAvailableObjectTypes);
+    }
+
+
+    // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
+    var callbackRetrievingFrameObjects = function(annotation) {
+        var frame = annotation.frame; // Read the frame
+
+        // TODO: check if the annotation returns only one object
+        $scope.objectManager.objectTypes[annotation.objects.type].frames[frame - 1].push({
+            uid: annotation.objects.uid,
+            type: annotation.objects.type,
+            keypoints: annotation.objects.keypoints
+        });
+    }
+
+    $scope.retrieveObjects = function() {
+        dataset = navSrvc.getActiveDataset();
+
+        if (dataset.type.localeCompare("poseTrack") == 0) { // Check the dataset type to select the correct value for "scene"
+            for (var i = 1; i <= $scope.numberOfFrames; i++) {
+                // toolSrvc.getAnnotationOfFrame($scope.videoSelected.name, frame, dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+                console.log("Posetrack not done yet!")
+            }
+        } else if (dataset.type.localeCompare("actionInKitchen") == 0) {
+            for (var i = 1; i <= $scope.numberOfFrames; i++) {
+                toolSrvc.getAnnotationOfFrame(dataset.name, i, dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+            }
+        }
     }
 
     $scope.initializeCanvases();

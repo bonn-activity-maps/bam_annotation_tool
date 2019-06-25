@@ -12,6 +12,7 @@
                         </div>
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                    <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button>
                 </div>
             </div>
         </div>
@@ -146,16 +147,16 @@
                 </div>
             </div>
             <div class="panel-body">
-                <div class="form-group">
+                <div class="form-group" slider.value - 1>
                     <label for="sel1">Select Object type:</label>
                     <select class="form-control" id="sel1">
                    <option ng-click="updateSelectedObjectType(null)"> -------------</option>
-                   <option ng-repeat="object in objectManager.availableObjectTypes" ng-click="updateSelectedObjectType(object)">{{object.type}}</option>
+                   <option ng-repeat="objectType in objectManager.objectTypes" ng-click="updateSelectedObjectType(objectType.type)">{{objectType.type}}</option>
                 </select>
                     <label for="sel2">Select Object ID:</label>
                     <select class="form-control" id="sel2">
                    <option ng-click="fillBlankSelectedObject()">New object</option>
-                   <option ng-repeat="object in objectManager.displayableObjects" ng-click="updateSelectedObject(object)">{{object.uid}}</option>
+                   <option ng-repeat="object in objectManager.selectedType.frames[slider.value - 1]" ng-click="updateSelectedObject(object)">{{object.uid}}</option>
                 </select>
                 </div>
                 <hr/>
@@ -169,7 +170,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="label in objectManager.selectedObjectType.labels">
+                            <tr ng-repeat="label in objectManager.selectedType.labels">
                                 <td>{{label}}</td>
                                 <td><button class="btn btn-default">1</button> <button class="btn btn-default">2</button></td>
                                 <td><button class="btn btn-danger disabled" style="clickable: false;">Incomplete</button></td>

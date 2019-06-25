@@ -1,32 +1,32 @@
-<md-dialog >
-  <div class="panel"  ng-if="mode == 'normal'">
-    <md-dialog-content ng-if="mode == 'normal'">
-      <h2>Delete video</h2>
-      <p>Are your sure?</p>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
-      <md-button ng-click="remove()" class="md-warn md-raised">Delete</md-button>
-    </md-dialog-actions>
-  </div>
-  <div class="panel"  ng-if="mode == 'error'">
-    <md-dialog-content>
-      <div class="alert alert-danger">
-          <strong>&#10008</strong> {{msg}}
-      </div>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
-    </md-dialog-actions>
-  </div>
-  <div class="panel" ng-if="mode == 'success'">
-    <md-dialog-content>
-      <div class="alert alert-success">
-          <strong>&#10004</strong> {{msg}}
-      </div>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
-    </md-dialog-actions>
-  </div>
+<md-dialog>
+    <div class="panel" ng-if="mode == 'normal'">
+        <md-dialog-content ng-if="mode == 'normal'">
+            <h2>Delete video</h2>
+            <p>Are your sure?</p>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
+            <md-button ng-click="remove()" class="md-warn md-raised">Delete</md-button>
+        </md-dialog-actions>
+    </div>
+    <div class="panel" ng-if="mode == 'error'">
+        <md-dialog-content>
+            <div class="alert alert-danger">
+                <strong>&#10008</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
+        </md-dialog-actions>
+    </div>
+    <div class="panel" ng-if="mode == 'success'">
+        <md-dialog-content>
+            <div class="alert alert-success">
+                <strong>&#10004</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
+        </md-dialog-actions>
+    </div>
 </md-dialog>

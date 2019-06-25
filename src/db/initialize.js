@@ -4,7 +4,7 @@ db.user.insertOne({ name: "Dario", password: "test", assignedTo: ["example1"], r
 db.user.insertOne({ name: "Beatriz", password: "test", assignedTo: ["example3"], role: "user", email: "bea@bea.com" })
 db.user.insertOne({ name: "pt", password: "test", assignedTo: ["posetrack_example"], role: "user", email: "albeasdo@alberto.com" })
 db.user.insertOne({ name: "aik", password: "test", assignedTo: ["aik_kitchen_test2"], role: "user", email: "albeaasihdvo@alberto.com" })
-db.user.insertOne({ name: "aik2", password: "test", assignedTo: ["Testing_2"], role: "user", email: "albeaasihdvo@alberto.com" })
+db.user.insertOne({ name: "aik2", password: "test", assignedTo: ["aik_kitchen2"], role: "user", email: "albeaasihdvo@alberto.com" })
 
 // db.dataset.insertOne({name: "example1", type: "poseTrack"})
 // db.dataset.insertOne({name: "example2", type: "poseTrack"})
@@ -77,20 +77,22 @@ db.annotation.insertOne({
 })
 
 db.objectType.insertOne({
-    "type": "person",
-    "datasetType": "AIK",
+    "type": "personAIK",
+    "datasetType": "actionInKitchen",
     "numKeypoints": "6",
     "labels": ["nose", "right-hand", "left-hand", "hip", "left-foot", "right-foot"]
 })
 
-db.object.insertOne({
+db.objectType.insertOne({
     "type": "microwave",
+    "datasetType": "actionInKitchen",
     "numKeypoints": "8",
     "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
 })
 
-db.object.insertOne({
+db.objectType.insertOne({
     "type": "table",
+    "datasetType": "actionInKitchen",
     "numKeypoints": "8",
     "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
 })

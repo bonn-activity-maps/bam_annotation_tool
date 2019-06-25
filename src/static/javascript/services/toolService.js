@@ -40,29 +40,33 @@ angular.module('CVGTool')
         },
 
         // Gets the annotations of a frame, from a video, a dataset and a user
-        getAnnotationOfFrame: function(fileName, frame, dataset, user, callbackSuccess) {
+        getAnnotationOfFrame: function(scene, frame, dataset, user, callbackSuccess) {
+            user = "root"; // TODO: remove this when tasks exist
             $http({
                     method: 'GET',
                     url: '/api/annotation/getAnnotation',
                     headers: {
-                        'video': fileName,
+                        'scene': scene,
                         'frame': frame,
                         'dataset': dataset,
                         'user': user
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data)
+                    callbackSuccess(response.data.msg)
                 }),
-                function errorCallback(response) { // If there are no objects for the frame, return a None
+                function errorCallback(response) {
                     console.log(response)
                 }
         },
 
         // Gets all the available objects types: Person, microwave, etc
-        retrieveAvailableObjectTypes: function(callbackSuccess) {
+        retrieveAvailableObjectTypes: function(datasetType, callbackSuccess) {
             $http({
                 method: 'GET',
-                url: '/api/objectType/getObjectTypes'
+                url: '/api/objectType/getObjectTypes',
+                headers: {
+                    'datasetType': datasetType
+                }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {

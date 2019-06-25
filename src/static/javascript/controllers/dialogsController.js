@@ -3,37 +3,37 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of the "rename stored video as administrator" action
  */
-// .controller('dialogRenameVideoCtrl', ['$scope','adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
-//     function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
-//     $scope.mode = 'normal';
-//     $scope.msg = '';
-//     $scope.inputMsg = '';
+//.controller('dialogRenameVideoCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
+//    function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
+//    $scope.mode = 'normal';
+//    $scope.msg = '';
+//    $scope.inputMsg = '';
 //     $scope.inputError = false;
 //
-//     $scope.oldName = video.name;
+//    $scope.oldName = video.name;
 //     $scope.newName = {};  // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
 //
-//     // Function to cancel all actions and close the dialog
-//     $scope.cancel = function() {
-//       $mdDialog.cancel();
+// //Function to cancel all actions and close the dialog
+//    $scope.cancel = function () {
+//      $mdDialog.cancel();
 //     }
 //
-//     // Callback function if the rename worked
-//     var showSuccess = function(response) {
-//       $scope.mode = 'success';
-//       $scope.msg = 'Video successfully renamed.'
+// //Callback function if the rename worked
+//    var showSuccess = function (response) {
+//      $scope.mode = 'success';
+//      $scope.msg = 'Video successfully renamed.'
 //     }
 //
-//     // Callback function if the rename didnt worked
-//     var showError = function(response) {
-//       $scope.mode = 'error';
-//       $scope.msg = 'There was an error when renaming the video.'
+// //Callback function if the rename didnt worked
+//    var showError = function (response) {
+//      $scope.mode = 'error';
+//      $scope.msg = 'There was an error when renaming the video.'
 //     }
 //
-//     // Function to hide the error messages on click
-//     $scope.hiddeError = function() {
-//       $scope.inputError = false;
-//       $scope.inputMsg = '';
+// //Function to hide the error messages on click
+//     $scope.hiddeError = function () {
+//      $scope.inputError = false;
+//      $scope.inputMsg = '';
 //     }
 //
 //     // Function that generates the call to the server to rename the file
@@ -56,34 +56,34 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of the "remove stored video as administrator" action
  */
-// .controller('dialogRemoveVideoCtrl', ['$scope','adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
-//     function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
+//.controller('dialogRemoveVideoCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'video',
+//    function ($scope, adminDatasetsSrvc, navSrvc, $mdDialog, video) {
 //     var videoName = video.name + video.extension;
 //
-//     $scope.mode = 'normal';
+//    $scope.mode = 'normal';
 //     $scope.msg = '';
 //
-//     // Function to cancel all actions and close the dialog
-//     $scope.cancel = function() {
-//       $mdDialog.cancel();
+// //Function to cancel all actions and close the dialog
+//    $scope.cancel = function () {
+//      $mdDialog.cancel();
 //     }
 //
-//     // Recall function if the rename worked
-//     var showSuccess = function(response) {
-//       $scope.mode = 'success';
-//       $scope.msg = 'Video successfully removed.'
+// //Recall function if the rename worked
+//    var showSuccess = function (response) {
+//      $scope.mode = 'success';
+//      $scope.msg = 'Video successfully removed.'
 //     }
 //
-//     // Recall function if the rename didnt worked
-//     var showError = function(response) {
-//       $scope.mode = 'error';
-//       $scope.msg = 'There was an error when deleting the video.'
+// //Recall function if the rename didnt worked
+//    var showError = function (response) {
+//      $scope.mode = 'error';
+//      $scope.msg = 'There was an error when deleting the video.'
 //     }
 //
-//     // Function that generates the call to the server to remove the file
-//     $scope.remove = function() {
+// //Function that generates the call to the server to remove the file
+//    $scope.remove = function () {
 //       adminDatasetsSrvc.removeVideo(videoName, navSrvc.getActiveDataset(), showSuccess, showError)
-//     }
+//    }
 // }])
 
 /*
@@ -147,9 +147,11 @@ angular.module('CVGTool')
     // Recall function if the rename didnt worked
     var showError = function(response) {
         $scope.mode = 'error';
-        $scope.msg = 'There was an error when deleting the dataset.'
-    };
+        $scope.msg = 'There was an error when deleting the user.'
+    }
+
 }])
+
 
 /*
  * Controller of the dialog of the "remove stored video as administrator" action
@@ -163,14 +165,13 @@ angular.module('CVGTool')
     // Function to cancel all actions and close the dialog
     $scope.cancel = function() {
         $mdDialog.cancel();
-    }
+    };
 
     $scope.switchTo = function(number) {
         $scope.data = {
             video: $scope.variables.video,
             number: number
         };
-
         $mdDialog.hide($scope.data);
     }
 }])
@@ -191,6 +192,55 @@ angular.module('CVGTool')
 }])
 
 /*
+ * Controller of the dialog of show zip files
+ */
+.controller('dialogShowZipFilesCtrl', ['$scope', '$mdDialog', 'files', 'adminDatasetsSrvc',
+    function($scope, $mdDialog, files, adminDatasetsSrvc) {
+        console.log("Files: " + files);
+        $scope.variables = {
+            files: files,
+            datasetType: ''
+        };
+
+        $scope.filename = '';
+        $scope.success = false;
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Select a zip to load
+        $scope.selectZip = function(file) {
+            $scope.filename = file.name;
+            $scope.mode = 'progress';
+            adminDatasetsSrvc.loadZip(file.name, $scope.variables.datasetType, showSuccess, showError);
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response;
+            $scope.success = true;
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response;
+            $scope.success = false;
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $scope.successData = {
+                success: $scope.success,
+                filename: $scope.filename,
+                type: $scope.variables.datasetType
+            };
+            $mdDialog.hide($scope.successData);
+        }
+    }
+])
+
+/*
  * Controller of the dialog of the "Add new camera to the camera array" action
  */
 .controller('dialogAddNewCameraCtrl', ['$scope', '$timeout', 'toolSrvc', 'navSrvc', '$mdDialog',
@@ -204,14 +254,6 @@ angular.module('CVGTool')
         $scope.doneRetrievingData = false;
         $scope.targetFrames;
         $scope.retrievedFrames;
-        $scope.framesChecked;
-        $scope.retrievedObjects;
-
-        // Variables to control progress bars
-        $scope.progress = {
-            frames: 0,
-            maxFrames: 0
-        }
 
         $scope.slider = { // Options and values for the slider
             from: 1,
@@ -221,7 +263,7 @@ angular.module('CVGTool')
                 ceil: 1,
                 step: 1
             },
-        }
+        };
 
         // Function called everytime the number input of the slider is changed to check those values
         $scope.checkSlider = function() {
@@ -243,7 +285,7 @@ angular.module('CVGTool')
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
             $mdDialog.cancel();
-        }
+        };
 
         // Function to update the list of videos using the searchbar
         $scope.searchInListOfVideos = function() {
@@ -262,8 +304,8 @@ angular.module('CVGTool')
 
         // Function that manages item selection
         $scope.selectItem = function(video) {
-            $scope.isVideoSelected = true; // TODO: Finish the selection of the video, I have to use the bypass (the same way than with search)
-            $scope.videoSelected = video.video
+            $scope.isVideoSelected = true; // TODO: FInish the selection of the video, I have to use the bypass (the same way than with search)
+            $scope.videoSelected = video.video;
             $scope.slider.options.ceil = $scope.videoSelected.frames;
         };
 
@@ -271,7 +313,12 @@ angular.module('CVGTool')
         var showListOfVideos = function(list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-                $scope.listOfVideos.push({ "name": list[i].name, "extension": list[i].extension, "duration": list[i].duration, "frames": list[i].frames });
+                $scope.listOfVideos.push({
+                    "name": list[i].name,
+                    "extension": list[i].extension,
+                    "duration": list[i].duration,
+                    "frames": list[i].frames
+                });
             }
             $scope.listOfVideosToShow = $scope.listOfVideos.slice();
         };
@@ -283,32 +330,8 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            $mdDialog.hide($scope.retrievedFrames, $scope.retrievedObjects);
-        }
-
-        var callbackRetrievingObjects = function(objects) {
-            $scope.framesChecked++; // Update the counter
-            console.log(objects)
-
-            // TODO: Append the objects to the object structure and in the end, return both structures
-
-
-            // Check if we are done
-            console.log($scope.framesChecked + " | " + $scope.targetFrames)
-            if ($scope.framesChecked == $scope.targetFrames) {
-                $scope.end();
-            }
-        }
-
-        // Function that retrieves the objects from the given videos and frames
-        $scope.retrieveExistingObjects = function(fileName) {
-            $scope.framesChecked = 0; // Reset the counter
-
-            // Make all the request to obtain the objects from all existing frames
-            for (var i = 0; i < $scope.retrievedFrames.length; i++) { // TODO: the removal of the extension is temporal, we need to fix it
-                toolSrvc.getAnnotationOfFrame(fileName.split('.').slice(0, -1).join('.'), $scope.retrievedFrames[i].frame, navSrvc.getActiveDataset(), navSrvc.getUser().name, callbackRetrievingObjects);
-            }
-        }
+            $mdDialog.hide($scope.retrievedFrames);
+        };
 
         // Function that will be called everytime a frame has been retrieved from the server
         var callbackRetrievingFrame = function(image, fileName, frame) {
@@ -318,15 +341,11 @@ angular.module('CVGTool')
                 frame: parseInt(frame)
             });
 
-            // Keep track of the progress
-            $scope.progress.frames++;
-
-            // If we are done, move to retrieve the objects
+            // Check if we are done
             if ($scope.retrievedFrames.length == $scope.targetFrames) {
-                console.log("lets move to retrieve the objects")
-                $scope.retrieveExistingObjects(fileName);
+                $scope.end();
             }
-        }
+        };
 
         // Function to retrieve the selected frame range from the selected video
         $scope.accept = function() {
@@ -338,18 +357,16 @@ angular.module('CVGTool')
                 $scope.targetFrames = range + 1;
                 $scope.retrievedFrames = [];
 
-                // Keep track of the progress
-                $scope.progress.maxFrames = $scope.targetFrames;
-
                 // Make all the petitions
                 for (var i = 0;
                     ($scope.slider.from + i) < $scope.slider.to + 1; i++) {
-                    toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset(),
+                    toolSrvc.getFrame($scope.videoSelected.name, $scope.slider.from + i, navSrvc.getActiveDataset().name,
                         callbackRetrievingFrame);
                 }
             }
         };
 
         $scope.getListOfVideos();
+
     }
 ]);
