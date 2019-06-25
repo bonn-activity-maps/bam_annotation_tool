@@ -83,7 +83,7 @@ class DatasetService:
 
         # Store info in DB
         resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addCameraParametersAIK(dataset, camerasDir)
+        resultCameras = this.addCameraParametersAIK(dataset, camerasDir, videosDir)
         resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error':
@@ -121,18 +121,19 @@ class DatasetService:
 
     # Add camera parameters to annotations in database from camera directory
     # Return true if all have been updated, False ow
-    def addCameraParametersAIK(this, dataset, dir):
+    def addCameraParametersAIK(this, dataset, dir, videosDir):
         listDir = os.listdir(dir)
-        for video in listDir:                   # for all cameras/videos
-            videoDir = os.path.join(dir, video)
-            if os.path.isdir(videoDir):         # each frame in each camera
-                frames = os.listdir(videoDir)
+        for camera in listDir:                   # for all cameras/videos
+            cameraDir = os.path.join(dir, camera)           # Directory for camera parameters
+            frameDir = os.path.join(videosDir, camera)      # Directory for frames
+            if os.path.isdir(cameraDir):         # each frame in each camera
+                frames = os.listdir(cameraDir)
                 for fr in frames:
                     # Read number of frame
                     frame = int(os.path.splitext(fr)[0].split('frame')[1])
 
-                    # Read file and store in db
-                    frameFile = os.path.join(videoDir, fr)
+                    # Read file of camera parameters
+                    frameFile = os.path.join(cameraDir, fr)
                     try:
                         with open(frameFile) as jsonFile:
                             camParams = json.load(jsonFile)
@@ -140,7 +141,14 @@ class DatasetService:
                         log.exception('Could not read from file')
                         return False
 
-                    result = frameManager.createFrame(frame, video, dataset, camParams['K'], camParams['rvec'],
+                    # Obtain path of frames.png in videos folder
+                    frameVideoFile = os.path.splitext(fr)[0]+'.png'
+                    framePath = os.path.join(frameDir, frameVideoFile)
+
+                    # TODO: create object here and only pass one param
+
+                    # Store frame in db with camera parameters and path wrt video folder
+                    result = frameManager.createFrame(frame, camera, dataset, framePath, camParams['K'], camParams['rvec'],
                                                       camParams['tvec'], camParams['distCoef'], camParams['w'], camParams['h'])
                     if result == 'Error':
                         return False
@@ -300,19 +308,12 @@ class DatasetService:
 
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
-        videoObject = videoManager.getVideo(video, dataset)
-
-        #TODO: change this to be general
-        if videoObject['type'] == this.aik:
-            frame = str(frame).zfill(9)  # Fill with 0 until 9 digits
-            file = os.path.join(videoObject['path'], 'frame' + frame + '.png')
-        else:       # posetrack
-            frame = str(frame).zfill(6)  # Fill with 0 until 6 digits
-            file = os.path.join(videoObject['path'], frame + '.jpg')
+        # Get path of frame
+        framePath = frameManager.getFramePath(frame, video, dataset)['path']
 
         # Read file as binary, encode to base64 and remove newlines
-        if os.path.isfile(file):
-            with open(file, "rb") as image_file:
+        if os.path.isfile(framePath):
+            with open(framePath, "rb") as image_file:
                 encodedImage = base64.b64encode(image_file.read())
                 return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame}, 200
         else:

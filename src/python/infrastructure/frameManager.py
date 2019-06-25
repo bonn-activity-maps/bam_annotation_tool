@@ -11,7 +11,7 @@ class FrameManager:
     db = c.cvg
     collection = db.frame
 
-    # Return info of frame by user if exist in DB. Ignore mongo id
+    # Return info of frame by video and dataset if exist in DB. Ignore mongo id
     def getFrame(this, frame, video, dataset):
         try:
             result = this.collection.find_one({"number": frame, "video": video, "dataset": dataset}, {"_id": 0})
@@ -34,9 +34,9 @@ class FrameManager:
             return 'Error'
 
     # Return 'ok' if the frame has been created
-    def createFrame(this, frame, video, dataset,  k, rvec, tvec, distCoef, w, h):
+    def createFrame(this, frame, video, dataset, path, k, rvec, tvec, distCoef, w, h):
         try:
-            result = this.collection.insert_one({"number": frame, "video": video, "dataset": dataset, "k": k,
+            result = this.collection.insert_one({"number": frame, "video": video, "dataset": dataset, "path": path, "k": k,
                                                  "rvec": rvec, "tvec": tvec, "distCoef": distCoef, "w": w, "h": h})
             if result.acknowledged:
                 return 'ok'
@@ -68,4 +68,17 @@ class FrameManager:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error removing annotations in db')
+            return 'Error'
+
+    # Return path of frame if exist in DB. Ignore mongo id
+    def getFramePath(this, frame, video, dataset):
+        try:
+            result = this.collection.find_one({"number": frame, "video": video, "dataset": dataset},
+                                              {"path": 1, "_id": 0})
+            if result == None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding frame in db')
             return 'Error'
