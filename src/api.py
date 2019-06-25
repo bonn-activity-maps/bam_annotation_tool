@@ -198,10 +198,12 @@ def updateAnnotationValidation():
     success, msg, status = annotationService.updateValidation(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get new uid for an object in annotations for a dataset to avoid duplicated uid objects
-@app.route('/api/annotation/getNewUidObjectType', methods=['GET'])
-def getNewUidObject():
-    success, msg, status = annotationService.getNewUidObject(request.headers['dataset'])
+# Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
+@app.route('/api/annotation/createNewUidObject', methods=['POST'])
+def createNewUidObject():
+    req_data = request.get_json()
+    success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
+                                                                req_data['frame'], req_data['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
