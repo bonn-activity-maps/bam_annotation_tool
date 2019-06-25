@@ -16,7 +16,7 @@ class AnnotationManager:
         try:
             result = this.collection.find_one({"dataset": dataset, "scene": scene, "frame": int(frame), "user": user}, {'_id': 0})
             if result == None:
-                return 'Error'
+                return {}
             else:
                 return result
         except errors.PyMongoError as e:
@@ -91,18 +91,22 @@ class AnnotationManager:
             log.exception('Error updating validated annotation in db')
             return 'Error'
 
-    # # Return max uid of objects in dataset
-    # def maxUidObjectDataset(this, dataset):
-    #     try:
-    #         result = this.collection.find({"dataset": dataset, "scene": scene, "frame": frame, "user": user}, {'_id': 0})
-    #         if result == None:
-    #             return 'Error'
-    #         else:
-    #             return result
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error finding annotation in db')
-    #         return 'Error'
-    #
+    # Return max uid of objects in dataset
+    def maxUidObjectDataset(this, dataset):
+        try:
+            result = this.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset}},
+                                                {"$group": {"_id": None, "max": {"$max": "$objects.uid"}}},
+                                                {"$project": {"_id": 0, "max": 1}}])       # Avoid return mongo id
+            # Read max value returned
+            result = list(result)
+            if result == []:    # If there are no objects -> max uid is 0
+                return 0
+            else:               # Return max
+                return result[0]['max'][0]
+        except errors.PyMongoError as e:
+            log.exception('Error finding maximum id in annotation in db')
+            return 'Error'
+
 
     ###########################
 
@@ -121,19 +125,18 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation for an object in a frame has been created.
-    def createFrameObject(this, dataset, video, frame, user, objects):
-        # print(objects)
+    def createFrameObject(this, dataset, scene, frame, user, objects):
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}
+        query = {"dataset": dataset, "scene": scene, "frame": frame, "user": user}
         # Add object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
-            newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}}}
+            newValues = {"$push": {"objects": [{"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}]}}
         else:
-            newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints}}}
+            newValues = {"$push": {"objects": [{"uid": uidObj, "type": type, "keypoints": keypoints}]}}
 
         try:
             result = this.collection.update_one(query, newValues, upsert=True)
