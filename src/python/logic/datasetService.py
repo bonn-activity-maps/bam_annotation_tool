@@ -83,7 +83,7 @@ class DatasetService:
 
         # Store info in DB
         resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addCameraParametersAIK(dataset, camerasDir, videosDir)
+        resultCameras = this.addFrameAIK(dataset, camerasDir, videosDir)
         resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error':
@@ -121,7 +121,7 @@ class DatasetService:
 
     # Add camera parameters to annotations in database from camera directory
     # Return true if all have been updated, False ow
-    def addCameraParametersAIK(this, dataset, dir, videosDir):
+    def addFrameAIK(this, dataset, dir, videosDir):
         listDir = os.listdir(dir)
         for camera in listDir:                   # for all cameras/videos
             cameraDir = os.path.join(dir, camera)           # Directory for camera parameters
@@ -145,11 +145,10 @@ class DatasetService:
                     frameVideoFile = os.path.splitext(fr)[0]+'.png'
                     framePath = os.path.join(frameDir, frameVideoFile)
 
-                    # TODO: create object here and only pass one param
-
-                    # Store frame in db with camera parameters and path wrt video folder
-                    result = frameManager.createFrame(frame, camera, dataset, framePath, camParams['K'], camParams['rvec'],
-                                                      camParams['tvec'], camParams['distCoef'], camParams['w'], camParams['h'])
+                    # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
+                    frameDictionary = {"number": frame, "video": camera, "dataset": dataset, "path": framePath,
+                                       "cameraParameters": camParams}
+                    result = frameManager.createFrame(frameDictionary)
                     if result == 'Error':
                         return False
         return True

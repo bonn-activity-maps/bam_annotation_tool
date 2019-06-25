@@ -33,11 +33,10 @@ class FrameManager:
             log.exception('Error finding frames in db')
             return 'Error'
 
-    # Return 'ok' if the frame has been created
-    def createFrame(this, frame, video, dataset, path, k, rvec, tvec, distCoef, w, h):
+    # Return 'ok' if the frame has been created -> receive the complete dictionary
+    def createFrame(this, frameDict):
         try:
-            result = this.collection.insert_one({"number": frame, "video": video, "dataset": dataset, "path": path, "k": k,
-                                                 "rvec": rvec, "tvec": tvec, "distCoef": distCoef, "w": w, "h": h})
+            result = this.collection.insert_one(frameDict)
             if result.acknowledged:
                 return 'ok'
             else:
