@@ -19,6 +19,7 @@ videoManager = VideoManager()
 annotationManager = AnnotationManager()
 frameManager = FrameManager()
 
+
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
     ffmpeg = '/usr/bin/ffmpeg'  # Path to ffmpeg
@@ -70,6 +71,107 @@ class DatasetService:
             result = False, 'Incorrect dataset type', 500
         return result
 
+    ###########################################################################
+    ####                           PT INFO METHODS                        ####
+    ###########################################################################
+
+    # Store info of posetrack datasets: videos ....
+    # TODO: read data
+    def addInfoPt(this, dataset):
+        # Store info in DB
+        resultVideos = this.addVideosPT(dataset)
+
+        if resultVideos == 'Error':
+            return False, 'Error saving videos in database', 400
+        else:
+            return True, 'ok', 200
+
+    # Add videos to database from posetrack directory
+    # Return true if all videos have been updated, False ow
+    def addVideosPT(this, dataset):
+        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        if this.checkIntegrity(datasetDir):
+            dirs = ["train", "test", "val"]
+            for type in dirs:
+                imagesDir = os.path.join(datasetDir, "images/" + type)
+                listDir = os.listdir(imagesDir)
+                for f in listDir:
+                    save_path = os.path.join(imagesDir, f)
+                    if os.path.isdir(save_path):
+                        result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
+                        r, _, _ = result
+                        if not r:
+                            return result
+            return True, 'ok', 200
+        else:
+            return False, 'Error: Incomplete data.', 400
+
+    # Add annotation of objects to database from videos directory
+    # Return true if all annotation have been updated, False if it encounters some problem
+    def addAnnotationsPT(this, dataset, dir):
+        # type = 'personPT'  # Type of objects
+        finalResult = True
+        types = ["test", "train", "val"]
+        for type in types:
+            listdir = os.listdir(os.path.join(dir, "/annotations/" + type))
+            for file in listdir:
+                finalResult = finalResult and this.processAnnotationFilePT(dataset, file, type)
+
+        return finalResult
+
+    def processAnnotationFilePT(this, dataset, file, type):
+        # Read uid/number of object
+        uid = int(os.path.splitext(file)[0].split('_')[0])
+
+        # Read data from file
+        try:
+            with open(file) as jsonFile:
+                annotation = json.load(jsonFile)
+        except OSError:
+            log.exception('Could not read from file')
+            return False
+
+        # Transform annotation to our format and store in db
+        frames = annotation['images']
+        annotations = annotation['annotations']
+        categories = annotation['category']
+
+        resultFrames = this.addFramesPT(dataset, frames)
+
+        return True
+
+    def addFramesPT(this, dataset, frames):
+        nFrames = frames[0]["nframes"]
+        index = 0
+        frame = {}
+        for frameNumber in range(0, nFrames):           # For every frame in VIDEO (not JSON FILE)
+            frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
+            if frameNumber == int(frameObjectNumber):   # If there is data to add
+                index += 1                              # Advance index
+                frame = dict(frames[frameNumber])             # Reformat object to insert into db
+                frame["number"] = frameNumber
+                frame["dataset"] = dataset
+                frame["video"] = frame["vid_id"]
+                del frame["vid_id"]
+                frame["path"] = os.path.join(this.STORAGE_DIR, frame["file_name"])
+                del frame["file_name"]
+                del frame["ignore_regions_y"]
+                del frame["ignore_regions_x"]
+            else:       # If no data, initialize empty
+                frame["number"] = frameNumber
+                frame["dataset"] = dataset
+                frame["video"] = frames[0]["vid_id"]
+                frame["path"] = os.path.join(this.STORAGE_DIR, str(frameNumber).zfill(6))
+            result = frameManager.createFrame(frame)
+            if result == 'error':
+                return False
+        return True
+
+
+    ###########################################################################
+    ####                           AIK INFO METHODS                        ####
+    ###########################################################################
+
     # Store info of AIK datasets: videos, annotations and camera params by frame
     def addInfoAIK(this, dataset):
         # Directories for AIK datasets
@@ -92,17 +194,6 @@ class DatasetService:
         else:
             return True, 'ok', 200
 
-    # Store info of posetrack datasets: videos ....
-    # TODO: read data
-    def addInfoPt(this, dataset):
-        # Store info in DB
-        resultVideos = this.addVideosPT(dataset)
-
-        if resultVideos == 'Error':
-            return False, 'Error saving videos in database', 400
-        else:
-            return True, 'ok', 200
-
     # Add videos to database from videos directory
     # Return true if all videos have been updated, False ow
     def addVideosAIK(this, dataset, dir):
@@ -116,13 +207,13 @@ class DatasetService:
                     return False
         return True
 
-    # Add camera parameters to annotations in database from camera directory
+    # Add camera parameters to frames in database from camera directory
     # Return true if all have been updated, False ow
     def addCameraParametersAIK(this, dataset, dir):
         listDir = os.listdir(dir)
-        for video in listDir:                   # for all cameras/videos
+        for video in listDir:  # for all cameras/videos
             videoDir = os.path.join(dir, video)
-            if os.path.isdir(videoDir):         # each frame in each camera
+            if os.path.isdir(videoDir):  # each frame in each camera
                 frames = os.listdir(videoDir)
                 for fr in frames:
                     # Read number of frame
@@ -138,7 +229,8 @@ class DatasetService:
                         return False
 
                     result = frameManager.createFrame(frame, video, dataset, camParams['K'], camParams['rvec'],
-                                                      camParams['tvec'], camParams['distCoef'], camParams['w'], camParams['h'])
+                                                      camParams['tvec'], camParams['distCoef'], camParams['w'],
+                                                      camParams['h'])
                     if result == 'Error':
                         return False
         return True
@@ -146,8 +238,8 @@ class DatasetService:
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if has been some problem
     def addAnnotationsAIK(this, dataset, dir):
-        listDir = os.listdir(dir)   # List of all objects/persons
-        type = 'personAIK'          # Type of objects
+        listDir = os.listdir(dir)  # List of all objects/persons
+        type = 'personAIK'  # Type of objects
         finalResult = True
 
         for f in listDir:
@@ -171,29 +263,9 @@ class DatasetService:
                 keypoints = poses[i]
                 objects = {"uid": uid, "type": type, "keypoints": keypoints}
                 result = annotationManager.updateAnnotation(dataset, dataset, frame, 'root', objects)
-                if result == 'Error': finalResult = False   # finalResult False if there is some problem
+                if result == 'Error': finalResult = False  # finalResult False if there is some problem
 
         return finalResult
-
-    # Add videos to database from posetrack directory
-    # Return true if all videos have been updated, False ow
-    def addVideosPT(this, dataset):
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        if this.checkIntegrity(datasetDir):
-            dirs = ["train", "test", "val"]
-            for type in dirs:
-                imagesDir = os.path.join(datasetDir, "images/" + type)
-                listDir = os.listdir(imagesDir)
-                for f in listDir:
-                    save_path = os.path.join(imagesDir, f)
-                    if os.path.isdir(save_path):
-                        result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
-                        r, _, _ = result
-                        if not r:
-                            return result
-            return True, 'ok', 200
-        else:
-            return False, 'Error: Incomplete data.', 400
 
     def createVideo(this, file, dataset, save_path, type, frames=0):
         result = videoManager.createVideo(file, dataset, save_path, type=type, frames=frames)
@@ -206,7 +278,7 @@ class DatasetService:
         zip = zipfile.ZipFile(save_path, 'r')
         zip.extractall(this.STORAGE_DIR)
         dataset, _ = os.path.splitext(filename)
-        kpDim = '3D'    # TODO: how to check this?
+        kpDim = '3D'  # TODO: how to check this?
 
         # TODO: check integrity for AIK
         integrity = this.checkIntegrity(this.STORAGE_DIR + dataset) if type == this.pt else True
@@ -299,11 +371,11 @@ class DatasetService:
     def getVideoFrame(this, video, frame, dataset):
         videoObject = videoManager.getVideo(video, dataset)
 
-        #TODO: change this to be general
+        # TODO: change this to be general
         if videoObject['type'] == this.aik:
             frame = str(frame).zfill(9)  # Fill with 0 until 9 digits
             file = os.path.join(videoObject['path'], 'frame' + frame + '.png')
-        else:       # posetrack
+        else:  # posetrack
             frame = str(frame).zfill(6)  # Fill with 0 until 6 digits
             file = os.path.join(videoObject['path'], frame + '.jpg')
 
