@@ -13,7 +13,6 @@ objectTypeManager = ObjectTypeManager()
 class AnnotationService:
 
     # Get annotation info for given frame, dataset, video and user
-    # TODO: pass objects to 2d for AIK
     def getAnnotation(this, dataset, scene, frame, user):
         result = annotationManager.getAnnotation(dataset, scene, frame, user)
         if result == 'Error':
@@ -39,9 +38,7 @@ class AnnotationService:
     #         return True, result, 200
 
     # Return 'ok' if the annotation has been updated
-    # TODO: pass objects to 3d for AIK
     def updateAnnotation(this, dataset, scene, frame, user, objects):
-        # print(objects)
         # Create new objects uid
         # Get max of this dataset
 
