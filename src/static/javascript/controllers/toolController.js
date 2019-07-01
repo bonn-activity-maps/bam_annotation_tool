@@ -914,7 +914,7 @@ angular.module('CVGTool')
     // Object to store all information about the objects. Each position of the array is an object type. Inside each object
     // type we have an "objects" with all the objects of that type
     $scope.objectManager = {
-        objectTypes: [],
+        objectTypes: {},
         selectedType: {},
         selectedObject: null
     }
@@ -926,11 +926,6 @@ angular.module('CVGTool')
             selectedType: {},
             selectedObject: null
         }
-    }
-
-    // Function that updates the selected object type
-    $scope.updateSelectedObjectType = function(type) {
-        $scope.objectManager.selectedType = $scope.objectManager.objectTypes[type];
     }
 
     // Function that fills a blank object to create
@@ -962,17 +957,18 @@ angular.module('CVGTool')
         toolSrvc.retrieveAvailableObjectTypes(navSrvc.getActiveDataset().type, callbackSuccessRetrieveAvailableObjectTypes);
     }
 
-
     // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
     var callbackRetrievingFrameObjects = function(annotation) {
         var frame = annotation.frame; // Read the frame
-
-        // TODO: check if the annotation returns only one object
-        $scope.objectManager.objectTypes[annotation.objects.type].frames[frame - 1].push({
-            uid: annotation.objects.uid,
-            type: annotation.objects.type,
-            keypoints: annotation.objects.keypoints
-        });
+        // console.log(annotation)
+        for (var i = 0; i < annotation.objects.length; i++) {
+            // console.log(annotation.objects[i])
+            $scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].frames[frame - 1].push({
+                uid: annotation.objects[i][0].uid,
+                type: annotation.objects[i][0].type,
+                keypoints: annotation.objects[i][0].keypoints
+            })
+        }
     }
 
     $scope.retrieveObjects = function() {

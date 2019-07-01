@@ -1,7 +1,7 @@
 # base image
 FROM nvidia/cuda:9.0-base
 
-# install python3.6 and pip
+# install python3.6, pip and other libraries
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:jonathonf/python-3.6
@@ -15,6 +15,9 @@ RUN apt-get install -y \
         libsm6 \
         libxext6 \
         libxrender-dev
+
+# install git
+RUN apt-get install -y git
 
 RUN cd /tmp/ && curl -O https://bootstrap.pypa.io/get-pip.py
 RUN python3.6 /tmp/get-pip.py && \
