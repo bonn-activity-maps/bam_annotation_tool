@@ -84,7 +84,7 @@ class DatasetService:
 
         # Store info in DB
         resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addFrameAIK(dataset, datasetDir, videosDir)
+        resultCameras = this.addFrameAIK(dataset, datasetDir)
         resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error':
@@ -122,27 +122,26 @@ class DatasetService:
 
     # Add camera parameters to annotations in database from camera directory
     # Return true if all have been updated, False ow
-    def addFrameAIK(this, dataset, datasetDir, videosDir):
+    def addFrameAIK(this, dataset, datasetDir):
 
         # Load dataset
         aik = AIK(datasetDir)
         for frame in aik.valid_frames:
-            _, cameras = aik.get_frame(frame)
+            path, cameras = aik.get_frame(frame, return_paths=True)
             for i, cam in enumerate(cameras):
-                # Frame directory
-                localVideoDir = os.path.join(videosDir, 'camera%02d' % i)
-                framePath = os.path.join(localVideoDir, 'frame%09d.png' % frame)
 
-                # Create dict with all camera parameters (convert to list to store them in mongo)
-                camParams = {"K": cam.K.tolist(), "rvec": cam.rvec.tolist(), "tvec": cam.tvec.tolist(), "distCoef": cam.dist_coef.tolist(),
-                             "w": cam.w, "h": cam.h}
+                # Frame directory, join datasetDir with relative path
+                framePath = os.path.join(datasetDir, path[i])
+
+                # Get name of video from path
+                video = os.path.split(path[i])[0].split('/')[1]
 
                 # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                frameDictionary = {"number": frame, "video": i, "dataset": dataset, "path": framePath,
-                                   "cameraParameters": camParams}
+                frameDictionary = {"number": frame, "video": video, "dataset": dataset, "path": framePath,
+                                   "cameraParameters": json.loads(cam.to_json())}
+                result, _, _ = frameService.createFrame(frameDictionary)
 
-                result = frameService.createFrame(frameDictionary)
-                if result == 'Error':
+                if not result:
                     return False
         return True
 

@@ -12,7 +12,7 @@ class FrameService:
 
     # Return frame info  by video and dataset if exist in DB
     def getFrame(this, frame, video, dataset):
-        result = frameManager.getFrame(int(frame), int(video), dataset)
+        result = frameManager.getFrame(int(frame), video, dataset)
         if result == 'Error':
             return False, 'Incorrect frame', 400
         else:
@@ -20,7 +20,7 @@ class FrameService:
 
     # Return frames info
     def getFrames(this, video, dataset):
-        result = frameManager.getFrames(int(video), dataset)
+        result = frameManager.getFrames(video, dataset)
         if result == 'Error':
             return False, 'Error searching frame', 400
         else:
@@ -32,11 +32,11 @@ class FrameService:
         if result == 'Error':
             return False, 'Error creating frame ', 400
         else:
-            return True, {'type': type}, 200
+            return True, result, 200
 
     # Return 'ok' if the frame has been removed
     def removeFrame(this, frame, video, dataset):
-        result = frameManager.removeFrame(int(frame), int(video), dataset)
+        result = frameManager.removeFrame(int(frame), video, dataset)
         if result == 'Error':
             return False, 'Error deleting frame', 400
         else:
@@ -52,7 +52,7 @@ class FrameService:
 
     # Return the path of the frame
     def getFramePath(this, frame, video, dataset):
-        result = frameManager.getFramePath(int(frame), int(video), dataset)
+        result = frameManager.getFramePath(int(frame), video, dataset)
         if result == 'Error':
             return False, 'Error retrieving frame', 400
         else:
