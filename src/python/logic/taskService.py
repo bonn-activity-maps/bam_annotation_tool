@@ -1,11 +1,13 @@
 import logging
 
 from python.infrastructure.taskManager import TaskManager
+from python.infrastructure.annotationManager import AnnotationManager
 
 # UserService logger
 log = logging.getLogger('taskService')
 
 taskManager = TaskManager()
+annotationManager = AnnotationManager()
 
 
 class TaskService:
@@ -26,21 +28,34 @@ class TaskService:
         else:
             return True, result, 200
 
-     # Return 'ok' if the task has been created
+    # Return 'ok' if the task has been created
+    # Create new annotation with existing annotation from root user
     def createTask(self, req):
         name = req['name']
         user = req['user']
         dataset = req['dataset']
-        # Check if task exist for self user
+        scene = req['scene']
+        frameFrom = req['frameFrom']
+        frameTo = req['frameTo']
+
+        # Check if task exist for this user
         if taskManager.getTask(name, user, dataset) != 'Error':
             return False, 'The task already exists', 400
         else:
             # Create task with lastFrame equal to frameFrom
-            result = taskManager.createTask(name, user, dataset, req['frameFrom'], req['frameTo'], req['videos'],
-                                            req['POV'], req['frameFrom'])
+            result = taskManager.createTask(name, user, dataset, frameFrom, frameTo, scene,
+                                            req['POV'], frameFrom)
             if result == 'Error':
                 return False, 'Error creating task', 400
             else:
+                # Duplicate existing root annotation to user (copy the keypoints given in the dataset)
+                for frame in range(frameFrom, frameTo+1):
+                    annotation = annotationManager.getAnnotation(dataset, scene, frame, 'root')
+
+                    # Copy existing annotation only if there exist one for root user with objects
+                    if annotation:
+                        result = annotationManager.updateAnnotation(dataset, scene, frame, user, annotation['objects'])
+                    # TODO: handle errors
                 return True, {'name': name}, 200
 
     # Return 'ok' if the task has been removed
