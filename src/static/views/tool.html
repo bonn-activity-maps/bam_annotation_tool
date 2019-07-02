@@ -149,15 +149,13 @@
             <div class="panel-body">
                 <div class="form-group" slider.value - 1>
                     <label for="sel1">Select Object type:</label>
-                    <select class="form-control" id="sel1">
-                   <option ng-click="updateSelectedObjectType(null)"> -------------</option>
-                   <option ng-repeat="objectType in objectManager.objectTypes" ng-click="updateSelectedObjectType(objectType.type)">{{objectType.type}}</option>
-                </select>
+                    <select class="form-control" id="sel1" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                    </select>
                     <label for="sel2">Select Object ID:</label>
                     <select class="form-control" id="sel2">
-                   <option ng-click="fillBlankSelectedObject()">New object</option>
-                   <option ng-repeat="object in objectManager.selectedType.frames[slider.value - 1]" ng-click="updateSelectedObject(object)">{{object.uid}}</option>
-                </select>
+                        <option ng-click="fillBlankSelectedObject()">New object</option>
+                        <option ng-repeat="object in objectManager.selectedType.frames[slider.value - 1]" ng-click="updateSelectedObject(object)">{{object.uid}}</option>
+                    </select>
                 </div>
                 <hr/>
                 <div style="position:relative; overflow-y: auto; max-height: 450px; min-height: 450px;">

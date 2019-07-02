@@ -1,29 +1,30 @@
 <div style="height: 98%">
     <div class="row" style="height: 100%">
         <div class="col-md-6" style="height: 100%">
-          <!-- List of users of the selected dataset -->
-          <div class="panel panel-default" style="height: 98%">
-            <div class="panel-body">
-              <h2>Users</h2>
-              <hr/>
-              <div style="overflow-y: auto; max-height: 700px;">
-                <table class="table table-bordered table-responsive text-center">
-                  <thead>
-                    <tr>
-                      <th class="col-md-2">Username</th>
-                      <th class="col-md-1">Role</th>
-                      <th class="col-md-2">Dataset</th>
-                      <th class="col-md-5">E-mail</th>
-                      <th class="col-md-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
-                        <td class="text-left">{{user.name}}</td>
-                        <td>{{user.role}}</td>
-                        <td>{{user.dataset.toString()}}</td>
-                        <td>{{user.email}}</td>
-                        <td ng-if ="user.role != 'root'"><md-button ng-click="enableEdit(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
+            <!-- List of users of the selected dataset -->
+            <div class="panel panel-default" style="height: 98%">
+                <div class="panel-body">
+                    <h2>Users</h2>
+                    <hr/>
+                    <div style="overflow-y: auto; max-height: 700px;">
+                        <table class="table table-bordered table-responsive text-center">
+                            <thead>
+                                <tr>
+                                    <th class="col-md-2">Username</th>
+                                    <th class="col-md-1">Role</th>
+                                    <th class="col-md-2">Dataset</th>
+                                    <th class="col-md-5">E-mail</th>
+                                    <th class="col-md-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
+                                    <td class="text-left">{{user.name}}</td>
+                                    <td>{{user.role}}</td>
+                                    <td>{{user.dataset.toString()}}</td>
+                                    <td>{{user.email}}</td>
+                                    <td ng-if="user.role != 'root'">
+                                        <md-button ng-click="enableEdit(user)" class="md-primary md-raised"><span class="glyphicon glyphicon-edit"></md-button><md-button ng-click="removeUser(user)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button></td>
                     </tr>
                     <tr ng-if="listOfUsers.length == 0">
                       <td class="text-left">No users created for this dataset.</td>
@@ -39,8 +40,8 @@
         </div>
         <div class="col-md-6" style="height: 100%">
           <!-- Panel to create a new user -->
-          <div class="panel panel-default" style="height: 49%">
-            <div class="panel-body" style="height: 49%">
+          <div class="panel panel-default" style="height: 59%">
+            <div class="panel-body" style="height: 59%">
               <h2 ng-if="mode == 'creation'">Create User</h2>
               <h2 ng-if="mode == 'edit'">Edit User</h2>
               <hr/>
@@ -95,8 +96,8 @@
          </div>
 
          <!-- Panel to upload users file -->
-         <div class="panel panel-default" style="height: 49%">
-           <div class="panel-body" style="height: 49%">
+         <div class="panel panel-default" style="height: 40%">
+           <div class="panel-body" style="height: 40%">
              <h2>Upload Users file</h2>
              <hr/>
                In the future, maybe

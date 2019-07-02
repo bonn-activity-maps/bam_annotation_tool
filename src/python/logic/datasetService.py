@@ -5,11 +5,12 @@ from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 import base64
 import zipfile
+from aik.dataset import AIK
 
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
-from python.infrastructure.frameManager import FrameManager
+from python.logic.frameService import FrameService
 from python.logic.annotationService import AnnotationService
 
 # DatasetService logger
@@ -18,7 +19,7 @@ log = logging.getLogger('datasetService')
 datasetManager = DatasetManager()
 videoManager = VideoManager()
 annotationManager = AnnotationManager()
-frameManager = FrameManager()
+frameService = FrameService()
 annotationService = AnnotationService()
 
 
@@ -207,12 +208,12 @@ class DatasetService:
         # Directories for AIK datasets
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
         videosDir = os.path.join(datasetDir, 'videos/')
-        camerasDir = os.path.join(datasetDir, 'cameras/')
+        # camerasDir = os.path.join(datasetDir, 'cameras/')
         annotationsDir = os.path.join(datasetDir, 'tracks3d/')
 
         # Store info in DB
         resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addFrameAIK(dataset, camerasDir, videosDir)
+        resultCameras = this.addFrameAIK(dataset, datasetDir)
         resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error':
@@ -239,36 +240,27 @@ class DatasetService:
 
     # Add camera parameters to frames in database from camera directory
     # Return true if all have been updated, False ow
-    def addFrameAIK(this, dataset, dir, videosDir):
-        listDir = os.listdir(dir)
-        for camera in listDir:                   # for all cameras/videos
-            cameraDir = os.path.join(dir, camera)           # Directory for camera parameters
-            frameDir = os.path.join(videosDir, camera)      # Directory for frames
-            if os.path.isdir(cameraDir):         # each frame in each camera
-                frames = os.listdir(cameraDir)
-                for fr in frames:
-                    # Read number of frame
-                    frame = int(os.path.splitext(fr)[0].split('frame')[1])
+    def addFrameAIK(this, dataset, datasetDir):
 
-                    # Read file of camera parameters
-                    frameFile = os.path.join(cameraDir, fr)
-                    try:
-                        with open(frameFile) as jsonFile:
-                            camParams = json.load(jsonFile)
-                    except OSError:
-                        log.exception('Could not read from file')
-                        return False
+        # Load dataset
+        aik = AIK(datasetDir)
+        for frame in aik.valid_frames:
+            path, cameras = aik.get_frame(frame, return_paths=True)
+            for i, cam in enumerate(cameras):
 
-                    # Obtain path of frames.png in videos folder
-                    frameVideoFile = os.path.splitext(fr)[0]+'.png'
-                    framePath = os.path.join(frameDir, frameVideoFile)
+                # Frame directory, join datasetDir with relative path
+                framePath = os.path.join(datasetDir, path[i])
 
-                    # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                    frameDictionary = {"number": frame, "video": camera, "dataset": dataset, "path": framePath,
-                                       "cameraParameters": camParams}
-                    result = frameManager.createFrame(frameDictionary)
-                    if result == 'Error':
-                        return False
+                # Get name of video from path
+                video = os.path.split(path[i])[0].split('/')[1]
+
+                # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
+                frameDictionary = {"number": frame, "video": video, "dataset": dataset, "path": framePath,
+                                   "cameraParameters": json.loads(cam.to_json())}
+                result, _, _ = frameService.createFrame(frameDictionary)
+
+                if not result:
+                    return False
         return True
 
     # Add annotation of objects to database from videos directory
@@ -406,7 +398,7 @@ class DatasetService:
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
         # Get path of frame
-        framePath = frameManager.getFramePath(frame, video, dataset)['path']
+        framePath = frameService.getFramePath(frame, video, dataset)['path']
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
@@ -461,7 +453,7 @@ class DatasetService:
             resultVideos = videoManager.removeVideosByDataset(dataset)
             resultDataset = datasetManager.removeDataset(dataset)
             resultAnnotations = annotationManager.removeAnnotationsByDataset(dataset)
-            resultFrames = frameManager.removeFramesByDataset(dataset)
+            resultFrames = frameService.removeFramesByDataset(dataset)
 
             if resultVideos == 'Error':
                 return False, 'Error deleting videos in dataset', 400
