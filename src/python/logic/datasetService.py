@@ -10,7 +10,7 @@ from aik.dataset import AIK
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
-from python.infrastructure.frameManager import FrameManager
+from python.logic.frameService import FrameService
 from python.logic.annotationService import AnnotationService
 
 # DatasetService logger
@@ -19,7 +19,7 @@ log = logging.getLogger('datasetService')
 datasetManager = DatasetManager()
 videoManager = VideoManager()
 annotationManager = AnnotationManager()
-frameManager = FrameManager()
+frameService = FrameService()
 annotationService = AnnotationService()
 
 
@@ -141,7 +141,7 @@ class DatasetService:
                 frameDictionary = {"number": frame, "video": i, "dataset": dataset, "path": framePath,
                                    "cameraParameters": camParams}
 
-                result = frameManager.createFrame(frameDictionary)
+                result = frameService.createFrame(frameDictionary)
                 if result == 'Error':
                     return False
         return True
@@ -301,7 +301,7 @@ class DatasetService:
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
         # Get path of frame
-        framePath = frameManager.getFramePath(frame, video, dataset)['path']
+        framePath = frameService.getFramePath(frame, video, dataset)['path']
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
@@ -356,7 +356,7 @@ class DatasetService:
             resultVideos = videoManager.removeVideosByDataset(dataset)
             resultDataset = datasetManager.removeDataset(dataset)
             resultAnnotations = annotationManager.removeAnnotationsByDataset(dataset)
-            resultFrames = frameManager.removeFramesByDataset(dataset)
+            resultFrames = frameService.removeFramesByDataset(dataset)
 
             if resultVideos == 'Error':
                 return False, 'Error deleting videos in dataset', 400

@@ -6,6 +6,7 @@ from python.logic.annotationService import AnnotationService
 from python.logic.objectTypeService import ObjectTypeService
 from python.logic.userService import UserService
 from python.logic.taskService import TaskService
+from python.logic.frameService import FrameService
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ annotationService = AnnotationService()
 objectTypeService = ObjectTypeService()
 userService = UserService()
 taskService = TaskService()
+frameService = FrameService()
 
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
@@ -314,6 +316,36 @@ def finishTask():
 @app.route('/api/task/updateFrameTask', methods=['POST'])
 def updateFrameTask():
     success, msg, status = taskService.updateFrameTask(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### FRAME ####
+
+# Get frame
+@app.route("/api/frame/getFrame", methods=['GET'])
+def getFrame():
+    success, msg, status = frameService.getFrame(request.headers['frame'], request.headers['video'],
+                                                 request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get info of all frames
+@app.route("/api/frame/getFrames", methods=['GET'])
+def getFrames():
+    success, msg, status = frameService.getFrames(request.headers['video'], request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Create new frame for specific user
+@app.route('/api/frame/getFramePath', methods=['GET'])
+def getFramePath():
+    success, msg, status = frameService.getFramePath(request.headers['frame'], request.headers['video'],
+                                                     request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove existing frame for specific user
+@app.route('/api/frame/removeFrame', methods=['POST'])
+def removeFrame():
+    req_data = request.get_json()
+    success, msg, status = frameService.removeFrame(req_data['frame'], req_data['video'], req_data['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
