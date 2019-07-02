@@ -11,9 +11,9 @@ class UserManager:
     collection = db.user
 
     # Return info user if exist user-pwd in DB. Ignore mongo id and pwd
-    def getUserPwd(this, user, pwd):
+    def getUserPwd(self, user, pwd):
         try:
-            result = this.collection.find_one({"name": user, "password": pwd}, {"_id": 0, "password": 0})
+            result = self.collection.find_one({"name": user, "password": pwd}, {"_id": 0, "password": 0})
             if result == None:
                 return 'Error'
             else:
@@ -23,9 +23,9 @@ class UserManager:
             return 'Error'
 
     # Return info user if exist in DB. Ignore mongo id and pwd
-    def getUser(this, user):
+    def getUser(self, user):
         try:
-            result = this.collection.find_one({"name": user}, {"_id": 0, "password": 0})
+            result = self.collection.find_one({"name": user}, {"_id": 0, "password": 0})
             if result == None:
                 return 'Error'
             else:
@@ -36,9 +36,9 @@ class UserManager:
 
     # Return list with info of all users. Empty list if there are no users
     # Ignore mongo id and pwd
-    def getUsers(this):
+    def getUsers(self):
         try:
-            result = this.collection.find({}, {"_id": 0, "password": 0})
+            result = self.collection.find({}, {"_id": 0, "password": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding users in db')
@@ -46,18 +46,18 @@ class UserManager:
 
     # Return list with info of all users for dataset. Empty list if there are no users
     # Ignore mongo id and pwd
-    def getUsersByDataset(this, dataset, role):
+    def getUsersByDataset(self, dataset, role):
         try:
-            result = this.collection.find({"assignedTo": dataset, "role": role}, {"_id": 0, "password": 0})
+            result = self.collection.find({"assignedTo": dataset, "role": role}, {"_id": 0, "password": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding users in db')
             return 'Error'
 
     # Return info user if exist in DB. Ignore mongo id and pwd
-    def getEmail(this, email):
+    def getEmail(self, email):
         try:
-            result = this.collection.find_one({"email": email}, {"_id": 0, "password": 0})
+            result = self.collection.find_one({"email": email}, {"_id": 0, "password": 0})
             print(result)
             if result == None:
                 return 'Error'
@@ -68,9 +68,9 @@ class UserManager:
             return 'Error'
 
     # Return 'ok' if the user has been created
-    def createUser(this, user, pwd, assignedTo, role, email):
+    def createUser(self, user, pwd, assignedTo, role, email):
         try:
-            result = this.collection.insert_one({"name": user, "password": pwd,
+            result = self.collection.insert_one({"name": user, "password": pwd,
                                                  "assignedTo": assignedTo, "role": role, "email": email})
             if result.acknowledged:
                 return 'ok'
@@ -81,12 +81,12 @@ class UserManager:
             return 'Error'
 
     # Return 'ok' if the user has been updated. if user doesn't exist, it isn't created
-    def updateUser(this, oldName, user, assignedTo, role, email):
+    def updateUser(self, oldName, user, assignedTo, role, email):
         query = {"name": oldName}  # Search by user name
         # Update values (name, assignedTo, role, email)
         newValues = {"$set": {"name": user, "assignedTo": assignedTo, "role": role, "email": email}}
         try:
-            result = this.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, newValues, upsert=False)
             print(result)
             if result.modified_count == 1:
                 return 'ok'
@@ -97,9 +97,9 @@ class UserManager:
             return 'Error'
 
     # Return 'ok' if the user has been removed
-    def removeUser(this, user):
+    def removeUser(self, user):
         try:
-            result = this.collection.delete_one({"name": user})
+            result = self.collection.delete_one({"name": user})
             if result.deleted_count == 1:
                 return 'ok'
             else:

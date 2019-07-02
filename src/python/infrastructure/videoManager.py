@@ -11,9 +11,9 @@ class VideoManager:
     collection = db.video
 
     # Return info video if exist in DB. Ignore mongo id
-    def getVideo(this, video, dataset):
+    def getVideo(self, video, dataset):
         try:
-            result = this.collection.find_one({"name": video, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find_one({"name": video, "dataset": dataset}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -24,21 +24,21 @@ class VideoManager:
 
     # Return list with info of all videos. Empty list if there are no videos
     # Ignore mongo id
-    def getVideos(this, dataset):
+    def getVideos(self, dataset):
         try:
             if dataset == "root":
-                result = this.collection.find({}, {"_id": 0})
+                result = self.collection.find({}, {"_id": 0})
             else:
-                result = this.collection.find({"dataset": dataset}, {"_id": 0})
+                result = self.collection.find({"dataset": dataset}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding videos in db')
             return 'Error'
 
     # Return 'ok' if the video has been created
-    def createVideo(this, video, dataset, path, type=None, frames=0):
+    def createVideo(self, video, dataset, path, type=None, frames=0):
         try:
-            result = this.collection.insert_one({"name": video, "dataset": dataset, "frames": frames, "path": path, "type": type})
+            result = self.collection.insert_one({"name": video, "dataset": dataset, "frames": frames, "path": path, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -48,11 +48,11 @@ class VideoManager:
             return 'Error'
 
     # # Return 'ok' if the video has been updated.
-    # def updateVideoFrames(this, video, frames, dataset):
+    # def updateVideoFrames(self, video, frames, dataset):
     #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
     #     newValues = {"$set": {"frames": frames}}  # Update frames
     #     try:
-    #         result = this.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, newValues, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:
@@ -61,11 +61,11 @@ class VideoManager:
     #         log.exception('Error updating video in db')
     #         return 'Error'
     #
-    # def updateVideoName(this, video, newName, dataset):
+    # def updateVideoName(self, video, newName, dataset):
     #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
     #     newValues = {"$set": {"name": newName}}  # Update name
     #     try:
-    #         result = this.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, newValues, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:
@@ -75,9 +75,9 @@ class VideoManager:
     #         return 'Error'
 
     # Return 'ok' if the video has been removed
-    def removeVideo(this, video, dataset):
+    def removeVideo(self, video, dataset):
         try:
-            result = this.collection.delete_one({"name": video, "dataset": dataset})
+            result = self.collection.delete_one({"name": video, "dataset": dataset})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -87,11 +87,11 @@ class VideoManager:
             return 'Error'
 
     # Return 'ok' if the video has been updated.
-    def updateVideoFrames(this, video, frames, dataset):
+    def updateVideoFrames(self, video, frames, dataset):
         query = {"name": video, "dataset": dataset}  # Search by video name and dataset
         newValues = {"$set": {"frames": frames}}  # Update frames
         try:
-            result = this.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, newValues, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:
@@ -102,9 +102,9 @@ class VideoManager:
 
     # Remove all videos associated to dataset
     # Return 'ok' if the videos have been removed
-    def removeVideosByDataset(this, dataset):
+    def removeVideosByDataset(self, dataset):
         try:
-            result = this.collection.delete_many({"dataset": dataset})
+            result = self.collection.delete_many({"dataset": dataset})
             if result.acknowledged:
                 return 'ok'
             else:

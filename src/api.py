@@ -6,6 +6,7 @@ from python.logic.annotationService import AnnotationService
 from python.logic.objectTypeService import ObjectTypeService
 from python.logic.userService import UserService
 from python.logic.taskService import TaskService
+from python.logic.aikService import AIKService
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ annotationService = AnnotationService()
 objectTypeService = ObjectTypeService()
 userService = UserService()
 taskService = TaskService()
+aikService = AIKService()
 
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
@@ -316,6 +318,26 @@ def updateFrameTask():
     success, msg, status = taskService.updateFrameTask(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+#### AIK and OPENCV computations ####
+# Given 3D point coordinates (can be more than one), video, dataset and frame range -> Returns the proyected points 
+@app.route('/api/aik/projectToCamera', methods=['GET'])
+def projectToCamera():
+    req_data = request.get_json()
+    pointArray = req_data['points']
+    frameArray = req_data['frames']
+
+    # retrieve camera parameters calling to GetFrame in the future frameService
+
+    # For each frame of the frame array, project all the points into the camera
+    # for frame in frameArray:
+
+
+    pass
+
+@app.route('/api/aik/computeEpiline', methods=['GET'])
+def computeEpiline():
+    req_data = request.get_json()
+    pass
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
