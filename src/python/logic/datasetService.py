@@ -87,7 +87,7 @@ class DatasetService:
         resultAnnotations = self.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error' or resultCameras == 'Error' or resultAnnotations == 'Error':
-            this.removeDataset(dataset)
+            self.removeDataset(dataset)
             log.error('Error storing dataset. The dataset ' + dataset + ' has been removed')
             return False, 'Error storing dataset. Please upload the zip again', 400
         else:
