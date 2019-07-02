@@ -973,7 +973,6 @@ angular.module('CVGTool')
 
     $scope.retrieveObjects = function() {
         dataset = navSrvc.getActiveDataset();
-
         if (dataset.type.localeCompare("poseTrack") == 0) { // Check the dataset type to select the correct value for "scene"
             for (var i = 1; i <= $scope.numberOfFrames; i++) {
                 // toolSrvc.getAnnotationOfFrame($scope.videoSelected.name, frame, dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html ng-app="CVGTool">
-  <head>
+
+<head>
     <!--name page browser-->
     <title>CVG Annotation Tool</title>
 
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- ANGULARJS IMPORTS-->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.js"></script>
@@ -30,12 +31,9 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
     <!-- DROPZONE IMPORTS -->
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.css"/>
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/basic.min.css"/>
-    <script type="application/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.js">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/basic.min.css" />
+    <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.js">
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ng-dropzone/2.0.2/ng-dropzone.js"></script>
 
@@ -54,6 +52,8 @@
     <script src="static/javascript/services/adminDatasetsService.js"></script>
     <script src="static/javascript/services/adminUsersService.js"></script>
     <script src="static/javascript/services/navbarService.js"></script>
+    <script src="static/javascript/services/adminTasksService.js"></script>
+    <script src="static/javascript/services/taskHomeService.js"></script>
 
     <!-- controllers -->
     <script src="static/javascript/controllers/toolController.js"></script>
@@ -63,15 +63,18 @@
     <script src="static/javascript/controllers/adminDatasetsController.js"></script>
     <script src="static/javascript/controllers/adminUsersController.js"></script>
     <script src="static/javascript/controllers/dialogsController.js"></script>
+    <script src="static/javascript/controllers/adminTasksController.js"></script>
 
     <!-- stylesheets -->
     <link rel="stylesheet" href="static/css/style.css">
     <!-- Fonts -->
     <link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
-  </head>
-  <body class="body">
-  <navbar></navbar>
-  <!-- the content here will be the 'body page' and it will change dependending of the current state -->
-  <ui-view></ui-view>
-  </body>
+</head>
+
+<body class="body">
+    <navbar></navbar>
+    <!-- the content here will be the 'body page' and it will change dependending of the current state -->
+    <ui-view></ui-view>
+</body>
+
 </html>

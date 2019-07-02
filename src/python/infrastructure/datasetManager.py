@@ -12,9 +12,9 @@ class DatasetManager:
     collection = db.dataset
 
     # Return info dataset if exist in DB. Ignore mongo id
-    def getDataset(this, dataset):
+    def getDataset(self, dataset):
         try:
-            result = this.collection.find_one({"name": dataset}, {"_id": 0})
+            result = self.collection.find_one({"name": dataset}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -25,19 +25,19 @@ class DatasetManager:
 
     # Return list with info of all datasets. Empty list if there are no datasets
     # Ignore mongo id
-    def getDatasets(this):
+    def getDatasets(self):
         try:
-            result = this.collection.find({}, {"_id": 0})
+            result = self.collection.find({}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding datasets in db')
             return 'Error'
 
     # Return 'ok' if the dataset has been created
-    def createDataset(this, dataset, type, kpDim):
+    def createDataset(self, dataset, type, kpDim):
         try:
             filename, filextension = os.path.splitext(dataset)
-            result = this.collection.insert_one({"name": filename, "type": type, "keypointDim": kpDim})
+            result = self.collection.insert_one({"name": filename, "type": type, "keypointDim": kpDim})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -47,9 +47,9 @@ class DatasetManager:
             return 'Error'
 
     # Return 'ok' if the dataset has been removed
-    def removeDataset(this, dataset):
+    def removeDataset(self, dataset):
         try:
-            result = this.collection.delete_one({"name": dataset})
+            result = self.collection.delete_one({"name": dataset})
             if result.deleted_count == 1:
                 return 'ok'
             else:
