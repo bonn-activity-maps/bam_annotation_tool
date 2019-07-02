@@ -292,7 +292,10 @@ def getTasks():
 # Create new task for specific user
 @app.route('/api/task/createTask', methods=['POST'])
 def createTask():
-    success, msg, status = taskService.createTask(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = taskService.createTask(req_data['name'], req_data['user'], req_data['dataset'],
+                                                  req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
+                                                  req_data['description'], req_data['POV'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Remove existing task for specific user
@@ -305,19 +308,27 @@ def removeTask():
 # Update existing task for specific user
 @app.route('/api/task/updateTask', methods=['POST'])
 def updateTask():
-    success, msg, status = taskService.updateTask(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = taskService.updateTask(req_data['name'], req_data['user'], req_data['dataset'],
+                                                  req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
+                                                  req_data['description'], req_data['lastFrame'], req_data['POV'],
+                                                  req_data['finished'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update and finish existing task
 @app.route('/api/task/finishTask', methods=['POST'])
 def finishTask():
-    success, msg, status = taskService.finishTask(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = taskService.finishTask(req_data['name'], req_data['user'], req_data['dataset'],
+                                                  req_data['scene'], req_data['finished'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update last modified frame in task
 @app.route('/api/task/updateFrameTask', methods=['POST'])
 def updateFrameTask():
-    success, msg, status = taskService.updateFrameTask(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = taskService.updateFrameTask(req_data['name'], req_data['user'], req_data['dataset'],
+                                                       req_data['scene'], req_data['lastFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #### AIK and OPENCV computations ####

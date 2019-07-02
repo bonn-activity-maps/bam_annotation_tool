@@ -34,11 +34,11 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the task has been created
-    def createTask(self, task, user, dataset, frameFrom, frameTo, videos, POV, lastFrame=0, finished=0):
+    def createTask(self, task, user, dataset, scene, frameFrom, frameTo, description, pov, lastFrame=0, finished=False):
         try:
-            result = self.collection.insert_one({"name": task, "assignedUser": user, "dataset": dataset,
-                                                 "frameFrom": frameFrom, "frameTo": frameTo, "videos": videos,
-                                                 "POV": POV, "finished": finished, "lastFrame": lastFrame})
+            result = self.collection.insert_one({"name": task, "assignedUser": user, "dataset": dataset, "scene": scene,
+                                                 "frameFrom": frameFrom, "frameTo": frameTo, "description": description,
+                                                 "POV": pov, "finished": finished, "lastFrame": lastFrame})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -60,11 +60,11 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the task has been updated. if task doesn't exist, it isn't created
-    def updateTask(self, task, user, dataset, frameFrom, frameTo, videos, POV, finished, lastFrame):
-        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
+    def updateTask(self, task, user, dataset, scene, frameFrom, frameTo, description, pov, lastFrame, finished):
+        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
         # Update all values
-        newValues = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo, "videos": videos, "POV": POV,
-                              "finished": finished, "lastFrame": lastFrame}}
+        newValues = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo,  "description": description,
+                              "POV": pov, "finished": finished, "lastFrame": lastFrame}}
         try:
             result = self.collection.update_one(query, newValues, upsert=False)
             if result.modified_count == 1:
@@ -76,8 +76,8 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the finished flag has been updated. if task doesn't exist, it isn't created
-    def updateFinished(self, task, user, dataset, finished):
-        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
+    def updateFinished(self, task, user, dataset, scene, finished):
+        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
         newValues = {"$set": {"finished": finished}}      # Update finished flag
         try:
             result = self.collection.update_one(query, newValues, upsert=False)
@@ -90,8 +90,8 @@ class TaskManager:
             return 'Error'
 
     # Return 'ok' if the lastFrame has been updated. if task doesn't exist, it isn't created
-    def updateLastFrame(self, task, user, dataset, lastFrame):
-        query = {"name": task, "assignedUser": user, "dataset": dataset}      # Search by task name, assigned user and dataset
+    def updateLastFrame(self, task, user, dataset, scene, lastFrame):
+        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
         newValues = {"$set": {"lastFrame": lastFrame}}    # Update lastFrame
         try:
             result = self.collection.update_one(query, newValues, upsert=False)
