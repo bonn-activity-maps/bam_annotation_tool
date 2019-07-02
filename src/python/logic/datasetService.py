@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import moviepy.editor as mp
 import base64
 import zipfile
+from aik.dataset import AIK
 
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
@@ -78,12 +79,12 @@ class DatasetService:
         # Directories for AIK datasets
         datasetDir = os.path.join(this.STORAGE_DIR, dataset)
         videosDir = os.path.join(datasetDir, 'videos/')
-        camerasDir = os.path.join(datasetDir, 'cameras/')
+        # camerasDir = os.path.join(datasetDir, 'cameras/')
         annotationsDir = os.path.join(datasetDir, 'tracks3d/')
 
         # Store info in DB
         resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addFrameAIK(dataset, camerasDir, videosDir)
+        resultCameras = this.addFrameAIK(dataset, datasetDir, videosDir)
         resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error':
@@ -121,36 +122,28 @@ class DatasetService:
 
     # Add camera parameters to annotations in database from camera directory
     # Return true if all have been updated, False ow
-    def addFrameAIK(this, dataset, dir, videosDir):
-        listDir = os.listdir(dir)
-        for camera in listDir:                   # for all cameras/videos
-            cameraDir = os.path.join(dir, camera)           # Directory for camera parameters
-            frameDir = os.path.join(videosDir, camera)      # Directory for frames
-            if os.path.isdir(cameraDir):         # each frame in each camera
-                frames = os.listdir(cameraDir)
-                for fr in frames:
-                    # Read number of frame
-                    frame = int(os.path.splitext(fr)[0].split('frame')[1])
+    def addFrameAIK(this, dataset, datasetDir, videosDir):
 
-                    # Read file of camera parameters
-                    frameFile = os.path.join(cameraDir, fr)
-                    try:
-                        with open(frameFile) as jsonFile:
-                            camParams = json.load(jsonFile)
-                    except OSError:
-                        log.exception('Could not read from file')
-                        return False
+        # Load dataset
+        aik = AIK(datasetDir)
+        for frame in aik.valid_frames:
+            _, cameras = aik.get_frame(frame)
+            for i, cam in enumerate(cameras):
+                # Frame directory
+                localVideoDir = os.path.join(videosDir, 'camera%02d' % i)
+                framePath = os.path.join(localVideoDir, 'frame%09d.png' % frame)
 
-                    # Obtain path of frames.png in videos folder
-                    frameVideoFile = os.path.splitext(fr)[0]+'.png'
-                    framePath = os.path.join(frameDir, frameVideoFile)
+                # Create dict with all camera parameters (convert to list to store them in mongo)
+                camParams = {"K": cam.K.tolist(), "rvec": cam.rvec.tolist(), "tvec": cam.tvec.tolist(), "distCoef": cam.dist_coef.tolist(),
+                             "w": cam.w, "h": cam.h}
 
-                    # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                    frameDictionary = {"number": frame, "video": camera, "dataset": dataset, "path": framePath,
-                                       "cameraParameters": camParams}
-                    result = frameManager.createFrame(frameDictionary)
-                    if result == 'Error':
-                        return False
+                # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
+                frameDictionary = {"number": frame, "video": i, "dataset": dataset, "path": framePath,
+                                   "cameraParameters": camParams}
+
+                result = frameManager.createFrame(frameDictionary)
+                if result == 'Error':
+                    return False
         return True
 
     # Add annotation of objects to database from videos directory
