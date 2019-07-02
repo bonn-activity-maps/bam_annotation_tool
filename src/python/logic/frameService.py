@@ -56,4 +56,4 @@ class FrameService:
         if result == 'Error':
             return False, 'Error retrieving frame', 400
         else:
-            return True, result, 200
+            return True, result['path'], 200

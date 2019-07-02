@@ -79,7 +79,6 @@ class DatasetService:
         # Directories for AIK datasets
         datasetDir = os.path.join(self.STORAGE_DIR, dataset)
         videosDir = os.path.join(datasetDir, 'videos/')
-        # camerasDir = os.path.join(datasetDir, 'cameras/')
         annotationsDir = os.path.join(datasetDir, 'tracks3d/')
 
         # Store info in DB
@@ -87,12 +86,10 @@ class DatasetService:
         resultCameras = self.addFrameAIK(dataset, datasetDir)
         resultAnnotations = self.addAnnotationsAIK(dataset, annotationsDir)
 
-        if resultVideos == 'Error':
-            return False, 'Error saving videos in database', 400
-        elif resultCameras == 'Error':
-            return False, 'Error saving camera parameters in database', 400
-        elif resultAnnotations == 'Error':
-            return False, 'Error saving annotations in database', 400
+        if resultVideos == 'Error' or resultCameras == 'Error' or resultAnnotations == 'Error':
+            self.removeDataset(dataset)
+            log.error('Error storing dataset. The dataset ' + dataset + ' has been removed')
+            return False, 'Error storing dataset. Please upload the zip again', 400
         else:
             return True, 'ok', 200
 
@@ -300,7 +297,7 @@ class DatasetService:
     # Return the corresponding frame of video
     def getVideoFrame(self, video, frame, dataset):
         # Get path of frame
-        framePath = frameService.getFramePath(frame, video, dataset)['path']
+        _, framePath, _ = frameService.getFramePath(frame, video, dataset)
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
