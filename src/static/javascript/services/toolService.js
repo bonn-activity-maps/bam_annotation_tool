@@ -33,7 +33,6 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                console.log(response.data.msg)
                 callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
             }, function errorCallback(response) {
                 console.log(response.data.msg)

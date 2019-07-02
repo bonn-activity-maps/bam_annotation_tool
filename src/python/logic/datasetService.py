@@ -12,6 +12,7 @@ from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
 from python.logic.frameService import FrameService
 from python.logic.annotationService import AnnotationService
+from python.logic.objectTypeService import ObjectTypeService
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
@@ -21,7 +22,7 @@ videoManager = VideoManager()
 annotationManager = AnnotationManager()
 frameService = FrameService()
 annotationService = AnnotationService()
-
+objectTypeService = ObjectTypeService()
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
@@ -95,10 +96,10 @@ class DatasetService:
 
     # Store info of posetrack datasets: videos ....
     # TODO: read data
-    def addInfoPt(this, dataset):
+    def addInfoPt(self, dataset):
         # Store info in DB
-        resultVideos = this.addVideosPT(dataset)
-        resultAnnotations = this.addAnnotationsPT(dataset, os.path.join(this.STORAGE_DIR, dataset))
+        resultVideos = self.addVideosPT(dataset)
+        resultAnnotations = self.readAnnotationsPT(dataset, os.path.join(self.STORAGE_DIR, dataset))
         if resultVideos == 'Error' or resultAnnotations == 'Error':
             return False, 'Error saving videos in database', 400
         else:
@@ -106,9 +107,9 @@ class DatasetService:
 
     # Add videos to database from posetrack directory
     # Return true if all videos have been updated, False ow
-    def addVideosPT(this, dataset):
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        if this.checkIntegrity(datasetDir):
+    def addVideosPT(self, dataset):
+        datasetDir = os.path.join(self.STORAGE_DIR, dataset)
+        if self.checkIntegrity(datasetDir):
             dirs = ["train", "test", "val"]
             for type in dirs:
                 imagesDir = os.path.join(datasetDir, "images/" + type)
@@ -116,7 +117,7 @@ class DatasetService:
                 for f in listDir:
                     save_path = os.path.join(imagesDir, f)
                     if os.path.isdir(save_path):
-                        result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
+                        result = self.createVideo(f.split('_')[0], dataset, save_path, type, frames=self.getFramesVideo(save_path))
                         r, _, _ = result
                         if not r:
                             return result
@@ -126,7 +127,7 @@ class DatasetService:
 
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
-    def addAnnotationsPT(this, dataset, dir):
+    def readAnnotationsPT(self, dataset, dir):
         print("annotationsPT")
         # type = 'personPT'  # Type of objects
         finalResult = True
@@ -135,13 +136,13 @@ class DatasetService:
             dirpath = os.path.join(dir, "annotations/" + type)
             listdir = os.listdir(dirpath)
             for file in listdir:
-                tempResult = this.processAnnotationFilePT(dataset, file, dirpath)
+                tempResult = self.processAnnotationFilePT(dataset, file, dirpath)
                 finalResult = finalResult and tempResult
 
         return 'ok' if finalResult else 'Error'
 
     # Process one file entirely from JSON to our DB, including images, categories and anotations info.
-    def processAnnotationFilePT(this, dataset, file, dir):
+    def processAnnotationFilePT(self, dataset, file, dir):
         print("Processing annotation file ", file, " from ", dir)
         # Read data from file
         fileRoute = os.path.join(dir, file)
@@ -153,46 +154,44 @@ class DatasetService:
             return False
 
         # Transform annotation to our format and store in db
-        frames = this.safelyReadDictionary(annotation, "images")
-        categories = this.safelyReadDictionary(annotation, "categories")
-        annotations = this.safelyReadDictionary(annotation, "annotations")
+        frames = self.safelyReadDictionary(annotation, "images")
+        categories = self.safelyReadDictionary(annotation, "categories")
+        annotations = self.safelyReadDictionary(annotation, "annotations")
 
-        resultFrames = this.addFramesPT(dataset, frames) if frames is not None else print("errorcico") #TODO: Feedback?
-        resultAnnotations = this.addAnnotationsPT(dataset, annotations) if annotations is not None else print("errorcico")
-        resultCategories = False
+        resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
+        resultCategories = self.addCategoriesPT(categories) if categories is not None else True
+        resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
 
         return resultFrames and resultAnnotations and resultCategories
 
-    def addFramesPT(this, dataset, frames):
-        nFrames = this.safelyReadDictionary(frames[0], "nframes")
+    def addFramesPT(self, dataset, frames):
+        nFrames = self.safelyReadDictionary(frames[0], "nframes")
         index = 0
         frame = {}
         for frameNumber in range(0, nFrames):           # For every frame in VIDEO (not JSON FILE)
             frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
-            # print("frameNumber: ", frameNumber, " frameObjectNumber: ", int(frameObjectNumber), " index: ", index)
             if frameNumber == int(frameObjectNumber):   # If there is data to add
                 index += 1                              # Advance index
                 frame = dict(frames[frameNumber])       # Reformat object to insert into db
                 frame["number"] = frameNumber
                 frame["dataset"] = dataset
-                frame["video"] = this.safelyReadDictionary(frame, "vid_id")
-                this.safelyDeleteDictionaryKey(frame, "vid_id")
-                frame["path"] = os.path.join(this.STORAGE_DIR, dataset + "/" +
-                                             this.safelyReadDictionary(frame, "file_name"))
-                this.safelyDeleteDictionaryKey(frame, "file_name")
-                frame["has_ignore_regions"] = False if this.safelyReadDictionary(frame, "ignore_regions_x") is None \
+                frame["video"] = self.safelyReadDictionary(frame, "vid_id")
+                self.safelyDeleteDictionaryKey(frame, "vid_id")
+                frame["path"] = os.path.join(self.STORAGE_DIR, dataset + "/" +
+                                             self.safelyReadDictionary(frame, "file_name"))
+                self.safelyDeleteDictionaryKey(frame, "file_name")
+                frame["has_ignore_regions"] = False if self.safelyReadDictionary(frame, "ignore_regions_x") is None \
                     else True                           # If it has no ignore regions, store it so we know later.
-                this.safelyDeleteDictionaryKey(frame, "ignore_regions_x")
-                this.safelyDeleteDictionaryKey(frame, "ignore_regions_y")
+                self.safelyDeleteDictionaryKey(frame, "ignore_regions_x")
+                self.safelyDeleteDictionaryKey(frame, "ignore_regions_y")
             else:                                       # If no data, initialize empty
                 frame = dict()
                 frame["number"] = frameNumber
                 frame["dataset"] = dataset
-                frame["video"] = this.safelyReadDictionary(frames[0], "vid_id")
-                dirpath = os.path.join(this.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
+                frame["video"] = self.safelyReadDictionary(frames[0], "vid_id")
+                dirpath = os.path.join(self.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
                 frame["path"] = os.path.join(dirpath, str(frameNumber).zfill(6) + ".jpg")
                 frame["has_ignore_regions"] = False
-                print("Saving frame: ", frame)
             result = frameService.createFrame(frame)
             if result == 'error':
                 return False
@@ -200,7 +199,33 @@ class DatasetService:
 
     def addAnnotationsPT(self, dataset, annotations):
 
-        pass
+        return False
+
+    def addCategoriesPT(self, categories):
+        # Categories
+        for cat in categories:
+            type = self.safelyReadDictionary(cat, "name")
+            datasetType = self.pt
+            labels = self.safelyReadDictionary(cat, "keypoints")
+            numKeypoints = len(labels)
+            supercategory = self.safelyReadDictionary(cat, "supercategory")
+            id = self.safelyReadDictionary(cat, "id")
+            skeleton = self.safelyReadDictionary(cat, "skeleton")
+            result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels,
+                                                        supercategory=supercategory, id=id, skeleton=skeleton)
+            if result == 'error':
+                return False
+
+        # Ignore Regions
+        type = "ignore_region"
+        datasetType = self.pt
+        is_polygon = True
+        labels=None
+        numKeypoints=0
+        result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
+        if result == 'error':
+            return False
+        return True
 
     ###########################################################################
     ####                           AIK INFO METHODS                        ####
@@ -222,17 +247,6 @@ class DatasetService:
             self.removeDataset(dataset)
             log.error('Error storing dataset. The dataset ' + dataset + ' has been removed')
             return False, 'Error storing dataset. Please upload the zip again', 400
-        else:
-            return True, 'ok', 200
-
-    # Store info of posetrack datasets: videos ....
-    # TODO: read data
-    def addInfoPt(self, dataset):
-        # Store info in DB
-        resultVideos = self.addVideosPT(dataset)
-
-        if resultVideos == 'Error':
-            return False, 'Error saving videos in database', 400
         else:
             return True, 'ok', 200
 
@@ -302,29 +316,10 @@ class DatasetService:
                 keypoints = poses[i]
                 objects = {"uid": uid, "type": type, "keypoints": keypoints}
                 result = annotationService.updateAnnotationFrameObject(dataset, dataset, frame, 'root', objects)
-                if result == 'Error': finalResult = False   # finalResult False if there is some problem
+                if result == 'Error':
+                    finalResult = False   # finalResult False if there is some problem
 
         return finalResult
-
-    # Add videos to database from posetrack directory
-    # Return true if all videos have been updated, False ow
-    def addVideosPT(self, dataset):
-        datasetDir = os.path.join(self.STORAGE_DIR, dataset)
-        if self.checkIntegrity(datasetDir):
-            dirs = ["train", "test", "val"]
-            for type in dirs:
-                imagesDir = os.path.join(datasetDir, "images/" + type)
-                listDir = os.listdir(imagesDir)
-                for f in listDir:
-                    save_path = os.path.join(imagesDir, f)
-                    if os.path.isdir(save_path):
-                        result = self.createVideo(f, dataset, save_path, type, frames=self.getFramesVideo(save_path))
-                        r, _, _ = result
-                        if not r:
-                            return result
-            return True, 'ok', 200
-        else:
-            return False, 'Error: Incomplete data.', 400
 
     def createVideo(self, file, dataset, save_path, type, frames=0):
         result = videoManager.createVideo(file, dataset, save_path, type=type, frames=frames)
@@ -430,6 +425,7 @@ class DatasetService:
     def getVideoFrame(self, video, frame, dataset):
         # Get path of frame
         _, framePath, _ = frameService.getFramePath(frame, video, dataset)
+        print(framePath)
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
