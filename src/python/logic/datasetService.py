@@ -141,6 +141,7 @@ class DatasetService:
 
         return 'ok' if finalResult else 'Error'
 
+    # Process one file entirely from JSON to our DB, including images, categories and anotations info.
     def processAnnotationFilePT(this, dataset, file, dir):
         print("Processing annotation file ", file, " from ", dir)
         # Read data from file
@@ -158,7 +159,7 @@ class DatasetService:
         annotations = this.safelyReadDictionary(annotation, "annotations")
 
         resultFrames = this.addFramesPT(dataset, frames) if frames is not None else print("errorcico") #TODO: Feedback?
-        resultAnnotations = False
+        resultAnnotations = this.addAnnotationsPT(dataset, annotations) if annotations is not None else print("errorcico")
         resultCategories = False
 
         return resultFrames and resultAnnotations and resultCategories
@@ -193,11 +194,14 @@ class DatasetService:
                 frame["path"] = os.path.join(dirpath, str(frameNumber).zfill(6) + ".jpg")
                 frame["has_ignore_regions"] = False
                 print("Saving frame: ", frame)
-            result = frameManager.createFrame(frame)
+            result = frameService.createFrame(frame)
             if result == 'error':
                 return False
         return True
 
+    def addAnnotationsPT(self, dataset, annotations):
+
+        pass
 
     ###########################################################################
     ####                           AIK INFO METHODS                        ####
@@ -398,7 +402,10 @@ class DatasetService:
     # Return the corresponding frame of video
     def getVideoFrame(this, video, frame, dataset):
         # Get path of frame
+        frame = frameService.getFramePath(frame, video, dataset)
+        print("frame path: ", frame)
         framePath = frameService.getFramePath(frame, video, dataset)['path']
+        # framePath = frameService.getFramePath(frame, video, dataset)['path']
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):

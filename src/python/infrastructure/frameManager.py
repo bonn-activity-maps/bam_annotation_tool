@@ -74,7 +74,7 @@ class FrameManager:
         try:
             result = this.collection.find_one({"number": frame, "video": video, "dataset": dataset},
                                               {"path": 1, "_id": 0})
-            if result == None:
+            if result is None:
                 return 'Error'
             else:
                 return result
