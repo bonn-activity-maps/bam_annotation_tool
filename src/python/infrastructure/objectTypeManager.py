@@ -12,9 +12,9 @@ class ObjectTypeManager:
     collection = db.objectType
 
     # Get annotation objectType by type and datasetType. Ignore mongo id
-    def getObjectType(this, type, datasetType):
+    def getObjectType(self, type, datasetType):
         try:
-            result = this.collection.find_one({"type": type, "datasetType": datasetType}, {'_id': 0})
+            result = self.collection.find_one({"type": type, "datasetType": datasetType}, {'_id': 0})
             if result == None:
                 return 'Error'
             else:
@@ -23,20 +23,20 @@ class ObjectTypeManager:
             log.exception('Error finding object type in db')
             return 'Error'
 
-    # Return list with info of all objectTypes of this datasetType. Empty list if there are no objectTypes
+    # Return list with info of all objectTypes of self datasetType. Empty list if there are no objectTypes
     # Ignore mongo id
-    def getObjectTypes(this, datasetType):
+    def getObjectTypes(self, datasetType):
         try:
-            result = this.collection.find({"datasetType": datasetType}, {"_id": 0})
+            result = self.collection.find({"datasetType": datasetType}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object types in db')
             return 'Error'
 
     # Create new objectType for annotations with type, datasetType, nKeypoints and labels for each kp
-    def createObjectType(this, type, datasetType, nkp, labels):
+    def createObjectType(self, type, datasetType, nkp, labels):
         try:
-            result = this.collection.insert_one({"type": type, "datasetType": datasetType, "numKeypoints": nkp, "labels": labels})
+            result = self.collection.insert_one({"type": type, "datasetType": datasetType, "numKeypoints": nkp, "labels": labels})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -45,9 +45,9 @@ class ObjectTypeManager:
             return 'Error '
 
     # Return 'ok' if the objectType has been removed
-    def removeObjectType(this, type, datasetType):
+    def removeObjectType(self, type, datasetType):
         try:
-            result = this.collection.delete_one({"type": type, "datasetType": datasetType})
+            result = self.collection.delete_one({"type": type, "datasetType": datasetType})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -57,11 +57,11 @@ class ObjectTypeManager:
             return 'Error'
 
     # Return 'ok' if the objectType has been updated. if objectType doesn't exist, it isn't created
-    def updateObjectType(this, type, datasetType, nkp, labels):
+    def updateObjectType(self, type, datasetType, nkp, labels):
         query = {"type": type, "datasetType": datasetType}                                         # Search by objectType type
         newValues = {"$set": {"numKeypoints": nkp, "labels": labels}}    # Update values (numKeypoints and labels)
         try:
-            result = this.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, newValues, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:

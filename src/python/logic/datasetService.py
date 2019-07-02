@@ -30,13 +30,13 @@ class DatasetService:
     pt = 'poseTrack'
 
     # Return #frames of videos
-    def getFramesVideo(this, dir):
+    def getFramesVideo(self, dir):
         frames = 0
         if os.path.isdir(dir):
             frames = len(os.listdir(dir))
         return frames
 
-    def checkIntegrityOfAnnotations(this, dirAnnotations, dirImages):
+    def checkIntegrityOfAnnotations(self, dirAnnotations, dirImages):
         hasConsistency = True
         for f in os.listdir(dirAnnotations):
             filename, filextension = os.path.splitext(f)
@@ -45,7 +45,7 @@ class DatasetService:
                 break
         return hasConsistency
 
-    def checkIntegrity(this, dir):
+    def checkIntegrity(self, dir):
         isDir = os.path.isdir(dir)
         dirAnnotations = dir + "/annotations"
         dirImages = dir + "/images"
@@ -56,35 +56,35 @@ class DatasetService:
         hasVal = os.path.isdir(dirImages + "/val") and os.path.isdir(dirAnnotations + "/val")
 
         try:
-            hasConsistency = this.checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
-            hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
-            hasConsistency *= this.checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
+            hasConsistency = self.checkIntegrityOfAnnotations(dirAnnotations + "/test/", dirImages + "/test/")
+            hasConsistency *= self.checkIntegrityOfAnnotations(dirAnnotations + "/train/", dirImages + "/train/")
+            hasConsistency *= self.checkIntegrityOfAnnotations(dirAnnotations + "/val/", dirImages + "/val/")
 
             return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
         except:
             return False
 
     # Return the result of storing info wrt different types of datasets
-    def addInfo(this, dataset, type):
-        if type == this.aik:
-            result = this.addInfoAIK(dataset)
-        elif type == this.pt:
-            result = this.addInfoPt(dataset)
+    def addInfo(self, dataset, type):
+        if type == self.aik:
+            result = self.addInfoAIK(dataset)
+        elif type == self.pt:
+            result = self.addInfoPt(dataset)
         else:
             result = False, 'Incorrect dataset type', 500
         return result
 
     # Store info of AIK datasets: videos, annotations and camera params by frame
-    def addInfoAIK(this, dataset):
+    def addInfoAIK(self, dataset):
         # Directories for AIK datasets
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
+        datasetDir = os.path.join(self.STORAGE_DIR, dataset)
         videosDir = os.path.join(datasetDir, 'videos/')
         annotationsDir = os.path.join(datasetDir, 'tracks3d/')
 
         # Store info in DB
-        resultVideos = this.addVideosAIK(dataset, videosDir)
-        resultCameras = this.addFrameAIK(dataset, datasetDir)
-        resultAnnotations = this.addAnnotationsAIK(dataset, annotationsDir)
+        resultVideos = self.addVideosAIK(dataset, videosDir)
+        resultCameras = self.addFrameAIK(dataset, datasetDir)
+        resultAnnotations = self.addAnnotationsAIK(dataset, annotationsDir)
 
         if resultVideos == 'Error' or resultCameras == 'Error' or resultAnnotations == 'Error':
             this.removeDataset(dataset)
@@ -95,9 +95,9 @@ class DatasetService:
 
     # Store info of posetrack datasets: videos ....
     # TODO: read data
-    def addInfoPt(this, dataset):
+    def addInfoPt(self, dataset):
         # Store info in DB
-        resultVideos = this.addVideosPT(dataset)
+        resultVideos = self.addVideosPT(dataset)
 
         if resultVideos == 'Error':
             return False, 'Error saving videos in database', 400
@@ -106,12 +106,12 @@ class DatasetService:
 
     # Add videos to database from videos directory
     # Return true if all videos have been updated, False ow
-    def addVideosAIK(this, dataset, dir):
+    def addVideosAIK(self, dataset, dir):
         listDir = os.listdir(dir)
         for f in listDir:
             videoDir = os.path.join(dir, f)
             if os.path.isdir(videoDir):
-                result = this.createVideo(f, dataset, videoDir, this.aik, frames=this.getFramesVideo(videoDir))
+                result = self.createVideo(f, dataset, videoDir, self.aik, frames=self.getFramesVideo(videoDir))
                 r, _, _ = result
                 if not r:
                     return False
@@ -119,7 +119,7 @@ class DatasetService:
 
     # Add camera parameters to annotations in database from camera directory
     # Return true if all have been updated, False ow
-    def addFrameAIK(this, dataset, datasetDir):
+    def addFrameAIK(self, dataset, datasetDir):
 
         # Load dataset
         aik = AIK(datasetDir)
@@ -144,7 +144,7 @@ class DatasetService:
 
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if has been some problem
-    def addAnnotationsAIK(this, dataset, dir):
+    def addAnnotationsAIK(self, dataset, dir):
         listDir = os.listdir(dir)   # List of all objects/persons
         type = 'personAIK'          # Type of objects
         finalResult = True
@@ -176,9 +176,9 @@ class DatasetService:
 
     # Add videos to database from posetrack directory
     # Return true if all videos have been updated, False ow
-    def addVideosPT(this, dataset):
-        datasetDir = os.path.join(this.STORAGE_DIR, dataset)
-        if this.checkIntegrity(datasetDir):
+    def addVideosPT(self, dataset):
+        datasetDir = os.path.join(self.STORAGE_DIR, dataset)
+        if self.checkIntegrity(datasetDir):
             dirs = ["train", "test", "val"]
             for type in dirs:
                 imagesDir = os.path.join(datasetDir, "images/" + type)
@@ -186,7 +186,7 @@ class DatasetService:
                 for f in listDir:
                     save_path = os.path.join(imagesDir, f)
                     if os.path.isdir(save_path):
-                        result = this.createVideo(f, dataset, save_path, type, frames=this.getFramesVideo(save_path))
+                        result = self.createVideo(f, dataset, save_path, type, frames=self.getFramesVideo(save_path))
                         r, _, _ = result
                         if not r:
                             return result
@@ -194,39 +194,39 @@ class DatasetService:
         else:
             return False, 'Error: Incomplete data.', 400
 
-    def createVideo(this, file, dataset, save_path, type, frames=0):
+    def createVideo(self, file, dataset, save_path, type, frames=0):
         result = videoManager.createVideo(file, dataset, save_path, type=type, frames=frames)
         if result == 'Error':
             return False, 'Error creating video', 400
         else:
             return True, 'ok', 200
 
-    def processDataset(this, save_path, filename, type):
+    def processDataset(self, save_path, filename, type):
         zip = zipfile.ZipFile(save_path, 'r')
-        zip.extractall(this.STORAGE_DIR)
+        zip.extractall(self.STORAGE_DIR)
         dataset, _ = os.path.splitext(filename)
-        kpDim = '3D'    # TODO: how to check this?
+        kpDim = '3D'    # TODO: how to check self?
 
         # TODO: check integrity for AIK
-        integrity = this.checkIntegrity(this.STORAGE_DIR + dataset) if type == this.pt else True
+        integrity = self.checkIntegrity(self.STORAGE_DIR + dataset) if type == self.pt else True
         if integrity:
-            os.remove(this.STORAGE_DIR + filename)  # Remove zip file
+            os.remove(self.STORAGE_DIR + filename)  # Remove zip file
             result = datasetManager.createDataset(dataset, type, kpDim)
             if result == 'Error':
                 return False, 'Error creating dataset in database', 500
             else:
                 return True, result, 200
         else:
-            shutil.rmtree(this.STORAGE_DIR + dataset)
-            os.remove(this.STORAGE_DIR + filename)
+            shutil.rmtree(self.STORAGE_DIR + dataset)
+            os.remove(self.STORAGE_DIR + filename)
             return False, 'Error on folder subsystem, check your file and try again', 400
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
-    def storeZip(this, request):
+    def storeZip(self, request):
         file = request.files['file']
         type = request.headers['type']
 
-        save_path = os.path.join(this.STORAGE_DIR, secure_filename(file.filename))
+        save_path = os.path.join(self.STORAGE_DIR, secure_filename(file.filename))
         current_chunk = int(request.form['dzchunkindex'])
 
         # If the file exists and is the first chunk, you cannot overwrite it
@@ -253,16 +253,16 @@ class DatasetService:
                 return False, 'Error in the size of file', 500
             else:
                 log.warning('File %s has been uploaded successfully', file.filename)
-                return this.processDataset(save_path, file.filename, type)
+                return self.processDataset(save_path, file.filename, type)
 
         else:
             log.debug('Chunk %s of %s for %s', current_chunk + 1, total_chunks, file.filename)
         return True, 'ok', 200
 
     # Convert bytes to MB, GB, etc
-    def convert_bytes(this, num):
+    def convert_bytes(self, num):
         """
-        this function will convert bytes to MB.... GB... etc
+        self function will convert bytes to MB.... GB... etc
         """
         for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if num < 1024.0:
@@ -270,24 +270,24 @@ class DatasetService:
             num /= 1024.0
 
     # Return a list of zip files in the root file system
-    def getZipFiles(this):
-        listDir = os.listdir(this.STORAGE_DIR)
+    def getZipFiles(self):
+        listDir = os.listdir(self.STORAGE_DIR)
         zipFiles = []
         for file in listDir:
             if file.endswith(".zip"):
-                size = os.stat(os.path.join(this.STORAGE_DIR, file)).st_size
+                size = os.stat(os.path.join(self.STORAGE_DIR, file)).st_size
                 zipFiles.append({
                     "name": file,
-                    "size": this.convert_bytes(size)
+                    "size": self.convert_bytes(size)
                 })
         return True, zipFiles, 200
 
-    def loadZip(this, filename, type):
-        save_path = os.path.join(this.STORAGE_DIR, secure_filename(filename))
-        return this.processDataset(save_path, filename, type)
+    def loadZip(self, filename, type):
+        save_path = os.path.join(self.STORAGE_DIR, secure_filename(filename))
+        return self.processDataset(save_path, filename, type)
 
     # Return info videos, duration and frames
-    def getVideos(this, dataset):
+    def getVideos(self, dataset):
         result = videoManager.getVideos(dataset)
         if result == 'Error':
             return False, 'Error pulling videos from database', 400
@@ -295,7 +295,7 @@ class DatasetService:
             return True, result, 200
 
     # Return the corresponding frame of video
-    def getVideoFrame(this, video, frame, dataset):
+    def getVideoFrame(self, video, frame, dataset):
         # Get path of frame
         _, framePath, _ = frameService.getFramePath(frame, video, dataset)
 
@@ -308,21 +308,21 @@ class DatasetService:
             return False, 'Frame does not exist', 500
 
     # Update frames of videos in DB
-    def updateVideosFrames(this, dataset):
+    def updateVideosFrames(self, dataset):
         dataset, _ = os.path.splitext(dataset)
         videosInDataset = videoManager.getVideos(dataset)
         if videosInDataset != 'Error':
             for video in videosInDataset:
-                frames = this.getFramesVideo(video['path'])
+                frames = self.getFramesVideo(video['path'])
                 result = videoManager.updateVideoFrames(video['name'], frames, dataset)
                 if result == 'Error':
                     return False, 'Error updating video frames'
             return True, 'ok', 200
         else:
-            return False, 'No videos for this dataset', 400
+            return False, 'No videos for self dataset', 400
 
     # Return dataset info
-    def getDataset(this, dataset):
+    def getDataset(self, dataset):
         result = datasetManager.getDataset(dataset)
         if result == 'Error':
             return False, 'Incorrect dataset', 400
@@ -330,7 +330,7 @@ class DatasetService:
             return True, result, 200
 
     # Return datasets info
-    def getDatasets(this):
+    def getDatasets(self):
         result = datasetManager.getDatasets()
         if result == 'Error':
             return False, 'Error searching datasets', 400
@@ -340,9 +340,9 @@ class DatasetService:
     # Remove dataset, videos and frames in DB and folder corresponding to dataset
     # Remove corresponding annotations
     # Return 'ok' if the dataset has been removed
-    def removeDataset(this, dataset):
+    def removeDataset(self, dataset):
         try:
-            datasetDir = this.STORAGE_DIR + dataset + "/"
+            datasetDir = self.STORAGE_DIR + dataset + "/"
 
             # Remove folder
             shutil.rmtree(datasetDir)
@@ -369,7 +369,7 @@ class DatasetService:
             return False, 'Server error deleting the dataset', 500
 
     # Return dataset name if it has been created
-    def createDataset(this, req):
+    def createDataset(self, req):
         name, _ = os.path.splitext(req['name'])
         type = req['type']
         # Check if datasets exists
@@ -380,4 +380,4 @@ class DatasetService:
             if result == 'Error':
                 return False, 'Error creating dataset', 400
             else:
-                return this.addVideosAIK(name) if type == this.aik else this.addVideosPT(name)
+                return self.addVideosAIK(name) if type == self.aik else self.addVideosPT(name)

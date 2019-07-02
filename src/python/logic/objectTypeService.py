@@ -11,7 +11,7 @@ objectTypeManager = ObjectTypeManager()
 class ObjectTypeService:
 
     # Return object info
-    def getObjectType(this, type, datasetType):
+    def getObjectType(self, type, datasetType):
         result = objectTypeManager.getObjectType(type, datasetType)
         if result == 'Error':
             return False, 'Incorrect object type', 400
@@ -19,7 +19,7 @@ class ObjectTypeService:
             return True, result, 200
 
     # Return objects info
-    def getObjectTypes(this, datasetType):
+    def getObjectTypes(self, datasetType):
         result = objectTypeManager.getObjectTypes(datasetType)
         if result == 'Error':
             return False, 'Error searching object types', 400
@@ -27,7 +27,7 @@ class ObjectTypeService:
             return True, result, 200
 
      # Return 'ok' if the object has been created
-    def createObjectType(this, type, datasetType, nkp, labels):
+    def createObjectType(self, type, datasetType, nkp, labels):
         # Check if object exist
         if objectTypeManager.getObjectType(type, datasetType) != 'Error':
             return False, 'The object type already exists', 400
@@ -40,7 +40,7 @@ class ObjectTypeService:
                 return True, {'type': type}, 200
 
     # Return 'ok' if the object has been removed
-    def removeObjectType(this, type, datasetType):
+    def removeObjectType(self, type, datasetType):
         result = objectTypeManager.removeObjectType(type, datasetType)
         if result == 'Error':
             return False, 'Error deleting object type', 400
@@ -48,7 +48,7 @@ class ObjectTypeService:
             return True, result, 200
 
     # Return 'ok' if the object has been updated
-    def updateObjectType(this, type, datasetType, nkp, labels):
+    def updateObjectType(self, type, datasetType, nkp, labels):
         result = objectTypeManager.updateObjectType(type, datasetType, nkp, labels)
         if result == 'Error':
             return False, 'Error updating object type', 400
