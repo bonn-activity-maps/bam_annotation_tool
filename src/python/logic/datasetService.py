@@ -29,6 +29,21 @@ class DatasetService:
     aik = 'actionInKitchen'
     pt = 'poseTrack'
 
+    # Method to read a dictionary key that may not exist.
+    def safelyReadDictionary(self, dict, key):
+        try:
+            return dict[key]
+        except KeyError:
+            return None
+
+    # Method to delete a dictionary key that may not exist. If it doesn't, don't delete.
+    # What is deleted may never delete.
+    def safelyDeleteDictionaryKey(self, dict, key):
+        try:
+            del dict[key]
+        except KeyError:
+            pass
+
     # Return #frames of videos
     def getFramesVideo(this, dir):
         frames = 0
@@ -83,8 +98,8 @@ class DatasetService:
     def addInfoPt(this, dataset):
         # Store info in DB
         resultVideos = this.addVideosPT(dataset)
-
-        if resultVideos == 'Error':
+        resultAnnotations = this.addAnnotationsPT(dataset, os.path.join(this.STORAGE_DIR, dataset))
+        if resultVideos == 'Error' or resultAnnotations == 'Error':
             return False, 'Error saving videos in database', 400
         else:
             return True, 'ok', 200
@@ -105,66 +120,78 @@ class DatasetService:
                         r, _, _ = result
                         if not r:
                             return result
-            return True, 'ok', 200
+            return 'ok'
         else:
-            return False, 'Error: Incomplete data.', 400
+            return  'Error'
 
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
     def addAnnotationsPT(this, dataset, dir):
+        print("annotationsPT")
         # type = 'personPT'  # Type of objects
         finalResult = True
         types = ["test", "train", "val"]
         for type in types:
-            listdir = os.listdir(os.path.join(dir, "/annotations/" + type))
+            dirpath = os.path.join(dir, "annotations/" + type)
+            listdir = os.listdir(dirpath)
             for file in listdir:
-                finalResult = finalResult and this.processAnnotationFilePT(dataset, file, type)
+                tempResult = this.processAnnotationFilePT(dataset, file, dirpath)
+                finalResult = finalResult and tempResult
 
-        return finalResult
+        return 'ok' if finalResult else 'Error'
 
-    def processAnnotationFilePT(this, dataset, file, type):
-        # Read uid/number of object
-        uid = int(os.path.splitext(file)[0].split('_')[0])
-
+    def processAnnotationFilePT(this, dataset, file, dir):
+        print("Processing annotation file ", file, " from ", dir)
         # Read data from file
+        fileRoute = os.path.join(dir, file)
         try:
-            with open(file) as jsonFile:
+            with open(fileRoute) as jsonFile:
                 annotation = json.load(jsonFile)
         except OSError:
             log.exception('Could not read from file')
             return False
 
         # Transform annotation to our format and store in db
-        frames = annotation['images']
-        annotations = annotation['annotations']
-        categories = annotation['category']
+        frames = this.safelyReadDictionary(annotation, "images")
+        categories = this.safelyReadDictionary(annotation, "categories")
+        annotations = this.safelyReadDictionary(annotation, "annotations")
 
-        resultFrames = this.addFramesPT(dataset, frames)
+        resultFrames = this.addFramesPT(dataset, frames) if frames is not None else print("errorcico") #TODO: Feedback?
+        resultAnnotations = False
+        resultCategories = False
 
-        return True
+        return resultFrames and resultAnnotations and resultCategories
 
     def addFramesPT(this, dataset, frames):
-        nFrames = frames[0]["nframes"]
+        nFrames = this.safelyReadDictionary(frames[0], "nframes")
         index = 0
         frame = {}
         for frameNumber in range(0, nFrames):           # For every frame in VIDEO (not JSON FILE)
             frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
+            # print("frameNumber: ", frameNumber, " frameObjectNumber: ", int(frameObjectNumber), " index: ", index)
             if frameNumber == int(frameObjectNumber):   # If there is data to add
                 index += 1                              # Advance index
-                frame = dict(frames[frameNumber])             # Reformat object to insert into db
+                frame = dict(frames[frameNumber])       # Reformat object to insert into db
                 frame["number"] = frameNumber
                 frame["dataset"] = dataset
-                frame["video"] = frame["vid_id"]
-                del frame["vid_id"]
-                frame["path"] = os.path.join(this.STORAGE_DIR, frame["file_name"])
-                del frame["file_name"]
-                del frame["ignore_regions_y"]
-                del frame["ignore_regions_x"]
-            else:       # If no data, initialize empty
+                frame["video"] = this.safelyReadDictionary(frame, "vid_id")
+                this.safelyDeleteDictionaryKey(frame, "vid_id")
+                frame["path"] = os.path.join(this.STORAGE_DIR, dataset + "/" +
+                                             this.safelyReadDictionary(frame, "file_name"))
+                this.safelyDeleteDictionaryKey(frame, "file_name")
+                frame["has_ignore_regions"] = False if this.safelyReadDictionary(frame, "ignore_regions_x") is None \
+                    else True                           # If it has no ignore regions, store it so we know later.
+                this.safelyDeleteDictionaryKey(frame, "ignore_regions_x")
+                this.safelyDeleteDictionaryKey(frame, "ignore_regions_y")
+            else:                                       # If no data, initialize empty
+                frame = dict()
                 frame["number"] = frameNumber
                 frame["dataset"] = dataset
-                frame["video"] = frames[0]["vid_id"]
-                frame["path"] = os.path.join(this.STORAGE_DIR, str(frameNumber).zfill(6))
+                frame["video"] = this.safelyReadDictionary(frames[0], "vid_id")
+                dirpath = os.path.join(this.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
+                frame["path"] = os.path.join(dirpath, str(frameNumber).zfill(6) + ".jpg")
+                frame["has_ignore_regions"] = False
+                print("Saving frame: ", frame)
             result = frameManager.createFrame(frame)
             if result == 'error':
                 return False
