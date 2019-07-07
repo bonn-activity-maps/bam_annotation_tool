@@ -332,7 +332,13 @@ class DatasetService:
         zip = zipfile.ZipFile(save_path, 'r')
         zip.extractall(self.STORAGE_DIR)
         dataset, _ = os.path.splitext(filename)
-        kpDim = '3D'    # TODO: how to check this?
+
+        # Assign keypoint dimension depending on dataset type
+        kpDim = ''
+        if type == self.aik:
+            kpDim = '3D'
+        elif type == self.pt:
+            kpDim = '2D'
 
         # TODO: check integrity for AIK
         integrity = self.checkIntegrity(self.STORAGE_DIR + dataset) if type == self.pt else True
@@ -425,7 +431,6 @@ class DatasetService:
     def getVideoFrame(self, video, frame, dataset):
         # Get path of frame
         _, framePath, _ = frameService.getFramePath(frame, video, dataset)
-        print(framePath)
 
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
