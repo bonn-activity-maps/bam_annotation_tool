@@ -33,6 +33,16 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get all annotations for given dataset. Not return mongo id
+    def getAnnotationsByDataset(self, dataset):
+        try:
+            result = self.collection.aggregate([{"$match": {"dataset": dataset}},
+                 {"$project": {"frame": 1, "persons.pid": "$objects.uid", "persons.location": "$objects.keypoints", '_id': 0}}])
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
     # Return 'ok' if the annotation has been updated.
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to unchecked if is not received in params

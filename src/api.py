@@ -210,6 +210,12 @@ def createNewUidObject():
                                                                 req_data['frame'], req_data['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Export annotation to a file for given dataset
+@app.route('/api/annotation/exportAnnotation', methods=['GET'])
+def exportAnnotation():
+    success, msg, status = annotationService.exportAnnotation(request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #####
 

@@ -91,8 +91,29 @@ class AnnotationService:
             else:
                 return True, {'maxUid': newUid}, 200
 
+    # Export annotation to a file for given dataset
+    def exportAnnotation(self, dataset):
+        result = annotationManager.getAnnotationsByDataset(dataset)
+        print(result)
+        if result == 'Error':
+            return False, 'Error getting annotations for the dataset', 400
+        else:
+            # Create the mean of all annotations
 
-##############################
+            # # Export to file
+            # personsDict = {}
+            # for r in result:
+            #     persons = []
+            #     for a in r["objects"]:
+            #         persons.append({"pid": a["uid"], "location": a["location"]})
+            #     p = {"frame": r['frame'], "persons": persons}
+
+
+
+
+            return True, result, 200
+
+    ##############################
 
     # Get annotation of object in frame
     def getAnnotationFrameObject(self, dataset, video, frame, user, obj):
