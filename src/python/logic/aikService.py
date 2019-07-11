@@ -44,4 +44,9 @@ class AIKService:
 
         # Return the two 2D coordinates of the line
         return [[x0,y0] , [x1,y1]]
-    
+
+    # Compute triangulation from two 2d points to 3d point
+    def triangulate2DPoints(self, p1, p2, cameraParams1, cameraParams2):
+        camera1 = self.createCamera(cameraParams1)
+        camera2 = self.createCamera(cameraParams2)
+        return gm.triangulate(p1, p2, camera1, camera2)

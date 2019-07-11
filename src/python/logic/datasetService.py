@@ -109,9 +109,12 @@ class DatasetService:
     def addVideosAIK(self, dataset, dir):
         listDir = os.listdir(dir)
         for f in listDir:
+            # Get id of camera and save it instead of name
+            camera = int(f.split("camera")[1])
+
             videoDir = os.path.join(dir, f)
             if os.path.isdir(videoDir):
-                result = self.createVideo(f, dataset, videoDir, self.aik, frames=self.getFramesVideo(videoDir))
+                result = self.createVideo(camera, dataset, videoDir, self.aik, frames=self.getFramesVideo(videoDir))
                 r, _, _ = result
                 if not r:
                     return False
@@ -134,7 +137,7 @@ class DatasetService:
                 video = os.path.split(path[i])[0].split('/')[1]
 
                 # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                frameDictionary = {"number": frame, "video": video, "dataset": dataset, "path": framePath,
+                frameDictionary = {"number": frame, "video": i, "dataset": dataset, "path": framePath,
                                    "cameraParameters": json.loads(cam.to_json())}
                 result, _, _ = frameService.createFrame(frameDictionary)
 

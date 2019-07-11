@@ -168,7 +168,7 @@ def getAnnotation():
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
 def getAnnotations():
-    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['scene'])
+    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['scene'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # # Create new annotation
@@ -181,7 +181,8 @@ def getAnnotations():
 @app.route('/api/annotation/updateAnnotation', methods=['POST'])
 def updateAnnotation():
     req_data = request.get_json()
-    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
+    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['datasetType'],
+                                                              req_data['scene'], req_data['frame'],
                                                               req_data['user'], req_data['objects'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -230,10 +231,10 @@ def getAnnotationFrameObject():
 
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
-@app.route('/api/annotation/updateAnnotation/object', methods=['POST'])
-def updateAnnotationFrameObject():
-    success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])
+# def updateAnnotationFrameObject():
+#     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Remove object in annotation for given frame, dataset, video and user
 @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])

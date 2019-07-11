@@ -2,15 +2,21 @@ import logging
 
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
+from python.infrastructure.frameManager import FrameManager
+from python.logic.aikService import AIKService
 
 # AnnotationService logger
 log = logging.getLogger('annotationService')
 
 annotationManager = AnnotationManager()
 objectTypeManager = ObjectTypeManager()
+frameManager = FrameManager()
+aikService = AIKService()
 
 
 class AnnotationService:
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
 
     # Get annotation info for given frame, dataset, video and user
     # TODO: pass objects to 2d for AIK
@@ -22,8 +28,8 @@ class AnnotationService:
             return True, result, 200
 
     # Get annotations  (all frames) for given dataset, video which are validated and ready to export (user = Root)
-    def getAnnotations(self, dataset, video):
-        result = annotationManager.getAnnotations(dataset, video, "root", "correct")
+    def getAnnotations(self, dataset, video, user):
+        result = annotationManager.getAnnotations(dataset, video, user, "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
         else:
@@ -38,14 +44,36 @@ class AnnotationService:
     #     else:
     #         return True, result, 200
 
-    # Return 'ok' if the annotation has been updated
-    # TODO: pass objects to 3d for AIK
-    def updateAnnotation(self, dataset, scene, frame, user, objects):
-        # print(objects)
-        # Create new objects uid
-        # Get max of self dataset
+    # Triangulate points from 2D points to 3D
+    def obtain3dPointsAIK(self, frame, dataset, objects):
+        keypoints2d = objects["keypoints"]
+        keypoints3d = []                        # New 3d kps
 
-        result = annotationManager.updateAnnotation(dataset, scene, frame, user, objects)
+        # Triangulate all keypoints of object
+        for kp in keypoints2d:
+
+            # Get camera parameters from each frame and camera
+            frame1 = frameManager.getFrame(frame, kp["cam1"], dataset)
+            frame2 = frameManager.getFrame(frame, kp["cam2"], dataset)
+            point3d = aikService.triangulate2DPoints(kp["p1"], kp["p2"],
+                        frame1["cameraParameters"], frame2["cameraParameters"])
+
+            keypoints3d.append(point3d.tolist())    # Store 3d point
+
+        # Modify original objects which contains info of object with calculated 3d keypoints
+        objects["keypoints"] = keypoints3d
+        print(objects)
+        return objects
+
+    # Return 'ok' if the annotation has been updated
+    def updateAnnotation(self, dataset, datasetType, scene, frame, user, objects):
+
+        # Triangulate points from 2D points to 3D if dataset is AIK
+        if datasetType == self.aik:
+            objects = self.obtain3dPointsAIK(frame, dataset, objects)
+
+        # Update only one object in the annotation for concrete frame
+        result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
         if result == 'Error':
             return False, 'Error updating annotation', 400
         else:
@@ -108,12 +136,7 @@ class AnnotationService:
             #         persons.append({"pid": a["uid"], "location": a["location"]})
             #     p = {"frame": r['frame'], "persons": persons}
 
-
-
-
             return True, result, 200
-
-    ##############################
 
     # Get annotation of object in frame
     def getAnnotationFrameObject(self, dataset, video, frame, user, obj):
@@ -130,15 +153,14 @@ class AnnotationService:
         uidObj = objects["uid"]
         found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
 
-        if found == 'ok':   # Update existing object in frame
-            result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
-        else:               # Add new object in frame
+        if found == 'Error':
+            return 'Error'
+        elif found == 'No annotation':   # Add new existing object in frame
             result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
+        else:   # Update object in frame
+            result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
 
-        if result == 'ok':
-            return True, result, 200
-        else:
-            return False, result, 500
+        return result
 
     # Remove annotation for an object for given frame, dataset, video and user
     def removeAnnotationFrameObject(self, req):
