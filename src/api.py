@@ -377,33 +377,32 @@ def updateFrameTask():
 
 #### ACTIONS ####
 
-
 # Get activities list
 @app.route("/api/action/getActivities", methods=['GET'])
 def getActivities():
-    success, msg, status = actionService.getActivities()
+    success, msg, status = actionService.getActivities(request.headers['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get actions for specific object, user and frame range
+@app.route("/api/action/getActionsByUID", methods=['GET'])
+def getActionsByUID():
+    success, msg, status = actionService.getActionsByUID(request.headers['dataset'], request.headers['objectUID'], request.headers['user'],
+                                                         request.headers['startFrame'], request.headers['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get actions for specific user and frame range
-@app.route("/api/action/getActionsByUID", methods=['GET'])
-def getActionsByUID():
-    success, msg, status = actionService.getActionsByUID(request.headers['objectUID'], request.headers['startFrame'],
-                                                         request.headers['endFrame'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Get actions for specific frame range
 @app.route("/api/action/getActions", methods=['GET'])
 def getActions():
-    success, msg, status = actionService.getActions(request.headers['startFrame'], request.headers['endFrame'])
+    success, msg, status = actionService.getActions(request.headers['dataset'], request.headers['user'], request.headers['startFrame'], request.headers['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get actions for specific frame range
+# Get action for specific user and frame range
 @app.route("/api/action/getAction", methods=['GET'])
 def getAction():
-    success, msg, status = actionService.getAction(request.headers['objectUID'], request.headers['label'],
+    success, msg, status = actionService.getAction(request.headers['dataset'], request.headers['objectUID'],
+                                                   request.headers['user'], request.headers['name'],
                                                    request.headers['startFrame'], request.headers['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Create new action for specific user
 @app.route('/api/action/createAction', methods=['POST'])
