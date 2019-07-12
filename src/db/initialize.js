@@ -96,3 +96,33 @@ db.objectType.insertOne({
     "numKeypoints": "8",
     "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
 })
+
+db.activities.insertMany([
+    {"activity": [
+            'drinking',
+            'eating',
+            'washing dishes',
+            'cutting cake',
+            'writing on whiteboard',
+            'phone call',
+            'type/read on phone',
+            'read paper',
+            'use laptop',
+            'peel fruit',
+            'put dish in dishwasher',
+            'start dishwasher',
+            'pour milk into mug',
+            'fill water into water heater',
+            'boil water',
+            'prepare tea',
+            'get glass of water',
+            'use coffee machine',
+            'fill water into coffee machine',
+            'clear tray of coffee machine',
+            'walking',
+            'standing',
+            'leaning',
+            'sitting',
+            'crouching'
+        ] }
+]);

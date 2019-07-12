@@ -158,8 +158,8 @@ class DatasetService:
         categories = self.safelyReadDictionary(annotation, "categories")
         annotations = self.safelyReadDictionary(annotation, "annotations")
 
-        resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
         resultCategories = self.addCategoriesPT(categories) if categories is not None else True
+        resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
         resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
 
         return resultFrames and resultAnnotations and resultCategories
@@ -198,7 +198,9 @@ class DatasetService:
         return True
 
     def addAnnotationsPT(self, dataset, annotations):
-
+        for annotation in annotations:
+            # TODO Add objects here....
+            pass
         return False
 
     def addCategoriesPT(self, categories):
@@ -220,11 +222,32 @@ class DatasetService:
         type = "ignore_region"
         datasetType = self.pt
         is_polygon = True
-        labels=None
-        numKeypoints=0
+        labels = None
+        numKeypoints = 0
         result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
         if result == 'error':
             return False
+
+        # Bbox
+        type = "bbox"
+        datasetType = self.pt
+        is_polygon = False
+        labels = None
+        numKeypoints=2
+        result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
+        if result == 'error':
+            return False
+
+        # Bbox head
+        type = "bbox_head"
+        datasetType = self.pt
+        is_polygon = False
+        labels = None
+        numKeypoints=2
+        result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
+        if result == 'error':
+            return False
+
         return True
 
     ###########################################################################
