@@ -207,7 +207,7 @@ def updateAnnotationValidation():
 def createNewUidObject():
     req_data = request.get_json()
     success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
-                                                                req_data['frame'], req_data['user'])
+                                                                req_data['frame'], req_data['user'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -320,26 +320,64 @@ def updateFrameTask():
     success, msg, status = taskService.updateFrameTask(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 #### AIK and OPENCV computations ####
-# Given 3D point coordinates (can be more than one), video, dataset and frame range -> Returns the proyected points 
+# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
 @app.route('/api/aik/projectToCamera', methods=['GET'])
 def projectToCamera():
-    req_data = request.get_json()
-    pointArray = req_data['points']
-    frameArray = req_data['frames']
+    pointsArray = request.headers['points']
+    frame = request.headers['frame']
+    cameraName = request.headers['cameraName']
+    dataset = request.headers['dataset']
 
-    # retrieve camera parameters calling to GetFrame in the future frameService
+    # Convert the points json to Python list
+    pointsArray = json.loads(pointsArray)
+# TODO: some points are null, which stops the batch processing of the points when projecting
+    # Get camera parameters for the frame, camera and dataset
+    _, cameraParams, _ = frameService.getCameraParameters(frame, cameraName, dataset)
 
-    # For each frame of the frame array, project all the points into the camera
-    # for frame in frameArray:
-
-
-    pass
+    # Proyect the points into the camera
+    points2D = aikService.project3DPointsToCamera(pointsArray, cameraParams)
+    
+    return json.dumps({'success': True, 'msg': points2D}), 200, {'ContentType': 'application/json'}
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 def computeEpiline():
-    req_data = request.get_json()
-    pass
+    point = request.headers['point']
+    frame = request.headers['frame']
+    dataset = request.headers['dataset']
+    cam1Name = request.headers['cam1']
+    cam2Name = request.headers['cam2']
+
+    point = json.loads(point)
+
+    _, cam1Params, _ = frameService.getCameraParameters(frame, cam1Name, dataset)
+    _, cam2Params, _ = frameService.getCameraParameters(frame, cam2Name, dataset)
+    print(cam1Params)
+    el1, el2 = aikService.computeEpiline(point, cam1Params, cam2Params)
+    
+    return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
+
+@app.route('/api/aik/triangulate3DPoint', methods=['POST'])
+def triangulate3DPoint():
+    request_data = request.get_json()
+    user = request_data['user']
+    dataset = request_data['dataset']
+    scene = request_data['scene']
+    frame = request_data['frame']
+    point1 = request_data['point1']
+    point2 = request_data['point2']
+    cam1 = request_data['camera1']
+    cam2 = request_data['camera2']
+
+    # Get the camera parameters
+    _, cam1Params, _ = frameService.getCameraParameters(frame, cam1, dataset)
+    _, cam2Params, _ = frameService.getCameraParameters(frame, cam2, dataset) 
+
+    # Triangulate the point
+    point3D = aikService.triangulate(point1, point2, cam1Params, cam2Params)
+
+    print("El punto triangulado: ", point3D)
 
 #### FRAME ####
 

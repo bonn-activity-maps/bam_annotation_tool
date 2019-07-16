@@ -26,6 +26,15 @@ class FrameService:
         else:
             return True, result, 200
 
+    # Return camera parameters
+    def getCameraParameters(self, frame, video, dataset):
+        result = frameManager.getFrame(int(frame), video, dataset)
+        if result == 'Error':
+            return False, 'Incorrect frame', 400
+        else:
+            return True, result['cameraParameters'], 200
+
+
      # Return 'ok' if the frame has been created
     def createFrame(self, frameDict):
         result = frameManager.createFrame(frameDict)

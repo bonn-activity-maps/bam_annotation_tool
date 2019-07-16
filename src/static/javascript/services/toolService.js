@@ -33,7 +33,6 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                console.log(response.data.msg)
                 callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
             }, function errorCallback(response) {
                 console.log(response.data.msg)
@@ -42,7 +41,6 @@ angular.module('CVGTool')
 
         // Gets the annotations of a frame, from a video, a dataset and a user
         getAnnotationOfFrame: function(scene, frame, dataset, user, callbackSuccess) {
-            user = "root"; // TODO: remove this when tasks exist
             $http({
                     method: 'GET',
                     url: '/api/annotation/getAnnotation',
@@ -74,5 +72,85 @@ angular.module('CVGTool')
                 console.log(response.data.msg);
             });
         },
+
+        // Projects "points" into the camera "cameraName" for the frame "frame"
+        projectToCamera: function(uid, type, points, frame, cameraName, dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/aik/projectToCamera',
+                headers: {
+                    'points': JSON.stringify(points),
+                    'frame': frame,
+                    'cameraName': cameraName,
+                    'dataset': dataset
+                }
+            }).then(function successCallback(response) {
+                console.log(response.data.msg);
+            }, function errorCallback(response) {
+                console.log(response.data.msg);
+            })
+        },
+
+        // Get Epipolar line
+        getEpiline: function(frame, dataset, point, camera1, camera2, camera2Index, camera1Index, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/aik/computeEpiline',
+                headers: {
+                    'point': JSON.stringify(point),
+                    'frame': frame,
+                    'cam1': camera1,
+                    'cam2': camera2,
+                    'dataset': dataset
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg, camera2Index, camera1Index);
+            }, function errorCallback(response) {
+                console.log(response.data.msg);
+            })
+        },
+
+        // Sends the 2D points to the server to triangulate and create the new 3D point
+        triangulate3DPoint: function(user, dataset, scene, frame, uid, point1, point2, camera1, camera2, callbackSuccess) {
+            $http({
+                method: 'POST',
+                url: '/api/aik/triangulate3DPoint',
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'frame': frame,
+                    'uid': uid,
+                    'point1': point1,
+                    'point2': point2,
+                    'camera1': camera1,
+                    'camera2': camera2
+                }
+            }).then(function successCallback(response) {
+                console.log(response)
+            }, function errorCallback(response) {
+                console.log(response)
+            })
+        },
+
+        // Create new object
+        createNewObject: function(user, dataset, scene, type, frame, callbackSuccess) {
+            $http({
+                    method: 'POST',
+                    url: '/api/annotation/createNewUidObject',
+                    data: {
+                        'user': user,
+                        'dataset': dataset,
+                        'scene': scene,
+                        'type': type,
+                        'frame': frame
+                    }
+                }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg.maxUid, type)
+                }),
+                function errorCallback(response) {
+                    console.log(response);
+                }
+        }
     }
 });
