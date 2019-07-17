@@ -68,6 +68,19 @@ class ActionManager:
             log.exception('Error finding action in db')
             return 'Error'
 
+    # Return info of action by dataset
+    def getActionsByDataset(self, dataset):
+        try:
+            result = self.collection.aggregate([{"$match": {"dataset": dataset}},
+                      {"$project": {"_id": 0, "pid": "$objectUID", "label": "$name", "start_frame": "$startFrame", "end_frame": "$endFrame"}}])
+            if result is None:
+                return 'Error'
+            else:
+                return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding action in db')
+            return 'Error'
+
     # Return 'ok' if the action has been created
     def createAction(self, dataset, objectUID, user, name, startFrame, endFrame):
         try:

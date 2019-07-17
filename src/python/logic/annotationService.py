@@ -3,6 +3,7 @@ import logging
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
 from python.infrastructure.frameManager import FrameManager
+from python.infrastructure.actionManager import ActionManager
 from python.logic.aikService import AIKService
 
 # AnnotationService logger
@@ -11,6 +12,7 @@ log = logging.getLogger('annotationService')
 annotationManager = AnnotationManager()
 objectTypeManager = ObjectTypeManager()
 frameManager = FrameManager()
+actionManager = ActionManager()
 aikService = AIKService()
 
 
@@ -121,9 +123,12 @@ class AnnotationService:
 
     # Export annotation to a file for given dataset
     def exportAnnotation(self, dataset):
-        result = annotationManager.getAnnotationsByDataset(dataset)
-        print(result)
-        if result == 'Error':
+        # Remove [] from pid
+        persons = annotationManager.getPersonObjectsByDataset(dataset)
+        objects = annotationManager.getObjectsByDataset(dataset)
+        actions = actionManager.getActionsByDataset(dataset)
+
+        if persons == 'Error' or objects == 'Error' or actions == 'Error':
             return False, 'Error getting annotations for the dataset', 400
         else:
             # Create the mean of all annotations
@@ -136,7 +141,14 @@ class AnnotationService:
             #         persons.append({"pid": a["uid"], "location": a["location"]})
             #     p = {"frame": r['frame'], "persons": persons}
 
-            return True, result, 200
+            finalAnnotation = {
+                "persons": persons,
+                "objects": objects,
+                "actions": actions
+            }
+
+            print(finalAnnotation)
+            return True, persons, 200
 
     # Get annotation of object in frame
     def getAnnotationFrameObject(self, dataset, video, frame, user, obj):
