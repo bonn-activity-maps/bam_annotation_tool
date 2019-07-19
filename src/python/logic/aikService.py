@@ -24,7 +24,7 @@ class AIKService:
         return points2D.tolist()
     
     ## Triangulates the 3D point from two 2D points and their respective cameras
-    def triangulate(self, point1, point2, camParams1, camParams2):
+    def triangulate2DPoints(self, point1, point2, camParams1, camParams2):
         # Create the two cameras
         camera1 = self.createCamera(camParams1)
         camera2 = self.createCamera(camParams2)

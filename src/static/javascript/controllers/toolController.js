@@ -961,14 +961,15 @@ angular.module('CVGTool')
 
     // Callback function of triangulate
     var callbackTriangulate3DPoint = function() {
-
+        window.alert("Annotation updated!");
+        $scope.retrieveObjects();
     }
 
     // Function that triangulates the 3D point given the 2D points
-    $scope.triangulate3DPoint = function() {
+    $scope.updateAnnotation = function() {
         if ($scope.newPoint.point1.length != 0 && $scope.newPoint.point2.length != 0) {
             // Go to triangulate
-            toolSrvc.triangulate3DPoint(navSrvc.getUser().name, navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, $scope.slider.value, $scope.objectManager.selectedObject.uid, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, callbackTriangulate3DPoint);
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, navSrvc.getActiveDataset(), navSrvc.getActiveDataset().name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, callbackTriangulate3DPoint);
 
 
         } else window.alert("You need to place point 1 and 2 (in two different cameras)");

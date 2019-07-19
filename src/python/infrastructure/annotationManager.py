@@ -33,6 +33,16 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get all annotations for given dataset. Not return mongo id
+    def getAnnotationsByDataset(self, dataset):
+        try:
+            result = self.collection.aggregate([{"$match": {"dataset": dataset}},
+                 {"$project": {"frame": 1, "persons.pid": "$objects.uid", "persons.location": "$objects.keypoints", '_id': 0}}])
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
     # Return 'ok' if the annotation has been updated.
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to unchecked if is not received in params
@@ -107,17 +117,13 @@ class AnnotationManager:
             log.exception('Error finding maximum id in annotation in db')
             return 'Error'
 
-
-    ###########################
-
-    # TODO: change methods for adapting them to new scene attribute
     # Get annotation for object in frame, without mongo id
-    def getFrameObject(self, dataset, video, frame, user, obj):
+    def getFrameObject(self, dataset, scene, frame, user, obj):
         try:
-            result = self.collection.find_one({"dataset": dataset, "video": video, "frame": frame, "user": user,
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user,
                                                "objects": {"$elemMatch": {"uid": obj}}}, {'_id': 0})
             if result == None:
-                return 'Error'
+                return 'No annotation'
             else:
                 return result
         except errors.PyMongoError as e:
@@ -134,9 +140,9 @@ class AnnotationManager:
         # Add object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
-            newValues = {"$push": {"objects": [{"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}]}}
+            newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}}}
         else:
-            newValues = {"$push": {"objects": [{"uid": uidObj, "type": type, "keypoints": keypoints}]}}
+            newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints}}}
 
         try:
             result = self.collection.update_one(query, newValues, upsert=True)
@@ -151,13 +157,13 @@ class AnnotationManager:
 
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # The annotation is not created if it doesn't exist and return Error
-    def updateFrameObject(self, dataset, video, frame, user, objects):
+    def updateFrameObject(self, dataset, scene, frame, user, objects):
         print(objects)
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "video": video, "frame": frame, "user": user, "objects.uid": uidObj}
+        query = {"dataset": dataset, "scene": scene, "frame": frame, "user": user, "objects.uid": uidObj}
         arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
 
         # Update object (uid, type, kps) and labels only if it's in objects
@@ -169,8 +175,8 @@ class AnnotationManager:
 
         try:
             result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
-            # ok if object has been modified or new annotation has been created
-            if result.modified_count == 1:
+            # ok if no error (it doesn't matter if the keypoints have not been modified)
+            if result.acknowledged == 1:
                 return 'ok'
             else:
                 return 'Error'

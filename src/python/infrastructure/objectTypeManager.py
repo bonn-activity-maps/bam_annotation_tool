@@ -34,9 +34,12 @@ class ObjectTypeManager:
             return 'Error'
 
     # Create new objectType for annotations with type, datasetType, nKeypoints and labels for each kp
-    def createObjectType(self, type, datasetType, nkp, labels):
+    def createObjectType(self, type, datasetType, nkp, labels, supercategory=None, id=None, skeleton=None,
+                         is_polygon=False):
         try:
-            result = self.collection.insert_one({"type": type, "datasetType": datasetType, "numKeypoints": nkp, "labels": labels})
+            result = self.collection.insert_one({"type": type, "datasetType": datasetType, "numKeypoints": nkp,
+                                                 "labels": labels, "supercategory": supercategory,
+                                                 "id": id, "skeleton": skeleton, "is_polygon": is_polygon})
             if result.acknowledged:
                 return 'ok'
             else:
