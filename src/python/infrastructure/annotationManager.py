@@ -131,7 +131,8 @@ class AnnotationManager:
             if result == []:    # If there are no objects -> max uid is 0
                 return 0
             else:               # Return max
-                return result[0]['max'][0]
+                # print(result[0]['max'])
+                return result[0]['max']
         except errors.PyMongoError as e:
             log.exception('Error finding maximum id in annotation in db')
             return 'Error'
