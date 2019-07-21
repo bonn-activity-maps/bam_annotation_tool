@@ -31,14 +31,13 @@ db.task.insertOne({
     // })
 
 db.annotation.insertOne({
-    "video": "Trial_video",
-    "frame": "1",
+    "scene": "Testing_2",
+    "frame": 1,
     "user": "aik2",
-    "keypointDim": "3d",
     "dataset": "Testing_2",
     "validated": "uncheck",
     "objects": [{
-            "uid": "1",
+            "uid": 1,
             "type": "person",
             "keypoints": [
                 [1, 1, 1, ""],
@@ -47,22 +46,30 @@ db.annotation.insertOne({
             "labels": ["l1", "l2"]
         },
         {
-            "uid": "3",
+            "uid": 3,
             "type": "person",
             "keypoints": [
                 [20, 80, 20, ""],
                 [100, 100, 100, ""]
             ],
             "labels": ["l1", "l2"]
+        },
+        {
+            "uid": 5,
+            "type": "table",
+            "keypoints": [
+                [20, 80, 20, ""],
+                [100, 100, 100, ""]
+            ],
+            "labels": ["l5", "l4"]
         }
     ]
 })
 
 db.annotation.insertOne({
-    "video": "Trial_video",
-    "frame": "2",
+    "scene": "Testing_2",
+    "frame": 2,
     "user": "aik2",
-    "keypointDim": "3d",
     "dataset": "Testing_2",
     "validated": "uncheck",
     "objects": [{
@@ -73,7 +80,34 @@ db.annotation.insertOne({
             [4, 4, 4, ""]
         ],
         "labels": ["l1", "l2"]
-    }]
+    },
+        {
+            "uid": 5,
+            "type": "table",
+            "keypoints": [
+                [20, 80, 20, ""],
+                [100, 100, 100, ""]
+            ],
+            "labels": ["l5", "l4"]
+        }]
+})
+
+db.action.insertOne({
+    "name": "walking",
+    "dataset": "Testing_2",
+    "objectUID": 1,
+    "user": "aik2",
+    "startFrame": 1,
+    "endFrame": 10
+})
+
+db.action.insertOne({
+    "name": "drinking coffee",
+    "dataset": "Testing_2",
+    "objectUID": 1,
+    "user": "aik2",
+    "startFrame": 1,
+    "endFrame": 10
 })
 
 db.objectType.insertOne({
