@@ -1030,7 +1030,7 @@ angular.module('CVGTool')
         }
     }
 
-    // Function that return the avaiable objects
+    // Function that return the available objects
     $scope.retrieveObjects = function() {
         dataset = navSrvc.getActiveDataset();
 

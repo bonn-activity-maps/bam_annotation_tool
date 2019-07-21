@@ -229,6 +229,7 @@ def updateAnnotationValidation():
 # Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
 def createNewUidObject():
+    print("llego")
     req_data = request.get_json()
     success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
                                                                 req_data['frame'], req_data['user'], req_data['type'])
