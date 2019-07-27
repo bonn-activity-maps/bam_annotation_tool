@@ -28,7 +28,7 @@ class FrameService:
 
     # Return camera parameters
     def getCameraParameters(self, frame, video, dataset):
-        result = frameManager.getFrame(int(frame), video, dataset)
+        result = frameManager.getFrame(int(frame), int(video), dataset)
         if result == 'Error':
             return False, 'Incorrect frame', 400
         else:

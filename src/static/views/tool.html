@@ -12,7 +12,7 @@
                         </div>
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                    <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button>
+                    <!-- <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button> -->
                 </div>
             </div>
         </div>
@@ -105,22 +105,22 @@
                     </div>
                     <hr/>
                     <!-- Zoom tool -->
-                    <div ng-click="switchTool('zoom')">
+                    <!-- <div ng-click="switchTool('zoom')">
                         <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='zoom'"><span class=" glyphicon glyphicon-search "></button>
                         <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='zoom'"><span class=" glyphicon glyphicon-search "></button>
                     </div>
-                    <div ng-if="tool=='zoom'">
-                        <!-- Zoom In sub tool -->
-                        <div class="row">
+                    <div ng-if="tool=='zoom'"> -->
+                    <!-- Zoom In sub tool -->
+                    <!-- <div class="row">
                             <button class="btn btn-default btn-circle" ng-if="subTool!='zoomIn'" ng-click="switchSubTool('zoomIn')"><span class=" glyphicon glyphicon-zoom-in" ></button>
                             <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomIn'" ng-click="switchSubTool('')"><span class=" glyphicon glyphicon-zoom-in "></button>
-                        </div>
-                        <!-- Zoom Out sub tool -->
-                        <div class="row">
+                        </div> -->
+                    <!-- Zoom Out sub tool -->
+                    <!-- <div class="row">
                             <button class="btn btn-default btn-circle" ng-if="subTool!='zoomOut'" ng-click="switchSubTool('zoomOut')"> <span class=" glyphicon glyphicon-zoom-out" ></button>
                             <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomOut'" ng-click="switchSubTool('')"> <span class=" glyphicon glyphicon-zoom-out"></button>
                         </div>
-                    </div>
+                    </div> -->
                     <hr/>
                     <!-- Keypoints tool -->
                     <div ng-click="switchTool('keypoint')">

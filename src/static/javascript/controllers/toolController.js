@@ -1,10 +1,9 @@
 angular.module('CVGTool')
 
-.controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc) {
-
+.controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams', function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
     // Parameters received from the task
-    $scope.frameFrom = 1;
-    $scope.frameTo = 10;
+    $scope.frameFrom = $stateParams.obj.from;
+    $scope.frameTo = $stateParams.obj.to;
     $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom; // TODO: hardcoded for the time being
 
     // Convert the interval of frames in a list of friends
@@ -313,7 +312,7 @@ angular.module('CVGTool')
     var promise;
 
     $scope.slider = { // Options and values for the slider
-        value: 1,
+        value: $scope.frameFrom,
         options: {
             floor: $scope.frameFrom,
             ceil: $scope.frameTo,
@@ -386,7 +385,11 @@ angular.module('CVGTool')
         $mdDialog.show({
             templateUrl: '/static/views/dialogs/addNewCameraDialog.html',
             controller: 'dialogAddNewCameraCtrl',
-            escapeToClose: false
+            escapeToClose: false,
+            locals: {
+                frameFrom: $scope.frameFrom,
+                frameTo: $scope.frameTo
+            }
         }).then(function(successData) {
             var filename = successData[0].filename; // Get the name of the camera from the first frame
             var frames = [];
@@ -800,7 +803,7 @@ angular.module('CVGTool')
             this.activeCamera = camera;
 
             // // Proyect the objects to visualize them
-            // this.projectObjects();
+            this.projectObjects();
 
             // Set the flag to redraw
             this.init();
@@ -808,14 +811,15 @@ angular.module('CVGTool')
         }
 
         // Auxiliar callback function for the projection of the objects
-        var callbackProjection = function(uid, type, frame, response) {
+        CanvasObject.prototype.callbackProjection = function(uid, type, frame, point) {
             // Find the objectype, uid and frame and put there the projected keypoints
             var objects = this.objectsIn2D[type.toString()].objects;
             for (var i = 0; i < objects.length; i++) {
                 if (objects[i].uid.localeCompare(uid)) {
-                    objects[i].frames[frame - $scope.frameFrom].keypoints = response;
+                    objects[i].frames[frame - $scope.frameFrom].keypoints = point;
                 }
             }
+            this.objectsIn2D = objects;
         }
 
         // Projects all objects in all frames to the actual active camera
@@ -829,7 +833,7 @@ angular.module('CVGTool')
                     var object = objectTypes[objectType].objects[obj];
                     // Go through all frames of that object
                     for (var i = 0; i < object.frames.length; i++) {
-                        toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints, object.frames[i].frame, this.activeCamera.filename, navSrvc.getActiveDataset().name, callbackProjection)
+                        toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints, object.frames[i].frame, this.activeCamera.filename, navSrvc.getActiveDataset().name, this.callbackProjection)
                     }
                 }
             }
@@ -962,6 +966,7 @@ angular.module('CVGTool')
     // Callback function of triangulate
     var callbackTriangulate3DPoint = function() {
         window.alert("Annotation updated!");
+        $scope.clearNewPoint();
         $scope.retrieveObjects();
     }
 
@@ -1006,16 +1011,16 @@ angular.module('CVGTool')
         var frame = annotation.frame; // Read the frame
 
         for (var i = 0; i < annotation.objects.length; i++) {
-            if ($scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].objects[annotation.objects[i][0].uid.toString()] === undefined) { // If the object is not stored
-                $scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].objects[annotation.objects[i][0].uid.toString()] = {
-                    uid: annotation.objects[i][0].uid,
-                    type: annotation.objects[i][0].type,
+            if ($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] === undefined) { // If the object is not stored
+                $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] = {
+                    uid: annotation.objects[i].uid,
+                    type: annotation.objects[i].type,
                     frames: []
                 }
 
                 // Fill the frames array with an empty array for each frame
                 for (var j = 0; j <= $scope.numberOfFrames; j++) {
-                    $scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].objects[annotation.objects[i][0].uid.toString()].frames.push({
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames.push({
                         frame: $scope.frameFrom + j,
                         keypoints: [],
                         actions: []
@@ -1024,8 +1029,8 @@ angular.module('CVGTool')
             }
 
             // In any case, store in that frame the keypoints, the frame number and the actions
-            $scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].objects[annotation.objects[i][0].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i][0].keypoints;
-            $scope.objectManager.objectTypes[annotation.objects[i][0].type.toString()].objects[annotation.objects[i][0].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
+            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i].keypoints;
+            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
             // TODO: AND ACTIONS TOO
         }
     }
@@ -1048,4 +1053,5 @@ angular.module('CVGTool')
 
     $scope.initializeCanvases();
     $scope.retrieveAvailableObjectTypes();
+    $scope.retrieveObjects();
 }]);

@@ -55,8 +55,8 @@ class AnnotationService:
         for kp in keypoints2d:
 
             # Get camera parameters from each frame and camera
-            frame1 = frameManager.getFrame(frame, kp["cam1"], dataset)
-            frame2 = frameManager.getFrame(frame, kp["cam2"], dataset)
+            frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
+            frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
             point3d = aikService.triangulate2DPoints(kp["p1"], kp["p2"],
                         frame1["cameraParameters"], frame2["cameraParameters"])
 

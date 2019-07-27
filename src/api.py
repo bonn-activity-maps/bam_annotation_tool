@@ -423,9 +423,9 @@ def projectToCamera():
 
     # Convert the points json to Python list
     pointsArray = json.loads(pointsArray)
-# TODO: some points are null, which stops the batch processing of the points when projecting
+    
     # Get camera parameters for the frame, camera and dataset
-    _, cameraParams, _ = frameService.getCameraParameters(frame, cameraName, dataset)
+    _, cameraParams, _ = frameService.getCameraParameters(int(frame), int(cameraName), dataset)
 
     # Proyect the points into the camera
     points2D = aikService.project3DPointsToCamera(pointsArray, cameraParams)
@@ -440,12 +440,11 @@ def computeEpiline():
     dataset = request.headers['dataset']
     cam1Name = request.headers['cam1']
     cam2Name = request.headers['cam2']
-
+    
     point = json.loads(point)
 
     _, cam1Params, _ = frameService.getCameraParameters(frame, cam1Name, dataset)
     _, cam2Params, _ = frameService.getCameraParameters(frame, cam2Name, dataset)
-    print(cam1Params)
     el1, el2 = aikService.computeEpiline(point, cam1Params, cam2Params)
     
     return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}

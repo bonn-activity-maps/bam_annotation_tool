@@ -85,7 +85,9 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
+                console.log("Projected:");
                 console.log(response.data.msg);
+                callbackSuccess(uid, type, frame, response.data.msg)
             }, function errorCallback(response) {
                 console.log(response.data.msg);
             })
