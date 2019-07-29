@@ -74,8 +74,8 @@ class UserService:
             return False, 'The email already exists', 400
         else:
             # Create random password of lenght 12
-            # pwd = str(''.join(random.choices(string.ascii_uppercase + string.digits, k=12))).encode('utf-8')
-            pwd = u"test"    # TODO!!!!!! CHANGE THIS AS SOON AS WE FIND A SOLUTION
+            pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
+            # pwd = u"test"
             hashedPwd = self.getHashedPassword(pwd)
             result = userManager.createUser(name, hashedPwd, req['assignedTo'], req['role'], req['email'])
             if result == 'Error':
