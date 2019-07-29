@@ -11,10 +11,10 @@ class UserManager:
     collection = db.user
 
     # Return info user if exist user-pwd in DB. Ignore mongo id and pwd
-    def getUserPwd(self, user, pwd):
+    def getUserPwd(self, user):
         try:
-            result = self.collection.find_one({"name": user, "password": pwd}, {"_id": 0, "password": 0})
-            if result == None:
+            result = self.collection.find_one({"name": user}, {"_id": 0})
+            if result is None:
                 return 'Error'
             else:
                 return result

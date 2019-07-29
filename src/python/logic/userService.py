@@ -1,5 +1,6 @@
 import logging
 import string, random
+import bcrypt
 
 from python.infrastructure.userManager import UserManager
 
@@ -10,13 +11,26 @@ userManager = UserManager()
 
 class UserService:
 
+    # Function to hash passwords, bcrypt is deliverately slow.
+    def getHashedPassword(self, plain_text_password):
+        # Hash a password for the first time
+        #   (Using bcrypt, the salt is saved into the hash itself)
+        return bcrypt.hashpw(plain_text_password.encode('utf-8'), bcrypt.gensalt())
+
+    # Check if password is correct
+    # Credits: Chris Dutrow, Mark Amery. https://stackoverflow.com/a/23768422/4925895
+    def checkPassword(self, plain_text_password, hashed_password):
+        # Check hashed password. Using bcrypt, the salt is saved into the hash itself
+        return bcrypt.checkpw(plain_text_password.encode('utf-8'), hashed_password)
+
     # Check if user exist and return user info
     def userLogin(self, user, pwd):
-        result = userManager.getUserPwd(user, pwd)
-        if result == 'Error':
-            return False, 'Wrong credentials', 400
-        else:
+        result = userManager.getUserPwd(user)
+        if self.checkPassword(pwd, result['password']):
+            del result['password']
             return True, result, 200
+        else:
+            return False, 'Wrong credentials', 400
 
     # Return user info
     def getUser(self, user):
@@ -60,9 +74,10 @@ class UserService:
             return False, 'The email already exists', 400
         else:
             # Create random password of lenght 12
-            pwd = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
-
-            result = userManager.createUser(name, pwd, req['assignedTo'], req['role'], req['email'])
+            # pwd = str(''.join(random.choices(string.ascii_uppercase + string.digits, k=12))).encode('utf-8')
+            pwd = u"test"    # TODO!!!!!! CHANGE THIS AS SOON AS WE FIND A SOLUTION
+            hashedPwd = self.getHashedPassword(pwd)
+            result = userManager.createUser(name, hashedPwd, req['assignedTo'], req['role'], req['email'])
             if result == 'Error':
                 return False, 'Error creating user', 400
             else:

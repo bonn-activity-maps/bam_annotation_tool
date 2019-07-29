@@ -4,4 +4,5 @@ moviepy==1.0.0
 numpy==1.16.2
 # opencv-python==4.1.0.25
 opencv-python==3.4.5.20
+bcrypt==3.1.7
 git+https://github.com/actions-in-kitchens/aik.git
