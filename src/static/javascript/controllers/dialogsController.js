@@ -118,6 +118,35 @@ angular.module('CVGTool')
     }
 ])
 
+.controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name',
+    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name) {
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = 'Dataset successfully exported.'
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = 'There was an error when exporting the dataset.'
+        };
+
+        // Function that generates the call to the server to remove the file
+        $scope.export = function() {
+            // TODO export function
+        }
+    }
+])
+
 /*
  * Controller of the dialog of the "remove stored user as administrator" action
  */

@@ -96,6 +96,23 @@ angular.module('CVGTool')
             });
         };
 
+        // Function that opens the dialog that manages the dataset removal functionality
+        $scope.exportDataset = function(dataset) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/exportDatasetDialog.html',
+                locals: {
+                    name: dataset.name
+                },
+                controller: 'dialogExportDatasetCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        };
+
+        // Function that opens the dialog that manages the zip files in the system available to import
         $scope.showZipFilesDialog = function(files) {
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/showZipFilesDialog.html',
