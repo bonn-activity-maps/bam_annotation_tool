@@ -142,7 +142,7 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to remove the file
         $scope.export = function() {
-            // TODO export function
+            adminDatasetsSrvc.exportDataset(name, showSuccess, showError)
         }
     }
 ])
