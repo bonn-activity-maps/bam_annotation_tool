@@ -101,7 +101,8 @@ angular.module('CVGTool')
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/exportDatasetDialog.html',
                 locals: {
-                    name: dataset.name
+                    name: dataset.name,
+                    type: dataset.type
                 },
                 controller: 'dialogExportDatasetCtrl',
                 escapeToClose: false,

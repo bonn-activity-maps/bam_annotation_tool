@@ -108,12 +108,13 @@ angular.module('CVGTool')
                 });
             },
 
-            exportDataset: function (name, callbackSuccess, callbackError) {
+            exportDataset: function (name, type, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
                     url: '/api/dataset/exportDataset',
-                    data: {
-                        'name': name
+                    headers: {
+                        'dataset': name,
+                        'datasetType': type
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)

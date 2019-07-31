@@ -118,8 +118,8 @@ angular.module('CVGTool')
     }
 ])
 
-.controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name',
-    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name) {
+.controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name', 'type',
+    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name, type) {
         $scope.mode = 'normal';
         $scope.msg = '';
 
@@ -142,7 +142,7 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to remove the file
         $scope.export = function() {
-            adminDatasetsSrvc.exportDataset(name, showSuccess, showError)
+            adminDatasetsSrvc.exportDataset(name, type, showSuccess, showError)
         }
     }
 ])
