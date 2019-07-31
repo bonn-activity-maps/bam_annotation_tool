@@ -58,8 +58,8 @@ class AnnotationService:
         for kp in keypoints2d:
 
             # Get camera parameters from each frame and camera
-            frame1 = frameManager.getFrame(frame, kp["cam1"], dataset)
-            frame2 = frameManager.getFrame(frame, kp["cam2"], dataset)
+            frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
+            frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
             point3d = aikService.triangulate2DPoints(kp["p1"], kp["p2"],
                         frame1["cameraParameters"], frame2["cameraParameters"])
 
@@ -108,7 +108,7 @@ class AnnotationService:
             return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
 
     # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
-    def createNewUidObject(self, dataset, scene, frame, user):
+    def createNewUidObject(self, dataset, scene, frame, user, objectType):
         maxUid = annotationManager.maxUidObjectDataset(dataset)
 
         if maxUid == 'Error':
@@ -116,7 +116,7 @@ class AnnotationService:
         else:
             # Create new object with maxUid+1
             newUid = maxUid + 1
-            objects = {'uid': newUid, 'type': '', 'keypoints': []}
+            objects = {'uid': newUid, 'type': objectType, 'keypoints': []}
             result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
 
             if result == 'Error':

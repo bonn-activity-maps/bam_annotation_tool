@@ -21,11 +21,11 @@
                     </form>
                     <div ng-if="user.role == 'admin'" class="form-group">
                         <label>Dataset</label>
-                        <input type="text" ng-model="user.activeDataset" class="form-control" disabled/>
+                        <input type="text" ng-model="activeDataset" class="form-control" disabled/>
                     </div>
                     <div ng-if="user.role == 'root'" class="form-group">
                         <label>Dataset:</label>
-                        <select class="form-control" ng-model="newTask.dataset">
+                        <select ng-change="getAvaiableUsers()" class="form-control" ng-model="newTask.dataset">
                             <option ng-repeat="dataset in listOfDatasets" >{{dataset.name}}</option>
                         </select>
                     </div>

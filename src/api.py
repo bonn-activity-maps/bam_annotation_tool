@@ -235,9 +235,10 @@ def updateAnnotationValidation():
 # Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
 def createNewUidObject():
+    print("llego")
     req_data = request.get_json()
     success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
-                                                                req_data['frame'], req_data['user'])
+                                                                req_data['frame'], req_data['user'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #####
@@ -411,26 +412,41 @@ def createAction():
 
 
 #### AIK and OPENCV computations ####
-# Given 3D point coordinates (can be more than one), video, dataset and frame range -> Returns the proyected points 
+# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
 @app.route('/api/aik/projectToCamera', methods=['GET'])
 def projectToCamera():
-    req_data = request.get_json()
-    pointArray = req_data['points']
-    frameArray = req_data['frames']
+    pointsArray = request.headers['points']
+    frame = request.headers['frame']
+    cameraName = request.headers['cameraName']
+    dataset = request.headers['dataset']
 
-    # retrieve camera parameters calling to GetFrame in the future frameService
+    # Convert the points json to Python list
+    pointsArray = json.loads(pointsArray)
+    
+    # Get camera parameters for the frame, camera and dataset
+    _, cameraParams, _ = frameService.getCameraParameters(int(frame), int(cameraName), dataset)
 
-    # For each frame of the frame array, project all the points into the camera
-    # for frame in frameArray:
-
-    pass
+    # Proyect the points into the camera
+    points2D = aikService.project3DPointsToCamera(pointsArray, cameraParams)
+    
+    return json.dumps({'success': True, 'msg': points2D}), 200, {'ContentType': 'application/json'}
 
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 def computeEpiline():
-    req_data = request.get_json()
-    pass
+    point = request.headers['point']
+    frame = request.headers['frame']
+    dataset = request.headers['dataset']
+    cam1Name = request.headers['cam1']
+    cam2Name = request.headers['cam2']
+    
+    point = json.loads(point)
 
+    _, cam1Params, _ = frameService.getCameraParameters(frame, cam1Name, dataset)
+    _, cam2Params, _ = frameService.getCameraParameters(frame, cam2Name, dataset)
+    el1, el2 = aikService.computeEpiline(point, cam1Params, cam2Params)
+    
+    return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
 
 #### FRAME ####
 

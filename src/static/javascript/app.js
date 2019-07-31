@@ -6,7 +6,10 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
         .state('tool', {
         url: "/tool",
         templateUrl: "static/views/tool.html",
-        controller: "toolCtrl"
+        controller: "toolCtrl",
+        params: {
+            obj: null
+        }
     })
 
     .state('taskHome', {

@@ -2,7 +2,26 @@
     <div class="panel panel-default">
         <div class="panel-body">
             <h4>Tasks</h4>
-            <hr/> Temporal
+            <hr/> Don't forget to select a dataset from the selector in the navbar!
+            <hr/> Temporal, but for now, select the frame range you want to work with.
+            <div syle="padding-top: 20px;" class="container">
+                <hr />
+
+                <!-- Select frame intervals -->
+                <div class="form">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Select range of frames:</label>
+                        <div class="col-md-10">
+                            From:
+                            <input type="number" ng-model="slider.from" ng-change="checkSlider()" />
+                            <br/>To:
+                            <input type="number" ng-model="slider.to" ng-change="checkSlider()" />
+                            <br/>
+                            <rzslider rz-slider-model="slider.from" rz-slider-high="slider.to" rz-slider-options="slider.options"></rzslider>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <button ng-click="goToTool()">Tool</button>
         </div>

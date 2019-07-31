@@ -16,12 +16,23 @@ class AIKService:
     def project3DPointsToCamera(self, points3D, cameraParams):
         # Create the camera given camera parameters
         camera = self.createCamera(cameraParams)
-
+        
         # Project all the points in the camera
         points2D = camera.project_points(points3D)
         
         # Return the projected points as a list
         return points2D.tolist()
+    
+    ## Triangulates the 3D point from two 2D points and their respective cameras
+    def triangulate2DPoints(self, point1, point2, camParams1, camParams2):
+        # Create the two cameras
+        camera1 = self.createCamera(camParams1)
+        camera2 = self.createCamera(camParams2)
+        
+        # Triangulate
+        point3D = gm.triangulate(point1, point2, camera1, camera2)
+        return point3D
+        
 
     ## Compute the epiline of a point in a camera in another camera
     def computeEpiline(self, point2D, cameraParams1, cameraParams2):
@@ -43,10 +54,5 @@ class AIKService:
         y1 = y(x1, *epiline)
 
         # Return the two 2D coordinates of the line
-        return [[x0,y0] , [x1,y1]]
-
-    # Compute triangulation from two 2d points to 3d point
-    def triangulate2DPoints(self, p1, p2, cameraParams1, cameraParams2):
-        camera1 = self.createCamera(cameraParams1)
-        camera2 = self.createCamera(cameraParams2)
-        return gm.triangulate(p1, p2, camera1, camera2)
+        return [x0,y0] , [x1,y1]
+    

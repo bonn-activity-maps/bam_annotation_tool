@@ -12,7 +12,7 @@
                         </div>
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-                    <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button>
+                    <!-- <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button> -->
                 </div>
             </div>
         </div>
@@ -105,22 +105,22 @@
                     </div>
                     <hr/>
                     <!-- Zoom tool -->
-                    <div ng-click="switchTool('zoom')">
+                    <!-- <div ng-click="switchTool('zoom')">
                         <button class="btn btn-default btn-xl btn-circle " ng-if="tool!='zoom'"><span class=" glyphicon glyphicon-search "></button>
                         <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='zoom'"><span class=" glyphicon glyphicon-search "></button>
                     </div>
-                    <div ng-if="tool=='zoom'">
-                        <!-- Zoom In sub tool -->
-                        <div class="row">
+                    <div ng-if="tool=='zoom'"> -->
+                    <!-- Zoom In sub tool -->
+                    <!-- <div class="row">
                             <button class="btn btn-default btn-circle" ng-if="subTool!='zoomIn'" ng-click="switchSubTool('zoomIn')"><span class=" glyphicon glyphicon-zoom-in" ></button>
                             <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomIn'" ng-click="switchSubTool('')"><span class=" glyphicon glyphicon-zoom-in "></button>
-                        </div>
-                        <!-- Zoom Out sub tool -->
-                        <div class="row">
+                        </div> -->
+                    <!-- Zoom Out sub tool -->
+                    <!-- <div class="row">
                             <button class="btn btn-default btn-circle" ng-if="subTool!='zoomOut'" ng-click="switchSubTool('zoomOut')"> <span class=" glyphicon glyphicon-zoom-out" ></button>
                             <button class="btn btn-default btn-circle-selected" ng-if="subTool=='zoomOut'" ng-click="switchSubTool('')"> <span class=" glyphicon glyphicon-zoom-out"></button>
                         </div>
-                    </div>
+                    </div> -->
                     <hr/>
                     <!-- Keypoints tool -->
                     <div ng-click="switchTool('keypoint')">
@@ -132,7 +132,7 @@
         </div>
 
         <!-- Kepoint Manager Panel -->
-        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 500px; height: 750px;" ng-show="keyPointEditTab==true">
+        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -142,45 +142,111 @@
                         Keypoint Manager
                     </div>
                     <div class="col-sm-1">
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#3dkeypoints" target="_self">3D Keypoints</a></li>
+                    <li><a data-toggle="tab" href="#actions" target="_self">Actions</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="3dkeypoints" class="tab-pane fade in active">
+                        <div class="form-group">
+                            <label for="sel1">Select Object type:</label>
+                            <select class="form-control" id="sel1" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                                    </select>
+                        </div>
+                        <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
+                            <table class="table table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Objects</th>
+                                        <th ng-repeat="frame in frameList">{{frame}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="object in objectManager.selectedType.objects">
+                                        <td>{{object.uid}}</td>
+                                        <th ng-repeat="f in object.frames"><button class="btn btn-invisible" ng-click="openKeyPointEditor(object,f.frame)"><span ng-if="f.keypoints.length != 0" class="glyphicon glyphicon-pushpin"></span></button></th>
+                                    </tr>
+                                    <tr>
+                                        <td><button class="btn btn-primary" ng-click="createNewObject()"><span class="glyphicon glyphicon-plus"></span></button></td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="actions" class="tab-pane fade">
+                        <p>ACTIONS WIP</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keypoint editor mini panel-->
+        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 400px;" ng-show="keyPointEditorTab==true">
+            <div class="panel-heading" ng-draggable='dragOptions'>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <span class="glyphicon glyphicon-move"></span>
+                    </div>
+                    <div class="col-sm-10">
+                        Keypoint Editor
+                    </div>
+                    <div class="col-sm-1">
                         <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span class="glyphicon glyphicon-remove"></span></button>
                     </div>
                 </div>
             </div>
             <div class="panel-body">
-                <div class="form-group" slider.value - 1>
-                    <label for="sel1">Select Object type:</label>
-                    <select class="form-control" id="sel1" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
-                    </select>
-                    <label for="sel2">Select Object ID:</label>
-                    <select class="form-control" id="sel2">
-                        <option ng-click="fillBlankSelectedObject()">New object</option>
-                        <option ng-repeat="object in objectManager.selectedType.frames[slider.value - 1]" ng-click="updateSelectedObject(object)">{{object.uid}}</option>
-                    </select>
-                </div>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-sm-2">Object type:</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-2">Frame:</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{slider.value}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-2">UID:</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                        </div>
+                    </div>
+                </form>
                 <hr/>
-                <div style="position:relative; overflow-y: auto; max-height: 450px; min-height: 450px;">
-                    <table class="table table-responsive">
-                        <thead class="fixed-top;">
+                <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
+                    <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
+                        <thead>
                             <tr>
-                                <th>Label</th>
-                                <th>KeyPoints</th>
-                                <th>Status</th>
+                                <th>Id</th>
+                                <th>Points</th>
+                                <th>Remove</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="label in objectManager.selectedType.labels">
-                                <td>{{label}}</td>
-                                <td><button class="btn btn-default">1</button> <button class="btn btn-default">2</button></td>
-                                <td><button class="btn btn-danger disabled" style="clickable: false;">Incomplete</button></td>
+                            <tr>
+                                <td>Neck</td>
+                                <th><button class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
+                                    <button class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
+                                </th>
+                                <th>
+                                    <button class="btn btn-primary" ng-click="clearNewPoint();"><span class="glyphicon glyphicon-remove"></span></button>
+                                </th>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <hr/>
-                <div class="row" style="margin-bottom: 2px;">
-                    <div class="col col-md-6 text-center"><button class="btn btn-primary">Create/Update</button></div>
-                    <div class="col col-md-6 text-center"><button class="btn btn-danger">Cancel</button></div>
-                </div>
+                <button class="btn-success" ng-click="updateAnnotation()">Save</button>
             </div>
         </div>
 
