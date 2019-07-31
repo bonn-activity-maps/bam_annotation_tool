@@ -33,33 +33,35 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
-    # Get all annotations only of people for the dataset.
-    def getPersonObjectsByDataset(self, dataset):
+    # Get all annotations for the dataset order by frame
+    def getObjectsByDataset(self, dataset):
         try:
             # result = self.collection.find({"dataset": dataset, "scene": dataset, "objects.type": "person"})
-            result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": "person"}},
-                                     {"$group": {"_id": { "frame": "$frame"},
-                                                  "persons": {"$push": {"pid": "$objects.uid", "location": "$objects.keypoints"}}}},
-                                     {"$sort": {"_id.frame": 1}},
-                                     {"$project": {"_id": 0, "frame": "$_id.frame", "persons": "$persons"}}
-                                     ])
+            result = self.collection.find({"dataset": dataset, "scene": dataset},{"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
+
+            # result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": "person"}},
+            #                          {"$group": {"_id": { "frame": "$frame"},
+            #                                       "persons": {"$push": {"pid": "$objects.uid", "location": "$objects.keypoints"}}}},
+            #                          {"$sort": {"_id.frame": 1}},
+            #                          {"$project": {"_id": 0, "frame": "$_id.frame", "persons": "$persons"}}
+            #                          ])
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
             return 'Error'
 
-    # Get all annotations except of people for the dataset.
-    def getObjectsByDataset(self, dataset):
-        try:
-            result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": {"$not": {"$regex": "/person/"}}}},
-                                    {"$group": {"_id": { "frame": "$frame"},
-                                                 "objects": {"$push": { "labels": "$objects.labels", "location": "$objects.keypoints", "oid": "$objects.uid"}}}},
-                                    {"$sort": {"_id.frame":1}},
-                                    {"$project": {"_id": 0, "frame": "$_id.frame", "objects": "$objects"}}])
-            return list(result)
-        except errors.PyMongoError as e:
-            log.exception('Error finding annotation in db')
-            return 'Error'
+    # # Get all annotations except of people for the dataset.
+    # def getObjectsByDataset(self, dataset):
+    #     try:
+    #         result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": {"$not": {"$regex": "/person/"}}}},
+    #                                 {"$group": {"_id": { "frame": "$frame"},
+    #                                              "objects": {"$push": { "labels": "$objects.labels", "location": "$objects.keypoints", "oid": "$objects.uid"}}}},
+    #                                 {"$sort": {"_id.frame":1}},
+    #                                 {"$project": {"_id": 0, "frame": "$_id.frame", "objects": "$objects"}}])
+    #         return list(result)
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error finding annotation in db')
+    #         return 'Error'
 
 
     # Return 'ok' if the annotation has been updated.
@@ -140,12 +142,12 @@ class AnnotationManager:
     # Get annotation for object in frame, without mongo id
     def getFrameObject(self, dataset, scene, frame, user, obj):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user,
-                                               "objects": {"$elemMatch": {"uid": obj}}}, {'_id': 0})
-            if result == None:
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user},
+                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+            if not result:          # if empty json
                 return 'No annotation'
             else:
-                return result
+                return result['objects'][0]
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
             return 'Error'
@@ -178,7 +180,6 @@ class AnnotationManager:
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # The annotation is not created if it doesn't exist and return Error
     def updateFrameObject(self, dataset, scene, frame, user, objects):
-        print(objects)
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
