@@ -1,6 +1,7 @@
 angular.module('CVGTool')
 
-.controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams', function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
+.controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams',
+    function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
     // Parameters received from the task
     $scope.frameFrom = $stateParams.obj.from;
     $scope.frameTo = $stateParams.obj.to;
@@ -29,8 +30,10 @@ angular.module('CVGTool')
     $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
     $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
     $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
+    $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
-    // Switches the value of the secondary tool
+
+        // Switches the value of the secondary tool
     $scope.switchSubTool = function(sT) {
         if ($scope.subTool.localeCompare(sT) == 0) {
             $scope.subTool = '';
@@ -699,7 +702,7 @@ angular.module('CVGTool')
             }
         }
 
-        // 
+        //
         CanvasObject.prototype.init = function() {
             if (this.activeCamera !== null) {
                 var image = new Image();
@@ -891,7 +894,7 @@ angular.module('CVGTool')
         objectTypes: {},
         selectedType: {},
         selectedObject: null
-    }
+    };
 
     // Function that resets the object Manager object
     $scope.resetObjectManager = function() {
@@ -900,7 +903,89 @@ angular.module('CVGTool')
             selectedType: {},
             selectedObject: null
         }
-    }
+    };
+
+    //                                          //
+    //              ACTION MANAGEMENT           //
+    //                                          //
+
+    // Object to store information about actions.
+    $scope.actionManager = {
+        activitiesList: [],         // List of possible actions
+        actionList: [],             // List of actions for the selected object in the selected frames
+        selectedType: null,         // Selected type of activity to add
+        selectedObject: null,       // Selected object to edit
+        isActionSelected: false,    // Set to True when selecting start/stop frames
+    };
+
+    // Update activities list
+    $scope.getActivitiesList = function() {
+        toolSrvc.getActivitiesList(navSrvc.getActiveDataset().type, function (activitiesList) {
+            $scope.actionManager.activitiesList = activitiesList.activities;
+        });
+    };
+
+    $scope.getActionsList = function() {
+        toolSrvc.getActions(navSrvc.getUser().name, $scope.frameFrom, $scope.frameTo, navSrvc.getActiveDataset().name,
+            function (actionList) {
+            console.log("action list");
+            console.log(actionList);
+            $scope.actionList = actionList;
+            console.log($scope.actionList);
+            })
+    };
+
+    // Function that opens the panel to edit actions
+    $scope.openActionsEditor = function(object) {
+        $scope.getActionsList();
+        $scope.actionsEditorTab = true;
+        $scope.actionManager.selectedObject = object;
+        // $scope.slider.value = frame;
+    };
+
+    // Function that closes the panel to edit actions
+    $scope.closeActionsEditor = function() {
+        $scope.actionsEditorTab = false;
+        $scope.actionManager.selectedObject = null; // De-select the selected object when closing the panel
+    };
+
+    $scope.createNewAction = function() {
+        $scope.actionManager.actionList.push({
+            name: $scope.actionManager.selectedType,
+            objectUID: $scope.actionManager.selectedObject.uid,
+            startFrame: null,
+            endFrame: null,
+            dataset: navSrvc.getActiveDataset().name,
+            user: navSrvc.getUser().name
+        })
+    };
+
+    // Function to select time frame for an action
+    $scope.selectActionFrame = function(frame, action) {
+        if(!$scope.actionManager.isActionSelected) {
+            $scope.actionManager.isActionSelected = true;
+            action.startFrame = frame;
+        } else {
+            action.endFrame = frame;
+            toolSrvc.createAction(navSrvc.getUser().name, action.startFrame, frame, action.name,
+                action.objectUID, navSrvc.getActiveDataset().name, $scope.createActionSuccess,
+                $scope.createActionError);
+            $scope.actionManager.isActionSelected = false;
+        }
+    };
+
+    // Callback for success in create Action
+    $scope.createActionSuccess = function(data) {
+        console.log(data)
+    };
+    // Callback for error in create Action
+    $scope.createActionError = function(data) {
+        console.log(data)
+    };
+
+    //                                          //
+    //          END ACTION MANAGEMENT           //
+    //                                          //
 
     // Callback function for creating a new object
     var callbackCreateNewObject = function(newUid, type) {
@@ -1054,4 +1139,7 @@ angular.module('CVGTool')
     $scope.initializeCanvases();
     $scope.retrieveAvailableObjectTypes();
     $scope.retrieveObjects();
+    $scope.getActivitiesList();
+    $scope.getActionsList();
+    console.log($scope.actionManager);
 }]);

@@ -155,10 +155,67 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg.maxUid, type)
-                }),
+                },
                 function errorCallback(response) {
                     console.log(response);
+                })
+        },
+
+        // Get list of possible Actions
+        getActivitiesList: function(dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/action/getActivities',
+                headers: {
+                    dataset: dataset
                 }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            },
+            function errorCallback(response) {
+                console.log(response);
+            })
+        },
+
+        // Create a new action
+        createAction: function(user, startFrame, endFrame, activity, object, dataset, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/action/createAction',
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'name': activity,
+                    'objectUID': object,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                    callbackError(response.data.msg)
+                })
+        },
+
+        // Fetch the list of all Actions for an object in the frame
+        getActions: function(user, startFrame, endFrame, dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/action/getActions',
+                headers: {
+                    'user': user,
+                    'dataset': dataset,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                })
         }
     }
 });
