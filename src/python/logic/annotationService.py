@@ -124,67 +124,6 @@ class AnnotationService:
             else:
                 return True, {'maxUid': newUid}, 200
 
-    # Build correct annotation using recover data from database
-    def buildAnnotationAIK(self, dbObjects, actions):
-        persons = []
-        objects = []
-
-        for annotation in dbObjects:    # Each annotation
-            framePersons = []
-            frameObjects = []
-            for obj in annotation['objects']:     # Each object in annotation
-                if obj['type'] == 'person':
-                    p = {"pid": obj['uid'],
-                         "location": obj['keypoints']}
-                    framePersons.append(p)
-                else:
-                    o = {"labels": obj['labels'],
-                         "location": obj['keypoints'],
-                         "oid": obj['uid']}
-                    frameObjects.append(o)
-
-            # Build persons and objects jsons and add to list
-            personsJson = {"frame": annotation['frame'],
-                           "persons": framePersons}
-            objectsJson = {"frame": annotation['frame'],
-                           "objects": frameObjects}
-            persons.append(personsJson)
-            objects.append(objectsJson)
-
-        # Build final annotation
-        finalAnnotation = {
-            "persons": persons,
-            "objects": objects,
-            "actions": actions
-        }
-        return finalAnnotation
-
-    # Export annotation for AIK datasets to a file for given dataset
-    def exportAnnotationAIK(self, dataset):
-        dbObjects = annotationManager.getObjectsByDataset(dataset)
-        actions = actionManager.getActionsByDataset(dataset)
-
-        if dbObjects == 'Error' or actions == 'Error':
-            return False, 'Error getting annotations for the dataset', 400
-        else:
-            # TODO: Create the mean of all annotations
-            finalAnnotation = self.buildAnnotationAIK(dbObjects, actions)
-
-        # Write to file in same directory of dataset
-        file = os.path.join(self.STORAGE_DIR, dataset, dataset + '.json')
-        with open(file, 'w') as outfile:
-            json.dump(finalAnnotation, outfile)
-
-        return 'ok'
-
-    # Export annotation to a file for given dataset depending on dataset type
-    def exportAnnotation(self, dataset, datasetType):
-        if datasetType == self.aik:
-            result = self.exportAnnotationAIK(dataset)
-        else:
-            result = 'Incorrect dataset type'
-        return True, result, 200
-
     # Get annotation of object in frame
     def getAnnotationFrameObject(self, dataset, video, frame, user, obj):
         result = annotationManager.getFrameObject(dataset, video, frame, user, obj)

@@ -141,6 +141,12 @@ def loadZip():
     success, msg, status = datasetService.loadZip(req_data['name'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Export annotation to a file for given dataset
+@app.route('/api/dataset/exportDataset', methods=['GET'])
+def exportAnnotation():
+    success, msg, status = datasetService.exportDataset(request.headers['dataset'], request.headers['datasetType'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### VIDEO ####
 
@@ -233,13 +239,6 @@ def createNewUidObject():
     success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
                                                                 req_data['frame'], req_data['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Export annotation to a file for given dataset
-@app.route('/api/annotation/exportAnnotation', methods=['GET'])
-def exportAnnotation():
-    success, msg, status = annotationService.exportAnnotation(request.headers['dataset'], request.headers['datasetType'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 #####
 
