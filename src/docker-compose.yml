@@ -10,7 +10,7 @@ services:
     image: mongo
     restart: always
     volumes:
-      - "/usr/share/cvg/mongodb:/data"
+      - "/usr/share/cvg/mongodb:/data/db"
     # environment:
     #   MONGO_INITDB_ROOT_USERNAME: mongodb
       # MONGO_INITDB_ROOT_PASSWORD: 
