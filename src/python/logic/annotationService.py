@@ -1,11 +1,11 @@
 import logging
-import json
-import os
+import numpy as np
 
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.actionManager import ActionManager
+from python.infrastructure.datasetManager import DatasetManager
 from python.logic.aikService import AIKService
 
 # AnnotationService logger
@@ -15,6 +15,7 @@ annotationManager = AnnotationManager()
 objectTypeManager = ObjectTypeManager()
 frameManager = FrameManager()
 actionManager = ActionManager()
+datasetManager = DatasetManager()
 aikService = AIKService()
 
 
@@ -67,7 +68,6 @@ class AnnotationService:
 
         # Modify original objects which contains info of object with calculated 3d keypoints
         objects["keypoints"] = keypoints3d
-        print(objects)
         return objects
 
     # Return 'ok' if the annotation has been updated
@@ -155,4 +155,58 @@ class AnnotationService:
             return True, result, 200
         else:
             return False, result, 500
+
+    # Interpolate all keypoints between 2 points
+    def interpolate(self, numFrames, numKpts, kpDim, kps1, kps2):
+        # Structure to store all keypoints ordered by frame (row: frame, column:kpt)
+        finalKpts = np.zeros((numFrames, numKpts, 3))
+
+        # Interpolate for all keypoints in all frames in between
+        for i in range(numKpts):
+            interpolatedKps = []
+
+            # Interpolate each coordinate of keypoint
+            for j in range(kpDim):
+                interpolatedCoords = np.linspace(kps1[i][j], kps2[i][j], num=numFrames)
+                interpolatedKps.append(interpolatedCoords)
+
+            interpolatedKps = np.asarray(interpolatedKps)
+
+            # Build interpolated keypoints for each frame
+            for k in range(len(interpolatedKps[0])):
+                finalKpts[k,i] = interpolatedKps[:,k]
+
+        return finalKpts
+
+    # Interpolate and store the interpolated 3d points
+    def interpolateAnnotation(self, dataset, scene, user, startFrame, endFrame, uidObject):
+        # Search object in respective start and end frames
+        obj1 = annotationManager.getFrameObject(dataset, scene, startFrame, user, uidObject)
+        obj2 = annotationManager.getFrameObject(dataset, scene, endFrame, user, uidObject)
+
+        type = obj1['type']
+        kps1 = obj1['keypoints']
+        kps2 = obj2['keypoints']
+
+        numFrames = endFrame-startFrame+1
+        numKpts = len(kps1)
+        kpDim = int(datasetManager.getDataset(dataset)['keypointDim'])
+        finalResult = 'ok'
+
+        # Final keypoints
+        finalKpts = self.interpolate(numFrames, numKpts, kpDim, kps1, kps2)
+
+        # Store interpolated keypoints for frames in between (avoid start and end frame)
+        for i in range(1, finalKpts.shape[0]-1):
+            obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
+
+            result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj)
+            if result == 'Error':
+                finalResult = 'There was some error interpolating the keypoints, please check them'
+
+        if finalResult == 'ok':
+            return True, finalResult, 200
+        else:
+            log.error('Error interpolating keypoints')
+            return False, finalResult, 500
 

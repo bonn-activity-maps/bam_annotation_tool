@@ -142,12 +142,12 @@ class AnnotationManager:
     # Get annotation for object in frame, without mongo id
     def getFrameObject(self, dataset, scene, frame, user, obj):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user,
-                                               "objects": {"$elemMatch": {"uid": obj}}}, {'_id': 0})
-            if result == None:
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user},
+                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+            if not result:          # if empty json
                 return 'No annotation'
             else:
-                return result
+                return result['objects'][0]
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
             return 'Error'
@@ -180,7 +180,6 @@ class AnnotationManager:
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # The annotation is not created if it doesn't exist and return Error
     def updateFrameObject(self, dataset, scene, frame, user, objects):
-        print(objects)
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]

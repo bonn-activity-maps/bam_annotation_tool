@@ -364,9 +364,9 @@ class DatasetService:
         # Assign keypoint dimension depending on dataset type
         kpDim = ''
         if type == self.aik:
-            kpDim = '3D'
+            kpDim = 3
         elif type == self.pt:
-            kpDim = '2D'
+            kpDim = 2
 
         # TODO: check integrity for AIK
         integrity = self.checkIntegrity(self.STORAGE_DIR + dataset) if type == self.pt else True
