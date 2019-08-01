@@ -5,7 +5,7 @@
 // db.user.insertOne({ name: "pt", password: "test", assignedTo: ["posetrack_example"], role: "user", email: "albeasdo@alberto.com" })
 // db.user.insertOne({ name: "aik", password: "test", assignedTo: ["aik_kitchen_test2"], role: "user", email: "albeaasihdvo@alberto.com" })
 // db.user.insertOne({ name: "aik2", password: "test", assignedTo: ["aik_kitchen2"], role: "user", email: "albeaasihdvo@alberto.com" })
-db.user.insertOne({ name: "Rooty", password: BinData(0,"JDJiJDEyJEJZb1lrLktZZHdmMXVsby9Oai5XN096QzdEcTRWdnhPZnBSZHZ6clBhWnpGeVpnOG1BRzJD"),
+db.user.insertOne({ name: "Rooty", password: BinData(0,"JDJiJDEyJHhmL1Q0RVRxVUNJOVN1dFE5MHhCdy4uRFduNkxhTzNNNUZaNE9NNDNmM1FQSFBEYkg3SHd5"),
     assignedTo: [""], role: "root", email: "rooty@root.com" })
 
 // db.dataset.insertOne({name: "example1", type: "poseTrack"})
