@@ -360,7 +360,7 @@
                             </td>
                             <td>{{action.name}}</td>
                             <th ng-repeat="f in frameList">
-
+<!--                                When neither Start not End selected-->
                                 <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)"
                                         ng-if="(action.startFrame == null && action.endFrame == null)">
                                     <span ng-if="actionManager.isActionSelected == false"
@@ -368,21 +368,22 @@
                                     <span ng-if="(actionManager.isActionSelected == true)"
                                           class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
                                 </button>
-
+<!--                                When Start selected but End not, all from Start green-->
                                 <button class="btn btn-success" ng-click="selectActionFrame(f, action)"
                                         ng-if="(f >= action.startFrame && action.startFrame != null && action.endFrame == null)">
                                     <span class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
                                 </button>
-
+<!--                                When Start selected but End not, all before Start blue-->
                                 <button class="btn btn-primary" ng-click="selectActionFrame(f, action)"
                                         ng-if="(f < action.startFrame && action.startFrame != null && action.endFrame == null)">
                                     <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
                                 </button>
-
+<!--                                When both selected, all not in between Start and End blue-->
                                 <button class="btn btn-primary" ng-if="!(action.startFrame == null || action.endFrame == null)
                                                                     && !(f >= action.startFrame && f <= action.endFrame)">
                                     <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
                                 </button>
+<!--                                When both selected, all in between Start and End green-->
                                 <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
                                                                     && (f >= action.startFrame && f <= action.endFrame)">
                                     <span ng-if="(f >= action.startFrame && f < action.endFrame)"
