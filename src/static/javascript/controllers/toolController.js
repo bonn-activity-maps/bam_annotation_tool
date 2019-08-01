@@ -1000,10 +1000,14 @@ angular.module('CVGTool')
 
     // Remove an existent action
         $scope.removeAction = function(action, object) {
-            toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
-                function(response){
-                    $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
-            })
+            if(action.startFrame == null || action.endFrame == null) {
+                $scope.actionManager.actionList.pop();
+            } else{
+                toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
+                    function(response){
+                        $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
+                    })
+            }
         };
 
     // Function to select time frame for an action. Creates the new action in the backend when selecting the stop frame.
