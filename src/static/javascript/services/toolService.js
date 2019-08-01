@@ -173,7 +173,7 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(repsonse) {
                     callbackSuccess();
-                }),
+                },
                 function errorCallback(response) {
                     console.log(response);
                 })
