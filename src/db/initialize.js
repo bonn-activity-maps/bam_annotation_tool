@@ -12,7 +12,7 @@ db.objectType.insertOne({
     "type": "box",
     "datasetType": "actionInKitchen",
     "numKeypoints": 8,
-    "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
+    "labels": ["tfl", "tfr", "tbl", "tbr", "bfl", "bfr", "bbl", "bbr"]
 })
 
 db.activities.insertMany([
