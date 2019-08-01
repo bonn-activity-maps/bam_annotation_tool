@@ -62,3 +62,19 @@ class ActionService:
             return False, 'Error retrieving actions', 400
         else:
             return True, result, 200
+
+    # Remove an action
+    def removeAction(self,  req):
+        print(req)
+        dataset = req['dataset']
+        objectUID = req['objectUID']
+        name = req['name']
+        user = req['user']
+        startFrame = req['startFrame']
+        endFrame = req['endFrame']
+
+        result = actionManager.removeAction(dataset, objectUID, user, name, startFrame, endFrame)
+        if result == 'Error':
+            return False, 'Error retrieving actions', 400
+        else:
+            return True, result, 200

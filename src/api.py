@@ -418,6 +418,12 @@ def createAction():
     success, msg, status = actionService.createAction(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Remove an action
+@app.route('/api/action/removeAction', methods=['POST'])
+def removeAction():
+    success, msg, status = actionService.removeAction(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 

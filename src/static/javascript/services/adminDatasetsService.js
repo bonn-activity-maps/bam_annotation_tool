@@ -108,6 +108,21 @@ angular.module('CVGTool')
                 });
             },
 
+            exportDataset: function (name, type, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/dataset/exportDataset',
+                    headers: {
+                        'dataset': name,
+                        'datasetType': type
+                    }
+                }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                }, function errorCallback(response) {
+                    callbackError(response.data.msg)
+                });
+            },
+
             getZipFiles: function(callback) {
                 console.log("service");
                 $http({

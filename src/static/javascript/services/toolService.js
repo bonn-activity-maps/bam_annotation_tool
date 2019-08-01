@@ -173,10 +173,108 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(repsonse) {
                     callbackSuccess();
-                }),
+                },
                 function errorCallback(response) {
                     console.log(response);
+                })
+        },
+
+        // Get list of possible Actions
+        getActivitiesList: function(dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/action/getActivities',
+                headers: {
+                    dataset: dataset
                 }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            },
+            function errorCallback(response) {
+                console.log(response);
+            })
+        },
+
+        // Create a new action
+        createAction: function(user, startFrame, endFrame, activity, object, dataset, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/action/createAction',
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'name': activity,
+                    'objectUID': object,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                    callbackError(response.data.msg)
+                })
+        },
+
+        // Fetch the list of all Actions in the frame
+        getActions: function(user, startFrame, endFrame, dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/action/getActions',
+                headers: {
+                    'user': user,
+                    'dataset': dataset,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                })
+        },
+
+        // Fetch the list of all Actions of an Object in the frame
+        getActionsByUID: function(user, objectUID, startFrame, endFrame, dataset, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/action/getActionsByUID',
+                headers: {
+                    'user': user,
+                    'dataset': dataset,
+                    'objectUID': objectUID,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                })
+        },
+
+        // Remove an action
+        removeAction: function(name, user, objectUID, startFrame, endFrame, dataset, callbackSuccess) {
+            $http({
+                method: 'POST',
+                url: '/api/action/removeAction',
+                data: {
+                    'name': name,
+                    'user': user,
+                    'dataset': dataset,
+                    'objectUID': objectUID,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                })
         }
     }
 });

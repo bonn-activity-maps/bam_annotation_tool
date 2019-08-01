@@ -23,6 +23,7 @@
                                         <td class="text-left">{{dataset.name}}</td>
                                         <td>{{dataset.type}}</td>
                                         <td>
+                                            <md-button ng-click="exportDataset(dataset)" class="md-primary md-raised"><span class="glyphicon glyphicon-download"></md-button>
                                             <md-button ng-click="removeDataset(dataset)" class="md-warn md-raised"><span class="glyphicon glyphicon-trash"></md-button>
                                     </td>
                                     <td ng-if="selectedDataset.name != dataset.name">
@@ -71,7 +72,6 @@
                                     </td>
                                     <td class="text-left" ng-if="selectedDataset.name == 'none'">Select a dataset.</td>
 
-                                    <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
                                     <td>-</td>
