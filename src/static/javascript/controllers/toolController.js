@@ -46,7 +46,7 @@ angular.module('CVGTool')
 
             // Switches the value of the principal tool
             $scope.switchTool = function (newTool) {
-                $scope.tool = newTool
+                $scope.tool = newTool;
                 $scope.subTool = '';
 
                 if ($scope.tool.localeCompare("keypoint") == 0) {
@@ -990,20 +990,25 @@ angular.module('CVGTool')
 
             // Create a new blank action
             $scope.createNewAction = function () {
-                $scope.actionManager.actionList.push({
-                    name: $scope.actionManager.selectedType,
-                    objectUID: $scope.actionManager.selectedObject.uid,
-                    startFrame: null,
-                    endFrame: null,
-                    dataset: navSrvc.getActiveDataset().name,
-                    user: navSrvc.getUser().name
-                })
+                if($scope.actionManager.selectedType == null) {
+                    window.alert("Select an activity first.")
+                } else{
+                    $scope.actionManager.actionList.push({
+                        name: $scope.actionManager.selectedType,
+                        objectUID: $scope.actionManager.selectedObject.uid,
+                        startFrame: null,
+                        endFrame: null,
+                        dataset: navSrvc.getActiveDataset().name,
+                        user: navSrvc.getUser().name
+                    })
+                }
             };
 
             // Remove an existent action
             $scope.removeAction = function (action, object) {
                 if (action.startFrame == null || action.endFrame == null) {
                     $scope.actionManager.actionList.pop();
+                    $scope.actionManager.isActionSelected = false;
                 } else {
                     toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
                         function (response) {
