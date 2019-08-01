@@ -1,9 +1,11 @@
 import logging
+import numpy as np
 
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.actionManager import ActionManager
+from python.infrastructure.datasetManager import DatasetManager
 from python.logic.aikService import AIKService
 
 # AnnotationService logger
@@ -13,10 +15,12 @@ annotationManager = AnnotationManager()
 objectTypeManager = ObjectTypeManager()
 frameManager = FrameManager()
 actionManager = ActionManager()
+datasetManager = DatasetManager()
 aikService = AIKService()
 
 
 class AnnotationService:
+    STORAGE_DIR = '/usr/storage/'  # Path to store the annotations
     aik = 'actionInKitchen'
     pt = 'poseTrack'
 
@@ -64,7 +68,18 @@ class AnnotationService:
 
         # Modify original objects which contains info of object with calculated 3d keypoints
         objects["keypoints"] = keypoints3d
-        print(objects)
+        return objects
+
+    # Return the object with the 3d points for AIK datasets
+    def updateAnnotationAIK(self, dataset, frame, objects):
+
+        # Triangulate points from 2D points to 3D if dataset is AIK
+        objects = self.obtain3dPointsAIK(frame, dataset, objects)
+
+        # If the object is not a person -> we have to calculate 8 points for the box of object
+        if objects['type'] != 'personAIK':
+            kp1, kp2, kp3 = np.asarray(objects['keypoints'])
+            objects['keypoints'] = aikService.createBox(kp1, kp2, kp3).tolist()
         return objects
 
     # Return 'ok' if the annotation has been updated
@@ -72,7 +87,7 @@ class AnnotationService:
 
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
-            objects = self.obtain3dPointsAIK(frame, dataset, objects)
+            objects = self.updateAnnotationAIK(dataset, frame, objects)
 
         # Update only one object in the annotation for concrete frame
         result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
@@ -121,35 +136,6 @@ class AnnotationService:
             else:
                 return True, {'maxUid': newUid}, 200
 
-    # Export annotation to a file for given dataset
-    def exportAnnotation(self, dataset):
-        # Remove [] from pid
-        persons = annotationManager.getPersonObjectsByDataset(dataset)
-        objects = annotationManager.getObjectsByDataset(dataset)
-        actions = actionManager.getActionsByDataset(dataset)
-
-        if persons == 'Error' or objects == 'Error' or actions == 'Error':
-            return False, 'Error getting annotations for the dataset', 400
-        else:
-            # Create the mean of all annotations
-
-            # # Export to file
-            # personsDict = {}
-            # for r in result:
-            #     persons = []
-            #     for a in r["objects"]:
-            #         persons.append({"pid": a["uid"], "location": a["location"]})
-            #     p = {"frame": r['frame'], "persons": persons}
-
-            finalAnnotation = {
-                "persons": persons,
-                "objects": objects,
-                "actions": actions
-            }
-
-            print(finalAnnotation)
-            return True, persons, 200
-
     # Get annotation of object in frame
     def getAnnotationFrameObject(self, dataset, video, frame, user, obj):
         result = annotationManager.getFrameObject(dataset, video, frame, user, obj)
@@ -181,4 +167,58 @@ class AnnotationService:
             return True, result, 200
         else:
             return False, result, 500
+
+    # Interpolate all keypoints between 2 points
+    def interpolate(self, numFrames, numKpts, kpDim, kps1, kps2):
+        # Structure to store all keypoints ordered by frame (row: frame, column:kpt)
+        finalKpts = np.zeros((numFrames, numKpts, 3))
+
+        # Interpolate for all keypoints in all frames in between
+        for i in range(numKpts):
+            interpolatedKps = []
+
+            # Interpolate each coordinate of keypoint
+            for j in range(kpDim):
+                interpolatedCoords = np.linspace(kps1[i][j], kps2[i][j], num=numFrames)
+                interpolatedKps.append(interpolatedCoords)
+
+            interpolatedKps = np.asarray(interpolatedKps)
+
+            # Build interpolated keypoints for each frame
+            for k in range(len(interpolatedKps[0])):
+                finalKpts[k,i] = interpolatedKps[:,k]
+
+        return finalKpts
+
+    # Interpolate and store the interpolated 3d points
+    def interpolateAnnotation(self, dataset, scene, user, startFrame, endFrame, uidObject):
+        # Search object in respective start and end frames
+        obj1 = annotationManager.getFrameObject(dataset, scene, startFrame, user, uidObject)
+        obj2 = annotationManager.getFrameObject(dataset, scene, endFrame, user, uidObject)
+
+        type = obj1['type']
+        kps1 = obj1['keypoints']
+        kps2 = obj2['keypoints']
+
+        numFrames = endFrame-startFrame+1
+        numKpts = len(kps1)
+        kpDim = int(datasetManager.getDataset(dataset)['keypointDim'])
+        finalResult = 'ok'
+
+        # Final keypoints
+        finalKpts = self.interpolate(numFrames, numKpts, kpDim, kps1, kps2)
+
+        # Store interpolated keypoints for frames in between (avoid start and end frame)
+        for i in range(1, finalKpts.shape[0]-1):
+            obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
+
+            result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj)
+            if result == 'Error':
+                finalResult = 'There was some error interpolating the keypoints, please check them'
+
+        if finalResult == 'ok':
+            return True, finalResult, 200
+        else:
+            log.error('Error interpolating keypoints')
+            return False, finalResult, 500
 

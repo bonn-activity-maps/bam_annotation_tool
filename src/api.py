@@ -141,6 +141,12 @@ def loadZip():
     success, msg, status = datasetService.loadZip(req_data['name'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Export annotation to a file for given dataset
+@app.route('/api/dataset/exportDataset', methods=['GET'])
+def exportDataset():
+    success, msg, status = datasetService.exportDataset(request.headers['dataset'], request.headers['datasetType'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### VIDEO ####
 
@@ -229,18 +235,19 @@ def updateAnnotationValidation():
 # Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
 def createNewUidObject():
-    print("llego")
     req_data = request.get_json()
     success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
                                                                 req_data['frame'], req_data['user'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Export annotation to a file for given dataset
-@app.route('/api/annotation/exportAnnotation', methods=['GET'])
-def exportAnnotation():
-    success, msg, status = annotationService.exportAnnotation(request.headers['dataset'])
+# Interpolate between 2 points and store the interpolated 3d points
+@app.route('/api/annotation/interpolate', methods=['POST'])
+def interpolateAnnotation():
+    req_data = request.get_json()
+    # uid, startFrame y endFrame
+    success, msg, status = annotationService.interpolateAnnotation(req_data['dataset'], req_data['scene'], req_data['user'],
+                                                         req_data['startFrame'], req_data['endFrame'], req_data['uidObject'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 #####
 
