@@ -74,7 +74,7 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, frame, cameraName, dataset, callbackSuccess) {
+        projectToCamera: function(uid, type, points, frame, cameraName, dataset, canvasNumber, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/aik/projectToCamera',
@@ -85,9 +85,7 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                console.log("Projected:");
-                console.log(response.data.msg);
-                callbackSuccess(uid, type, frame, response.data.msg)
+                callbackSuccess(canvasNumber, uid, type, frame, response.data.msg)
             }, function errorCallback(response) {
                 console.log(response.data.msg);
             })
