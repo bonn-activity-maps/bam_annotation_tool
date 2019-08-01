@@ -124,8 +124,8 @@
                     <hr/>
                     <!-- Keypoints tool -->
                     <div ng-click="switchTool('keypoint')">
-                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='keypoint'"><span class=" glyphicon glyphicon-screenshot "></button>
-                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='keypoint'"><span class=" glyphicon glyphicon-screenshot "></button>
+                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='keypoint'"><span class=" glyphicon glyphicon-pushpin "></button>
+                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='keypoint'"><span class=" glyphicon glyphicon-pushpin"></button>
                     </div>
                 </div>
             </div>
@@ -171,7 +171,10 @@
                                 <tbody>
                                     <tr ng-repeat="object in objectManager.selectedType.objects">
                                         <td>{{object.uid}}</td>
-                                        <th ng-repeat="f in object.frames"><button class="btn btn-invisible" ng-click="openKeyPointEditor(object,f.frame)"><span ng-if="f.keypoints.length != 0" class="glyphicon glyphicon-pushpin"></span></button></th>
+                                        <th ng-repeat="f in object.frames">
+                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span class="glyphicon glyphicon-pushpin"></span></button>
+                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span class="glyphicon glyphicon-pushpin"></span></button>
+                                        </th>
                                     </tr>
                                     <tr>
                                         <td><button class="btn btn-primary" ng-click="createNewObject()"><span class="glyphicon glyphicon-plus"></span></button></td>
@@ -251,11 +254,13 @@
                         <tbody>
                             <tr>
                                 <td>Neck</td>
-                                <th><button class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
-                                    <button class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
+                                <th><button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
+                                    <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
+                                    <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
+                                    <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
                                 </th>
                                 <th>
-                                    <button class="btn btn-primary" ng-click="clearNewPoint();"><span class="glyphicon glyphicon-remove"></span></button>
+                                    <button ng-click="clearNewPoint(1);" class="btn btn-primary" ng-click="clearNewPoint();"><span class="glyphicon glyphicon-remove"></span></button>
                                 </th>
                             </tr>
                         </tbody>
