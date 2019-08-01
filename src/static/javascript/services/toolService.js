@@ -51,7 +51,7 @@ angular.module('CVGTool')
                         'user': user
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg)
+                    callbackSuccess(response.data.msg, 1)
                 }),
                 function errorCallback(response) {
                     console.log(response)
@@ -110,6 +110,25 @@ angular.module('CVGTool')
             })
         },
 
+        // Retrieves the object defined by objectUid
+        getAnnotationOfFrameByUID: function(user, dataset, scene, objectUid, frame, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: "api/annotation/getAnnotation/object",
+                data: {
+                    "dataset": dataset,
+                    "user": user,
+                    "scene": scene,
+                    "frame": frame,
+                    "uidObject": objectUid
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg, 2);
+            }, function errorCallback(response) {
+                console.log(response);
+            })
+        },
+
         // Sends the 2D points to the server to triangulate and create the new 3D point
         updateAnnotation: function(user, dataset, scene, frame, object, point1, point2, camera1, camera2, callbackSuccess) {
             $http({
@@ -161,18 +180,18 @@ angular.module('CVGTool')
 
         interpolate: function(user, dataset, scene, startFrame, endFrame, uidObject, callbackSuccess) {
             $http({
-                    method: 'POST',
-                    url: "/api/annotation/interpolate",
-                    data: {
-                        'user': user,
-                        'dataset': dataset,
-                        'scene': scene,
-                        'startFrame': startFrame,
-                        'endFrame': endFrame,
-                        'uidObject': uidObject
-                    }
-                }).then(function successCallback(repsonse) {
-                    callbackSuccess();
+                method: 'POST',
+                url: "/api/annotation/interpolate",
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'uidObject': uidObject
+                }
+            }).then(function successCallback(repsonse) {
+                    callbackSuccess(uidObject);
                 },
                 function errorCallback(response) {
                     console.log(response);
@@ -188,11 +207,11 @@ angular.module('CVGTool')
                     dataset: dataset
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg)
-            },
-            function errorCallback(response) {
-                console.log(response);
-            })
+                    callbackSuccess(response.data.msg)
+                },
+                function errorCallback(response) {
+                    console.log(response);
+                })
         },
 
         // Create a new action
