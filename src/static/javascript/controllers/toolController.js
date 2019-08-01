@@ -2,45 +2,46 @@ angular.module('CVGTool')
 
 .controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams',
     function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
-    // Parameters received from the task
-    $scope.frameFrom = $stateParams.obj.from;
-    $scope.frameTo = $stateParams.obj.to;
-    $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom; // TODO: hardcoded for the time being
+        // Parameters received from the task
+        $scope.frameFrom = $stateParams.obj.from;
+        $scope.frameTo = $stateParams.obj.to;
+        $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom; // TODO: hardcoded for the time being
 
-    // Convert the interval of frames in a list of friends
-    $scope.getListOfFrameNumbers = function() {
-        var frames = [];
-        for (var i = $scope.frameFrom; i <= $scope.frameTo; i++) {
-            frames.push(i);
+        // Convert the interval of frames in a list of friends
+        $scope.getListOfFrameNumbers = function() {
+            var frames = [];
+            for (var i = $scope.frameFrom; i <= $scope.frameTo; i++) {
+                frames.push(i);
+            }
+            return frames;
         }
-        return frames;
-    }
 
-    $scope.frameList = $scope.getListOfFrameNumbers();
+        $scope.frameList = $scope.getListOfFrameNumbers();
 
-    // Enable tooltips
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
+        // Enable tooltips
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
 
-    //////// TOOLS
-    $scope.tool = 'navigation'; // navigation = Normal
-    // keypoint = Key-Point mode
+        //////// TOOLS
+        $scope.tool = 'navigation'; // navigation = Normal
+        // keypoint = Key-Point mode
 
-    $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
-    $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
-    $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
-    $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
+        $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
+        $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
+        $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
+        $scope.keyPointEditorEditFlag = false;
+        $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
 
         // Switches the value of the secondary tool
-    $scope.switchSubTool = function(sT) {
-        if ($scope.subTool.localeCompare(sT) == 0) {
-            $scope.subTool = '';
-            return;
-        }
-        $scope.subTool = sT;
-    };
+        $scope.switchSubTool = function(sT) {
+            if ($scope.subTool.localeCompare(sT) == 0) {
+                $scope.subTool = '';
+                return;
+            }
+            $scope.subTool = sT;
+        };
 
 
     // Switches the value of the principal tool

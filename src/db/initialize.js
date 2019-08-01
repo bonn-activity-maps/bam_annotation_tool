@@ -75,14 +75,14 @@ db.annotation.insertOne({
     "dataset": "Testing_2",
     "validated": "uncheck",
     "objects": [{
-        "uid": "1",
-        "type": "person",
-        "keypoints": [
-            [3, 3, 1, ""],
-            [4, 4, 4, ""]
-        ],
-        "labels": ["l1", "l2"]
-    },
+            "uid": "1",
+            "type": "person",
+            "keypoints": [
+                [3, 3, 1, ""],
+                [4, 4, 4, ""]
+            ],
+            "labels": ["l1", "l2"]
+        },
         {
             "uid": 5,
             "type": "table",
@@ -91,7 +91,8 @@ db.annotation.insertOne({
                 [100, 100, 100, ""]
             ],
             "labels": ["l5", "l4"]
-        }]
+        }
+    ]
 })
 
 db.action.insertOne({
@@ -120,43 +121,36 @@ db.objectType.insertOne({
 })
 
 db.objectType.insertOne({
-    "type": "microwave",
-    "datasetType": "actionInKitchen",
-    "numKeypoints": "8",
-    "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
-})
-
-db.objectType.insertOne({
-    "type": "table",
+    "type": "box",
     "datasetType": "actionInKitchen",
     "numKeypoints": "8",
     "labels": ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
 })
 
 db.activities.insertMany([
-    {"name": 'drinking'},
-    {"name": 'eating'},
-    {"name": 'washing dishes'},
-    {"name": 'cutting cake'},
-    {"name": 'writing on whiteboard'},
-    {"name": 'phone call'},
-    {"name": 'type/read on phone'},
-    {"name": 'read paper'},
-    {"name": 'use laptop'},
-    {"name": 'peel fruit'},
-    {"name": 'put dish in dishwasher'},
-    {"name": 'start dishwasher'},
-    {"name": 'pour milk into mug'},
-    {"name": 'fill water into water heater'},
-    {"name": 'boil water'},
-    {"name": 'prepare tea'},
-    {"name": 'get glass of water'},
-    {"name": 'use coffee machine'},
-    {"name": 'fill water into coffee machine'},
-    {"name": 'clear tray of coffee machine'},
-    {"name": 'walking'},
-    {"name": 'standing'},
-    {"name": 'leaning'},
-    {"name": 'sitting'},
-    {"name": 'crouching'}
+    { "name": 'drinking' },
+    { "name": 'eating' },
+    { "name": 'washing dishes' },
+    { "name": 'cutting cake' },
+    { "name": 'writing on whiteboard' },
+    { "name": 'phone call' },
+    { "name": 'type/read on phone' },
+    { "name": 'read paper' },
+    { "name": 'use laptop' },
+    { "name": 'peel fruit' },
+    { "name": 'put dish in dishwasher' },
+    { "name": 'start dishwasher' },
+    { "name": 'pour milk into mug' },
+    { "name": 'fill water into water heater' },
+    { "name": 'boil water' },
+    { "name": 'prepare tea' },
+    { "name": 'get glass of water' },
+    { "name": 'use coffee machine' },
+    { "name": 'fill water into coffee machine' },
+    { "name": 'clear tray of coffee machine' },
+    { "name": 'walking' },
+    { "name": 'standing' },
+    { "name": 'leaning' },
+    { "name": 'sitting' },
+    { "name": 'crouching' }
 ]);
