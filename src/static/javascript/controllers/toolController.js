@@ -950,6 +950,8 @@ angular.module('CVGTool')
 
         // Update the selected type in the object manager
         $scope.objectManager.selectedType = $scope.objectManager.objectTypes[type.toString()];
+
+        $scope.refreshProjectionOfCanvases();
     }
 
 
@@ -1000,10 +1002,10 @@ angular.module('CVGTool')
     }
 
     // Callback function of triangulate
-    var callbackTriangulate3DPoint = function() {
+    var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
         window.alert("Annotation updated!");
         $scope.clearNewPoint(1);
-        $scope.retrieveObjects();
+        $scope.interpolate(objectUid, objectType, frameTo);
 
         // Refresh the selected object so the table of annotations updates
         var selected = $scope.objectManager.selectedType.type;
@@ -1014,13 +1016,39 @@ angular.module('CVGTool')
     $scope.updateAnnotation = function() {
         if ($scope.newPoint.point1.length != 0 && $scope.newPoint.point2.length != 0) {
             // Go to triangulate
-            toolSrvc.updateAnnotation(navSrvc.getUser().name, navSrvc.getActiveDataset(), navSrvc.getActiveDataset().name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, callbackTriangulate3DPoint);
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, navSrvc.getActiveDataset(), navSrvc.getActiveDataset().name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, updateAnnotationCallback);
         } else window.alert("You need to place point 1 and 2 (in two different cameras)");
     }
 
     // Function that creates a new object
     $scope.createNewObject = function() {
         toolSrvc.createNewObject(navSrvc.getUser().name, navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, $scope.objectManager.selectedType.type, $scope.slider.value, callbackCreateNewObject);
+    }
+
+    var callbackInterpolate = function() {
+        $scope.retrieveObjects();
+    }
+
+    $scope.interpolate = function(objectUid, objectType, frameTo) {
+        if (frameTo == 1) callbackInterpolate(); // If its not possible to interpolate, jump this step
+
+        // Find the closest previous annotated frame for that object
+        var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
+        var frameFrom = null;
+        console.log(frameTo - 1);
+        console.log(frameTo - 5);
+        for (var i = frameTo - 1; i >= Math.max(0, frameTo - 5); i--) {
+            if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
+                frameFrom = i;
+                break;
+            }
+        }
+
+        // Interpolate if possible
+        if (frameFrom != null) {
+            toolSrvc.interpolate(navSrvc.getUser().name, navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, frameFrom, frameTo, objectUid, callbackInterpolate);
+        } else callbackInterpolate();
+
     }
 
     // Callback function to fill the availableObjects array with the retrieved data

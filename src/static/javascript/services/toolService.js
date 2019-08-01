@@ -133,7 +133,7 @@ angular.module('CVGTool')
                     }
                 }
             }).then(function successCallback(response) {
-                callbackSuccess();
+                callbackSuccess(object.uid, object.type, frame);
             }, function errorCallback(response) {
                 console.log(response)
             })
@@ -153,6 +153,26 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg.maxUid, type)
+                }),
+                function errorCallback(response) {
+                    console.log(response);
+                }
+        },
+
+        interpolate: function(user, dataset, scene, startFrame, endFrame, uidObject, callbackSuccess) {
+            $http({
+                    method: 'POST',
+                    url: "/api/annotation/interpolate",
+                    data: {
+                        'user': user,
+                        'dataset': dataset,
+                        'scene': scene,
+                        'startFrame': startFrame,
+                        'endFrame': endFrame,
+                        'uidObject': uidObject
+                    }
+                }).then(function successCallback(repsonse) {
+                    callbackSuccess();
                 }),
                 function errorCallback(response) {
                     console.log(response);
