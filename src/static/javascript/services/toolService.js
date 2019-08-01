@@ -51,7 +51,7 @@ angular.module('CVGTool')
                         'user': user
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg, 1)
+                    callbackSuccess(response.data.msg)
                 }),
                 function errorCallback(response) {
                     console.log(response)
@@ -114,8 +114,8 @@ angular.module('CVGTool')
         getAnnotationOfFrameByUID: function(user, dataset, scene, objectUid, frame, callbackSuccess) {
             $http({
                 method: 'GET',
-                url: "api/annotation/getAnnotation/object",
-                data: {
+                url: "/api/annotation/getAnnotation/object",
+                headers: {
                     "dataset": dataset,
                     "user": user,
                     "scene": scene,
@@ -123,7 +123,7 @@ angular.module('CVGTool')
                     "uidObject": objectUid
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, 2);
+                callbackSuccess(response.data.msg, frame);
             }, function errorCallback(response) {
                 console.log(response);
             })

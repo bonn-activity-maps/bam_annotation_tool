@@ -252,13 +252,12 @@ def interpolateAnnotation():
 #####
 
 # Get annotation of one object in frame for given frame, dataset, video and user
-# TODO: The method returns all objects -> it should return only the object we ask for
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def getAnnotationFrameObject():
     success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'],
-                                                                      request.headers['video'],
-                                                                      request.headers['frame'], request.headers['user'],
-                                                                      request.headers['uidObject'])
+                                                                      request.headers['scene'],
+                                                                      int(request.headers['frame']), request.headers['user'],
+                                                                      int(request.headers['uidObject']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -269,7 +268,7 @@ def getAnnotationFrameObject():
 #     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
+# TODO: check
 # Remove object in annotation for given frame, dataset, video and user
 @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
 def removeAnnotationFrameObject():

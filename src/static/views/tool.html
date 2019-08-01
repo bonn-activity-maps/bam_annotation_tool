@@ -7,11 +7,14 @@
                     <h4>Videos</h4>
                     <hr/>
                     <div ng-repeat="video in loadedCameras">
-                        <div class="container text-center" style="width: 80px; height: width/1.5; padding-bottom: 15px;">
-                            <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[0].image}}" />
+                        <div class="container text-center"
+                             style="width: 80px; height: width/1.5; padding-bottom: 15px;">
+                            <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)"
+                                 src="{{video.frames[0].image}}"/>
                         </div>
                     </div>
-                    <button ng-click="addCamera()" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+                    <button ng-click="addCamera()" class="btn btn-default"><span
+                            class="glyphicon glyphicon-plus"></span></button>
                     <!-- <button ng-click="retrieveObjects()" class="btn btn-default"><span class="glyphicon glyphicon-tower"></span> Objects</button> -->
                 </div>
             </div>
@@ -47,10 +50,14 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-2">
-                                <button ng-click="previousFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left"></span></button>
-                                <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-play"></button>
-                                <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span class="glyphicon glyphicon-pause"></button>
-                                <button ng-click="nextFrame()" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                                <button ng-click="previousFrame()" class="btn btn-default"><span
+                                        class="glyphicon glyphicon-chevron-left"></span></button>
+                                <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span
+                                        class="glyphicon glyphicon-play"></button>
+                                <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span
+                                        class="glyphicon glyphicon-pause"></button>
+                                <button ng-click="nextFrame()" class="btn btn-default"><span
+                                        class="glyphicon glyphicon-chevron-right"></span></button>
                             </div>
                             <div class="col-md-10">
                                 <rzslider rz-slider-model="slider.value" rz-slider-options="slider.options"></rzslider>
@@ -84,23 +91,31 @@
                     <div ng-if="tool=='numCanvas'">
                         <!-- One panel -->
                         <div class="row">
-                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=1" ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
-                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==1" ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
+                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=1"
+                                    ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
+                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==1"
+                                    ng-click="switchNumberOfCanvases(1)"><strong>1</strong></button>
                         </div>
                         <!-- Two panels -->
                         <div class="row">
-                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=2" ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
-                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==2" ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
+                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=2"
+                                    ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
+                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==2"
+                                    ng-click="switchNumberOfCanvases(2)"><strong>2</strong></button>
                         </div>
                         <!-- Three panels -->
                         <div class="row">
-                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=3" ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
-                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==3" ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
+                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=3"
+                                    ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
+                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==3"
+                                    ng-click="switchNumberOfCanvases(3)"><strong>3</strong></button>
                         </div>
                         <!-- Two panels -->
                         <div class="row">
-                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=4" ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
-                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==4" ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
+                            <button class="btn btn-default btn-circle" ng-if="numberOfCanvases!=4"
+                                    ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
+                            <button class="btn btn-default btn-circle-selected" ng-if="numberOfCanvases==4"
+                                    ng-click="switchNumberOfCanvases(4)"><strong>4</strong></button>
                         </div>
                     </div>
                     <hr/>
@@ -124,15 +139,18 @@
                     <hr/>
                     <!-- Keypoints tool -->
                     <div ng-click="switchTool('keypoint')">
-                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='keypoint'"><span class=" glyphicon glyphicon-pushpin "></button>
-                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='keypoint'"><span class=" glyphicon glyphicon-pushpin"></button>
+                        <button class="btn btn-default btn-xl btn-circle" ng-if="tool!='keypoint'"><span
+                                class=" glyphicon glyphicon-pushpin "></button>
+                        <button class="btn btn-default btn-xl btn-circle-selected" ng-if="tool=='keypoint'"><span
+                                class=" glyphicon glyphicon-pushpin"></button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Kepoint Manager Panel -->
-        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true">
+        <div id="keyPointManagerPanel" class="panel panel-default"
+             style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -142,7 +160,8 @@
                         Keypoint Manager
                     </div>
                     <div class="col-sm-1">
-                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
                     </div>
                 </div>
             </div>
@@ -157,28 +176,36 @@
                     <div id="3dkeypoints" class="tab-pane fade in active">
                         <div class="form-group">
                             <label for="sel1">Select Object type:</label>
-                            <select class="form-control" id="sel1" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
-                                    </select>
+                            <select class="form-control" id="sel1" ng-model="objectManager.selectedType"
+                                    ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                            </select>
                         </div>
                         <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
                             <table class="table table-hover table-bordered">
                                 <thead>
-                                    <tr>
-                                        <th>Objects</th>
-                                        <th ng-repeat="frame in frameList">{{frame}}</th>
-                                    </tr>
+                                <tr>
+                                    <th>Objects</th>
+                                    <th ng-repeat="frame in frameList">{{frame}}</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="object in objectManager.selectedType.objects">
-                                        <td>{{object.uid}}</td>
-                                        <th ng-repeat="f in object.frames">
-                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span class="glyphicon glyphicon-pushpin"></span></button>
-                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span class="glyphicon glyphicon-pushpin"></span></button>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td><button class="btn btn-primary" ng-click="createNewObject()"><span class="glyphicon glyphicon-plus"></span></button></td>
-                                    </tr>
+                                <tr ng-repeat="object in objectManager.selectedType.objects">
+                                    <td>{{object.uid}}</td>
+                                    <th ng-repeat="f in object.frames">
+                                        <button class="btn btn-success" ng-if="f.keypoints.length != 0"
+                                                ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                        <button class="btn btn-info" ng-if="f.keypoints.length == 0"
+                                                ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button class="btn btn-primary" ng-click="createNewObject()"><span
+                                                class="glyphicon glyphicon-plus"></span></button>
+                                    </td>
+                                </tr>
 
                                 </tbody>
                             </table>
@@ -189,14 +216,15 @@
                         <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
                             <table class="table table-hover table-bordered">
                                 <thead>
-                                    <tr>
-                                        <th>Objects</th>
-                                    </tr>
+                                <tr>
+                                    <th>Objects</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="object in objectManager.objectTypes['personAIK'].objects" ng-click="openActionsEditor(object)">
-                                        <td>{{object.uid}}</td>
-                                    </tr>
+                                <tr ng-repeat="object in objectManager.objectTypes['personAIK'].objects"
+                                    ng-click="openActionsEditor(object)">
+                                    <td>{{object.uid}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -206,7 +234,8 @@
         </div>
 
         <!-- Keypoint editor mini panel-->
-        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true">
+        <div id="keyPointEditorPanel" class="panel panel-default"
+             style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -216,7 +245,8 @@
                         Keypoint Editor
                     </div>
                     <div class="col-sm-1">
-                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
                     </div>
                 </div>
             </div>
@@ -250,20 +280,29 @@
                     <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
                         <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
                             <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Points</th>
-                                </tr>
+                            <tr>
+                                <th>Id</th>
+                                <th>Points</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Neck</td>
-                                    <th><button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
-                                        <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
-                                        <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
-                                        <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
-                                    </th>
-                                </tr>
+                            <tr>
+                                <td>Neck</td>
+                                <th>
+                                    <button ng-if="newPoint.point1.length == 0" class="btn btn-info"
+                                            ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');">
+                                        <span>1</span></button>
+                                    <button ng-if="newPoint.point1.length != 0" class="btn btn-success"
+                                            ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');">
+                                        <span>1</span></button>
+                                    <button ng-if="newPoint.point2.length == 0" class="btn btn-info"
+                                            ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');">
+                                        <span>2</span></button>
+                                    <button ng-if="newPoint.point2.length != 0" class="btn btn-success"
+                                            ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');">
+                                        <span>2</span></button>
+                                </th>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -273,7 +312,8 @@
         </div>
 
         <!-- Actions editor panel -->
-        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 700px; height: 400px;" ng-show="actionsEditorTab==true">
+        <div id="ActionsEditorPanel" class="panel panel-default"
+             style="position: absolute; width: 700px; height: 400px;" ng-show="actionsEditorTab==true">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -283,7 +323,8 @@
                         Actions Editor
                     </div>
                     <div class="col-sm-1">
-                        <button class="btn-invisible btn-xs" ng-click="closeActionsEditor()"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button class="btn-invisible btn-xs" ng-click="closeActionsEditor()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
                     </div>
                 </div>
             </div>
@@ -304,36 +345,59 @@
                 <div class="container" style="overflow: auto; max-height: 200px; max-width: 500px;">
                     <table class="table table-hover table-bordered">
                         <thead>
-                            <tr>
-                                <th>Action</th>
-                                <th>Action</th>
-                                <th ng-repeat="frame in frameList">{{frame}}</th>
-                            </tr>
+                        <tr>
+                            <th>Remove</th>
+                            <th>Action</th>
+                            <th ng-repeat="frame in frameList">{{frame}}</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="action in actionManager.actionList">
-                                <td><button class="btn-danger" ng-click="removeAction(action)">
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </button> </td>
-                                <td>{{action.name}}</td>
-                                <th ng-repeat="f in frameList">
-                                    <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)" ng-if="(action.startFrame == null || action.endFrame == null)">
-                                    <span ng-if="actionManager.isActionSelected == false" class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
-                                    <span ng-if="(actionManager.isActionSelected == true)" class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                        <tr ng-repeat="action in actionManager.actionList">
+                            <td>
+                                <button class="btn-danger" ng-click="removeAction(action)">
+                                    <span class="glyphicon glyphicon-remove"></span>
                                 </button>
-                                    <button class="btn btn-primary" ng-if="!(action.startFrame == null || action.endFrame == null)
+                            </td>
+                            <td>{{action.name}}</td>
+                            <th ng-repeat="f in frameList">
+<!--                                When neither Start not End selected-->
+                                <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)"
+                                        ng-if="(action.startFrame == null && action.endFrame == null)">
+                                    <span ng-if="actionManager.isActionSelected == false"
+                                          class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                    <span ng-if="(actionManager.isActionSelected == true)"
+                                          class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                                </button>
+<!--                                When Start selected but End not, all from Start green-->
+                                <button class="btn btn-success" ng-click="selectActionFrame(f, action)"
+                                        ng-if="(f >= action.startFrame && action.startFrame != null && action.endFrame == null)">
+                                    <span class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                </button>
+<!--                                When Start selected but End not, all before Start blue-->
+                                <button class="btn btn-primary" ng-click="selectActionFrame(f, action)"
+                                        ng-if="(f < action.startFrame && action.startFrame != null && action.endFrame == null)">
+                                    <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
+                                </button>
+<!--                                When both selected, all not in between Start and End blue-->
+                                <button class="btn btn-primary" ng-if="!(action.startFrame == null || action.endFrame == null)
                                                                     && !(f >= action.startFrame && f <= action.endFrame)">
                                     <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
                                 </button>
-                                    <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
+<!--                                When both selected, all in between Start and End green-->
+                                <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
                                                                     && (f >= action.startFrame && f <= action.endFrame)">
-                                    <span ng-if="(f >= action.startFrame && f < action.endFrame)" class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
-                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                                    <span ng-if="(f >= action.startFrame && f < action.endFrame)"
+                                          class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-pause"
+                                          style="filter: invert(1);"></span>
                                 </button>
-                            </tr>
-                            <tr>
-                                <td><button class="btn btn-primary" ng-click="createNewAction()"><span class="glyphicon glyphicon-plus"></span></button></td>
-                            </tr>
+                        </tr>
+                        <tr>
+                            <td>
+                                <button class="btn btn-primary" ng-click="createNewAction()"><span
+                                        class="glyphicon glyphicon-plus"></span></button>
+                            </td>
+                        </tr>
 
                         </tbody>
                     </table>
