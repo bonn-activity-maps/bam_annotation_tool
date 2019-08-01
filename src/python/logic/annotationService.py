@@ -70,12 +70,24 @@ class AnnotationService:
         objects["keypoints"] = keypoints3d
         return objects
 
+    # Return the object with the 3d points for AIK datasets
+    def updateAnnotationAIK(self, dataset, frame, objects):
+
+        # Triangulate points from 2D points to 3D if dataset is AIK
+        objects = self.obtain3dPointsAIK(frame, dataset, objects)
+
+        # If the object is not a person -> we have to calculate 8 points for the box of object
+        if objects['type'] != 'personAIK':
+            kp1, kp2, kp3 = np.asarray(objects['keypoints'])
+            objects['keypoints'] = aikService.createBox(kp1, kp2, kp3).tolist()
+        return objects
+
     # Return 'ok' if the annotation has been updated
     def updateAnnotation(self, dataset, datasetType, scene, frame, user, objects):
 
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
-            objects = self.obtain3dPointsAIK(frame, dataset, objects)
+            objects = self.updateAnnotationAIK(dataset, frame, objects)
 
         # Update only one object in the annotation for concrete frame
         result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
