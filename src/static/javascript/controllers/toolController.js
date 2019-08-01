@@ -925,22 +925,31 @@ angular.module('CVGTool')
         });
     };
 
+    // Fetch all actions from database
     $scope.getActionsList = function() {
+        $scope.actionManager.actionList = [];
         toolSrvc.getActions(navSrvc.getUser().name, $scope.frameFrom, $scope.frameTo, navSrvc.getActiveDataset().name,
             function (actionList) {
-            console.log("action list");
-            console.log(actionList);
-            $scope.actionList = actionList;
-            console.log($scope.actionList);
+            $scope.actionManager.actionList = actionList;
+            })
+    };
+
+    // Fetch all actions of an Object from database
+    $scope.getActionsListByUID = function(objectUID) {
+        $scope.actionManager.actionList = [];
+        toolSrvc.getActionsByUID(navSrvc.getUser().name, objectUID,
+            $scope.frameFrom, $scope.frameTo, navSrvc.getActiveDataset().name,
+            function (actionList) {
+                $scope.actionManager.actionList = actionList;
+                console.log(actionList)
             })
     };
 
     // Function that opens the panel to edit actions
     $scope.openActionsEditor = function(object) {
-        $scope.getActionsList();
         $scope.actionsEditorTab = true;
         $scope.actionManager.selectedObject = object;
-        // $scope.slider.value = frame;
+        $scope.getActionsListByUID(object.uid);
     };
 
     // Function that closes the panel to edit actions
@@ -949,6 +958,7 @@ angular.module('CVGTool')
         $scope.actionManager.selectedObject = null; // De-select the selected object when closing the panel
     };
 
+    // Create a new blank action
     $scope.createNewAction = function() {
         $scope.actionManager.actionList.push({
             name: $scope.actionManager.selectedType,
@@ -960,7 +970,15 @@ angular.module('CVGTool')
         })
     };
 
-    // Function to select time frame for an action
+    // Remove an existent action
+        $scope.removeAction = function(action, object) {
+            toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
+                function(response){
+                    $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
+            })
+        };
+
+    // Function to select time frame for an action. Creates the new action in the backend when selecting the stop frame.
     $scope.selectActionFrame = function(frame, action) {
         if(!$scope.actionManager.isActionSelected) {
             $scope.actionManager.isActionSelected = true;
@@ -1140,6 +1158,4 @@ angular.module('CVGTool')
     $scope.retrieveAvailableObjectTypes();
     $scope.retrieveObjects();
     $scope.getActivitiesList();
-    $scope.getActionsList();
-    console.log($scope.actionManager);
 }]);

@@ -284,7 +284,8 @@
                 <form class="form-horizontal">
                     <div class="form-group">
                         <label for="sel2">Select activity:</label>
-                        <select class="form-control" id="sel2" ng-model="actionManager.activitiesList">
+                        <select class="form-control" id="sel2" ng-model="actionManager.selectedType" >
+                            <option ng-repeat="name in actionManager.activitiesList">{{name}}</option>
                         </select>
 <!--                        <label class="control-label col-sm-2">Placeholder:</label>-->
 <!--                        <div class="col-sm-10">-->
@@ -297,14 +298,31 @@
                     <table class="table table-hover table-bordered">
                         <thead>
                         <tr>
-                            <th>Actions</th>
+                            <th>Action</th>
+                            <th>Action</th>
                             <th ng-repeat="frame in frameList">{{frame}}</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="action in actionManager.actionList">
+                            <td><button class="btn-danger" ng-click="removeAction(action)">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button> </td>
                             <td>{{action.name}}</td>
-                            <th ng-repeat="f in frameList"><button class="btn btn-invisible" ng-click="selectActionFrame(f, action)"><span ng-if="actionManager.isActionSelected == false" class="glyphicon glyphicon-play" style="filter: invert(1);"></span><span ng-if="actionManager.isActionSelected == true" class="glyphicon glyphicon-pause" style="filter: invert(1);"></span></button></th>
+                            <th ng-repeat="f in frameList" >
+                                <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)" ng-if="(action.startFrame == null || action.endFrame == null)" >
+                                    <span ng-if="actionManager.isActionSelected == false" class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                    <span ng-if="(actionManager.isActionSelected == true)" class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                                </button>
+                                <button class="btn btn-primary" ng-if="!(action.startFrame == null || action.endFrame == null)
+                                                                    && !(f >= action.startFrame && f <= action.endFrame)" >
+                                    <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
+                                </button>
+                                <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
+                                                                    && (f >= action.startFrame && f <= action.endFrame)" >
+                                    <span ng-if="(f >= action.startFrame && f < action.endFrame)" class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                                </button>
                         </tr>
                         <tr>
                             <td><button class="btn btn-primary" ng-click="createNewAction()"><span class="glyphicon glyphicon-plus"></span></button></td>
