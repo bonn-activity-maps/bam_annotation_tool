@@ -29,6 +29,8 @@ angular.module('CVGTool')
     $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
     $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
     $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
+    $scope.keyPointEditorEditFlag = false;
+
 
     // Switches the value of the secondary tool
     $scope.switchSubTool = function(sT) {
@@ -68,9 +70,14 @@ angular.module('CVGTool')
         }
     }
 
+    $scope.switchKeyPointEditorEditFlag = function() {
+        $scope.keyPointEditorEditFlag = !$scope.keyPointEditorEditFlag;
+    }
+
     // Function that closes the panel to edit keypoints
     $scope.closeKeyPointEditor = function() {
         $scope.keyPointEditorTab = false;
+        $scope.keyPointEditorEditFlag = false;
         $scope.objectManager.selectedObject = null; // De-select the selected object when closing the panel
         for (var i = 0; i < $scope.canvases.length; i++) {
             $scope.canvases[i].setRedraw();
@@ -678,44 +685,46 @@ angular.module('CVGTool')
                     //Redraw background first
                     ctx.drawImage(this.images[$scope.slider.value - 1], 0, 0, this.images[$scope.slider.value - 1].width / this.zoom, this.images[$scope.slider.value - 1].height / this.zoom, 0, 0, canvas.width, canvas.height)
 
-                    // Draw the existing keypoints of personAIK if there is no point selected
-                    if ($scope.objectManager.selectedObject == null) {
-                        var objects = this.objectsIn2D["personAIK"].objects;
-                        for (obj in objects) {
-                            if (objects[obj].frames[$scope.slider.value - 1].keypoints.length != 0) {
-                                var coords = objects[obj].frames[$scope.slider.value - 1].keypoints[0];
-                                var imageCoords = this.toImage([coords[0], coords[1]]);
-                                this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'red');
-                            }
-                        }
-                    } else { // If there is one point selected, just draw it
-                        var uid = $scope.objectManager.selectedObject.uid;
-                        var type = $scope.objectManager.selectedObject.type;
-                        if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints.length > 0) {
-                            var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints[0];
-                            var imageCoords = this.toImage([coords[0], coords[1]]);
+                    // If we are creating points
+                    if ($scope.subTool.localeCompare("addPrimaryPoint") == 0 || $scope.newPoint.point1.length > 0 || $scope.subTool.localeCompare("addSecondaryPoint") == 0 || $scope.newPoint.point2.length > 0) {
+                        // Draw the temporal points
+                        if ($scope.newPoint.point1.length != 0 && $scope.newPoint.cam1.localeCompare(this.activeCamera.filename) == 0) {
+                            var imageCoords = this.toImage($scope.newPoint.point1);
                             this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'green');
                         }
+
+                        // Draw epiline if you need to
+                        if (this.showEpiline) {
+                            this.drawEpiline(this.ctx);
+                        }
+
+                        // Draw secondary point if we are with that tool selected and we are over the epiline
+                        if ($scope.newPoint.point2.length != 0 && $scope.newPoint.cam2.localeCompare(this.activeCamera.filename) == 0) {
+                            var imageCoords = this.toImage($scope.newPoint.point2);
+                            this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'blue');
+                        }
+                    } else {
+                        // Draw the existing keypoints of personAIK if there is no point selected
+                        if ($scope.objectManager.selectedObject == null) {
+                            var objects = this.objectsIn2D["personAIK"].objects;
+                            for (obj in objects) {
+                                if (objects[obj].frames[$scope.slider.value - 1].keypoints.length != 0) {
+                                    var coords = objects[obj].frames[$scope.slider.value - 1].keypoints[0];
+                                    var imageCoords = this.toImage([coords[0], coords[1]]);
+                                    this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'red');
+                                }
+                            }
+                        } else { // If there is one point selected, just draw it
+                            var uid = $scope.objectManager.selectedObject.uid;
+                            var type = $scope.objectManager.selectedObject.type;
+                            if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints.length > 0) {
+                                var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints[0];
+                                var imageCoords = this.toImage([coords[0], coords[1]]);
+                                this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'green');
+                            }
+                        }
                     }
 
-                    // Draw the existing boxes
-
-                    // Draw the temporal points
-                    if ($scope.newPoint.point1.length != 0 && $scope.newPoint.cam1.localeCompare(this.activeCamera.filename) == 0) {
-                        var imageCoords = this.toImage($scope.newPoint.point1);
-                        this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'green');
-                    }
-
-                    // Draw epiline if you need to
-                    if (this.showEpiline) {
-                        this.drawEpiline(this.ctx);
-                    }
-
-                    // Draw secondary point if we are with that tool selected and we are over the epiline
-                    if ($scope.newPoint.point2.length != 0 && $scope.newPoint.cam2.localeCompare(this.activeCamera.filename) == 0) {
-                        var imageCoords = this.toImage($scope.newPoint.point2);
-                        this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'blue');
-                    }
                 }
                 // Set the camera to valid
                 this.valid = true;
@@ -1035,8 +1044,6 @@ angular.module('CVGTool')
         // Find the closest previous annotated frame for that object
         var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
         var frameFrom = null;
-        console.log(frameTo - 1);
-        console.log(frameTo - 5);
         for (var i = frameTo - 1; i >= Math.max(0, frameTo - 5); i--) {
             if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                 frameFrom = i;

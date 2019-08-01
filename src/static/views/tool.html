@@ -191,7 +191,7 @@
         </div>
 
         <!-- Keypoint editor mini panel-->
-        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 400px;" ng-show="keyPointEditorTab==true">
+        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -227,31 +227,33 @@
                     </div>
                 </form>
                 <hr/>
-                <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
-                    <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Points</th>
-                                <th>Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Neck</td>
-                                <th><button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
-                                    <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
-                                    <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
-                                    <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
-                                </th>
-                                <th>
-                                    <button ng-click="clearNewPoint(1);" class="btn btn-primary" ng-click="clearNewPoint();"><span class="glyphicon glyphicon-remove"></span></button>
-                                </th>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div ng-if="objectManager.selectedObject.frames[slider.value - 1].keypoints.length > 0">
+                    <p>This point already exists. You can edit it:</p>
+                    <button class="btn btn-primary" ng-click="switchKeyPointEditorEditFlag()">Edit</button>
                 </div>
-                <button class="btn-success" ng-click="updateAnnotation()">Save</button>
+                <div ng-show="(objectManager.selectedObject.frames[slider.value - 1].keypoints.length == 0 || keyPointEditorEditFlag)">
+                    <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
+                        <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Neck</td>
+                                    <th><button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
+                                        <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');"><span>1</span></button>
+                                        <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
+                                        <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');"><span>2</span></button>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn-success" ng-click="updateAnnotation()">Save</button>
+                </div>
             </div>
         </div>
 
