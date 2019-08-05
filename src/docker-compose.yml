@@ -5,12 +5,12 @@ services:
     ports:
       - "8888:5000"
     volumes:
-      - "/usr/share/cvg/datasets:/usr/storage"
+      - "/media/cvg_anno/datasets:/usr/storage"
   db:
     image: mongo
     restart: always
     volumes:
-      - "/usr/share/cvg/mongodb:/data/db"
+      - "/media/cvg_anno/mongodb:/data/db"
     # environment:
     #   MONGO_INITDB_ROOT_USERNAME: mongodb
       # MONGO_INITDB_ROOT_PASSWORD: 
