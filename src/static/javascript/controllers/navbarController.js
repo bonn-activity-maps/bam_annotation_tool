@@ -35,6 +35,10 @@ angular.module('CVGTool')
             navSrvc.logout();
         };
 
+        $scope.goBackToTaskHome = function() {
+            $state.go('taskHome');
+        }
+
         // Activated when clicked on dropdown
         $scope.selectDataset = function(name) {
             adminDatasetsSrvc.getDataset(name, $scope.setActiveDataset);

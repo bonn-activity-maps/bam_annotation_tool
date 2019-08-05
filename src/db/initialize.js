@@ -1,6 +1,33 @@
-db.user.insertOne({ name: "Rooty", password: BinData(0,"JDJiJDEyJHhmL1Q0RVRxVUNJOVN1dFE5MHhCdy4uRFduNkxhTzNNNUZaNE9NNDNmM1FQSFBEYkg3SHd5"),
-    assignedTo: [""], role: "root", email: "rooty@root.com" })
+db.user.insertOne({
+    name: "Rooty",
+    password: BinData(0, "JDJiJDEyJHhmL1Q0RVRxVUNJOVN1dFE5MHhCdy4uRFduNkxhTzNNNUZaNE9NNDNmM1FQSFBEYkg3SHd5"),
+    assignedTo: [""],
+    role: "root",
+    email: "rooty@root.com"
+})
 
+// Only during development
+db.user.insertOne({
+    name: "Alberto",
+    password: BinData(0, "JDJiJDEyJGdhY3EuNG1GR0l0TjdPbGhTcGJoNy5nRFZISEsuYWJMZkNPR3VHLjBseWwycEYuQkwzSXB1"),
+    assignedTo: ["aik_behnke"],
+    role: "user",
+    email: "ab@gmail.com"
+})
+db.user.insertOne({
+    name: "Bea",
+    password: BinData(0, "JDJiJDEyJFpMTmNhcngzbHNMVU5nS3dIRjA2SWVHQkNiTTJ6UzBXbnBPWDJwMzZJUTNqSmpWZlJEbHB5"),
+    assignedTo: ["aik_behnke"],
+    role: "user",
+    email: "abc@gmail.com"
+})
+db.user.insertOne({
+    name: "Dario",
+    password: BinData(0, "JDJiJDEyJHpNMVJ4eVFOQlNFbmZVZ1N5bk5SdmU0MmoySlFOOVNIcXlwc25oSzAuVmY4VkU1RWZqa2pl"),
+    assignedTo: ["aik_behnke"],
+    role: "user",
+    email: "abcd@gmail.com"
+})
 db.objectType.insertOne({
     "type": "personAIK",
     "datasetType": "actionInKitchen",
