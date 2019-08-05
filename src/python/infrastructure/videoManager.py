@@ -27,9 +27,9 @@ class VideoManager:
     def getVideos(self, dataset):
         try:
             if dataset == "root":
-                result = self.collection.find({}, {"_id": 0})
+                result = self.collection.find({}, {"_id": 0}).sort("name")
             else:
-                result = self.collection.find({"dataset": dataset}, {"_id": 0})
+                result = self.collection.find({"dataset": dataset}, {"_id": 0}).sort("name")
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding videos in db')
