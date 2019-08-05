@@ -23,12 +23,6 @@ angular.module('CVGTool')
         if ($scope.slider.to > $scope.slider.options.ceil) {
             $scope.slider.to = $scope.slider.options.ceil
         }
-
-        if ($scope.slider.from > $scope.slider.to) {
-            var aux = $scope.slider.from;
-            $scope.slider.from = $scope.slider.to;
-            $scope.slider.to = aux;
-        }
     };
 
     $scope.goToTool = function() {
@@ -41,6 +35,12 @@ angular.module('CVGTool')
             window.alert("At least one frame must be selected.")
             return;
         }
+
+        if ($scope.slider.from > $scope.slider.to) {
+            window.alert("The value of 'from' cannot be higher than the value of 'to'.");
+            return;
+        }
+
         $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to } });
     };
 }]);

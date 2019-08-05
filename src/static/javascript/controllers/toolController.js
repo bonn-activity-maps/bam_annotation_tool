@@ -394,15 +394,25 @@ angular.module('CVGTool')
          *                  image: image
          */
 
+        var getLoadedCameras = function() {
+            var cams = [];
+            for (var i = 0; i < $scope.loadedCameras.length; i++) {
+                cams.push($scope.loadedCameras[i].filename);
+            }
+            return cams;
+        }
+
         // Function that opens the dialog in charge of adding a new camera
         $scope.addCamera = function() {
+            var cams = getLoadedCameras();
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/addNewCameraDialog.html',
                 controller: 'dialogAddNewCameraCtrl',
                 escapeToClose: false,
                 locals: {
                     frameFrom: $scope.frameFrom,
-                    frameTo: $scope.frameTo
+                    frameTo: $scope.frameTo,
+                    loadedCameras: cams
                 }
             }).then(function(successData) {
                 var filename = successData[0].filename; // Get the name of the camera from the first frame
@@ -727,6 +737,9 @@ angular.module('CVGTool')
                             }
                         }
 
+                        // Last thing, always draw the camera name in the top left corner of the canvas
+                        this.drawCameraName(this.ctx);
+
                     }
                     // Set the camera to valid
                     this.valid = true;
@@ -801,8 +814,22 @@ angular.module('CVGTool')
                 context.fillStyle = color;
                 context.fill();
                 context.beginPath();
+                context.font = "12px sans-serif";
                 context.fillStyle = "black";
-                context.fillText(uid.toString(), centerX - 5, centerY + 5);
+                context.fillText(uid.toString(), centerX - 8, centerY + 5);
+                context.fill();
+                context.closePath();
+            }
+
+            // Draws the camera name in the top left corner of the canvas
+            CanvasObject.prototype.drawCameraName = function(context) {
+                context.beginPath();
+                context.font = "20px sans-serif";
+                context.strokeStyle = "black";
+                context.lineWidth = 5;
+                context.strokeText(this.activeCamera.filename, 20, 20);
+                context.fillStyle = "white";
+                context.fillText(this.activeCamera.filename, 20, 20);
                 context.fill();
                 context.closePath();
             }
@@ -1186,7 +1213,7 @@ angular.module('CVGTool')
 
         // Auxiliar callback function for the interpolation
         var callbackInterpolate = function(objectUid) {
-            $scope.retrieveObject(objectUid);
+            $scope.retrieveAnnotation(objectUid);
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
@@ -1230,10 +1257,45 @@ angular.module('CVGTool')
             toolSrvc.retrieveAvailableObjectTypes(navSrvc.getActiveDataset().type, callbackSuccessRetrieveAvailableObjectTypes);
         }
 
+
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
+            if (angular.equals({}, annotation)) return; // Check if we received something
             $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
             $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type);
+        }
+
+        // Function that returns the annotations defined by objectUid
+        $scope.retrieveAnnotation = function(objectUid) {
+            for (var i = 0; i < $scope.frameList.length; i++) {
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, objectUid, $scope.frameList[i], callbackRetrievingFrameObject);
+            }
+        }
+
+        // Callback function for retrieving the existing objects
+        var callbackRetrieveObjects = function(objects) {
+            for (obj in objects) {
+                var object = objects[obj].object;
+                $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
+                    uid: object.uid,
+                    type: object.type,
+                    frames: []
+                }
+
+                // Fill the frames array with an empty array for each frame
+                for (var j = 0; j <= $scope.numberOfFrames; j++) {
+                    $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()].frames.push({
+                        frame: $scope.frameFrom + j,
+                        keypoints: []
+                    })
+                }
+            }
+
+            $scope.retrieveAnnotations();
+        }
+
+        $scope.retrieveObjects = function() {
+            toolSrvc.retrieveObjects(navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, navSrvc.getUser().name, callbackRetrieveObjects);
         }
 
         // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
@@ -1243,22 +1305,22 @@ angular.module('CVGTool')
             var frame = annotation.frame; // Read the frame
 
             for (var i = 0; i < annotation.objects.length; i++) {
-                if ($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] === undefined) { // If the object is not stored
-                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] = {
-                        uid: annotation.objects[i].uid,
-                        type: annotation.objects[i].type,
-                        frames: []
-                    }
+                // if ($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] === undefined) { // If the object is not stored
+                //     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] = {
+                //         uid: annotation.objects[i].uid,
+                //         type: annotation.objects[i].type,
+                //         frames: []
+                //     }
 
-                    // Fill the frames array with an empty array for each frame
-                    for (var j = 0; j <= $scope.numberOfFrames; j++) {
-                        $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames.push({
-                            frame: $scope.frameFrom + j,
-                            keypoints: [],
-                            actions: []
-                        })
-                    }
-                }
+                //     // Fill the frames array with an empty array for each frame
+                //     for (var j = 0; j <= $scope.numberOfFrames; j++) {
+                //         $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames.push({
+                //             frame: $scope.frameFrom + j,
+                //             keypoints: [],
+                //             actions: []
+                //         })
+                //     }
+                // }
 
                 // In any case, store in that frame the keypoints, the frame number and the actions
                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i].keypoints;
@@ -1268,15 +1330,8 @@ angular.module('CVGTool')
             $scope.refreshProjectionOfCanvases();
         }
 
-        // Function that returns the annotations defined by objectUid
-        $scope.retrieveObject = function(objectUid) {
-            for (var i = 0; i < $scope.frameList.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().name, objectUid, $scope.frameList[i], callbackRetrievingFrameObject);
-            }
-        }
-
         // Function that return the available objects
-        $scope.retrieveObjects = function() {
+        $scope.retrieveAnnotations = function() {
             dataset = navSrvc.getActiveDataset();
 
             if (dataset.type.localeCompare("poseTrack") == 0) { // Check the dataset type to select the correct value for "scene"

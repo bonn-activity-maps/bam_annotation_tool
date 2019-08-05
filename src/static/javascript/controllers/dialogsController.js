@@ -272,8 +272,8 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of the "Add new camera to the camera array" action
  */
-.controller('dialogAddNewCameraCtrl', ['$scope', '$timeout', 'toolSrvc', 'navSrvc', '$mdDialog', 'frameFrom', 'frameTo',
-    function($scope, $timeout, toolSrvc, navSrvc, $mdDialog, frameFrom, frameTo) {
+.controller('dialogAddNewCameraCtrl', ['$scope', '$timeout', 'toolSrvc', 'navSrvc', '$mdDialog', 'frameFrom', 'frameTo', 'loadedCameras',
+    function($scope, $timeout, toolSrvc, navSrvc, $mdDialog, frameFrom, frameTo, loadedCameras) {
         $scope.isVideoSelected = false;
         $scope.videoSelected;
         $scope.search = {}; // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
@@ -283,6 +283,7 @@ angular.module('CVGTool')
         $scope.doneRetrievingData = false;
         $scope.targetFrames;
         $scope.retrievedFrames;
+        $scope.loadedCameras = loadedCameras;
 
         $scope.frameFrom = frameFrom;
         $scope.frameTo = frameTo;
@@ -317,12 +318,14 @@ angular.module('CVGTool')
         var showListOfVideos = function(list) {
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
-                $scope.listOfVideos.push({
-                    "name": list[i].name,
-                    "extension": list[i].extension,
-                    "duration": list[i].duration,
-                    "frames": list[i].frames
-                });
+                if (!$scope.loadedCameras.includes(list[i].name.toString())) { // If the camera is loaded, dont show it again
+                    $scope.listOfVideos.push({
+                        "name": list[i].name,
+                        "extension": list[i].extension,
+                        "duration": list[i].duration,
+                        "frames": list[i].frames
+                    });
+                }
             }
             $scope.listOfVideosToShow = $scope.listOfVideos.slice();
         };
