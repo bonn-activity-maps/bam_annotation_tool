@@ -46,7 +46,6 @@ class AnnotationService:
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
-            print(result)
             return True, result, 200
 
     # # Return 'ok' if the annotation has been updated
