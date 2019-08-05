@@ -364,14 +364,14 @@
                                 <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)"
                                         ng-if="(action.startFrame == null && action.endFrame == null)">
                                     <span ng-if="actionManager.isActionSelected == false"
-                                          class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                          class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
                                     <span ng-if="(actionManager.isActionSelected == true)"
-                                          class="glyphicon glyphicon-pause" style="filter: invert(1);"></span>
+                                          class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
                                 </button>
 <!--                                When Start selected but End not, all from Start green-->
                                 <button class="btn btn-success" ng-click="selectActionFrame(f, action)"
                                         ng-if="(f >= action.startFrame && action.startFrame != null && action.endFrame == null)">
-                                    <span class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
+                                    <span class="glyphicon glyphicon-play-circle" style="filter: invert(1);"></span>
                                 </button>
 <!--                                When Start selected but End not, all before Start blue-->
                                 <button class="btn btn-primary" ng-click="selectActionFrame(f, action)"
@@ -387,8 +387,8 @@
                                 <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
                                                                     && (f >= action.startFrame && f <= action.endFrame)">
                                     <span ng-if="(f >= action.startFrame && f < action.endFrame)"
-                                          class="glyphicon glyphicon-play" style="filter: invert(1);"></span>
-                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-pause"
+                                          class="glyphicon glyphicon-play-circle" style="filter: invert(1);"></span>
+                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-play-circle"
                                           style="filter: invert(1);"></span>
                                 </button>
                         </tr>
