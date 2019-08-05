@@ -140,7 +140,6 @@ angular.module('CVGTool')
                     "uidObject": objectUid
                 }
             }).then(function successCallback(response) {
-                console.log(response)
                 callbackSuccess(response.data.msg, frame);
             }, function errorCallback(response) {
                 console.log(response);

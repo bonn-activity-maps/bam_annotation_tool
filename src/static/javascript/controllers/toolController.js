@@ -399,6 +399,12 @@ angular.module('CVGTool')
             for (var i = 0; i < $scope.loadedCameras.length; i++) {
                 cams.push($scope.loadedCameras[i].filename);
             }
+            for (var i = 0; i < $scope.canvases.length; i++) {
+                if ($scope.canvases[i].hasActiveCamera()) {
+                    console.log($scope.canvases[i].getActiveCamera())
+                    cams.push($scope.canvases[i].getActiveCamera().filename);
+                }
+            }
             return cams;
         }
 
@@ -826,7 +832,7 @@ angular.module('CVGTool')
                 context.beginPath();
                 context.font = "20px sans-serif";
                 context.strokeStyle = "black";
-                context.lineWidth = 5;
+                context.lineWidth = 3;
                 context.strokeText(this.activeCamera.filename, 20, 20);
                 context.fillStyle = "white";
                 context.fillText(this.activeCamera.filename, 20, 20);
