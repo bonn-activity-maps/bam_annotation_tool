@@ -25,7 +25,6 @@ class AnnotationService:
     pt = 'poseTrack'
 
     # Get annotation info for given frame, dataset, video and user
-    # TODO: pass objects to 2d for AIK
     def getAnnotation(self, dataset, scene, frame, user):
         result = annotationManager.getAnnotation(dataset, scene, frame, user)
         if result == 'Error':
@@ -38,6 +37,14 @@ class AnnotationService:
         result = annotationManager.getAnnotations(dataset, video, user, "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
+        else:
+            return True, result, 200
+
+    # Get all annotated objects for dataset, scene and user
+    def getAnnotatedObjects(self, dataset, scene, user):
+        result = annotationManager.getAnnotatedObjects(dataset, scene, user)
+        if result == 'Error':
+            return False, 'Error retrieving annotated objects', 400
         else:
             return True, result, 200
 

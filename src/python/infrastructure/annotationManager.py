@@ -1,5 +1,6 @@
 from pymongo import MongoClient, errors
 import logging
+from bson.son import SON
 
 # AnnotationManager logger
 log = logging.getLogger('annotationManager')
@@ -31,6 +32,21 @@ class AnnotationManager:
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
+            return 'Error'
+
+    # Get objects with uid and type for given dataset, scene and user.
+    def getAnnotatedObjects(self, dataset, scene, user):
+        try:
+            result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
+                                                {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
+                                                {"$project": {"_id": 0, "object": "$_id"}},
+                                                {"$sort": SON([("object.uid", 1)])}])
+            if result == None:
+                return {}
+            else:
+                return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error retrieving annotated objects in db')
             return 'Error'
 
     # Get all annotations for the dataset order by frame
