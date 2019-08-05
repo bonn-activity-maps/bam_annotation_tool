@@ -13,9 +13,9 @@
                         <label class="control-label col-md-2">Select range of frames:</label>
                         <div class="col-md-10">
                             From:
-                            <input type="number" ng-model="slider.from" ng-change="checkSlider()" />
+                            <input type="number" ng-model="slider.from" ng-blur="checkSlider()" />
                             <br/>To:
-                            <input type="number" ng-model="slider.to" ng-change="checkSlider()" />
+                            <input type="number" ng-model="slider.to" ng-blur="checkSlider()" />
                             <br/>
                             <rzslider rz-slider-model="slider.from" rz-slider-high="slider.to" rz-slider-options="slider.options"></rzslider>
                         </div>

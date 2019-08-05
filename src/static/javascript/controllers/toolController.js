@@ -394,15 +394,25 @@ angular.module('CVGTool')
          *                  image: image
          */
 
+        var getLoadedCameras = function() {
+            var cams = [];
+            for (var i = 0; i < $scope.loadedCameras.length; i++) {
+                cams.push($scope.loadedCameras[i].filename);
+            }
+            return cams;
+        }
+
         // Function that opens the dialog in charge of adding a new camera
         $scope.addCamera = function() {
+            var cams = getLoadedCameras();
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/addNewCameraDialog.html',
                 controller: 'dialogAddNewCameraCtrl',
                 escapeToClose: false,
                 locals: {
                     frameFrom: $scope.frameFrom,
-                    frameTo: $scope.frameTo
+                    frameTo: $scope.frameTo,
+                    loadedCameras: cams
                 }
             }).then(function(successData) {
                 var filename = successData[0].filename; // Get the name of the camera from the first frame
@@ -727,6 +737,9 @@ angular.module('CVGTool')
                             }
                         }
 
+                        // Last thing, always draw the camera name in the top left corner of the canvas
+                        this.drawCameraName(this.ctx);
+
                     }
                     // Set the camera to valid
                     this.valid = true;
@@ -801,8 +814,22 @@ angular.module('CVGTool')
                 context.fillStyle = color;
                 context.fill();
                 context.beginPath();
+                context.font = "12px sans-serif";
                 context.fillStyle = "black";
-                context.fillText(uid.toString(), centerX - 5, centerY + 5);
+                context.fillText(uid.toString(), centerX - 8, centerY + 5);
+                context.fill();
+                context.closePath();
+            }
+
+            // Draws the camera name in the top left corner of the canvas
+            CanvasObject.prototype.drawCameraName = function(context) {
+                context.beginPath();
+                context.font = "20px sans-serif";
+                context.strokeStyle = "black";
+                context.lineWidth = 5;
+                context.strokeText(this.activeCamera.filename, 20, 20);
+                context.fillStyle = "white";
+                context.fillText(this.activeCamera.filename, 20, 20);
                 context.fill();
                 context.closePath();
             }
