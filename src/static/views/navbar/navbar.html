@@ -37,7 +37,7 @@
 
             <!-- Button to return to taskHome -->
             <ul class="nav navbar-nav" ng-if="user.role=='user' && activeState == 'tool'">
-                <button class="btn btn-default" ng-click="">Finish & return</button>
+                <button class="btn btn-default" ng-click="goBackToTaskHome()">Finish & return</button>
             </ul>
 
             <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
