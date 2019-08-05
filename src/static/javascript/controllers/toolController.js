@@ -713,7 +713,7 @@ angular.module('CVGTool')
                                     if (objects[obj].frames[$scope.slider.value - 1].keypoints.length != 0) {
                                         var coords = objects[obj].frames[$scope.slider.value - 1].keypoints[0];
                                         var imageCoords = this.toImage([coords[0], coords[1]]);
-                                        this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'red');
+                                        this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'red', objects[obj].uid);
                                     }
                                 }
                             } else { // If there is one point selected, just draw it
@@ -722,7 +722,7 @@ angular.module('CVGTool')
                                 if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints.length > 0) {
                                     var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints[0];
                                     var imageCoords = this.toImage([coords[0], coords[1]]);
-                                    this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'green');
+                                    this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'green', uid);
                                 }
                             }
                         }
@@ -790,6 +790,19 @@ angular.module('CVGTool')
                 context.beginPath();
                 context.arc(centerX, centerY, 10, 0, 2 * Math.PI, false);
                 context.fillStyle = color;
+                context.fill();
+                context.closePath();
+            }
+
+            // Draws a circle with the UID of the object inside
+            CanvasObject.prototype.drawCircleWithUID = function(context, centerX, centerY, color, uid) {
+                context.beginPath();
+                context.arc(centerX, centerY, 10, 0, 2 * Math.PI, false);
+                context.fillStyle = color;
+                context.fill();
+                context.beginPath();
+                context.fillStyle = "black";
+                context.fillText(uid.toString(), centerX - 5, centerY + 5);
                 context.fill();
                 context.closePath();
             }
