@@ -15,7 +15,7 @@ class ActionManager:
     # Return the list of possible human activities stored in the db
     def getActivities(self, dataset):
         try:
-            result = self.collectionActivities.find({}, {"_id": 0})
+            result = self.collectionActivities.find({}, {"_id": 0}).sort("name")
             if result is None:
                 return 'Error'
             else:
