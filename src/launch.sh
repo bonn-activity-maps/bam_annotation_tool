@@ -37,7 +37,7 @@ elif [ "$1" = "-fdb" ]; then
   mongo 172.18.0.2:27017/cvg db/initialize.js
 elif [ "$1" = "-aweb" ]; then
   sudo docker-compose build web
-  sudo docker-compose up web
+  sudo docker-compose up -d web
 else
   show_help
 fi
