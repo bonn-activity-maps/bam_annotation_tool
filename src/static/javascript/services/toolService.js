@@ -73,6 +73,23 @@ angular.module('CVGTool')
             });
         },
 
+        // Get all object UIDs with its types
+        retrieveObjects: function(dataset, scene, user, callbackSuccess) {
+            $http({
+                mehtod: 'GET',
+                url: '/api/annotation/getObjects',
+                headers: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'user': user
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                console.log(response.data.msg);
+            })
+        },
+
         // Projects "points" into the camera "cameraName" for the frame "frame"
         projectToCamera: function(uid, type, points, frame, cameraName, dataset, canvasNumber, callbackSuccess) {
             $http({
@@ -123,6 +140,7 @@ angular.module('CVGTool')
                     "uidObject": objectUid
                 }
             }).then(function successCallback(response) {
+                console.log(response)
                 callbackSuccess(response.data.msg, frame);
             }, function errorCallback(response) {
                 console.log(response);
