@@ -701,7 +701,7 @@ angular.module('CVGTool')
 
                     if (this.activeCamera !== null) {
                         //Redraw background first
-                        ctx.drawImage(this.images[$scope.slider.value - 1], 0, 0, this.images[$scope.slider.value - 1].width / this.zoom, this.images[$scope.slider.value - 1].height / this.zoom, 0, 0, canvas.width, canvas.height)
+                        ctx.drawImage(this.images[$scope.slider.value - $scope.frameFrom], 0, 0, this.images[$scope.slider.value - $scope.frameFrom].width / this.zoom, this.images[$scope.slider.value - $scope.frameFrom].height / this.zoom, 0, 0, canvas.width, canvas.height)
 
                         // If we are creating points
                         if ($scope.subTool.localeCompare("addPrimaryPoint") == 0 || $scope.newPoint.point1.length > 0 || $scope.subTool.localeCompare("addSecondaryPoint") == 0 || $scope.newPoint.point2.length > 0) {
@@ -726,8 +726,8 @@ angular.module('CVGTool')
                             if ($scope.objectManager.selectedObject == null) {
                                 var objects = this.objectsIn2D["personAIK"].objects;
                                 for (obj in objects) {
-                                    if (objects[obj].frames[$scope.slider.value - 1].keypoints.length != 0) {
-                                        var coords = objects[obj].frames[$scope.slider.value - 1].keypoints[0];
+                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length != 0) {
+                                        var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
                                         var imageCoords = this.toImage([coords[0], coords[1]]);
                                         this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'red', objects[obj].uid);
                                     }
@@ -735,8 +735,8 @@ angular.module('CVGTool')
                             } else { // If there is one point selected, just draw it
                                 var uid = $scope.objectManager.selectedObject.uid;
                                 var type = $scope.objectManager.selectedObject.type;
-                                if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints.length > 0) {
-                                    var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - 1].keypoints[0];
+                                if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints.length > 0) {
+                                    var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
                                     var imageCoords = this.toImage([coords[0], coords[1]]);
                                     this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'green', uid);
                                 }
