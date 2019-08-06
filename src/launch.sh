@@ -35,9 +35,14 @@ elif [ "$1" = "-rdb" ]; then
   mongo 172.18.0.2:27017/cvg db/reset.js
 elif [ "$1" = "-fdb" ]; then
   mongo 172.18.0.2:27017/cvg db/initialize.js
-elif [ "$1" = "-aweb" ]; then
+  elif [ "$1" = "-aweb" ]; then
+  sudo docker-compose build web
+  sudo docker-compose up web
+elif [ "$1" = "-daweb" ]; then
   sudo docker-compose build web
   sudo docker-compose up -d web
+elif [ "$1" = "-sweb" ]; then
+  sudo docker container stop src_web_1
 else
   show_help
 fi
