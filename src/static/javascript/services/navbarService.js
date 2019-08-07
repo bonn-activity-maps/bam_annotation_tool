@@ -1,5 +1,5 @@
 angular.module('CVGTool')
-    .factory('navSrvc', function ($state, $http, $httpParamSerializer) {
+    .factory('navSrvc', function($state, $http, $httpParamSerializer) {
         var user = {
             name: "",
             role: "",
@@ -7,14 +7,14 @@ angular.module('CVGTool')
             assignedTo: []
         };
 
-        var activeDataset = {           // Active dataset selected
+        var activeDataset = { // Active dataset selected
             name: "",
             type: ""
         };
 
         return {
             // Logout function
-            logout: function () {
+            logout: function() {
                 user.name = "";
                 user.role = "";
                 user.email = "";
@@ -24,17 +24,17 @@ angular.module('CVGTool')
             },
 
             // Returns info of stored user
-            getUser: function () {
+            getUser: function() {
                 return user;
             },
 
             // Return role of the stored user
-            getUserRole: function () {
+            getUserRole: function() {
                 return user.role;
             },
 
             // Return current active dataset
-            getActiveDataset: function () {
+            getActiveDataset: function() {
                 if (user.role === "root") {
                     return {
                         name: "root",
@@ -44,7 +44,7 @@ angular.module('CVGTool')
             },
 
             // Set user to u
-            setUser: function (u) {
+            setUser: function(u) {
                 user.name = u.name;
                 user.role = u.role;
                 user.email = u.email;
@@ -52,10 +52,11 @@ angular.module('CVGTool')
             },
 
             // Set active dataset to dataset
-            setActiveDataset: function (dataset) {
+            setActiveDataset: function(dataset) {
                 activeDataset = {
                     name: dataset.name,
-                    type: dataset.type
+                    type: dataset.type,
+                    dim: dataset.keypointDim
                 };
             }
         }

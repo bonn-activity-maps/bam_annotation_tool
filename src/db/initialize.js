@@ -9,7 +9,7 @@ db.objectType.insertOne({
     "type": "personAIK",
     "datasetType": "actionInKitchen",
     "numKeypoints": 1,
-    "labels": ["neck"]
+    "labels": ["nose"]
 })
 
 db.objectType.insertOne({

@@ -269,8 +269,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Nose</td>
+                                <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
+                                    <td>{{label}}</td>
                                     <th>
                                         <button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');">
                                         <span>1</span></button>
