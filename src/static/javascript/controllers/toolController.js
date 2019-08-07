@@ -88,6 +88,7 @@ angular.module('CVGTool')
 
         // Function that opens the panel to manage keypoints
         $scope.openKeyPointManager = function() {
+            console.log($scope.objectManager)
             $scope.keyPointManagerTab = true;
             keyPointManagerPanel = document.getElementById("keyPointManagerPanel");
             keyPointManagerPanel.style.top = '200 px;';
@@ -1224,7 +1225,7 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo) {
-            if (frameTo == 1) callbackInterpolate(objectUid); // If its not possible to interpolate, jump this step
+            if (frameTo == $scope.frameTo) callbackInterpolate(objectUid); // If its not possible to interpolate, jump this step
 
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
@@ -1346,6 +1347,7 @@ angular.module('CVGTool')
                     console.log("Posetrack not done yet!")
                 }
             } else if (dataset.type.localeCompare("actionInKitchen") == 0) {
+                console.log($scope.frameList)
                 for (var i = 0; i < $scope.frameList.length; i++) {
                     toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i], dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
                 }
