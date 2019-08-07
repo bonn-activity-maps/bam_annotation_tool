@@ -18,6 +18,14 @@ class FrameService:
         else:
             return True, result, 200
 
+    # Return frame info  by Id if exist in DB
+    def getFrameByID(self, frameId):
+        result = frameManager.getFrameById(int(frameId))
+        if result == 'Error':
+            return False, 'Incorrect frame id', 400
+        else:
+            return True, result, 200
+
     # Return frames info
     def getFrames(self, video, dataset):
         result = frameManager.getFrames(video, dataset)
