@@ -929,19 +929,19 @@ angular.module('CVGTool')
             }
 
             // Project one object defined by objectUid
-            CanvasObject.prototype.projectObject = function(objectUid, objectType) {
+            CanvasObject.prototype.projectObject = function(objectUid, objectType, frameToProject) {
                 var callbackProjection = function(canvasNumber, uid, type, frame, point) {
                     $scope.canvases[canvasNumber - 1].update2DPoints(uid, type, frame, point);
                 }
-                this.objectsIn2D[objectType.toString()].objects[objectUid.toString()] = JSON.parse(JSON.stringify($scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()])); // Copy the object
+                this.objectsIn2D[objectType.toString()].objects[objectUid.toString()].frames[frameToProject - $scope.frameFrom] = JSON.parse(JSON.stringify($scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()].frames[frameToProject - $scope.frameFrom])); // Copy the object
 
                 var object = this.objectsIn2D[objectType.toString()].objects[objectUid.toString()];
-                // Go through all frames of that object
-                for (var i = 0; i < object.frames.length; i++) {
-                    if (object.frames[i].keypoints.length != 0) {
-                        toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints[0], object.frames[i].frame, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
-                    }
+
+
+                if (object.frames[frameToProject - $scope.frameFrom].keypoints.length != 0) {
+                    toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
                 }
+
 
             }
 
@@ -1187,10 +1187,10 @@ angular.module('CVGTool')
             }
         }
 
-        $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType) {
+        $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
-                    $scope.canvases[i].projectObject(objectUid, objectType);
+                    $scope.canvases[i].projectObject(objectUid, objectType, frame);
                 }
             }
         }
@@ -1274,7 +1274,7 @@ angular.module('CVGTool')
         var callbackRetrievingFrameObject = function(annotation, frame) {
             if (angular.equals({}, annotation)) return; // Check if we received something
             $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
-            $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type);
+            $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type, frame);
         }
 
         // Function that returns the annotations defined by objectUid
