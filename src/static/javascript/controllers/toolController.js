@@ -64,6 +64,7 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
+            console.log($scope.objectManager)
             $scope.keyPointEditorTab = true;
             $scope.objectManager.selectedObject = object;
             $scope.slider.value = frame;
@@ -762,7 +763,6 @@ angular.module('CVGTool')
                             y: 1
                         }
                         var zoom = this.zoom;
-                        var ctx = this.ctx;
                         var canvas = this.canvas;
 
                         var image = new Image();
@@ -887,8 +887,12 @@ angular.module('CVGTool')
                 this.images = [];
                 this.init();
 
-                // // Proyect the objects to visualize them
-                this.projectObjects();
+                // Project the objects to visualize them if the objects are in 3D
+                if (navSrvc.getActiveDataset().dim == 3) {
+                    this.projectObjects();
+                } else if (navSrvc.getActiveDataset().dim == 2) { // If we are in 2D already, no need to project them
+                    this.objectsIn2D = JSON.parse(JSON.stringify($scope.objectManager.objectTypes));
+                }
 
                 // Set the flag to redraw
                 this.setRedraw();
@@ -1225,7 +1229,7 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo) {
-            if (frameTo == $scope.frameTo) callbackInterpolate(objectUid); // If its not possible to interpolate, jump this step
+            if (frameTo == $scope.frameFrom) callbackInterpolate(objectUid); // If its not possible to interpolate, jump this step
 
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
