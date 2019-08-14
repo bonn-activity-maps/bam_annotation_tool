@@ -75,6 +75,8 @@ angular.module('CVGTool')
         // Function that closes the panel to edit keypoints
         $scope.closeKeyPointEditor = function() {
             $scope.keyPointEditorTab = false;
+            $scope.tool = "";
+            $scope.subTool = "";
             $scope.objectManager.selectedObject = null; // De-select the selected object when closing the panel
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
