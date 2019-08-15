@@ -64,6 +64,9 @@ class AnnotationService:
 
         # Triangulate all keypoints of object
         for kp in keypoints2d:
+            if (kp["p1"] == [] and kp["p2"] == [] and kp["cam1"] == "" and kp["cam2"] == ""):
+                objects["keypoints"] = []
+                return  objects
 
             # Get camera parameters from each frame and camera (always need 2 points)
             frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)

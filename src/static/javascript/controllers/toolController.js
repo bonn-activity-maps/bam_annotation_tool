@@ -31,7 +31,6 @@ angular.module('CVGTool')
         $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
         $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
         $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
-        $scope.keyPointEditorEditFlag = false;
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
 
@@ -73,14 +72,11 @@ angular.module('CVGTool')
             }
         }
 
-        $scope.switchKeyPointEditorEditFlag = function() {
-            $scope.keyPointEditorEditFlag = !$scope.keyPointEditorEditFlag;
-        }
-
         // Function that closes the panel to edit keypoints
         $scope.closeKeyPointEditor = function() {
             $scope.keyPointEditorTab = false;
-            $scope.keyPointEditorEditFlag = false;
+            $scope.tool = "";
+            $scope.subTool = "";
             $scope.objectManager.selectedObject = null; // De-select the selected object when closing the panel
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
@@ -940,9 +936,9 @@ angular.module('CVGTool')
 
                 if (object.frames[frameToProject - $scope.frameFrom].keypoints.length != 0) {
                     toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
+                } else {
+                    this.setRedraw();
                 }
-
-
             }
 
             // Puts the active camera in the array of cameras
@@ -1188,6 +1184,10 @@ angular.module('CVGTool')
         }
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
+            // Refresh the selected object so the table of annotations updates
+            var selected = $scope.objectManager.selectedType.type;
+
+            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selected];
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
                     $scope.canvases[i].projectObject(objectUid, objectType, frame);
@@ -1195,15 +1195,11 @@ angular.module('CVGTool')
             }
         }
 
-        // Callback function of triangulate
+        // Callback function of updateAnnotation
         var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
             window.alert("Annotation updated!");
             $scope.clearNewPoint(1);
             $scope.interpolate(objectUid, objectType, frameTo);
-
-            // Refresh the selected object so the table of annotations updates
-            var selected = $scope.objectManager.selectedType.type;
-            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selected];
         }
 
         // Function that triangulates the 3D point given the 2D points
@@ -1212,6 +1208,17 @@ angular.module('CVGTool')
                 // Go to triangulate
                 toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, updateAnnotationCallback);
             } else window.alert("You need to place point 1 and 2 (in two different cameras)");
+        }
+
+        // Callback function for removeAnnotation
+        var removeAnnotationCallback = function(objectUid, objectType, frame) {
+                window.alert("Annotation removed!");
+                $scope.retrieveAnnotation(objectUid, [frame]);
+
+            }
+            // Function that pushes an empty keypoint to "remove" the existing one
+        $scope.removeAnnotation = function() {
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, [], [], "", "", removeAnnotationCallback);
         }
 
         // Function that creates a new object
@@ -1226,7 +1233,10 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo) {
-            if (frameTo == $scope.frameFrom) callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+            if (frameTo == $scope.frameFrom) {
+                callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+                return;
+            }
 
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
@@ -1274,6 +1284,7 @@ angular.module('CVGTool')
         var callbackRetrievingFrameObject = function(annotation, frame) {
             if (angular.equals({}, annotation)) return; // Check if we received something
             $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
+
             $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type, frame);
         }
 
@@ -1317,23 +1328,6 @@ angular.module('CVGTool')
             var frame = annotation.frame; // Read the frame
 
             for (var i = 0; i < annotation.objects.length; i++) {
-                // if ($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] === undefined) { // If the object is not stored
-                //     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] = {
-                //         uid: annotation.objects[i].uid,
-                //         type: annotation.objects[i].type,
-                //         frames: []
-                //     }
-
-                //     // Fill the frames array with an empty array for each frame
-                //     for (var j = 0; j <= $scope.numberOfFrames; j++) {
-                //         $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames.push({
-                //             frame: $scope.frameFrom + j,
-                //             keypoints: [],
-                //             actions: []
-                //         })
-                //     }
-                // }
-
                 // In any case, store in that frame the keypoints, the frame number and the actions
                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i].keypoints;
                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
