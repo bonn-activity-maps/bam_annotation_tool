@@ -335,6 +335,7 @@ angular.module('CVGTool')
 
         // Function that watches over the value of the slider and calls to redraw the canvases when this variable changes
         $scope.$watch("slider.value", function() {
+            console.log($scope.loadedCameras)
             $scope.clearNewPoint(1);
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();

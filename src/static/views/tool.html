@@ -8,7 +8,7 @@
                     <hr/>
                     <div ng-repeat="video in loadedCameras">
                         <div class="container text-center" style="width: 80px; height: width/1.5; padding-bottom: 15px;">
-                            <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[0].image}}" />
+                            <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[slider.value - frameFrom].image}}" />
                         </div>
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span
