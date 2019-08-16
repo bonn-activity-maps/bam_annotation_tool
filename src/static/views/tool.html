@@ -7,9 +7,16 @@
                     <h4>Videos</h4>
                     <hr/>
                     <div ng-repeat="video in loadedCameras">
-                        <div class="container text-center" style="width: 80px; height: width/1.5; padding-bottom: 15px;">
-                            <img class="img" style="width: 80px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[slider.value - frameFrom].image}}" />
+                        <div class="thumbnail" ng-click="openSelector(video)">
+                            <img class="img" style="width: 80px; height: width/1.5;" src="{{video.frames[slider.value - frameFrom].image}}" />
+                            <div class="caption">
+                                <p>{{video.filename}}</p>
+                            </div>
                         </div>
+                        <!-- <p>{{video.filename}}</p>
+                        <div class="container text-center" style="width: 60px; height: width/1.5; padding-bottom: 15px;">
+                            <img class="img" style="width: 60px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[slider.value - frameFrom].image}}" />
+                        </div> -->
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span
                             class="glyphicon glyphicon-plus"></span></button>
