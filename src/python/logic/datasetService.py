@@ -506,7 +506,7 @@ class DatasetService:
             finalAnnotation = self.buildAnnotationAIK(dbObjects, actions)
 
         # Write to file in same directory of dataset
-        file = os.path.join(self.STORAGE_DIR, dataset, dataset + '.json')
+        file = os.path.join(self.STORAGE_DIR, dataset + '.json')
         with open(file, 'w') as outfile:
             json.dump(finalAnnotation, outfile)
 

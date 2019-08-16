@@ -15,7 +15,7 @@ class AnnotationManager:
     # Get annotation info for given frame, dataset, scene and user. Not return mongo id
     def getAnnotation(self, dataset, scene, frame, user):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": int(frame), "user": user}, {'_id': 0})
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}, {'_id': 0})
             if result == None:
                 return {}
             else:
@@ -53,7 +53,7 @@ class AnnotationManager:
     def getObjectsByDataset(self, dataset):
         try:
             # result = self.collection.find({"dataset": dataset, "scene": dataset, "objects.type": "person"})
-            result = self.collection.find({"dataset": dataset, "scene": dataset},{"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
+            result = self.collection.find({"dataset": dataset, "scene": dataset}, {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
 
             # result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": "person"}},
             #                          {"$group": {"_id": { "frame": "$frame"},
@@ -79,12 +79,11 @@ class AnnotationManager:
     #         log.exception('Error finding annotation in db')
     #         return 'Error'
 
-
     # Return 'ok' if the annotation has been updated.
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to unchecked if is not received in params
     def updateAnnotation(self, dataset, scene, frame, user, objects, val='unchecked'):
-        query = {"dataset": dataset, "scene": scene, "frame": int(frame), "user": user}   # Search by dataset, scene, frame, user
+        query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
         newValues = {"$set": {"objects": objects, "validated": val}}
 
@@ -102,7 +101,7 @@ class AnnotationManager:
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(self, dataset, scene, frame, user):
         try:
-            result = self.collection.delete_one({"dataset": dataset, "scene": scene, "frame": int(frame), "user": user})
+            result = self.collection.delete_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -158,7 +157,7 @@ class AnnotationManager:
     # Get annotation for object in frame, without mongo id
     def getFrameObject(self, dataset, scene, frame, user, obj):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame, "user": user},
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
                                               {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
@@ -174,7 +173,7 @@ class AnnotationManager:
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "scene": scene, "frame": frame, "user": user}
+        query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
         # Add object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
@@ -200,7 +199,7 @@ class AnnotationManager:
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "scene": scene, "frame": frame, "user": user, "objects.uid": uidObj}
+        query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj}
         arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
 
         # Update object (uid, type, kps) and labels only if it's in objects
@@ -223,7 +222,7 @@ class AnnotationManager:
 
     # Return 'ok' if the annotation for an object in a frame has been removed.
     def removeFrameObject(self, dataset, video, frame, user, uidObject):
-        query = {"dataset": dataset, "video": video, "frame": frame, "user": user}
+        query = {"dataset": dataset, "video": video, "user": user, "frame": frame}
         # Remove object where object.uid == uidObject
         newValues = {"$pull": {"objects": {"uid": uidObject}}}
         try:

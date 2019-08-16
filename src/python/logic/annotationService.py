@@ -68,11 +68,26 @@ class AnnotationService:
                 objects["keypoints"] = []
                 return  objects
 
-            # Get camera parameters from each frame and camera
+            # Get camera parameters from each frame and camera (always need 2 points)
             frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
             frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
-            point3d = aikService.triangulate2DPoints(kp["p1"], kp["p2"],
-                        frame1["cameraParameters"], frame2["cameraParameters"])
+
+            # Keypoints and camera parameters to triangulate
+            keypointsTriangulate = [kp["p1"], kp["p2"]]
+            cameraParamsTriangulate = [frame1["cameraParameters"], frame2["cameraParameters"]]
+
+            # Add additional points to triangulate if they exist
+            if "cam3" in kp:
+                frame3 = frameManager.getFrame(frame, int(kp["cam3"]), dataset)
+                keypointsTriangulate.append(kp["p3"])
+                cameraParamsTriangulate.append(frame3["cameraParameters"])
+
+            if "cam4" in kp:
+                frame4 = frameManager.getFrame(frame, int(kp["cam4"]), dataset)
+                keypointsTriangulate.append(kp["p4"])
+                cameraParamsTriangulate.append(frame4["cameraParameters"])
+
+            point3d = aikService.triangulate2DPoints(keypointsTriangulate, cameraParamsTriangulate)
 
             keypoints3d.append(point3d.tolist())    # Store 3d point
 
