@@ -13,10 +13,6 @@
                                 <p>{{video.filename}}</p>
                             </div>
                         </div>
-                        <!-- <p>{{video.filename}}</p>
-                        <div class="container text-center" style="width: 60px; height: width/1.5; padding-bottom: 15px;">
-                            <img class="img" style="width: 60px; height: width/1.5;" ng-click="openSelector(video)" src="{{video.frames[slider.value - frameFrom].image}}" />
-                        </div> -->
                     </div>
                     <button ng-click="addCamera()" class="btn btn-default"><span
                             class="glyphicon glyphicon-plus"></span></button>
@@ -299,14 +295,22 @@
                                 <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
                                     <td>{{label}}</td>
                                     <th ng-if="activeDataset.dim == 3">
-                                        <button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');">
+                                        <button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
                                         <span>1</span></button>
-                                        <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addPrimaryPoint');">
+                                        <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
                                         <span>1</span></button>
-                                        <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');">
+                                        <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(1); clearNewPoint(2); switchSubTool('addSecondPoint');">
                                         <span>2</span></button>
-                                        <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(); clearNewPoint(2); switchSubTool('addSecondaryPoint');">
+                                        <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(1); clearNewPoint(2); switchSubTool('addSecondPoint');">
                                         <span>2</span></button>
+                                        <button ng-if="newPoint.point3.length == 0" class="btn btn-info" ng-click="getEpilines(2); clearNewPoint(3); switchSubTool('addThirdPoint');">
+                                            <span>3</span></button>
+                                        <button ng-if="newPoint.point3.length != 0" class="btn btn-success" ng-click="getEpilines(2); clearNewPoint(3); switchSubTool('addThirdPoint');">
+                                            <span>3</span></button>
+                                        <button ng-if="newPoint.point4.length == 0" class="btn btn-info" ng-click="getEpilines(3); clearNewPoint(4); switchSubTool('addFourthPoint');">
+                                            <span>4</span></button>
+                                        <button ng-if="newPoint.point4.length != 0" class="btn btn-success" ng-click="getEpilines(3); clearNewPoint(4); switchSubTool('addFourthPoint');">
+                                            <span>4</span></button>
                                     </th>
                                 </tr>
                             </tbody>

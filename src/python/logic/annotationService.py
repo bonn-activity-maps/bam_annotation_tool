@@ -77,12 +77,12 @@ class AnnotationService:
             cameraParamsTriangulate = [frame1["cameraParameters"], frame2["cameraParameters"]]
 
             # Add additional points to triangulate if they exist
-            if "cam3" in kp:
+            if kp["cam3"] != "":
                 frame3 = frameManager.getFrame(frame, int(kp["cam3"]), dataset)
                 keypointsTriangulate.append(kp["p3"])
                 cameraParamsTriangulate.append(frame3["cameraParameters"])
 
-            if "cam4" in kp:
+            if kp["cam4"] != "":
                 frame4 = frameManager.getFrame(frame, int(kp["cam4"]), dataset)
                 keypointsTriangulate.append(kp["p4"])
                 cameraParamsTriangulate.append(frame4["cameraParameters"])
