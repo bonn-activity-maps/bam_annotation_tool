@@ -84,7 +84,7 @@ class FrameManager:
     # Return path of frame if exist in DB. Ignore mongo id
     def getFramePath(self, frame, video, dataset):
         try:
-            result = self.collection.find_one({"dataset": dataset, "video": int(video), "number": int(frame)},
+            result = self.collection.find_one({"dataset": dataset, "video": video, "number": int(frame)},
                                               {"path": 1, "_id": 0})
             if result is None:
                 return 'Error'

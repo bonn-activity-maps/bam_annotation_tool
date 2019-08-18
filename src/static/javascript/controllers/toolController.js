@@ -421,7 +421,7 @@ angular.module('CVGTool')
                 var frames = [];
 
                 for (var i = 0; i < successData.length; i++) {
-                    var imageData = successData[i].image.slice(2, successData[i].image.length - 1)
+                    var imageData = successData[i].image.slice(2, successData[i].image.length - 1);
                     var stringImage = "data:image/jpeg;base64," + imageData;
 
                     frames.push({
@@ -439,7 +439,8 @@ angular.module('CVGTool')
                 $scope.loadedCameras.push({
                     filename: filename,
                     frames: frames,
-                })
+                });
+                $scope.retrieveObjectsPT()
             });
         }
 
@@ -798,7 +799,14 @@ angular.module('CVGTool')
                         } else {
                             // Draw the existing keypoints of personAIK if there is no point selected
                             if ($scope.objectManager.selectedObject == null) {
-                                var objects = this.objectsIn2D["personAIK"].objects;
+                                var objects = null;
+                                if($scope.activeDataset.type.localeCompare("poseTrack") === 0){
+                                    console.log(this.objectsIn2D);
+                                    objects = this.objectsIn2D["person"].objects
+                                } else {
+                                    console.log(this.objectsIn2D);
+                                    objects = this.objectsIn2D["personAIK"].objects
+                                }
                                 for (obj in objects) {
                                     if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length != 0) {
                                         var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
@@ -1284,10 +1292,12 @@ angular.module('CVGTool')
         $scope.refreshProjectionOfCanvases = function() {
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
-                    $scope.canvases[i].projectObjects();
+                    if($scope.activeDataset.type.localeCompare("actionInKitchen") === 0){
+                        $scope.canvases[i].projectObjects();
+                    }
                 }
             }
-        }
+        };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
             // Refresh the selected object so the table of annotations updates
@@ -1423,9 +1433,38 @@ angular.module('CVGTool')
             $scope.retrieveAnnotations();
         }
 
-        $scope.retrieveObjects = function() {
-            toolSrvc.retrieveObjects($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects);
+        // Callback function for retrieving the existing objects
+        var callbackRetrieveObjectsPT = function(objects) {
+            for (obj in objects) {
+                var object = objects[obj].object;
+                $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
+                    uid: object.uid,
+                    type: object.type,
+                    frames: []
+                }
+
+                // Fill the frames array with an empty array for each frame
+                for (var j = 0; j <= $scope.numberOfFrames; j++) {
+                    $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()].frames.push({
+                        frame: $scope.frameFrom + j,
+                        keypoints: []
+                    })
+                }
+            }
+
+            $scope.retrieveAnnotationsPT();
         }
+
+        $scope.retrieveObjects = function() {
+            if($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
+                toolSrvc.retrieveObjects($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects);
+            }   // else it's posetrack and it is not done here!
+        };
+
+        // Retrieve objects for posetrack
+        $scope.retrieveObjectsPT = function() {
+            toolSrvc.retrieveObjects($scope.loadedCameras[0].filename, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjectsPT);
+        };
 
         // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
         var callbackRetrievingFrameObjects = function(annotation) {
@@ -1447,16 +1486,24 @@ angular.module('CVGTool')
             dataset = $scope.activeDataset;
 
             if (dataset.type.localeCompare("poseTrack") == 0) { // Check the dataset type to select the correct value for "scene"
-                for (var i = 1; i <= $scope.numberOfFrames; i++) {
-                    // toolSrvc.getAnnotationOfFrame($scope.videoSelected.name, frame, dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
-                    console.log("Posetrack not done yet!")
-                }
+                console.log("Posetrack does not load annotations now.")
+                // for (var i = 0; i < $scope.frameList.length; i++) {
+                //     console.log($scope.loadedCameras[0].filename);
+                //     toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i], dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+                //     console.log("Posetrack not done yet!")
+                // }
             } else if (dataset.type.localeCompare("actionInKitchen") == 0) {
                 for (var i = 0; i < $scope.frameList.length; i++) {
                     toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i], dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
                 }
             }
-        }
+        };
+
+        $scope.retrieveAnnotationsPT = function() {
+            console.log($scope.loadedCameras[0].filename);
+            toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i], $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+        };
+
         $scope.retrieveAvailableObjectTypes();
         $scope.initializeCanvases();
         $scope.getActivitiesList();

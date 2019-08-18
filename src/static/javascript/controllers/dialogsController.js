@@ -365,7 +365,7 @@ angular.module('CVGTool')
             for (var i = 0;
                 ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
                 toolSrvc.getFrame($scope.videoSelected.name, $scope.frameFrom + i, navSrvc.getActiveDataset().name,
-                    callbackRetrievingFrame);
+                    navSrvc.getActiveDataset().type, callbackRetrievingFrame);
             }
 
         };

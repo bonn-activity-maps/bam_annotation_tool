@@ -180,7 +180,7 @@ class DatasetService:
                 # frame["image_id"] = self.safelyReadDictionary(frame, "frame_id")
                 frame["number"] = frameNumber + initFrameNumber
                 frame["dataset"] = dataset
-                frame["video"] = int(self.safelyReadDictionary(frame, "vid_id"))
+                frame["video"] = self.safelyReadDictionary(frame, "vid_id")
                 self.safelyDeleteDictionaryKey(frame, "vid_id")
                 frame["path"] = os.path.join(self.STORAGE_DIR, dataset + "/" +
                                              self.safelyReadDictionary(frame, "file_name"))
@@ -193,7 +193,7 @@ class DatasetService:
                 frame = dict()
                 frame["number"] = frameNumber + initFrameNumber
                 frame["dataset"] = dataset
-                frame["video"] = int(self.safelyReadDictionary(frames[0], "vid_id"))
+                frame["video"] = self.safelyReadDictionary(frames[0], "vid_id")
                 dirpath = os.path.join(self.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
                 frame["path"] = os.path.join(dirpath, str(frameNumber).zfill(6) + ".jpg")
                 frame["has_ignore_regions"] = False
@@ -508,10 +508,11 @@ class DatasetService:
             return True, result, 200
 
     # Return the corresponding frame of video
-    def getVideoFrame(self, video, frame, dataset):
-        print("get ", video, frame, dataset)
+    def getVideoFrame(self, video, frame, dataset, type):
+        print("get ", video, frame, dataset, type)
         # Get path of frame
-        result = frameService.getFramePath(frame, video, dataset)
+        result = frameService.getFramePath(frame, int(video), dataset) if type == "actionInKitchen" \
+            else frameService.getFramePath(frame, video, dataset)
         print("frame path: ", result)
         _, framePath, _ = result
         # Read file as binary, encode to base64 and remove newlines

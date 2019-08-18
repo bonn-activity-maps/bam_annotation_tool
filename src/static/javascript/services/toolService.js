@@ -23,14 +23,15 @@ angular.module('CVGTool')
         },
 
         // Gets the image of a frame, from a video and a dataset
-        getFrame: function(fileName, frame, dataset, callbackSuccess) {
+        getFrame: function(fileName, frame, dataset, type, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/dataset/getFrameVideo',
                 headers: {
                     'fileName': fileName,
                     'frame': frame,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'type': type
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
