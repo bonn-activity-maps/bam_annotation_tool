@@ -40,4 +40,5 @@ RUN mkdir /usr/storage
 EXPOSE 5000
 
 # run the application
+#CMD ["tail", "-f", "/dev/null"] # run empty container -> you have to lauch the app inside but the container will be alive if the app crash
 CMD ["python3.6", "-u", "/usr/src/api.py"]

@@ -14,7 +14,7 @@ class FrameManager:
     # Return info of frame by video and dataset if exist in DB. Ignore mongo id
     def getFrame(self, frame, video, dataset):
         try:
-            result = self.collection.find_one({"number": frame, "video": video, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find_one({"dataset": dataset, "video": video, "number": frame}, {"_id": 0})
             if result == None:
                 return 'Error'
             else:
@@ -27,7 +27,7 @@ class FrameManager:
     # Ignore mongo id
     def getFrames(self, video, dataset):
         try:
-            result = self.collection.find({"video": video, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find({"dataset": dataset, "video": video}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding frames in db')
@@ -48,7 +48,7 @@ class FrameManager:
     # Return 'ok' if the frame has been removed
     def removeFrame(self, frame, video, dataset):
         try:
-            result = self.collection.delete_one({"number": frame, "video": video, "dataset": dataset})
+            result = self.collection.delete_one({"dataset": dataset, "video": video, "number": frame})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -72,7 +72,7 @@ class FrameManager:
     # Return path of frame if exist in DB. Ignore mongo id
     def getFramePath(self, frame, video, dataset):
         try:
-            result = self.collection.find_one({"number": int(frame), "video": int(video), "dataset": dataset},
+            result = self.collection.find_one({"dataset": dataset, "video": int(video), "number": int(frame)},
                                               {"path": 1, "_id": 0})
             if result is None:
                 return 'Error'

@@ -109,7 +109,7 @@ angular.module('CVGTool')
         },
 
         // Get Epipolar line
-        getEpiline: function(frame, dataset, point, camera1, camera2, camera2Index, camera1Index, callbackSuccess) {
+        getEpiline: function(frame, dataset, point, camera1, camera2, camera2Index, camera1Index, pointNumber, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/aik/computeEpiline',
@@ -121,7 +121,7 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, camera2Index, camera1Index);
+                callbackSuccess(response.data.msg, camera2Index, camera1Index, pointNumber);
             }, function errorCallback(response) {
                 console.log(response.data.msg);
             })
@@ -147,7 +147,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server to triangulate and create the new 3D point
-        updateAnnotation: function(user, dataset, scene, frame, object, point1, point2, camera1, camera2, callbackSuccess) {
+        updateAnnotation: function(user, dataset, scene, frame, object, point1, point2, point3, point4, camera1, camera2, camera3, camera4, callbackSuccess) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
@@ -164,7 +164,11 @@ angular.module('CVGTool')
                             p1: point1,
                             cam1: camera1,
                             p2: point2,
-                            cam2: camera2
+                            cam2: camera2,
+                            p3: point3,
+                            cam3: camera3,
+                            p4: point4,
+                            cam4: camera4
                         }]
                     }
                 }

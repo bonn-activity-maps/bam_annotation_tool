@@ -15,6 +15,8 @@ show_help ()
   echo "    -aweb: build and launch web application (update) synchronously."
   echo "    -daweb: build and launch web application (update) aynchronously."
   echo "    -saweb: stop web application."
+  echo "    -dldb: launch mongo database aynchronously."
+  echo "    -sdb: stop mongo database."
   echo "-----------------------------"
   echo "It is recomended to launch the web application and the database on"
   echo "different terminals to be able to control the logs of each service."
@@ -45,6 +47,10 @@ elif [ "$1" = "-daweb" ]; then
   sudo docker-compose up -d web
 elif [ "$1" = "-saweb" ]; then
   sudo docker container stop src_web_1
+elif [ "$1" = "-dldb" ]; then
+  sudo docker-compose up -d db
+elif [ "$1" = "-sdb" ]; then
+  sudo docker container stop src_db_1
 else
   show_help
 fi

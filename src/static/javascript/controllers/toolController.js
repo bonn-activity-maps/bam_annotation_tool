@@ -31,7 +31,6 @@ angular.module('CVGTool')
         $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
         $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
         $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
-        $scope.keyPointEditorEditFlag = false;
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
 
@@ -73,14 +72,11 @@ angular.module('CVGTool')
             }
         }
 
-        $scope.switchKeyPointEditorEditFlag = function() {
-            $scope.keyPointEditorEditFlag = !$scope.keyPointEditorEditFlag;
-        }
-
         // Function that closes the panel to edit keypoints
         $scope.closeKeyPointEditor = function() {
             $scope.keyPointEditorTab = false;
-            $scope.keyPointEditorEditFlag = false;
+            $scope.tool = "";
+            $scope.subTool = "";
             $scope.objectManager.selectedObject = null; // De-select the selected object when closing the panel
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
@@ -484,8 +480,12 @@ angular.module('CVGTool')
         $scope.newPoint = {
             point1: [],
             point2: [],
+            point3: [],
+            point4: [],
             cam1: "",
-            cam2: ""
+            cam2: "",
+            cam3: "",
+            cam4: ""
         }
 
         // Function that resets the new point temporal variable
@@ -495,15 +495,40 @@ angular.module('CVGTool')
                 $scope.newPoint.cam1 = "";
                 $scope.newPoint.point2 = [];
                 $scope.newPoint.cam2 = "";
+                $scope.newPoint.point3 = [];
+                $scope.newPoint.cam3 = "";
+                $scope.newPoint.point4 = [];
+                $scope.newPoint.cam4 = "";
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    $scope.canvases[i].resetEpiline(1);
+                    $scope.canvases[i].resetEpiline(2);
+                    $scope.canvases[i].resetEpiline(3);
+                }
             } else if (number == 2) {
                 $scope.newPoint.point2 = [];
                 $scope.newPoint.cam2 = "";
+                $scope.newPoint.point3 = [];
+                $scope.newPoint.cam3 = "";
+                $scope.newPoint.point4 = [];
+                $scope.newPoint.cam4 = "";
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    $scope.canvases[i].resetEpiline(2);
+                    $scope.canvases[i].resetEpiline(3);
+                }
+            } else if (number == 3) {
+                $scope.newPoint.point3 = [];
+                $scope.newPoint.cam3 = "";
+                $scope.newPoint.point4 = [];
+                $scope.newPoint.cam4 = "";
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    $scope.canvases[i].resetEpiline(3);
+                }
+            } else if (number == 4) {
+                $scope.newPoint.point4 = [];
+                $scope.newPoint.cam4 = "";
             }
-
             for (var i = 0; i < $scope.canvases.length; i++) {
-                $scope.canvases[i].resetEpiline();
                 $scope.canvases[i].setRedraw();
-
             }
         }
 
@@ -538,10 +563,28 @@ angular.module('CVGTool')
 
             //----- 2D Projections -----//
             this.objectsIn2D;
-            this.showEpiline = false;
             this.epiline = null; // Object that contains the epiline
-            this.el1 = []
-            this.el2 = []
+            this.epilinesManager = {
+                "1": {
+                    epiline: null,
+                    el1: [],
+                    el2: [],
+                    showEpiline: false
+                },
+                "2": {
+                    epiline: null,
+                    el1: [],
+                    el2: [],
+                    showEpiline: false
+                },
+                "3": {
+                    epiline: null,
+                    el1: [],
+                    el2: [],
+                    showEpiline: false
+                }
+            }
+
             this.isOverEpiline = false; // Controls if the second point lies over the epiline
 
             // Scale of relation between image and canvas
@@ -618,8 +661,8 @@ angular.module('CVGTool')
                     canvasObj.setRedraw();
                 }
 
-                // If the subtool is 'addPrimaryPoint'
-                if ($scope.subTool.localeCompare('addPrimaryPoint') == 0) {
+                // If the subtool is 'addFirstPoint'
+                if ($scope.subTool.localeCompare('addFirstPoint') == 0) {
                     // Add the point to the temporal point storage
                     $scope.newPoint.point1 = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
                     $scope.newPoint.cam1 = canvasObj.activeCamera.filename;
@@ -627,10 +670,26 @@ angular.module('CVGTool')
                     canvasObj.setRedraw();
                 }
 
-                // If the subtool is 'addSecondaryPoint'
-                if ($scope.subTool.localeCompare('addSecondaryPoint') == 0) {
+                // If the subtool is 'addSecondPoint'
+                if ($scope.subTool.localeCompare('addSecondPoint') == 0) {
                     $scope.newPoint.point2 = canvasObj.toCamera([mouse.x, mouse.y]);
                     $scope.newPoint.cam2 = canvasObj.activeCamera.filename;
+                    $scope.switchSubTool("");
+                    canvasObj.setRedraw();
+                }
+
+                // If the subtool is 'addThridPoint'
+                if ($scope.subTool.localeCompare('addThirdPoint') == 0) {
+                    $scope.newPoint.point3 = canvasObj.toCamera([mouse.x, mouse.y]);
+                    $scope.newPoint.cam3 = canvasObj.activeCamera.filename;
+                    $scope.switchSubTool("");
+                    canvasObj.setRedraw();
+                }
+
+                // If the subtool is 'addFourthPoint'
+                if ($scope.subTool.localeCompare('addFourthPoint') == 0) {
+                    $scope.newPoint.point4 = canvasObj.toCamera([mouse.x, mouse.y]);
+                    $scope.newPoint.cam4 = canvasObj.activeCamera.filename;
                     $scope.switchSubTool("");
                     canvasObj.setRedraw();
                 }
@@ -704,23 +763,38 @@ angular.module('CVGTool')
                         ctx.drawImage(this.images[$scope.slider.value - $scope.frameFrom], 0, 0, this.images[$scope.slider.value - $scope.frameFrom].width / this.zoom, this.images[$scope.slider.value - $scope.frameFrom].height / this.zoom, 0, 0, canvas.width, canvas.height)
 
                         // If we are creating points
-                        if ($scope.subTool.localeCompare("addPrimaryPoint") == 0 || $scope.newPoint.point1.length > 0 || $scope.subTool.localeCompare("addSecondaryPoint") == 0 || $scope.newPoint.point2.length > 0) {
+                        if ($scope.subTool.localeCompare("addFirstPoint") == 0 || $scope.newPoint.point1.length > 0 || $scope.subTool.localeCompare("addSecondPoint") == 0 || $scope.newPoint.point2.length > 0 || $scope.subTool.localeCompare("addThirdPoint") == 0 || $scope.newPoint.point3.length > 0 || $scope.subTool.localeCompare("addFourthPoint") == 0 || $scope.newPoint.point4.length > 0) {
                             // Draw the temporal points
                             if ($scope.newPoint.point1.length != 0 && $scope.newPoint.cam1.localeCompare(this.activeCamera.filename) == 0) {
                                 var imageCoords = this.toImage($scope.newPoint.point1);
                                 this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'green');
                             }
-
                             // Draw epiline if you need to
-                            if (this.showEpiline) {
-                                this.drawEpiline(this.ctx);
+                            for (el in this.epilinesManager) {
+                                if (this.epilinesManager[el].showEpiline == true) {
+                                    this.drawEpiline(this.ctx, el)
+                                }
                             }
 
-                            // Draw secondary point if we are with that tool selected and we are over the epiline
+                            // Draw secondary point if we are with that tool selected 
                             if ($scope.newPoint.point2.length != 0 && $scope.newPoint.cam2.localeCompare(this.activeCamera.filename) == 0) {
                                 var imageCoords = this.toImage($scope.newPoint.point2);
                                 this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'blue');
                             }
+
+                            // Draw third point if we are with that tool selected 
+                            if ($scope.newPoint.point3.length != 0 && $scope.newPoint.cam3.localeCompare(this.activeCamera.filename) == 0) {
+                                var imageCoords = this.toImage($scope.newPoint.point3);
+                                this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'red');
+                            }
+
+                            // Draw fourth point if we are with that tool selected 
+                            if ($scope.newPoint.point4.length != 0 && $scope.newPoint.cam4.localeCompare(this.activeCamera.filename) == 0) {
+                                var imageCoords = this.toImage($scope.newPoint.point4);
+                                this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], 'orange');
+                            }
+
+
                         } else {
                             // Draw the existing keypoints of personAIK if there is no point selected
                             if ($scope.objectManager.selectedObject == null) {
@@ -840,36 +914,41 @@ angular.module('CVGTool')
             }
 
             // Set Epiline
-            CanvasObject.prototype.setEpiline = function(el1, el2, color) {
-                // Store world coordinates
-                this.el1 = el1;
-                this.el2 = el2;
-                this.showEpiline = true;
+            CanvasObject.prototype.setEpiline = function(el1, el2, color, number) {
+                console.log(number)
+                    // Store world coordinates
+                this.epilinesManager[number].el1 = el1;
+                this.epilinesManager[number].el2 = el2;
+                this.epilinesManager[number].showEpiline = true;
 
                 // Convert to image coordinates
                 var imel1 = this.toImage(el1);
                 var imel2 = this.toImage(el2);
 
-                this.epiline = new Path2D();
-                this.epiline.moveTo(imel1[0], imel1[1]);
-                this.epiline.lineTo(imel2[0], imel2[1]);
-                this.epiline.strokeStyle = color;
-                this.epiline.lineWidth = 3;
-                this.epiline.closePath();
+                this.epilinesManager[number].epiline = new Path2D();
+                this.epilinesManager[number].epiline.moveTo(imel1[0], imel1[1]);
+                this.epilinesManager[number].epiline.lineTo(imel2[0], imel2[1]);
+                this.epilinesManager[number].epiline.strokeStyle = color;
+                this.epilinesManager[number].epiline.lineWidth = 3;
+                this.epilinesManager[number].epiline.closePath();
 
                 this.setRedraw();
             }
 
             // Reset Epiline
-            CanvasObject.prototype.resetEpiline = function() {
-                this.epiline = null;
-                this.showEpiline = false;
+            CanvasObject.prototype.resetEpiline = function(number) {
+                this.epilinesManager[number] = {
+                    epiline: null,
+                    el1: [],
+                    el2: [],
+                    showEpiline: false
+                }
             }
 
             // Draw Epiline
-            CanvasObject.prototype.drawEpiline = function(context) {
-                context.strokeStyle = this.epiline.strokeStyle;
-                context.stroke(this.epiline);
+            CanvasObject.prototype.drawEpiline = function(context, number) {
+                context.strokeStyle = this.epilinesManager[number].epiline.strokeStyle;
+                context.stroke(this.epilinesManager[number].epiline);
             }
 
             // Switches the active camera of the Canvas for "camera"
@@ -940,9 +1019,9 @@ angular.module('CVGTool')
 
                 if (object.frames[frameToProject - $scope.frameFrom].keypoints.length != 0) {
                     toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
+                } else {
+                    this.setRedraw();
                 }
-
-
             }
 
             // Puts the active camera in the array of cameras
@@ -1142,23 +1221,40 @@ angular.module('CVGTool')
 
 
         // Callback function of get epiline
-        var callbackGetEpiline = function(elPoints, cam2Index, cam1Index) {
-            $scope.canvases[cam2Index].setEpiline(elPoints.el1, elPoints.el2, $scope.canvasesColors[cam1Index]);
+        var callbackGetEpiline = function(elPoints, cam2Index, cam1Index, pointNumber) {
+            $scope.canvases[cam2Index].setEpiline(elPoints.el1, elPoints.el2, $scope.canvasesColors[cam1Index], pointNumber);
         }
 
         // Function that manages the epiline calculation
-        $scope.getEpilines = function() {
-            // Check if the first point is placed
-            if ($scope.newPoint.point1.length == 0) {
-                window.alert("You have to place the point 1 first!");
-                return;
+        $scope.getEpilines = function(pointNumber) {
+            var cameraName = "";
+            if (pointNumber == 1) {
+                if ($scope.newPoint.point1.length == 0) {
+                    window.alert("You have to place the point 1 first!");
+                    return;
+                }
+                cameraName = $scope.newPoint.cam1;
+
+            } else if (pointNumber == 2) {
+                if ($scope.newPoint.point1.length == 0 || $scope.newPoint.point2.length == 0) {
+                    window.alert("You have to place points 1 and 2 first!");
+                    return;
+                }
+                cameraName = $scope.newPoint.cam2;
+            } else if (pointNumber == 3) {
+                if ($scope.newPoint.point1.length == 0 || $scope.newPoint.point2.length == 0 || $scope.newPoint.point3.length == 0) {
+                    window.alert("You have to place points 1, 2 and 3 first!");
+                    return;
+                }
+                cameraName = $scope.newPoint.cam3;
             }
-            var camera1Index = 0;
+
             // Get which camera am I
+            var cameraIndex = 0;
             for (var i = 0; i < $scope.canvases.length; i++) {
                 var camera = $scope.canvases[i].getActiveCamera();
-                if (camera.filename.localeCompare($scope.newPoint.cam1) == 0) {
-                    camera1Index = i;
+                if (camera.filename.localeCompare(cameraName) == 0) {
+                    cameraIndex = i;
                     break;
                 }
             }
@@ -1167,8 +1263,14 @@ angular.module('CVGTool')
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
                     var camera = $scope.canvases[i].getActiveCamera();
-                    if (camera.filename.localeCompare($scope.newPoint.cam1) != 0) {
-                        toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.newPoint.point1, $scope.newPoint.cam1, $scope.canvases[i].getActiveCamera().filename, i, camera1Index, callbackGetEpiline);
+                    if (camera.filename.localeCompare(cameraName) != 0) {
+                        if (pointNumber == 1) {
+                            toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.newPoint.point1, $scope.newPoint.cam1, $scope.canvases[i].getActiveCamera().filename, i, cameraIndex, pointNumber, callbackGetEpiline);
+                        } else if (pointNumber == 2) {
+                            toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.newPoint.point2, $scope.newPoint.cam2, $scope.canvases[i].getActiveCamera().filename, i, cameraIndex, pointNumber, callbackGetEpiline);
+                        } else if (pointNumber == 3) {
+                            toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.newPoint.point3, $scope.newPoint.cam3, $scope.canvases[i].getActiveCamera().filename, i, cameraIndex, pointNumber, callbackGetEpiline);
+                        }
                         counter++;
                     }
                 }
@@ -1188,6 +1290,10 @@ angular.module('CVGTool')
         }
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
+            // Refresh the selected object so the table of annotations updates
+            var selected = $scope.objectManager.selectedType.type;
+
+            $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selected].objects[objectUid];
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
                     $scope.canvases[i].projectObject(objectUid, objectType, frame);
@@ -1195,23 +1301,30 @@ angular.module('CVGTool')
             }
         }
 
-        // Callback function of triangulate
+        // Callback function of updateAnnotation
         var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
             window.alert("Annotation updated!");
             $scope.clearNewPoint(1);
             $scope.interpolate(objectUid, objectType, frameTo);
-
-            // Refresh the selected object so the table of annotations updates
-            var selected = $scope.objectManager.selectedType.type;
-            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selected];
         }
 
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
             if ($scope.newPoint.point1.length != 0 && $scope.newPoint.point2.length != 0) {
                 // Go to triangulate
-                toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.cam1, $scope.newPoint.cam2, updateAnnotationCallback);
-            } else window.alert("You need to place point 1 and 2 (in two different cameras)");
+                toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.point3, $scope.newPoint.point4, $scope.newPoint.cam1, $scope.newPoint.cam2, $scope.newPoint.cam3, $scope.newPoint.cam4, updateAnnotationCallback);
+            } else window.alert("You need to place at least points 1 and 2 (in two different cameras)");
+        }
+
+        // Callback function for removeAnnotation
+        var removeAnnotationCallback = function(objectUid, objectType, frame) {
+                window.alert("Annotation removed!");
+                $scope.retrieveAnnotation(objectUid, [frame]);
+
+            }
+            // Function that pushes an empty keypoint to "remove" the existing one
+        $scope.removeAnnotation = function() {
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, [], [], [], [], "", "", "", "", removeAnnotationCallback);
         }
 
         // Function that creates a new object
@@ -1226,7 +1339,10 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo) {
-            if (frameTo == $scope.frameFrom) callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+            if (frameTo == $scope.frameFrom) {
+                callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+                return;
+            }
 
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
@@ -1274,6 +1390,7 @@ angular.module('CVGTool')
         var callbackRetrievingFrameObject = function(annotation, frame) {
             if (angular.equals({}, annotation)) return; // Check if we received something
             $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
+
             $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type, frame);
         }
 
@@ -1317,23 +1434,6 @@ angular.module('CVGTool')
             var frame = annotation.frame; // Read the frame
 
             for (var i = 0; i < annotation.objects.length; i++) {
-                // if ($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] === undefined) { // If the object is not stored
-                //     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()] = {
-                //         uid: annotation.objects[i].uid,
-                //         type: annotation.objects[i].type,
-                //         frames: []
-                //     }
-
-                //     // Fill the frames array with an empty array for each frame
-                //     for (var j = 0; j <= $scope.numberOfFrames; j++) {
-                //         $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames.push({
-                //             frame: $scope.frameFrom + j,
-                //             keypoints: [],
-                //             actions: []
-                //         })
-                //     }
-                // }
-
                 // In any case, store in that frame the keypoints, the frame number and the actions
                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i].keypoints;
                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
