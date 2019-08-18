@@ -88,13 +88,19 @@ class AnnotationService:
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
             objects = self.updateAnnotationAIK(dataset, frame, objects)
-
-        # Update only one object in the annotation for concrete frame
-        result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
-        if result == 'Error':
-            return False, 'Error updating annotation', 400
-        else:
-            return True, result, 200
+            # IT WAS OUTSIDE THE IF BELOW HERE, IN CASE I BREAK SOMETHING
+            # Update only one object in the annotation for concrete frame
+            result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
+            else:
+                return True, result, 200
+        elif datasetType == self.pt:
+            for object in objects:
+                result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object)
+                if result == 'Error':
+                    return False, 'Error updating annotation', 400
+        return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(self, dataset, scene, frame, user):
