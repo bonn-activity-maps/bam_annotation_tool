@@ -12,7 +12,11 @@ show_help ()
   echo "    -ldb:  launch mongo database. "
   echo "    -rdb:  reset mongo database. "
   echo "    -fdb: fill database with test data."
-  echo "    -aweb: build and launch web application (update)."
+  echo "    -aweb: build and launch web application (update) synchronously."
+  echo "    -daweb: build and launch web application (update) aynchronously."
+  echo "    -saweb: stop web application."
+  echo "    -dldb: launch mongo database aynchronously."
+  echo "    -sdb: stop mongo database."
   echo "-----------------------------"
   echo "It is recomended to launch the web application and the database on"
   echo "different terminals to be able to control the logs of each service."
@@ -35,9 +39,18 @@ elif [ "$1" = "-rdb" ]; then
   mongo 172.18.0.2:27017/cvg db/reset.js
 elif [ "$1" = "-fdb" ]; then
   mongo 172.18.0.2:27017/cvg db/initialize.js
-elif [ "$1" = "-aweb" ]; then
+  elif [ "$1" = "-aweb" ]; then
   sudo docker-compose build web
   sudo docker-compose up web
+elif [ "$1" = "-daweb" ]; then
+  sudo docker-compose build web
+  sudo docker-compose up -d web
+elif [ "$1" = "-saweb" ]; then
+  sudo docker container stop src_web_1
+elif [ "$1" = "-dldb" ]; then
+  sudo docker-compose up -d db
+elif [ "$1" = "-sdb" ]; then
+  sudo docker container stop src_db_1
 else
   show_help
 fi

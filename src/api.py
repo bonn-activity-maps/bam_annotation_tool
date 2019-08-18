@@ -196,6 +196,12 @@ def getAnnotations():
     success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['scene'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get all annotated objects for dataset, scene and user
+@app.route('/api/annotation/getObjects', methods=['GET'])
+def getAnnotatedObjects():
+    success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers['scene'],
+                                                                 request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # # Create new annotation
 # @app.route('/api/annotation/createAnnotation', methods=['POST'])

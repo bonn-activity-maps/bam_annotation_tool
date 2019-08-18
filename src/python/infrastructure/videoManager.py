@@ -13,7 +13,7 @@ class VideoManager:
     # Return info video if exist in DB. Ignore mongo id
     def getVideo(self, video, dataset):
         try:
-            result = self.collection.find_one({"name": video, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find_one({"dataset": dataset, "name": video}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -27,9 +27,9 @@ class VideoManager:
     def getVideos(self, dataset):
         try:
             if dataset == "root":
-                result = self.collection.find({}, {"_id": 0})
+                result = self.collection.find({}, {"_id": 0}).sort("name")
             else:
-                result = self.collection.find({"dataset": dataset}, {"_id": 0})
+                result = self.collection.find({"dataset": dataset}, {"_id": 0}).sort("name")
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding videos in db')
@@ -38,7 +38,7 @@ class VideoManager:
     # Return 'ok' if the video has been created
     def createVideo(self, video, dataset, path, type=None, frames=0):
         try:
-            result = self.collection.insert_one({"name": video, "dataset": dataset, "frames": frames, "path": path, "type": type})
+            result = self.collection.insert_one({"dataset": dataset, "name": video, "frames": frames, "path": path, "type": type})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -77,7 +77,7 @@ class VideoManager:
     # Return 'ok' if the video has been removed
     def removeVideo(self, video, dataset):
         try:
-            result = self.collection.delete_one({"name": video, "dataset": dataset})
+            result = self.collection.delete_one({"dataset": dataset, "name": video})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -88,7 +88,7 @@ class VideoManager:
 
     # Return 'ok' if the video has been updated.
     def updateVideoFrames(self, video, frames, dataset):
-        query = {"name": video, "dataset": dataset}  # Search by video name and dataset
+        query = {"dataset": dataset, "name": video}  # Search by video name and dataset
         newValues = {"$set": {"frames": frames}}  # Update frames
         try:
             result = self.collection.update_one(query, newValues, upsert=False)

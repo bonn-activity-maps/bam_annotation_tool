@@ -25,7 +25,6 @@ class AnnotationService:
     pt = 'poseTrack'
 
     # Get annotation info for given frame, dataset, video and user
-    # TODO: pass objects to 2d for AIK
     def getAnnotation(self, dataset, scene, frame, user):
         result = annotationManager.getAnnotation(dataset, scene, frame, user)
         if result == 'Error':
@@ -38,6 +37,14 @@ class AnnotationService:
         result = annotationManager.getAnnotations(dataset, video, user, "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
+        else:
+            return True, result, 200
+
+    # Get all annotated objects for dataset, scene and user
+    def getAnnotatedObjects(self, dataset, scene, user):
+        result = annotationManager.getAnnotatedObjects(dataset, scene, user)
+        if result == 'Error':
+            return False, 'Error retrieving annotated objects', 400
         else:
             return True, result, 200
 
@@ -57,12 +64,30 @@ class AnnotationService:
 
         # Triangulate all keypoints of object
         for kp in keypoints2d:
+            if (kp["p1"] == [] and kp["p2"] == [] and kp["cam1"] == "" and kp["cam2"] == ""):
+                objects["keypoints"] = []
+                return  objects
 
-            # Get camera parameters from each frame and camera
+            # Get camera parameters from each frame and camera (always need 2 points)
             frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
             frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
-            point3d = aikService.triangulate2DPoints(kp["p1"], kp["p2"],
-                        frame1["cameraParameters"], frame2["cameraParameters"])
+
+            # Keypoints and camera parameters to triangulate
+            keypointsTriangulate = [kp["p1"], kp["p2"]]
+            cameraParamsTriangulate = [frame1["cameraParameters"], frame2["cameraParameters"]]
+
+            # Add additional points to triangulate if they exist
+            if kp["cam3"] != "":
+                frame3 = frameManager.getFrame(frame, int(kp["cam3"]), dataset)
+                keypointsTriangulate.append(kp["p3"])
+                cameraParamsTriangulate.append(frame3["cameraParameters"])
+
+            if kp["cam4"] != "":
+                frame4 = frameManager.getFrame(frame, int(kp["cam4"]), dataset)
+                keypointsTriangulate.append(kp["p4"])
+                cameraParamsTriangulate.append(frame4["cameraParameters"])
+
+            point3d = aikService.triangulate2DPoints(keypointsTriangulate, cameraParamsTriangulate)
 
             keypoints3d.append(point3d.tolist())    # Store 3d point
 
