@@ -272,47 +272,26 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of the "Add new camera to the camera array" action
  */
-.controller('dialogAddNewCameraCtrl', ['$scope', '$timeout', 'toolSrvc', 'navSrvc', '$mdDialog', 'frameFrom', 'frameTo', 'loadedCameras',
-    function($scope, $timeout, toolSrvc, navSrvc, $mdDialog, frameFrom, frameTo, loadedCameras) {
+.controller('dialogAddNewCameraCtrl', ['$scope', '$timeout', 'toolSrvc', 'navSrvc', '$mdDialog', 'loadedCameras',
+    function($scope, $timeout, toolSrvc, navSrvc, $mdDialog, loadedCameras) {
         $scope.isVideoSelected = false;
-        $scope.videoSelected;
-        $scope.search = {}; // Odd way to manage variables with ng-model and dialogs, but it's an effective way to bypass the autism of AngularJS
         $scope.listOfVideos = [];
-        $scope.listOfVideosToShow = [];
-        $scope.retrievingData = false;
-        $scope.doneRetrievingData = false;
-        $scope.targetFrames;
-        $scope.retrievedFrames;
         $scope.loadedCameras = loadedCameras;
 
-        $scope.frameFrom = frameFrom;
-        $scope.frameTo = frameTo;
+
+        $scope.videosSelected = {
+            videos: []
+        }
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
             $mdDialog.cancel();
         };
 
-        // Function to update the list of videos using the searchbar
-        $scope.searchInListOfVideos = function() {
-            if ($scope.search.str === undefined) {
-
-            } else {
-                $scope.listOfVideosToShow = [];
-
-                $scope.listOfVideos.forEach(function(video) {
-                    if (video.name.includes($scope.search.str.toString())) {
-                        $scope.listOfVideosToShow.push(video);
-                    }
-                });
-            }
-        };
-
-        // Function that manages item selection
-        $scope.selectItem = function(video) {
-            $scope.isVideoSelected = true; // TODO: FInish the selection of the video, I have to use the bypass (the same way than with search)
-            $scope.videoSelected = video.video;
-        };
+        $scope.isVideoSelected = function() {
+            if ($scope.videosSelected.videos.length > 0) return true;
+            return false;
+        }
 
         // Function to update the list of videos
         var showListOfVideos = function(list) {
@@ -337,7 +316,7 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            $mdDialog.hide($scope.retrievedFrames);
+            $mdDialog.hide($scope.videosSelected);
         };
 
         // Function that will be called everytime a frame has been retrieved from the server
@@ -352,22 +331,6 @@ angular.module('CVGTool')
             if ($scope.retrievedFrames.length == $scope.targetFrames) {
                 $scope.end();
             }
-        };
-
-        // Function to retrieve the selected frame range from the selected video
-        $scope.accept = function() {
-            var range = Math.abs($scope.frameFrom - $scope.frameTo);
-            $scope.retrievingData = true;
-            $scope.targetFrames = range + 1;
-            $scope.retrievedFrames = [];
-
-            // Make all the petitions
-            for (var i = 0;
-                ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
-                toolSrvc.getFrame($scope.videoSelected.name, $scope.frameFrom + i, navSrvc.getActiveDataset().name,
-                    callbackRetrievingFrame);
-            }
-
         };
 
         $scope.getListOfVideos();

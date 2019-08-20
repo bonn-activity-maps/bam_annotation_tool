@@ -4,86 +4,22 @@
             <div ng-if="!retrievingData">
                 <h3>Select a camera recording</h3>
                 <div class="container">
-                    <!-- Searchbar -->
-                    <input type="text" style="padding-top: 10px;" class="form-control" placeholder="Search" ng-model="search.str" ng-change="searchInListOfVideos()">
-
-                    <div style="overflow-y: auto; max-height: 250px; padding-top: 10px;">
-                        <table class="table table-bordered table-responsive text-center">
-                            <thead>
-                                <tr>
-                                    <th class="col-md-6">Name</th>
-                                    <th class="col-md-2">Extension</th>
-                                    <th class="col-md-2">Duration</th>
-                                    <th class="col-md-2">Frames</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-if="listOfVideos.length > 0" ng-repeat="video in listOfVideosToShow" ng-click="selectItem({video})">
-                                    <td class="text-left">{{video.name}}</td>
-                                    <td>{{video.extension}}</td>
-                                    <td>{{video.duration}}</td>
-                                    <td>{{video.frames}}</td>
-                                </tr>
-                                <tr ng-if="listOfVideos.length == 0">
-                                    <td class="text-left">No videos stored</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-            <div syle="padding-top: 20px;" class="container" ng-if="isVideoSelected && !retrievingData">
-                <hr />
-                <h3>Selection</h3>
-                <!-- Select frame intervals -->
-                <div class="form">
                     <div class="form-group">
-                        <label class="control-label col-md-2">Name:</label>
-                        <div class="col-md-10">
-                            <p class="form-control-static">{{videoSelected.name}}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label col-md-2">Total number of frames:</label>
-                        <div class="col-md-10">
-                            <p class="form-control-static">{{videoSelected.frames}}</p>
-                        </div>
+                        <label>Videos (hold shift or ctrl to select more than one)</label>
+                        <select multiple class="form-control" ng-model="videosSelected.videos">
+                      <option  ng-repeat="video in listOfVideos" >{{video.name}}</option>
+                    </select>
                     </div>
 
                 </div>
-            </div>
-
-            <div ng-if="retrievingData && !doneRetrievingData">
-                <div class="col-md-4"></div>
-                <div class="col-md-4 text-center">
-                    <p>
-                        Please wait, the selected range of frames is being retrieved from the server.
-                    </p>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{progress.frames}}" aria-valuemin="0" aria-valuemax="{{progress.maxFrames}}" style="width:40%">
-                            Retrieving frames...
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4"></div>
-            </div>
-
         </md-dialog-content>
         <md-dialog-actions>
-            <div ng-if="!retrievingData">
+            <div>
                 <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
             </div>
-            <div ng-if="isVideoSelected && !retrievingData">
-                <md-button ng-if="isVideoSelected" ng-click="accept()" class="md-warn md-raised">Add</md-button>
+            <div ng-if="isVideoSelected()">
+                <md-button ng-if="isVideoSelected" ng-click="end()" class="md-warn md-raised">Add</md-button>
             </div>
-            <div ng-if="retrievingData && doneRetrievingData">
-                <md-button ng-click="close()" class="md-warn md-raised">Close</md-button>
-            </div>
-            <div ng-if="retrievingData && !doneRetrievingData"></div>
         </md-dialog-actions>
-    </div>
+        </div>
 </md-dialog>
