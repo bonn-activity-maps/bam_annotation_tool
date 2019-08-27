@@ -52,6 +52,8 @@ angular.module('CVGTool')
                         'user': user
                     }
                 }).then(function successCallback(response) {
+                    console.log("RESPONSE DE GET ANNOTATION OF FRAME");
+                    console.log(response)
                     callbackSuccess(response.data.msg)
                 }),
                 function errorCallback(response) {
@@ -85,6 +87,8 @@ angular.module('CVGTool')
                     'user': user
                 }
             }).then(function successCallback(response) {
+                console.log("RETRIEVE OBJECTS RESPONSE");
+                console.log(response);
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
                 console.log(response.data.msg);

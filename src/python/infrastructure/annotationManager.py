@@ -44,7 +44,7 @@ class AnnotationManager:
                                                 {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
                                                 {"$project": {"_id": 0, "object": "$_id"}},
                                                 {"$sort": SON([("object.uid", 1)])}])
-            if result == None:
+            if result is None:
                 return {}
             else:
                 return list(result)
