@@ -217,7 +217,6 @@ class DatasetService:
             for i in range(0, len(keypoints), 3):
                 person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
             track_id = self.safelyReadDictionary(annotation, "track_id")
-            print("TRACK ID: ", track_id)
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
             result, og_frame, _ = frameService.getFrameByID(image_id)
@@ -251,9 +250,7 @@ class DatasetService:
                 "track_id": track_id,
                 "category_id": category_id
             }
-            print("BBOX_HEAD ", object_bbox_head)
             og_objects.append(object_bbox_head)     # Append new object
-            print("OBJECTS: ", og_objects)
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
             if result == 'error':
