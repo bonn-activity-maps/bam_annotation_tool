@@ -14,7 +14,7 @@ class TaskManager:
     # Return info of task by user if exist in DB. Ignore mongo id
     def getTask(self, task, user, dataset):
         try:
-            result = self.collection.find_one({"name": task, "assignedUser": user, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find_one({"dataset": dataset, "assignedUser": user, "name": task}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -27,7 +27,7 @@ class TaskManager:
     # Ignore mongo id
     def getTasks(self, user, dataset):
         try:
-            result = self.collection.find({"assignedUser": user, "dataset": dataset}, {"_id": 0})
+            result = self.collection.find({"dataset": dataset, "assignedUser": user}, {"_id": 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding tasks in db')
@@ -36,7 +36,7 @@ class TaskManager:
     # Return 'ok' if the task has been created
     def createTask(self, task, user, dataset, scene, frameFrom, frameTo, description, pov, lastFrame=0, finished=False):
         try:
-            result = self.collection.insert_one({"name": task, "assignedUser": user, "dataset": dataset, "scene": scene,
+            result = self.collection.insert_one({"dataset": dataset, "scene": scene, "name": task, "assignedUser": user,
                                                  "frameFrom": frameFrom, "frameTo": frameTo, "description": description,
                                                  "POV": pov, "finished": finished, "lastFrame": lastFrame})
             if result.acknowledged:
