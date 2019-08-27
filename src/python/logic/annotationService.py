@@ -124,7 +124,7 @@ class AnnotationService:
                 return True, result, 200
         elif datasetType == self.pt:
             for object in objects:
-                result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object)
+                result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object, datasetType)
                 if result == 'Error':
                     return False, 'Error updating annotation', 400
         return True, 'Ok', 200
@@ -179,7 +179,8 @@ class AnnotationService:
 
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db
-    def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects):
+    def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
+        print("Objects in updateAnnotationFrameObject: ", objects)
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
         found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
@@ -187,7 +188,7 @@ class AnnotationService:
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':   # Add new existing object in frame
-            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
+            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
         else:   # Update object in frame
             result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
 

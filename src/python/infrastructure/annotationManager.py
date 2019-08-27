@@ -12,6 +12,9 @@ class AnnotationManager:
     db = c.cvg
     collection = db.annotation
 
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
+
     # Get annotation info for given frame, dataset, scene and user. Not return mongo id
     def getAnnotation(self, dataset, scene, frame, user):
         try:
@@ -171,14 +174,24 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation for an object in a frame has been created.
-    def createFrameObject(self, dataset, scene, frame, user, objects):
+    def createFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
 
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
         # Add object (uid, type, kps) and labels only if it's in objects
-        if "labels" in objects:
+        if datasetType is not None and datasetType is self.pt:
+            category_id = objects["category_id"]
+            track_id = objects["track_id"]
+            if "labels" in objects:
+                labels = objects["labels"]
+                newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels,
+                                                   "category_id": category_id, "track_id": track_id}}}
+            else:
+                newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints,
+                                                   "category_id": category_id, "track_id": track_id}}}
+        elif "labels" in objects:
             labels = objects["labels"]
             newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels}}}
         else:
@@ -197,7 +210,7 @@ class AnnotationManager:
 
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # The annotation is not created if it doesn't exist and return Error
-    def updateFrameObject(self, dataset, scene, frame, user, objects):
+    def updateFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
