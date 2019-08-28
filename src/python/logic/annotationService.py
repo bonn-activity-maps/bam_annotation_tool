@@ -187,14 +187,11 @@ class AnnotationService:
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':   # Add new existing object in frame
-            print("Creating object in updateAnnotationFrameObject: ", objects)
             result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
         else:   # Update object in frame
             if datasetType == 'poseTrack' and found['type'] != objects['type']:
-                print("Creating PT object in updateAnnotationFrameObject: ", objects)
                 result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
             else:
-                print("Updating object in updateAnnotationFrameObject: ", objects)
                 result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
 
         return result

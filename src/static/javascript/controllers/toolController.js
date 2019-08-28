@@ -803,7 +803,7 @@ angular.module('CVGTool')
                                 if($scope.activeDataset.type.localeCompare("poseTrack") === 0){
                                     console.log("Objects in 2D");
                                     console.log(this.objectsIn2D);
-                                    objects = this.objectsIn2D["bbox"].objects;    //TODO all objects instead of bbox
+                                    objects = this.objectsIn2D["person"].objects;    //TODO all objects instead of bbox
                                     // objects.push(this.objectsIn2D["bbox"].objects);
                                     // objects.push(this.objectsIn2D["person"].objects);
                                 } else {
@@ -811,7 +811,7 @@ angular.module('CVGTool')
                                     objects = this.objectsIn2D["personAIK"].objects
                                 }
                                 for (obj in objects) {
-                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length != 0) {
+                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {   //TODO paint all points
                                         var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
                                         var imageCoords = this.toImage([coords[0], coords[1]]);
                                         this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'red', objects[obj].uid);
