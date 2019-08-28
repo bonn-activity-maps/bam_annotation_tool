@@ -41,12 +41,20 @@ class AnnotationManager:
             return 'Error'
 
     # Get objects with uid and type for given dataset, scene and user.
-    def getAnnotatedObjects(self, dataset, scene, user):
+    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
         try:
-            result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
-                                                {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
-                                                {"$project": {"_id": 0, "object": "$_id"}},
-                                                {"$sort": SON([("object.uid", 1)])}])
+            # If posetrack, return track_id too
+            if datasetType == 'poseTrack':
+                result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
+                                                    {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type",
+                                                                        "track_id": "$objects.track_id"}}},
+                                                    {"$project": {"_id": 0, "object": "$_id"}},
+                                                    {"$sort": SON([("object.track_id", 1)])}])
+            else:
+                result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
+                                                    {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
+                                                    {"$project": {"_id": 0, "object": "$_id"}},
+                                                    {"$sort": SON([("object.uid", 1)])}])
             if result is None:
                 return {}
             else:

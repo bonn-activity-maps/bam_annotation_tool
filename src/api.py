@@ -200,7 +200,7 @@ def getAnnotations():
 @app.route('/api/annotation/getObjects', methods=['GET'])
 def getAnnotatedObjects():
     success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers['scene'],
-                                                                 request.headers['user'])
+                                                                 request.headers['user'], request.headers["datasetType"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # # Create new annotation

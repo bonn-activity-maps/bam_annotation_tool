@@ -41,9 +41,9 @@ class AnnotationService:
             return True, result, 200
 
     # Get all annotated objects for dataset, scene and user
-    def getAnnotatedObjects(self, dataset, scene, user):
+    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
         print("Looking for Annotated Objects ", dataset, scene, user)
-        result = annotationManager.getAnnotatedObjects(dataset, scene, user)
+        result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
         print("Got Annotated objects: ", result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400

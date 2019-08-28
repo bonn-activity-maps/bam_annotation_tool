@@ -1446,8 +1446,9 @@ angular.module('CVGTool')
             for (obj in objects) {
                 var object = objects[obj].object;
                 $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
-                    uid: object.uid,
+                    uid: object.track_id,
                     type: object.type,
+                    original_uid: object.uid,
                     frames: []
                 }
 
@@ -1465,13 +1466,13 @@ angular.module('CVGTool')
 
         $scope.retrieveObjects = function() {
             if($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
-                toolSrvc.retrieveObjects($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects);
+                toolSrvc.retrieveObjects($scope.activeDataset, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects);
             } // else it's posetrack and it is not done here!
         };
 
         // Retrieve objects for posetrack
         $scope.retrieveObjectsPT = function() {
-            toolSrvc.retrieveObjects($scope.activeDataset.name, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT);
+            toolSrvc.retrieveObjects($scope.activeDataset, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT);
         };
 
         // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool

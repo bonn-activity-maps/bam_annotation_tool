@@ -82,13 +82,12 @@ angular.module('CVGTool')
                 mehtod: 'GET',
                 url: '/api/annotation/getObjects',
                 headers: {
-                    'dataset': dataset,
+                    'dataset': dataset.name,
+                    'datasetType': dataset.type,
                     'scene': scene,
                     'user': user
                 }
             }).then(function successCallback(response) {
-                console.log("RETRIEVE OBJECTS RESPONSE");
-                console.log(response);
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
                 console.log(response.data.msg);
