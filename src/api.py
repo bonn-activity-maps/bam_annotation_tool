@@ -467,6 +467,13 @@ def computeEpiline():
     
     return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
 
+# Return 6 mugshot of person uid from different cameras
+@app.route('/api/aik/getMugshot', methods=['GET'])
+def getMugshot():
+    success, msg, status = aikService.getMugshot(request.headers['dataset'], request.headers['scene'],
+                                                request.headers['user'], int(request.headers['uid']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 #### FRAME ####
 
 # Get frame

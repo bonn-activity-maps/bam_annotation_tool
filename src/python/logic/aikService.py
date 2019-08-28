@@ -1,12 +1,21 @@
 import numpy as np
 import cv2
+import random, json, base64
+import logging
 
 from aik.dataset import AIK
 from aik.camera import Camera
 import aik.geometry as gm
 import numpy.linalg as la
 
+from python.infrastructure.annotationManager import AnnotationManager
+from python.infrastructure.frameManager import FrameManager
 
+# aikService logger
+log = logging.getLogger('aikService')
+
+annotationManager = AnnotationManager()
+frameManager = FrameManager()
 
 class AIKService:
 
@@ -107,3 +116,38 @@ class AIKService:
             bfl, bfr,
             bbl, bbr
         ])
+
+    # Image to json
+    def im2json(self, im):
+        _, imdata = cv2.imencode('.JPG', im)
+        jstr = json.dumps({"image": base64.b64encode(imdata).decode('ascii')})
+        return jstr
+
+    # Return 6 mugshot of person uid from different cameras
+    def getMugshot(self, dataset, scene, user, personUid):
+        # Get 6 annotation of the object uid
+        result = annotationManager.getAnnotationsByObject(dataset, scene, user, personUid)
+
+        images = []     # Final cropped images
+
+        for r in result:
+            kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
+            camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
+
+            # Check camera parameters and frame path
+            frameResult = frameManager.getFrame(r['frame'], camera, dataset)
+            if frameResult != 'Error':
+                cameraParams = frameResult['cameraParameters']
+                path = frameResult['path']
+
+                # Obtain 2d keypoints for corresponding camera
+                kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
+                kpX, kpY = int(kps2d[0]), int(kps2d[1])
+
+                # Read img, make mugshot 100px and add to final images
+                img = cv2.imread(path)
+                cropImg = img[kpY-50:kpY+50, kpX-50:kpX+50]
+                images.append(self.im2json(cropImg))
+
+        return True, images, 200
+
