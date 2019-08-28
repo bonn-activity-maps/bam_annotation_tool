@@ -1445,17 +1445,17 @@ angular.module('CVGTool')
             console.log(objects);
             for (obj in objects) {
                 var object = objects[obj].object;
-                $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
+                $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
                     uid: object.track_id,
                     type: object.type,
-                    original_uid: object.uid,
                     frames: []
-                }
+                };
 
                 // Fill the frames array with an empty array for each frame
                 for (var j = 0; j <= $scope.numberOfFrames; j++) {
-                    $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()].frames.push({
+                    $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()].frames.push({
                         frame: $scope.frameFrom + j,
+                        original_uid: object.uid,
                         keypoints: []
                     })
                 }
@@ -1477,26 +1477,33 @@ angular.module('CVGTool')
 
         // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
         var callbackRetrievingFrameObjects = function(annotation) {
-            // console.log("llego a retrieving frame objectS");
-            // console.log(annotation);
             if (angular.equals({}, annotation)) return; // Check if we received something
 
             var frame = annotation.frame; // Read the frame
 
             for (var i = 0; i < annotation.objects.length; i++) {
                 // In any case, store in that frame the keypoints, the frame number and the actions
-                // console.log("Object Manager");
-                // console.log($scope.objectManager);
-                //
-                // console.log(annotation.objects[i].type.toString());
-                // console.log($scope.objectManager.objectTypes[annotation.objects[i].type.toString()]);
-                // console.log(annotation.objects[i].uid.toString());
-                // console.log($scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()]);
-                $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.objects[i].keypoints;
-
-                $scope.objectManager.objectTypes[annotation.objects[i].type.toString()].objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
-
+                if ($scope.activeDataset.type.localeCompare("poseTrack") === 0){
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].keypoints =
+                        annotation.objects[i].keypoints;
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].frame =
+                        frame;
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].original_uid =
+                        $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                            .objects[annotation.objects[i].track_id.toString()].original_uid;
+                } else {
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints =
+                        annotation.objects[i].keypoints;
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
+                }
             }
+            console.log("OBJECT MANAGER");
+            console.log($scope.objectManager);
             $scope.refreshProjectionOfCanvases();
         }
 
@@ -1504,14 +1511,14 @@ angular.module('CVGTool')
         $scope.retrieveAnnotations = function() {
             dataset = $scope.activeDataset;
 
-            if (dataset.type.localeCompare("poseTrack") == 0) { // Check the dataset type to select the correct value for "scene"
+            if (dataset.type.localeCompare("poseTrack") === 0) { // Check the dataset type to select the correct value for "scene"
                 console.log("Posetrack does not load annotations now.")
                 // for (var i = 0; i < $scope.frameList.length; i++) {
                 //     console.log($scope.loadedCameras[0].filename);
                 //     toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i], dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
                 //     console.log("Posetrack not done yet!")
                 // }
-            } else if (dataset.type.localeCompare("actionInKitchen") == 0) {
+            } else if (dataset.type.localeCompare("actionInKitchen") === 0) {
                 for (var i = 0; i < $scope.frameList.length; i++) {
                     toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i],
                         dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);

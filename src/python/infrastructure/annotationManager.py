@@ -18,10 +18,8 @@ class AnnotationManager:
     # Get annotation info for given frame, dataset, scene and user. Not return mongo id
     def getAnnotation(self, dataset, scene, frame, user):
         try:
-            print("Looking for ", dataset, scene, user, int(frame))
             result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)},
                                               {'_id': 0})
-            print("got ", result)
             if result is None:
                 return {}
             else:
