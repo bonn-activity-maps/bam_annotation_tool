@@ -42,9 +42,9 @@ class AnnotationService:
 
     # Get all annotated objects for dataset, scene and user
     def getAnnotatedObjects(self, dataset, scene, user, datasetType):
-        print("Looking for Annotated Objects ", dataset, scene, user)
+        # print("Looking for Annotated Objects ", dataset, scene, user)
         result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
-        print("Got Annotated objects: ", result)
+        # print("Got Annotated objects: ", result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -180,7 +180,6 @@ class AnnotationService:
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db
     def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
-        print("Objects in updateAnnotationFrameObject: ", objects)
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
         found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
@@ -188,9 +187,15 @@ class AnnotationService:
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':   # Add new existing object in frame
+            print("Creating object in updateAnnotationFrameObject: ", objects)
             result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
         else:   # Update object in frame
-            result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
+            if datasetType == 'poseTrack' and found['type'] != objects['type']:
+                print("Creating PT object in updateAnnotationFrameObject: ", objects)
+                result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
+            else:
+                print("Updating object in updateAnnotationFrameObject: ", objects)
+                result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
 
         return result
 

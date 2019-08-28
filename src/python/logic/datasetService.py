@@ -130,7 +130,7 @@ class DatasetService:
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
     def readAnnotationsPT(self, dataset, dir):
-        print("annotationsPT")
+        # print("annotationsPT")
         # type = 'personPT'  # Type of objects
         finalResult = True
         types = ["test", "train", "val"]
@@ -173,7 +173,7 @@ class DatasetService:
         frame = {}
         for frameNumber in range(0, nFrames):     # For every frame in VIDEO (not JSON FILE)
             frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
-            print("NFRAMES: ", nFrames, " FRAMENUMBER: ", frameNumber + initFrameNumber, " FRAMEOBJECTNUMBER: ", int(frameObjectNumber))
+            # print("NFRAMES: ", nFrames, " FRAMENUMBER: ", frameNumber + initFrameNumber, " FRAMEOBJECTNUMBER: ", int(frameObjectNumber))
             if (frameNumber + initFrameNumber) == int(frameObjectNumber):   # If there is data to add
                 index += 1                              # Advance index
                 frame = dict(frames[frameNumber])       # Reformat object to insert into db
@@ -251,6 +251,8 @@ class DatasetService:
                 "category_id": category_id
             }
             og_objects.append(object_bbox_head)     # Append new object
+            # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
+            # print(og_objects)
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
             if result == 'error':

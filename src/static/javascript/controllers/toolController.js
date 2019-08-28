@@ -803,7 +803,9 @@ angular.module('CVGTool')
                                 if($scope.activeDataset.type.localeCompare("poseTrack") === 0){
                                     console.log("Objects in 2D");
                                     console.log(this.objectsIn2D);
-                                    objects = this.objectsIn2D["bbox_head"].objects    //TODO all objects instead of bbox
+                                    objects = this.objectsIn2D["bbox"].objects;    //TODO all objects instead of bbox
+                                    // objects.push(this.objectsIn2D["bbox"].objects);
+                                    // objects.push(this.objectsIn2D["person"].objects);
                                 } else {
                                     console.log(this.objectsIn2D);
                                     objects = this.objectsIn2D["personAIK"].objects
@@ -1026,7 +1028,7 @@ angular.module('CVGTool')
                 var object = this.objectsIn2D[objectType.toString()].objects[objectUid.toString()];
 
 
-                if (object.frames[frameToProject - $scope.frameFrom].keypoints.length != 0) {
+                if (object.frames[frameToProject - $scope.frameFrom].keypoints.length !== 0) {
                     toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
                 } else {
                     this.setRedraw();
@@ -1043,9 +1045,7 @@ angular.module('CVGTool')
 
             // Returns true if the canvas has an active camera
             CanvasObject.prototype.hasActiveCamera = function() {
-                if (this.activeCamera !== null) {
-                    return true;
-                } else return false;
+                return this.activeCamera !== null;
             }
 
             // Returns the active camera
