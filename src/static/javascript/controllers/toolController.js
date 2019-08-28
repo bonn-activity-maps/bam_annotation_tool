@@ -1329,6 +1329,7 @@ angular.module('CVGTool')
             // Refresh the selected object so the table of annotations updates
             var selected = $scope.objectManager.selectedType.type;
 
+            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selected];
             $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selected].objects[objectUid];
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
