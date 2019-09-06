@@ -27,8 +27,9 @@ class ActionManager:
     # Return info of action if exists in DB. Ignore mongo id
     def getAction(self, dataset, objectUID, user, name, startFrame, endFrame):
         try:
-            result = self.collection.find_one({"dataset": dataset, "objectUID": int(objectUID), "user": user, "name": name,
-                                               "startFrame": int(startFrame), "endFrame": int(endFrame)}, {"_id": 0})
+            result = self.collection.find_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+                                               "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name},
+                                              {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -41,9 +42,10 @@ class ActionManager:
     def getActionsByUID(self, dataset, objectUID, user, startFrame, endFrame):
         try:
             # if objectUID and (NOT start >= end and NOT endDB<=start)
-            result = self.collection.find({"dataset": dataset, "objectUID": int(objectUID), "user": user,
+            result = self.collection.find({"dataset": dataset, "user": user,
                         "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-                                 {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
+                                 {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
+                        "objectUID": int(objectUID)},
                         {"_id": 0})
 
             if result is None:

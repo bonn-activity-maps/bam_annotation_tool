@@ -66,6 +66,29 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get annotation for object in frame, without mongo id
+    def getFrameObject(self, dataset, scene, frame, user, obj):
+        try:
+            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
+                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+            if not result:          # if empty json
+                return 'No annotation'
+            else:
+                return result['objects'][0]
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
+            return 'Error'
+
+    # Get annotations for object in different frames, without mongo id
+    def getAnnotationsByObject(self, dataset, scene, user, obj):
+        try:
+            result = self.collection.find({"dataset": dataset, "scene": scene, "user": user},
+                                        {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(6)
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
+            return 'Error'
+
     # # Get all annotations except of people for the dataset.
     # def getObjectsByDataset(self, dataset):
     #     try:
@@ -152,19 +175,6 @@ class AnnotationManager:
                 return result[0]['max']
         except errors.PyMongoError as e:
             log.exception('Error finding maximum id in annotation in db')
-            return 'Error'
-
-    # Get annotation for object in frame, without mongo id
-    def getFrameObject(self, dataset, scene, frame, user, obj):
-        try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
-            if not result:          # if empty json
-                return 'No annotation'
-            else:
-                return result['objects'][0]
-        except errors.PyMongoError as e:
-            log.exception('Error finding object in annotation in db')
             return 'Error'
 
     # Return 'ok' if the annotation for an object in a frame has been created.

@@ -14,7 +14,7 @@ class ObjectTypeManager:
     # Get annotation objectType by type and datasetType. Ignore mongo id
     def getObjectType(self, type, datasetType):
         try:
-            result = self.collection.find_one({"type": type, "datasetType": datasetType}, {'_id': 0})
+            result = self.collection.find_one({"datasetType": datasetType, "type": type}, {'_id': 0})
             if result == None:
                 return 'Error'
             else:
