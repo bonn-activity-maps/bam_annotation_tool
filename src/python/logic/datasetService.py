@@ -511,11 +511,9 @@ class DatasetService:
 
     # Return the corresponding frame of video
     def getVideoFrame(self, video, frame, dataset, type):
-        print("get ", video, frame, dataset, type)
         # Get path of frame
         result = frameService.getFramePath(frame, int(video), dataset) if type == "actionInKitchen" \
             else frameService.getFramePath(frame, video, dataset)
-        print("frame path: ", result)
         _, framePath, _ = result
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
