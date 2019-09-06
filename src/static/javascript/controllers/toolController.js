@@ -64,8 +64,6 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
-            console.log("active dataset:");
-            console.log($scope.activeDataset);
             $scope.keyPointEditorTab = true;
             $scope.objectManager.selectedObject = object;
             $scope.slider.value = frame;
@@ -406,6 +404,24 @@ angular.module('CVGTool')
             return cams;
         }
 
+        var callbackRetrievingFrame = function(image, filename, frame) {
+            for (var i = 0; i < $scope.loadedCameras.length; i++) {
+                if ($scope.loadedCameras[i].filename.localeCompare(filename) == 0) { // Find the camera
+                    var imageData = image.slice(2, image.length - 1) // Process the image
+                    var stringImage = "data:image/jpeg;base64," + imageData;
+                    $scope.loadedCameras[i].frames.push({
+                        number: frame,
+                        image: stringImage,
+                    })
+
+                    // Sort frames once loaded
+                    $scope.loadedCameras[i].frames.sort(function(a, b) {
+                        return a.number - b.number;
+                    });
+                }
+            }
+        }
+
         // Function that opens the dialog in charge of adding a new camera
         $scope.addCamera = function() {
             var cams = getLoadedCameras();
@@ -414,35 +430,51 @@ angular.module('CVGTool')
                 controller: 'dialogAddNewCameraCtrl',
                 escapeToClose: false,
                 locals: {
-                    frameFrom: $scope.frameFrom,
-                    frameTo: $scope.frameTo,
                     loadedCameras: cams
                 }
             }).then(function(successData) {
-                var filename = successData[0].filename; // Get the name of the camera from the first frame
-                var frames = [];
-
-                for (var i = 0; i < successData.length; i++) {
-                    var imageData = successData[i].image.slice(2, successData[i].image.length - 1);
-                    var stringImage = "data:image/jpeg;base64," + imageData;
-
-                    frames.push({
-                        number: successData[i].frame,
-                        image: stringImage,
-                    });
+                // First, create the structure for the new cameras
+                for (var i = 0; i < successData.videos.length; i++) {
+                    $scope.loadedCameras.push({
+                        filename: successData.videos[i],
+                        frames: [],
+                    })
                 }
 
-                // Sort frames once loaded
-                frames.sort(function(a, b) {
-                    return a.number - b.number;
-                });
+                // Then, make all the frame requests
+                for (var i = 0;
+                    ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
+                    for (var j = 0; j < successData.videos.length; j++) {
+                        toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
+                            callbackRetrievingFrame);
+                    }
+                }
+                $scope.retrieveObjectsPT();
 
-                // Create new camera
-                $scope.loadedCameras.push({
-                    filename: filename,
-                    frames: frames,
-                });
-                $scope.retrieveObjectsPT()
+
+                // var filename = successData[0].filename; // Get the name of the camera from the first frame
+                // var frames = [];
+
+                // for (var i = 0; i < successData.length; i++) {
+                //     var imageData = successData[i].image.slice(2, successData[i].image.length - 1)
+                //     var stringImage = "data:image/jpeg;base64," + imageData;
+
+                //     frames.push({
+                //         number: successData[i].frame,
+                //         image: stringImage,
+                //     });
+                // }
+
+                // // Sort frames once loaded
+                // frames.sort(function(a, b) {
+                //     return a.number - b.number;
+                // });
+
+                // // Create new camera
+                // $scope.loadedCameras.push({
+                //     filename: filename,
+                //     frames: frames,
+                // })
             });
         }
 
@@ -450,6 +482,7 @@ angular.module('CVGTool')
 
         // Function that opens the dialog in charge of moving one camera to one canvas
         $scope.openSelector = function(video) {
+            console.log($scope.loadedCameras)
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/cameraSelectorDialog.html',
                 controller: 'dialogCameraSelectorCtrl',
@@ -535,7 +568,6 @@ angular.module('CVGTool')
                     $scope.newPoint.cam4 = "";
                 }
             }
-
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
             }
@@ -1320,6 +1352,7 @@ angular.module('CVGTool')
             // Refresh the selected object so the table of annotations updates
             var selected = $scope.objectManager.selectedType.type;
 
+            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selected];
             $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selected].objects[objectUid];
             for (var i = 0; i < $scope.canvases.length; i++) {
                 if ($scope.canvases[i].hasActiveCamera()) {
@@ -1404,8 +1437,6 @@ angular.module('CVGTool')
                     objects: {}
                 }
             }
-            console.log("callbackSuccessRetrieveAvailableObjectTypes");
-            console.log($scope.objectManager);
             $scope.retrieveObjects();
         }
 
@@ -1417,9 +1448,6 @@ angular.module('CVGTool')
 
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
-            console.log("llego a retrieving frame object")
-            console.log(annotation);
-            console.log(frame);
             if (angular.equals({}, annotation)) return; // Check if we received something
             $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
 
@@ -1529,11 +1557,6 @@ angular.module('CVGTool')
 
             if (dataset.type.localeCompare("poseTrack") === 0) { // Check the dataset type to select the correct value for "scene"
                 console.log("Posetrack does not load annotations now.")
-                // for (var i = 0; i < $scope.frameList.length; i++) {
-                //     console.log($scope.loadedCameras[0].filename);
-                //     toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i], dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
-                //     console.log("Posetrack not done yet!")
-                // }
             } else if (dataset.type.localeCompare("actionInKitchen") === 0) {
                 for (var i = 0; i < $scope.frameList.length; i++) {
                     toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i],
