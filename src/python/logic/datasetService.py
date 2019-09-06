@@ -288,7 +288,7 @@ class DatasetService:
         type = "bbox"
         datasetType = self.pt
         is_polygon = False
-        labels = None
+        labels = ["Top Left", "Bottom Right"]
         numKeypoints=2
         result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
         if result == 'error':
@@ -298,7 +298,7 @@ class DatasetService:
         type = "bbox_head"
         datasetType = self.pt
         is_polygon = False
-        labels = None
+        labels = ["Top Left", "Bottom Right"]
         numKeypoints=2
         result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
         if result == 'error':

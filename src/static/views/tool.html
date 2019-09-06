@@ -284,7 +284,97 @@
             </div>
         </div>
 
-        <!-- Keypoint editor mini panel-->
+        <!-- Keypoint editor mini panel PT-->
+        <div id="keyPointEditorPanelPT" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;"
+             ng-show="keyPointEditorTab==true && activeDataset.type=='poseTrack'">
+            <div class="panel-heading" ng-draggable='dragOptions'>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <span class="glyphicon glyphicon-move"></span>
+                    </div>
+                    <div class="col-sm-10">
+                        Keypoint Editor
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col col-md-8">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Object type:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Frame:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{slider.value}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">UID:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col col-md-4">
+                        Image of the person will go here
+                    </div>
+                </div>
+
+                <hr/>
+                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length != 0">
+                    <div class="col col-md-8">
+                        <span class="label label-success">Keypoint exists</span>
+                    </div>
+                    <div class="col col-md-2">
+                        <button class="btn-sm btn-danger" ng-click="removeAnnotation()">Remove</button>
+                    </div>
+                </div>
+                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length == 0">
+                    <div class="col col-md-8">
+                        <span class="label label-primary">Keypoint doesn't exist</span>
+                    </div>
+                    <div class="col col-md-2"></div>
+                </div>
+
+                <hr/>
+                <div>
+                    <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
+                        <table class="table table-hover table-bordered" style="height: 100px; width: 300px;">
+                            <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Points</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
+                                <td>{{label}}</td>
+                                <th ng-if="activeDataset.dim == 2">
+                                    <button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
+                                        <span>1</span></button>
+                                    <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
+                                        <span>1</span></button>
+                                </th>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn-success" ng-click="updateAnnotation()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keypoint editor mini panel AIK-->
         <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;"
              ng-show="keyPointEditorTab==true && activeDataset.type=='actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
@@ -386,7 +476,7 @@
             </div>
         </div>
 
-        <!-- Actions editor panel -->
+        <!-- Actions editor panel AIK -->
         <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 700px; height: 400px;"
              ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>

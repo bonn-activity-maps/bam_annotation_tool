@@ -64,6 +64,8 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
+            console.log("active dataset:");
+            console.log($scope.activeDataset);
             $scope.keyPointEditorTab = true;
             $scope.objectManager.selectedObject = object;
             $scope.slider.value = frame;
@@ -491,47 +493,53 @@ angular.module('CVGTool')
 
         // Function that resets the new point temporal variable
         $scope.clearNewPoint = function(number) {
-            if (number == 1) {
+            if ($scope.activeDataset.type === "poseTrack") {
                 $scope.newPoint.point1 = [];
-                $scope.newPoint.cam1 = "";
-                $scope.newPoint.point2 = [];
-                $scope.newPoint.cam2 = "";
-                $scope.newPoint.point3 = [];
-                $scope.newPoint.cam3 = "";
-                $scope.newPoint.point4 = [];
-                $scope.newPoint.cam4 = "";
-                for (var i = 0; i < $scope.canvases.length; i++) {
-                    $scope.canvases[i].resetEpiline(1);
-                    $scope.canvases[i].resetEpiline(2);
-                    $scope.canvases[i].resetEpiline(3);
-                }
-            } else if (number == 2) {
-                $scope.newPoint.point2 = [];
-                $scope.newPoint.cam2 = "";
-                $scope.newPoint.point3 = [];
-                $scope.newPoint.cam3 = "";
-                $scope.newPoint.point4 = [];
-                $scope.newPoint.cam4 = "";
-                for (var i = 0; i < $scope.canvases.length; i++) {
-                    $scope.canvases[i].resetEpiline(2);
-                    $scope.canvases[i].resetEpiline(3);
-                }
-            } else if (number == 3) {
-                $scope.newPoint.point3 = [];
-                $scope.newPoint.cam3 = "";
-                $scope.newPoint.point4 = [];
-                $scope.newPoint.cam4 = "";
-                for (var i = 0; i < $scope.canvases.length; i++) {
-                    $scope.canvases[i].resetEpiline(3);
-                }
-            } else if (number == 4) {
-                $scope.newPoint.point4 = [];
-                $scope.newPoint.cam4 = "";
             }
+            else {
+                if (number === 1) {
+                    $scope.newPoint.point1 = [];
+                    $scope.newPoint.cam1 = "";
+                    $scope.newPoint.point2 = [];
+                    $scope.newPoint.cam2 = "";
+                    $scope.newPoint.point3 = [];
+                    $scope.newPoint.cam3 = "";
+                    $scope.newPoint.point4 = [];
+                    $scope.newPoint.cam4 = "";
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].resetEpiline(1);
+                        $scope.canvases[i].resetEpiline(2);
+                        $scope.canvases[i].resetEpiline(3);
+                    }
+                } else if (number === 2) {
+                    $scope.newPoint.point2 = [];
+                    $scope.newPoint.cam2 = "";
+                    $scope.newPoint.point3 = [];
+                    $scope.newPoint.cam3 = "";
+                    $scope.newPoint.point4 = [];
+                    $scope.newPoint.cam4 = "";
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].resetEpiline(2);
+                        $scope.canvases[i].resetEpiline(3);
+                    }
+                } else if (number === 3) {
+                    $scope.newPoint.point3 = [];
+                    $scope.newPoint.cam3 = "";
+                    $scope.newPoint.point4 = [];
+                    $scope.newPoint.cam4 = "";
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].resetEpiline(3);
+                    }
+                } else if (number === 4) {
+                    $scope.newPoint.point4 = [];
+                    $scope.newPoint.cam4 = "";
+                }
+            }
+
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
             }
-        }
+        };
 
         // Object that controls the canvas and stores its state
         function CanvasObject(canvas, number) {
@@ -810,20 +818,28 @@ angular.module('CVGTool')
                                     console.log(this.objectsIn2D);
                                     objects = this.objectsIn2D["personAIK"].objects
                                 }
+                                let j = 0;
                                 for (obj in objects) {
-                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {   //TODO paint all points
-                                        var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
-                                        var imageCoords = this.toImage([coords[0], coords[1]]);
-                                        this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'red', objects[obj].uid);
+                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {
+                                        let colors = ["red", "blue", "yellow", "purple", "brown", "white", "grey", "cyan",
+                                        "pink", "lilac", "orange", "canary"];
+                                        for (let i = 0; i < objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length; i++) {
+                                            var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[i];
+                                            var imageCoords = this.toImage([coords[0], coords[1]]);
+                                            this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], colors[j], objects[obj].uid);
+                                        }
                                     }
+                                    j++;
                                 }
                             } else { // If there is one point selected, just draw it
                                 var uid = $scope.objectManager.selectedObject.uid;
                                 var type = $scope.objectManager.selectedObject.type;
                                 if (this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints.length > 0) {
-                                    var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints[0];
-                                    var imageCoords = this.toImage([coords[0], coords[1]]);
-                                    this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'green', uid);
+                                    for (let i = 0; i < this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints.length; i++) {
+                                        var coords = this.objectsIn2D[type.toString()].objects[uid.toString()].frames[$scope.slider.value - $scope.frameFrom].keypoints[i];
+                                        var imageCoords = this.toImage([coords[0], coords[1]]);
+                                        this.drawCircleWithUID(this.ctx, imageCoords[0], imageCoords[1], 'green', uid);
+                                    }
                                 }
                             }
                         }
