@@ -402,7 +402,7 @@ angular.module('CVGTool')
                 }
             }
             return cams;
-        }
+        };
 
         var callbackRetrievingFrame = function(image, filename, frame) {
             for (var i = 0; i < $scope.loadedCameras.length; i++) {
@@ -420,7 +420,12 @@ angular.module('CVGTool')
                     });
                 }
             }
-        }
+            // After all frames have loaded, call retrieve objects in PT
+            if (frame.localeCompare($scope.frameTo.toString()) === 0 &&
+                $scope.activeDataset.localeCompare("poseTrack") === 0) {
+                $scope.retrieveObjectsPT();
+            }
+        };
 
         // Function that opens the dialog in charge of adding a new camera
         $scope.addCamera = function() {
@@ -446,35 +451,9 @@ angular.module('CVGTool')
                     ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
                     for (var j = 0; j < successData.videos.length; j++) {
                         toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
-                            callbackRetrievingFrame);
+                            $scope.activeDataset.type, callbackRetrievingFrame);
                     }
                 }
-                $scope.retrieveObjectsPT();
-
-
-                // var filename = successData[0].filename; // Get the name of the camera from the first frame
-                // var frames = [];
-
-                // for (var i = 0; i < successData.length; i++) {
-                //     var imageData = successData[i].image.slice(2, successData[i].image.length - 1)
-                //     var stringImage = "data:image/jpeg;base64," + imageData;
-
-                //     frames.push({
-                //         number: successData[i].frame,
-                //         image: stringImage,
-                //     });
-                // }
-
-                // // Sort frames once loaded
-                // frames.sort(function(a, b) {
-                //     return a.number - b.number;
-                // });
-
-                // // Create new camera
-                // $scope.loadedCameras.push({
-                //     filename: filename,
-                //     frames: frames,
-                // })
             });
         }
 
@@ -482,7 +461,7 @@ angular.module('CVGTool')
 
         // Function that opens the dialog in charge of moving one camera to one canvas
         $scope.openSelector = function(video) {
-            console.log($scope.loadedCameras)
+            console.log($scope.loadedCameras);
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/cameraSelectorDialog.html',
                 controller: 'dialogCameraSelectorCtrl',
