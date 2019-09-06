@@ -405,6 +405,7 @@ angular.module('CVGTool')
         }
 
         var callbackRetrievingFrame = function(image, filename, frame) {
+            // First search for the camera in the loadedCameras panel
             for (var i = 0; i < $scope.loadedCameras.length; i++) {
                 if ($scope.loadedCameras[i].filename.localeCompare(filename) == 0) { // Find the camera
                     var imageData = image.slice(2, image.length - 1) // Process the image
@@ -418,8 +419,17 @@ angular.module('CVGTool')
                     $scope.loadedCameras[i].frames.sort(function(a, b) {
                         return a.number - b.number;
                     });
+
+                    return; // If we stored the frame, just return
                 }
             }
+
+            // In case we couldn't find the camera in the loadedCaemras panel, we seach for it in the canvases
+            for (var i = 0; i < $scope.canvases; i++) {
+
+            }
+
+
         }
 
         // Function that opens the dialog in charge of adding a new camera
@@ -449,32 +459,6 @@ angular.module('CVGTool')
                             callbackRetrievingFrame);
                     }
                 }
-
-
-
-                // var filename = successData[0].filename; // Get the name of the camera from the first frame
-                // var frames = [];
-
-                // for (var i = 0; i < successData.length; i++) {
-                //     var imageData = successData[i].image.slice(2, successData[i].image.length - 1)
-                //     var stringImage = "data:image/jpeg;base64," + imageData;
-
-                //     frames.push({
-                //         number: successData[i].frame,
-                //         image: stringImage,
-                //     });
-                // }
-
-                // // Sort frames once loaded
-                // frames.sort(function(a, b) {
-                //     return a.number - b.number;
-                // });
-
-                // // Create new camera
-                // $scope.loadedCameras.push({
-                //     filename: filename,
-                //     frames: frames,
-                // })
             });
         }
 
