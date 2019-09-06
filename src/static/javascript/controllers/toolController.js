@@ -422,7 +422,7 @@ angular.module('CVGTool')
             }
             // After all frames have loaded, call retrieve objects in PT
             if (frame.localeCompare($scope.frameTo.toString()) === 0 &&
-                $scope.activeDataset.localeCompare("poseTrack") === 0) {
+                $scope.activeDataset.type.localeCompare("poseTrack") === 0) {
                 $scope.retrieveObjectsPT();
             }
         };
@@ -438,22 +438,36 @@ angular.module('CVGTool')
                     loadedCameras: cams
                 }
             }).then(function(successData) {
-                // First, create the structure for the new cameras
-                for (var i = 0; i < successData.videos.length; i++) {
+                if (navSrvc.getActiveDataset().type.localeCompare("poseTrack") === 0) {
+                    // First, create the structure for the new cameras
                     $scope.loadedCameras.push({
-                        filename: successData.videos[i],
+                        filename: successData.videos,
                         frames: [],
-                    })
-                }
-
-                // Then, make all the frame requests
-                for (var i = 0;
-                    ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
-                    for (var j = 0; j < successData.videos.length; j++) {
-                        toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
+                    });
+                    // Then, make all the frame requests
+                    for (var i = 0; ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
+                        toolSrvc.getFrame(successData.videos, $scope.frameFrom + i, $scope.activeDataset.name,
                             $scope.activeDataset.type, callbackRetrievingFrame);
                     }
+                } else {
+                    // First, create the structure for the new cameras
+                    for (var i = 0; i < successData.videos.length; i++) {
+                        $scope.loadedCameras.push({
+                            filename: successData.videos[i],
+                            frames: [],
+                        })
+                    }
+
+                    // Then, make all the frame requests
+                    for (var i = 0;
+                         ($scope.frameFrom + i) < $scope.frameTo + 1; i++) {
+                        for (var j = 0; j < successData.videos.length; j++) {
+                            toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
+                                $scope.activeDataset.type, callbackRetrievingFrame);
+                        }
+                    }
                 }
+
             });
         }
 

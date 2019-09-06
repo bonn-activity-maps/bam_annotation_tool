@@ -277,11 +277,11 @@ angular.module('CVGTool')
         $scope.isVideoSelected = false;
         $scope.listOfVideos = [];
         $scope.loadedCameras = loadedCameras;
-
+        $scope.activeDataset = {};
 
         $scope.videosSelected = {
             videos: []
-        }
+        };
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
@@ -289,9 +289,9 @@ angular.module('CVGTool')
         };
 
         $scope.isVideoSelected = function() {
-            if ($scope.videosSelected.videos.length > 0) return true;
-            return false;
-        }
+            return $scope.videosSelected.videos.length > 0;
+
+        };
 
         // Function to update the list of videos
         var showListOfVideos = function(list) {
@@ -311,7 +311,9 @@ angular.module('CVGTool')
 
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
-            toolSrvc.getInfoOfVideos(showListOfVideos, navSrvc.getActiveDataset().name);
+            $scope.activeDataset = navSrvc.getActiveDataset();
+            console.log($scope.activeDataset);
+            toolSrvc.getInfoOfVideos(showListOfVideos, $scope.activeDataset.name);
         };
 
         // Function to go back from the dialog once the frames have been retrieved from the server
@@ -332,7 +334,6 @@ angular.module('CVGTool')
                 $scope.end();
             }
         };
-
         $scope.getListOfVideos();
 
     }

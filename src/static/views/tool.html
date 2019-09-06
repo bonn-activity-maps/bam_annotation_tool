@@ -9,12 +9,13 @@
                     <div ng-repeat="video in loadedCameras">
                         <div class="thumbnail" ng-click="openSelector(video)">
                             <img class="img" style="width: 80px; height: width/1.5;" src="{{video.frames[slider.value - frameFrom].image}}" />
-                            <div class="caption">
+                            <div ng-if="activeDataset.type != 'poseTrack'" class="caption">
                                 <p>{{video.filename}}</p>
                             </div>
                         </div>
                     </div>
-                    <button ng-click="addCamera()" class="btn btn-default"><span
+                    <button ng-if="activeDataset.type != 'poseTrack' || (activeDataset.type == 'poseTrack' &&
+                    loadedCameras.length <= 0 && !canvases[0].hasActiveCamera())" ng-click="addCamera()" class="btn btn-default"><span
                             class="glyphicon glyphicon-plus"></span></button>
                 </div>
             </div>
