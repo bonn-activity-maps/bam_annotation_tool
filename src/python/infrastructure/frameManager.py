@@ -23,6 +23,18 @@ class FrameManager:
             log.exception('Error finding frame in db')
             return 'Error'
 
+    # Return info of frame by frame ID if it exists in the DB. Ignore mongo id
+    def getFrameById(self, frameId):
+        try:
+            result = self.collection.find_one({"frame_id": frameId}, {"_id": 0})
+            if result is None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding frame in db')
+            return 'Error'
+
     # Return list with info of all frames by video and dataset. Empty list if there are no frames
     # Ignore mongo id
     def getFrames(self, video, dataset):
@@ -72,7 +84,7 @@ class FrameManager:
     # Return path of frame if exist in DB. Ignore mongo id
     def getFramePath(self, frame, video, dataset):
         try:
-            result = self.collection.find_one({"dataset": dataset, "video": int(video), "number": int(frame)},
+            result = self.collection.find_one({"dataset": dataset, "video": video, "number": int(frame)},
                                               {"path": 1, "_id": 0})
             if result is None:
                 return 'Error'

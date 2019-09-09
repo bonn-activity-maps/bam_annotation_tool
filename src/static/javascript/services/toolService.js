@@ -23,14 +23,15 @@ angular.module('CVGTool')
         },
 
         // Gets the image of a frame, from a video and a dataset
-        getFrame: function(fileName, frame, dataset, callbackSuccess) {
+        getFrame: function(fileName, frame, dataset, type, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/dataset/getFrameVideo',
                 headers: {
                     'fileName': fileName,
                     'frame': frame,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'type': type
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
@@ -79,7 +80,8 @@ angular.module('CVGTool')
                 mehtod: 'GET',
                 url: '/api/annotation/getObjects',
                 headers: {
-                    'dataset': dataset,
+                    'dataset': dataset.name,
+                    'datasetType': dataset.type,
                     'scene': scene,
                     'user': user
                 }
@@ -109,7 +111,7 @@ angular.module('CVGTool')
         },
 
         // Get Epipolar line
-        getEpiline: function(frame, dataset, point, camera1, camera2, camera2Index, camera1Index, pointNumber, callbackSuccess) {
+        getEpiline: function(frame, dataset, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/aik/computeEpiline',
@@ -121,7 +123,7 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, camera2Index, camera1Index, pointNumber);
+                callbackSuccess(response.data.msg, camera1Index, camera2Index, pointNumber);
             }, function errorCallback(response) {
                 console.log(response.data.msg);
             })

@@ -41,8 +41,10 @@ class AnnotationService:
             return True, result, 200
 
     # Get all annotated objects for dataset, scene and user
-    def getAnnotatedObjects(self, dataset, scene, user):
-        result = annotationManager.getAnnotatedObjects(dataset, scene, user)
+    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
+        # print("Looking for Annotated Objects ", dataset, scene, user)
+        result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
+        # print("Got Annotated objects: ", result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -113,13 +115,19 @@ class AnnotationService:
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
             objects = self.updateAnnotationAIK(dataset, frame, objects)
-
-        # Update only one object in the annotation for concrete frame
-        result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
-        if result == 'Error':
-            return False, 'Error updating annotation', 400
-        else:
-            return True, result, 200
+            # IT WAS OUTSIDE THE IF BELOW HERE, IN CASE I BREAK SOMETHING
+            # Update only one object in the annotation for concrete frame
+            result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
+            else:
+                return True, result, 200
+        elif datasetType == self.pt:
+            for object in objects:
+                result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object, datasetType)
+                if result == 'Error':
+                    return False, 'Error updating annotation', 400
+        return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(self, dataset, scene, frame, user):
@@ -171,7 +179,7 @@ class AnnotationService:
 
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db
-    def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects):
+    def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
         found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
@@ -179,9 +187,12 @@ class AnnotationService:
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':   # Add new existing object in frame
-            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
+            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
         else:   # Update object in frame
-            result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
+            if datasetType == 'poseTrack' and found['type'] != objects['type']:
+                result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
+            else:
+                result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
 
         return result
 

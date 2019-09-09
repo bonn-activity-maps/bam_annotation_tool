@@ -130,7 +130,7 @@ class DatasetService:
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
     def readAnnotationsPT(self, dataset, dir):
-        print("annotationsPT")
+        # print("annotationsPT")
         # type = 'personPT'  # Type of objects
         finalResult = True
         types = ["test", "train", "val"]
@@ -167,15 +167,18 @@ class DatasetService:
         return resultFrames and resultAnnotations and resultCategories
 
     def addFramesPT(self, dataset, frames):
+        initFrameNumber = int(os.path.splitext(os.path.split(frames[0]["file_name"])[-1])[0])
         nFrames = self.safelyReadDictionary(frames[0], "nframes")
         index = 0
         frame = {}
-        for frameNumber in range(0, nFrames):           # For every frame in VIDEO (not JSON FILE)
+        for frameNumber in range(0, nFrames):     # For every frame in VIDEO (not JSON FILE)
             frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
-            if frameNumber == int(frameObjectNumber):   # If there is data to add
+            # print("NFRAMES: ", nFrames, " FRAMENUMBER: ", frameNumber + initFrameNumber, " FRAMEOBJECTNUMBER: ", int(frameObjectNumber))
+            if (frameNumber + initFrameNumber) == int(frameObjectNumber):   # If there is data to add
                 index += 1                              # Advance index
                 frame = dict(frames[frameNumber])       # Reformat object to insert into db
-                frame["number"] = frameNumber
+                # frame["image_id"] = self.safelyReadDictionary(frame, "frame_id")
+                frame["number"] = frameNumber + initFrameNumber
                 frame["dataset"] = dataset
                 frame["video"] = self.safelyReadDictionary(frame, "vid_id")
                 self.safelyDeleteDictionaryKey(frame, "vid_id")
@@ -186,9 +189,9 @@ class DatasetService:
                     else True                           # If it has no ignore regions, store it so we know later.
                 self.safelyDeleteDictionaryKey(frame, "ignore_regions_x")
                 self.safelyDeleteDictionaryKey(frame, "ignore_regions_y")
-            else:                                       # If no data, initialize empty
+            else:       # If no data, initialize empty
                 frame = dict()
-                frame["number"] = frameNumber
+                frame["number"] = frameNumber + initFrameNumber
                 frame["dataset"] = dataset
                 frame["video"] = self.safelyReadDictionary(frames[0], "vid_id")
                 dirpath = os.path.join(self.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
@@ -201,9 +204,60 @@ class DatasetService:
 
     def addAnnotationsPT(self, dataset, annotations):
         for annotation in annotations:
-            # TODO Add objects here....
-            pass
-        return False
+            image_id = self.safelyReadDictionary(annotation, "image_id")
+            bbox_head = self.safelyReadDictionary(annotation, "bbox_head")
+            bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
+                              [bbox_head[2], bbox_head[3]]]
+            bbox = self.safelyReadDictionary(annotation, "bbox")
+            bbox_keypoints = [[bbox[0], bbox[1]],
+                              [bbox[2], bbox[3]]]
+            keypoints = self.safelyReadDictionary(annotation, "keypoints")
+            person_keypoints = []   # Keypoints of the skeleton, ordered
+            # Create array of 3d keypoints (z = visibility)
+            for i in range(0, len(keypoints), 3):
+                person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
+            track_id = self.safelyReadDictionary(annotation, "track_id")
+            category_id = 1
+            id = self.safelyReadDictionary(annotation, "id")
+            result, og_frame, _ = frameService.getFrameByID(image_id)
+            result, og_annotation, _ = annotationService.getAnnotation(dataset, og_frame["video"], og_frame["number"], "root")
+            og_objects = self.safelyReadDictionary(og_annotation, "objects")
+            og_objects = [] if og_objects is None else og_objects   # If empty, create new
+            # Create new objects for person, bbox and bbox_head and add it to objects
+            object_person = {
+                "uid": id,
+                "type": "person",
+                "keypoints": person_keypoints,
+                "validate": "unchecked",
+                "track_id": track_id,
+                "category_id": category_id
+            }
+            og_objects.append(object_person)        # Append new object
+            object_bbox = {
+                "uid": id,
+                "type": "bbox",
+                "keypoints": bbox_keypoints,
+                "validate": "unchecked",
+                "track_id": track_id,
+                "category_id": category_id
+            }
+            og_objects.append(object_bbox)          # Append new object
+            object_bbox_head = {
+                "uid": id,
+                "type": "bbox_head",
+                "keypoints": bbox_head_keypoints,
+                "validate": "unchecked",
+                "track_id": track_id,
+                "category_id": category_id
+            }
+            og_objects.append(object_bbox_head)     # Append new object
+            # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
+            # print(og_objects)
+            result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
+                                                        og_objects)
+            if result == 'error':
+                return False
+        return True
 
     def addCategoriesPT(self, categories):
         # Categories
@@ -234,7 +288,7 @@ class DatasetService:
         type = "bbox"
         datasetType = self.pt
         is_polygon = False
-        labels = None
+        labels = ["Top Left", "Bottom Right"]
         numKeypoints=2
         result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
         if result == 'error':
@@ -244,7 +298,7 @@ class DatasetService:
         type = "bbox_head"
         datasetType = self.pt
         is_polygon = False
-        labels = None
+        labels = ["Top Left", "Bottom Right"]
         numKeypoints=2
         result = objectTypeService.createObjectType(type, datasetType, numKeypoints, labels, is_polygon=is_polygon)
         if result == 'error':
@@ -456,10 +510,13 @@ class DatasetService:
             return True, result, 200
 
     # Return the corresponding frame of video
-    def getVideoFrame(self, video, frame, dataset):
+    def getVideoFrame(self, video, frame, dataset, type):
+        print("get ", video, frame, dataset, type)
         # Get path of frame
-        _, framePath, _ = frameService.getFramePath(frame, video, dataset)
-
+        result = frameService.getFramePath(frame, int(video), dataset) if type == "actionInKitchen" \
+            else frameService.getFramePath(frame, video, dataset)
+        print("frame path: ", result)
+        _, framePath, _ = result
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
             with open(framePath, "rb") as image_file:

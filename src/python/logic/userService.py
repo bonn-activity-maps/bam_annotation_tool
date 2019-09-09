@@ -3,11 +3,19 @@ import string, random
 import bcrypt
 
 from python.infrastructure.userManager import UserManager
+from python.infrastructure.datasetManager import DatasetManager
+from python.infrastructure.videoManager import VideoManager
+from python.infrastructure.frameManager import FrameManager
+from python.infrastructure.annotationManager import AnnotationManager
 
 # UserService logger
 log = logging.getLogger('userService')
 
 userManager = UserManager()
+datasetManager = DatasetManager()
+videoManager = VideoManager()
+frameManager = FrameManager()
+annotationManager = AnnotationManager()
 
 class UserService:
 
@@ -77,12 +85,33 @@ class UserService:
             pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
             # pwd = u"test"
             hashedPwd = self.getHashedPassword(pwd)
-            result = userManager.createUser(name, hashedPwd, req['assignedTo'], req['role'], req['email'])
+            datasets = req['assignedTo']
+            result = userManager.createUser(name, hashedPwd, datasets, req['role'], req['email'])
             if result == 'Error':
                 return False, 'Error creating user', 400
             else:
+                result = self.duplicateAnnotations(datasets, name)
+                if not result:
+                    return False, "Error duplicating annotations", 400
                 ## TODO: send password to email
-                return True, {'name':name, 'password':pwd}, 200
+                return True, {'name': name, 'password': pwd}, 200
+
+    # Check if the the user has annotations of his own for the assignated datasets and create a copy of root's otherwise
+    def duplicateAnnotations(self, datasets, user):
+        for dataset in datasets:
+            data = datasetManager.getDataset(dataset)
+            if data['type'] == 'poseTrack':     # In the future, probably for posetrack too
+                videos = videoManager.getVideos(dataset)
+                for video in videos:
+                    annotations = annotationManager.getAnnotations(dataset, video['name'], user, None)
+                    if not annotations:  # Else already exist
+                        annotations = annotationManager.getAnnotations(dataset, video['name'], 'root', None)
+                        for annotation in annotations:
+                            result = annotationManager.updateAnnotation(dataset, video['name'], annotation['frame'],
+                                                                        user, annotation['objects'])
+                            if result == 'Error':
+                                return False
+        return True
 
     # Return 'ok' if the user has been updated
     def updateUser(self, req):
@@ -90,4 +119,8 @@ class UserService:
         if result == 'Error':
             return False, 'Error updating user', 400
         else:
-            return True, result, 200
+            result = self.duplicateAnnotations(req['assignedTo'], req['name'])
+            if not result:
+                return False, 'Error duplicating annotations', 400
+            else:
+                return True, result, 200
