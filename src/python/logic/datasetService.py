@@ -54,6 +54,8 @@ class DatasetService:
             frames = len(os.listdir(dir))
         return frames
 
+    # PT: Check integrity of annotations
+    # AIK: Check integrity of cameras and videos (for aik)
     def checkIntegrityOfAnnotations(self, dirAnnotations, dirImages):
         hasConsistency = True
         for f in os.listdir(dirAnnotations):
@@ -63,7 +65,8 @@ class DatasetService:
                 break
         return hasConsistency
 
-    def checkIntegrity(self, dir):
+    # Check integrity for posetrack datasets
+    def checkIntegrityPT(self, dir):
         isDir = os.path.isdir(dir)
         dirAnnotations = dir + "/annotations"
         dirImages = dir + "/images"
@@ -80,6 +83,30 @@ class DatasetService:
 
             return isDir and hasAnnotations and hasImages and hasTest and hasTrain and hasVal and hasConsistency
         except:
+            log.exception('Error checking integrity of zip')
+            return False
+
+    # Check integrity for aik datasets
+    def checkIntegrityAIK(self, dir):
+        # Directories and files
+        dirCameras = dir + "/cameras"
+        dirVideos = dir + "/videos"
+        dirPoses = dir + "/poses"
+        fileDataset = dir + "/dataset.json"
+
+        # Check dirs and files
+        isDir = os.path.isdir(dir)
+        hasCameras = os.path.isdir(dirCameras)
+        hasVideos = os.path.isdir(dirVideos)
+        hasPoses = os.path.isdir(dirPoses)
+        hasDataset = os.path.isfile(fileDataset)
+
+        try:
+            hasConsistency = self.checkIntegrityOfAnnotations(dirCameras, dirVideos+"/")
+
+            return isDir and hasCameras and hasVideos and hasPoses and hasDataset and hasConsistency
+        except:
+            log.exception('Error checking integrity of zip')
             return False
 
     # Return the result of storing info wrt different types of datasets
@@ -315,7 +342,7 @@ class DatasetService:
         # Directories for AIK datasets
         datasetDir = os.path.join(self.STORAGE_DIR, dataset)
         videosDir = os.path.join(datasetDir, 'videos/')
-        annotationsDir = os.path.join(datasetDir, 'tracks3d/')
+        annotationsDir = os.path.join(datasetDir, 'poses/')
 
         # Store info in DB
         resultVideos = self.addVideosAIK(dataset, videosDir)
@@ -422,8 +449,14 @@ class DatasetService:
         elif type == self.pt:
             kpDim = 2
 
-        # TODO: check integrity for AIK
-        integrity = self.checkIntegrity(self.STORAGE_DIR + dataset) if type == self.pt else True
+        # Check integrity depending on the dataset type
+        if type == self.pt:
+            integrity = self.checkIntegrityPT(self.STORAGE_DIR + dataset)
+        elif type == self.aik:
+            integrity = self.checkIntegrityAIK(self.STORAGE_DIR + dataset)
+        else:
+            integrity = False
+
         if integrity:
             os.remove(self.STORAGE_DIR + filename)  # Remove zip file
             result = datasetManager.createDataset(dataset, type, kpDim)
@@ -511,11 +544,9 @@ class DatasetService:
 
     # Return the corresponding frame of video
     def getVideoFrame(self, video, frame, dataset, type):
-        print("get ", video, frame, dataset, type)
         # Get path of frame
         result = frameService.getFramePath(frame, int(video), dataset) if type == "actionInKitchen" \
             else frameService.getFramePath(frame, video, dataset)
-        print("frame path: ", result)
         _, framePath, _ = result
         # Read file as binary, encode to base64 and remove newlines
         if os.path.isfile(framePath):
