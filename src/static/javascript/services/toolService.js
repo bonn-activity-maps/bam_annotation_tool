@@ -111,7 +111,7 @@ angular.module('CVGTool')
         },
 
         // Get Epipolar line
-        getEpiline: function(frame, dataset, point, camera1, camera2, camera2Index, camera1Index, pointNumber, callbackSuccess) {
+        getEpiline: function(frame, dataset, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/aik/computeEpiline',
@@ -123,7 +123,7 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, camera2Index, camera1Index, pointNumber);
+                callbackSuccess(response.data.msg, camera1Index, camera2Index, pointNumber);
             }, function errorCallback(response) {
                 console.log(response.data.msg);
             })
