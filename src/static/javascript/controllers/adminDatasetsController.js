@@ -3,7 +3,7 @@ angular.module('CVGTool')
     /*
      * Controller of the admin page "Videos"
      */
-    .controller('adminDatasetsCtrl', ['$scope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
+    .controller('adminDatasetsCtrl', ['$scope', '$rootScope', '$state', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', function ($scope, $rootScope, $state, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfVideos = [];
         $scope.listOfDatasets = [];
         $scope.selectedDataset = {
@@ -142,6 +142,8 @@ angular.module('CVGTool')
             if ($scope.selectedDataset.name.localeCompare('none') === 0){
                 $scope.listOfVideos = [];
             } else {
+                console.log('getVideos');
+                $rootScope.$broadcast("sendMsg", "some data");
                 adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, $scope.selectedDataset.name);
             }
         };

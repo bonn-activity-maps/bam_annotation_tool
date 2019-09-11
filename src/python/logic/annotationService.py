@@ -66,19 +66,21 @@ class AnnotationService:
 
         # Triangulate all keypoints of object
         for kp in keypoints2d:
-            if (kp["p1"] == [] and kp["p2"] == [] and kp["cam1"] == "" and kp["cam2"] == ""):
-                objects["keypoints"] = []
-                return  objects
-
-            # Get camera parameters from each frame and camera (always need 2 points)
-            frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
-            frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
-
             # Keypoints and camera parameters to triangulate
-            keypointsTriangulate = [kp["p1"], kp["p2"]]
-            cameraParamsTriangulate = [frame1["cameraParameters"], frame2["cameraParameters"]]
+            keypointsTriangulate = []
+            cameraParamsTriangulate = []
 
-            # Add additional points to triangulate if they exist
+            # Add existing points to triangulate (max 4 points)
+            if kp["cam1"] != "":
+                frame1 = frameManager.getFrame(frame, int(kp["cam1"]), dataset)
+                keypointsTriangulate.append(kp["p1"])
+                cameraParamsTriangulate.append(frame1["cameraParameters"])
+
+            if kp["cam2"] != "":
+                frame2 = frameManager.getFrame(frame, int(kp["cam2"]), dataset)
+                keypointsTriangulate.append(kp["p2"])
+                cameraParamsTriangulate.append(frame2["cameraParameters"])
+
             if kp["cam3"] != "":
                 frame3 = frameManager.getFrame(frame, int(kp["cam3"]), dataset)
                 keypointsTriangulate.append(kp["p3"])
@@ -89,33 +91,41 @@ class AnnotationService:
                 keypointsTriangulate.append(kp["p4"])
                 cameraParamsTriangulate.append(frame4["cameraParameters"])
 
-            point3d = aikService.triangulate2DPoints(keypointsTriangulate, cameraParamsTriangulate)
-
-            keypoints3d.append(point3d.tolist())    # Store 3d point
+            if len(keypointsTriangulate) == 0:      # If 0 points, let the keypoint empty
+                keypointsTriangulate.append([])
+                cameraParamsTriangulate.append([])
+            elif len(keypointsTriangulate) < 2:     # Error if only 1 points
+                return objects, True
+            else:                                   # Triangulate using all available points
+                point3d = aikService.triangulate2DPoints(keypointsTriangulate, cameraParamsTriangulate)
+                keypoints3d.append(point3d.tolist())    # Store 3d point
 
         # Modify original objects which contains info of object with calculated 3d keypoints
         objects["keypoints"] = keypoints3d
-        return objects
+        return objects, False
 
     # Return the object with the 3d points for AIK datasets
     def updateAnnotationAIK(self, dataset, frame, objects):
 
         # Triangulate points from 2D points to 3D if dataset is AIK
-        objects = self.obtain3dPointsAIK(frame, dataset, objects)
+        objects, errorFlag = self.obtain3dPointsAIK(frame, dataset, objects)
 
         # If the object is not a person -> we have to calculate 8 points for the box of object
-        if objects['type'] != 'personAIK':
+        if objects['type'] != 'personAIK' and not errorFlag:
             kp1, kp2, kp3 = np.asarray(objects['keypoints'])
             objects['keypoints'] = aikService.createBox(kp1, kp2, kp3).tolist()
-        return objects
+        return objects, errorFlag
 
     # Return 'ok' if the annotation has been updated
     def updateAnnotation(self, dataset, datasetType, scene, frame, user, objects):
 
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
-            objects = self.updateAnnotationAIK(dataset, frame, objects)
-            # IT WAS OUTSIDE THE IF BELOW HERE, IN CASE I BREAK SOMETHING
+            objects, errorFlag = self.updateAnnotationAIK(dataset, frame, objects)
+
+            if errorFlag:
+                return False, 'Error incorrect keypoints', 400
+
             # Update only one object in the annotation for concrete frame
             result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
             if result == 'Error':
