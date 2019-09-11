@@ -138,7 +138,7 @@ class DatasetService:
     # Return true if all videos have been updated, False ow
     def addVideosPT(self, dataset):
         datasetDir = os.path.join(self.STORAGE_DIR, dataset)
-        if self.checkIntegrity(datasetDir):
+        if self.checkIntegrityPT(datasetDir):
             dirs = ["train", "test", "val"]
             for type in dirs:
                 imagesDir = os.path.join(datasetDir, "images/" + type)
@@ -247,9 +247,9 @@ class DatasetService:
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
             result, og_frame, _ = frameService.getFrameByID(image_id)
-            result, og_annotation, _ = annotationService.getAnnotation(dataset, og_frame["video"], og_frame["number"], "root")
-            og_objects = self.safelyReadDictionary(og_annotation, "objects")
-            og_objects = [] if og_objects is None else og_objects   # If empty, create new
+            # result, og_annotation, _ = annotationService.getAnnotation(dataset, og_frame["video"], og_frame["number"], "root")
+            # og_objects = self.safelyReadDictionary(og_annotation, "objects")
+            og_objects = [] #if og_objects is None else og_objects   # If empty, create new
             # Create new objects for person, bbox and bbox_head and add it to objects
             object_person = {
                 "uid": id,

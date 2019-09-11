@@ -218,6 +218,15 @@ def updateAnnotation():
                                                               req_data['user'], req_data['objects'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Update existing annotation for given frame, dataset, video and user
+@app.route('/api/annotation/updateAnnotationPT', methods=['POST'])
+def updateAnnotationPT():
+    req_data = request.get_json()
+    success, msg, status = annotationService.updateAnnotationPT(req_data['dataset'], req_data['datasetType'],
+                                                              req_data['scene'], req_data['frame'],
+                                                              req_data['user'], req_data['object'], req_data['points'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Delete annotation
 # TODO: do we need to filter in remove by validated flag?

@@ -503,25 +503,46 @@ angular.module('CVGTool')
                     loadedCameras: cams
                 }
             }).then(function(successData) {
-                // First, create the structure for the new cameras
-                for (var i = 0; i < successData.videos.length; i++) {
-                    $scope.loadedCameras.push({
-                        filename: successData.videos[i],
-                        frames: [],
-                    })
+                if (navSrvc.getActiveDataset().type.localeCompare("poseTrack") === 0) {
+                    // First, create the structure for the new cameras
+                    for (var i = 0; i < successData.videos.length; i++) {
+                        $scope.loadedCameras.push({
+                            filename: successData.videos,
+                            frames: [],
+                        })
 
-                    // Push empty frame spaces
-                    for (var j = 0; j < $scope.numberOfFrames; j++) {
-                        $scope.loadedCameras[i].frames.push({})
+                        // Push empty frame spaces
+                        for (var j = 0; j < $scope.numberOfFrames; j++) {
+                            $scope.loadedCameras[i].frames.push({})
+                        }
                     }
-                }
 
-                // Then, make all the frame requests
-                for (var i = 0;
-                    ($scope.frameFrom + i) <= $scope.frameTo; i++) {
-                    for (var j = 0; j < successData.videos.length; j++) {
-                        toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
-                            $scope.activeDataset.type, callbackRetrievingFrame);
+                    // Then, make all the frame requests
+                    for (var i = 0; ($scope.frameFrom + i) <= $scope.frameTo; i++) {
+                            toolSrvc.getFrame(successData.videos, $scope.frameFrom + i, $scope.activeDataset.name,
+                                $scope.activeDataset.type, callbackRetrievingFrame);
+                    }
+                } else {
+                    // First, create the structure for the new cameras
+                    for (var i = 0; i < successData.videos.length; i++) {
+                        $scope.loadedCameras.push({
+                            filename: successData.videos[i],
+                            frames: [],
+                        })
+
+                        // Push empty frame spaces
+                        for (var j = 0; j < $scope.numberOfFrames; j++) {
+                            $scope.loadedCameras[i].frames.push({})
+                        }
+                    }
+
+                    // Then, make all the frame requests
+                    for (var i = 0;
+                         ($scope.frameFrom + i) <= $scope.frameTo; i++) {
+                        for (var j = 0; j < successData.videos.length; j++) {
+                            toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
+                                $scope.activeDataset.type, callbackRetrievingFrame);
+                        }
                     }
                 }
 
@@ -1412,6 +1433,27 @@ angular.module('CVGTool')
             } else window.alert("You need to place at least points 1 and 2 (in two different cameras)");
         }
 
+        // Callback function of updateAnnotationPT
+        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
+            window.alert("Annotation updated!");
+            return; //TODO check first everything else
+            $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
+        };
+
+        // Function to save the Annotation for PT
+        $scope.updateAnnotationPT = function() {
+            // window.alert("Temporalmente roto!");
+            console.log($scope.objectManager);
+            console.log($scope.keypointEditorData);
+            return;
+            if ($scope.keypointEditorData.length !== 0) {
+                // Update the object
+                toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
+                    $scope.slider.value, $scope.objectManager.selectedObject,
+                    $scope.keypointEditorData, updateAnnotationPTCallback);
+            } else window.alert("You need to place both points!");
+        };
+
         // Callback function for removeAnnotation
         var removeAnnotationCallback = function(objectUid, objectType, frame) {
                 window.alert("Annotation removed!");
@@ -1521,8 +1563,8 @@ angular.module('CVGTool')
 
         // Callback function for retrieving the existing objects
         var callbackRetrieveObjectsPT = function(objects) {
-            // console.log("OBJECTS");
-            // console.log(objects);
+            console.log("OBJECTS");
+            console.log(objects);
             for (obj in objects) {
                 var object = objects[obj].object;
                 $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
@@ -1535,12 +1577,18 @@ angular.module('CVGTool')
                 for (var j = 0; j <= $scope.numberOfFrames; j++) {
                     $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()].frames.push({
                         frame: $scope.frameFrom + j,
-                        original_uid: object.uid,
                         keypoints: []
                     })
                 }
             }
-            // console.log($scope.objectManager);
+            for (obj in objects) {
+                var object = objects[obj].object;
+                if (object.frame >= $scope.frameFrom && object.frame <= $scope.frameTo) {
+                    $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
+                        .frames[object.frame].original_uid = object.uid;
+                }
+            }
+            console.log($scope.objectManager);
             $scope.retrieveAnnotationsPT();
         }
 
@@ -1570,10 +1618,6 @@ angular.module('CVGTool')
                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                         .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].frame =
                         frame;
-                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].original_uid =
-                        $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].track_id.toString()].original_uid;
                 } else {
                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                         .objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints =
@@ -1602,7 +1646,6 @@ angular.module('CVGTool')
         };
 
         $scope.retrieveAnnotationsPT = function() {
-            console.log($scope.loadedCameras[0].filename);
             for (var i = 0; i < $scope.frameList.length; i++) {
                 toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i],
                     $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
