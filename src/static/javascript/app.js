@@ -1,4 +1,4 @@
-angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rzSlider'])
+angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rzSlider', 'ngToast'])
 
 .config(function($stateProvider, $urlRouterProvider) {
     $stateProvider
@@ -51,6 +51,11 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
         url: "/admin/statistics",
         templateUrl: "static/views/adminStatistics.html"
     });
+
+    // .state('toast', {
+    //     url: "/toast",
+    //     controller: "toastCtrl"
+    // });
 
     $urlRouterProvider.otherwise('login');
 });
