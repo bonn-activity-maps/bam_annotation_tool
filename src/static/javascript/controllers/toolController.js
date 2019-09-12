@@ -1,7 +1,7 @@
 angular.module('CVGTool')
 
-.controller('toolCtrl', ['$scope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams',
-    function($scope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
+.controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams',
+    function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
         // Parameters received from the task
         $scope.frameFrom = $stateParams.obj.from;
         $scope.frameTo = $stateParams.obj.to;
@@ -521,7 +521,7 @@ angular.module('CVGTool')
                     ($scope.frameFrom + i) <= $scope.frameTo; i++) {
                     for (var j = 0; j < successData.videos.length; j++) {
                         toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
-                            $scope.activeDataset.type, callbackRetrievingFrame);
+                            $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
                     }
                 }
             });
@@ -1043,7 +1043,7 @@ angular.module('CVGTool')
                         // Go through all frames of that object
                         for (var i = 0; i < object.frames.length; i++) {
                             if (object.frames[i].keypoints.length != 0) {
-                                toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints[0], object.frames[i].frame, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
+                                toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints[0], object.frames[i].frame, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection, sendMessage);
                             }
                         }
                     }
@@ -1061,7 +1061,7 @@ angular.module('CVGTool')
 
 
                 if (object.frames[frameToProject - $scope.frameFrom].keypoints.length !== 0) {
-                    toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
+                    toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection, sendMessage);
                 } else {
                     this.setRedraw();
                 }
@@ -1145,7 +1145,7 @@ angular.module('CVGTool')
         $scope.getActivitiesList = function() {
             toolSrvc.getActivitiesList($scope.activeDataset.type, function(activitiesList) {
                 $scope.actionManager.activitiesList = activitiesList.activities;
-            });
+            }, sendMessage);
         };
 
         // Fetch all actions from database
@@ -1154,7 +1154,7 @@ angular.module('CVGTool')
             toolSrvc.getActions(navSrvc.getUser().name, $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name,
                 function(actionList) {
                     $scope.actionManager.actionList = actionList;
-                })
+                }, sendMessage)
         };
 
         // Fetch all actions of an Object from database
@@ -1164,7 +1164,7 @@ angular.module('CVGTool')
                 $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name,
                 function(actionList) {
                     $scope.actionManager.actionList = actionList;
-                })
+                }, sendMessage)
         };
 
         // Function that opens the panel to edit actions
@@ -1183,7 +1183,7 @@ angular.module('CVGTool')
         // Create a new blank action
         $scope.createNewAction = function() {
             if ($scope.actionManager.selectedType == null) {
-                window.alert("Select an activity first.")
+                sendMessage("warning","Select an activity first.")
             } else {
                 $scope.actionManager.actionList.push({
                     name: $scope.actionManager.selectedType,
@@ -1205,7 +1205,7 @@ angular.module('CVGTool')
                 toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
                     function(response) {
                         $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
-                    })
+                    }, sendMessage)
             }
         };
 
@@ -1323,7 +1323,7 @@ angular.module('CVGTool')
                 if ($scope.canvases[i].hasActiveCamera()) counter++;
             }
             if (counter < 2) {
-                window.alert("You need at least 2 active cameras!")
+                sendMessage("warning","You need at least 2 active cameras!")
             }
 
             // Generate epilines of existing points in cameras that are free of points
@@ -1335,7 +1335,7 @@ angular.module('CVGTool')
                         // Get epilines for that camera
                         for (var j = 0; j < $scope.keypointEditorData[labelIndex].points.length; j++) {
                             if ($scope.keypointEditorData[labelIndex].points[j].length != 0) {
-                                toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.keypointEditorData[labelIndex].points[j], $scope.keypointEditorData[labelIndex].cameras[j], $scope.canvases[i].getActiveCamera().filename, j, $scope.canvases[i].canvasNumber, j, callbackGetEpiline);
+                                toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.keypointEditorData[labelIndex].points[j], $scope.keypointEditorData[labelIndex].cameras[j], $scope.canvases[i].getActiveCamera().filename, j, $scope.canvases[i].canvasNumber, j, callbackGetEpiline, sendMessage);
                             }
                         }
                     }
@@ -1368,34 +1368,34 @@ angular.module('CVGTool')
 
         // Callback function of updateAnnotation
         var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
-            window.alert("Annotation updated!");
+            sendMessage("success","Annotation updated!");
             $scope.interpolate(objectUid, objectType, frameTo);
         }
 
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
-            window.alert("Temporalmente roto!");
+            sendMessage('warning',"Temporalmente roto!");
             return;
             if ($scope.newPoint.point1.length != 0 && $scope.newPoint.point2.length != 0) {
                 // Go to triangulate
-                toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.point3, $scope.newPoint.point4, $scope.newPoint.cam1, $scope.newPoint.cam2, $scope.newPoint.cam3, $scope.newPoint.cam4, updateAnnotationCallback);
-            } else window.alert("You need to place at least points 1 and 2 (in two different cameras)");
+                toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, $scope.newPoint.point1, $scope.newPoint.point2, $scope.newPoint.point3, $scope.newPoint.point4, $scope.newPoint.cam1, $scope.newPoint.cam2, $scope.newPoint.cam3, $scope.newPoint.cam4, updateAnnotationCallback, callbackError);
+            } else sendMessage("warning","You need to place at least points 1 and 2 (in two different cameras)");
         }
 
         // Callback function for removeAnnotation
         var removeAnnotationCallback = function(objectUid, objectType, frame) {
-                window.alert("Annotation removed!");
-                $scope.retrieveAnnotation(objectUid, [frame]);
+            sendMessage("success","Annotation removed!");
+            $scope.retrieveAnnotation(objectUid, [frame]);
 
-            }
+        }
             // Function that pushes an empty keypoint to "remove" the existing one
         $scope.removeAnnotation = function() {
-            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, [], [], [], [], "", "", "", "", removeAnnotationCallback);
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, $scope.objectManager.selectedObject, [], [], [], [], "", "", "", "", removeAnnotationCallback, sendMessage);
         }
 
         // Function that creates a new object
         $scope.createNewObject = function() {
-            toolSrvc.createNewObject(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, $scope.objectManager.selectedType.type, $scope.slider.value, callbackCreateNewObject);
+            toolSrvc.createNewObject(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, $scope.objectManager.selectedType.type, $scope.slider.value, callbackCreateNewObject, sendMessage);
         }
 
         // Auxiliar callback function for the interpolation
@@ -1426,7 +1426,7 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate);
+                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate, sendMessage);
             } else callbackInterpolate(objectUid, [frameTo]);
 
         }
@@ -1448,7 +1448,7 @@ angular.module('CVGTool')
 
         // Retrieve available objects and fill the array
         $scope.retrieveAvailableObjectTypes = function() {
-            toolSrvc.retrieveAvailableObjectTypes($scope.activeDataset.type, callbackSuccessRetrieveAvailableObjectTypes);
+            toolSrvc.retrieveAvailableObjectTypes($scope.activeDataset.type, callbackSuccessRetrieveAvailableObjectTypes, sendMessage);
         }
 
 
@@ -1463,7 +1463,7 @@ angular.module('CVGTool')
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotation = function(objectUid, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, objectUid, frameArray[i], callbackRetrievingFrameObject);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, objectUid, frameArray[i], callbackRetrievingFrameObject, sendMessage);
             }
         }
 
@@ -1516,13 +1516,13 @@ angular.module('CVGTool')
 
         $scope.retrieveObjects = function() {
             if ($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
-                toolSrvc.retrieveObjects($scope.activeDataset, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects);
+                toolSrvc.retrieveObjects($scope.activeDataset, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects, sendMessage);
             } // else it's posetrack and it is not done here!
         };
 
         // Retrieve objects for posetrack
         $scope.retrieveObjectsPT = function() {
-            toolSrvc.retrieveObjects($scope.activeDataset, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT);
+            toolSrvc.retrieveObjects($scope.activeDataset, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT, sendMessage);
         };
 
         // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
@@ -1566,7 +1566,7 @@ angular.module('CVGTool')
             } else if (dataset.type.localeCompare("actionInKitchen") === 0) {
                 for (var i = 0; i < $scope.frameList.length; i++) {
                     toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i],
-                        dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+                        dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects, sendMessage);
                 }
             }
         };
@@ -1577,6 +1577,11 @@ angular.module('CVGTool')
                 toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i],
                     $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
             }
+        };
+
+        // Send message to toast
+        var sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
         };
 
         $scope.retrieveAvailableObjectTypes();
