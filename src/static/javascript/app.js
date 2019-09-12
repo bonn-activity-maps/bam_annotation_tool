@@ -52,10 +52,5 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rz
         templateUrl: "static/views/adminStatistics.html"
     });
 
-    // .state('toast', {
-    //     url: "/toast",
-    //     controller: "toastCtrl"
-    // });
-
     $urlRouterProvider.otherwise('login');
 });

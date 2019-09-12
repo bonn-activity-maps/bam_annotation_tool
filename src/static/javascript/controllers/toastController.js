@@ -20,7 +20,7 @@ angular.module('CVGTool')
                 content: msg,
                 className: type,
                 dismissOnTimeout: true,
-                timeout: 2000,
+                timeout: 3000,
                 dismissButton: true
             });
         };

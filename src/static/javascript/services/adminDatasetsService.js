@@ -21,51 +21,20 @@ angular.module('CVGTool')
                 });
             },
 
-          readData: function (dataset, type, callback) {
-              $http({
-                  method: 'POST',
-                  url: '/api/dataset/readData',
-                  data: {
-                      'dataset': dataset,
-                      'type': type
-                  }
-              }).then(function successCallback(response) {
-                  callback('success', 'Load data finished')
-              }, function errorCallback(response) {
-                  callback('danger', response.data.msg)
-              });
-          },
-
-            // updateVideosFrames: function (dataset, callback) {
-            //     $http({
-            //         method: 'POST',
-            //         url: '/api/dataset/updateVideosFrames',
-            //         headers: {
-            //             'dataset': dataset
-            //         }
-            //     }).then(function successCallback(response) {
-            //         callback();
-            //         console.log("Updated frames for videos of" + dataset + " in database")
-            //     }, function errorCallback(response) {
-            //         console.log(response.data.msg)
-            //     });
-            // },
-            //
-            // createDataset: function (name, type, callback) {
-            //     $http({
-            //         method: 'POST',
-            //         url: '/api/dataset/createDataset',
-            //         data: {
-            //             'name': name,
-            //             'type': type
-            //         }
-            //     }).then(function successCallback(response) {
-            //         console.log("Created dataset and videos in database");
-            //         callback();
-            //     }, function errorCallback(response) {
-            //         console.log(response.data.msg)
-            //     });
-            // },
+            readData: function (dataset, type, callback) {
+                $http({
+                    method: 'POST',
+                    url: '/api/dataset/readData',
+                    data: {
+                        'dataset': dataset,
+                        'type': type
+                    }
+                }).then(function successCallback(response) {
+                    callback('success', 'Load data finished')
+                }, function errorCallback(response) {
+                    callback('danger', response.data.msg)
+                });
+            },
 
             getDatasets: function (callback, callbackError) {
                 $http({
@@ -145,7 +114,6 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
                     callbackError(response.data.msg);
-                    console.log(response.data.msg)
                 })
             }
         }

@@ -38,8 +38,6 @@ angular.module('CVGTool')
                 $scope.newFile = file;
             },
             'success' : function(file, xhr) {
-                console.log('finish upload, datasettype: ', $scope.datasetType)
-                console.log('dataset: ', file.name.split(".zip")[0])
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
                 // TODO: Check this --> doesn't work for big datasets
@@ -145,13 +143,6 @@ angular.module('CVGTool')
                 adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, $scope.selectedDataset.name, sendMessage);
             }
         };
-
-        // TODO: do we need this??
-        // var readDataCallback = function(dataset) {
-        //     $scope.unwrapping = false;
-        //     console.log("Finish reading AIK data");
-        //     // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
-        // };
 
         // Function to retrieve data of dataset
         $scope.readData = function(file, type) {
