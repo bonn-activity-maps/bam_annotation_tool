@@ -149,7 +149,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server to triangulate and create the new 3D point
-        updateAnnotation: function(user, dataset, scene, frame, object, point1, point2, point3, point4, camera1, camera2, camera3, camera4, callbackSuccess) {
+        updateAnnotation: function(user, dataset, scene, frame, objects, callbackSuccess) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
@@ -159,23 +159,10 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'objects': {
-                        uid: object.uid,
-                        type: object.type,
-                        keypoints: [{
-                            p1: point1,
-                            cam1: camera1,
-                            p2: point2,
-                            cam2: camera2,
-                            p3: point3,
-                            cam3: camera3,
-                            p4: point4,
-                            cam4: camera4
-                        }]
-                    }
+                    'objects': objects
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.uid, object.type, frame);
+                callbackSuccess(objects.uid, objects.type, frame);
             }, function errorCallback(response) {
                 console.log(response)
             })

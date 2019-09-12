@@ -441,50 +441,15 @@
                 </div>
 
                 <hr/>
-                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length != 0">
-                    <div class="col col-md-8">
-                        <span class="label label-success">Keypoint exists</span>
-                    </div>
-                    <div class="col col-md-2">
-                        <button class="btn-sm btn-danger" ng-click="removeAnnotation()">Remove</button>
-                    </div>
+                <div ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length != 0">
+                    <span class="label label-success">Keypoint exists</span>
                 </div>
-                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length == 0">
-                    <div class="col col-md-8">
-                        <span class="label label-primary">Keypoint doesn't exist</span>
-                    </div>
-                    <div class="col col-md-2"></div>
+                <div ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length == 0">
+                    <span class="label label-primary">Keypoint doesn't exist</span>
                 </div>
 
                 <hr/>
                 <div>
-                    <!-- <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
-                        <table class="table table-hover table-bordered" style="height: 100px; width: 300px;">
-                            <thead>
-                                <tr>
-                                    <th>Id</th>
-                                    <th>Points</th>
-                                    <th>Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
-                                    <td>{{label}}</td>
-                                    <th ng-if="activeDataset.dim == 2">
-                                        <button ng-if="!keypointEditorData[$index].points[0]" class="btn btn-info" ng-click="switchSubTool('createPoint'); setPointCreationData($index, 0)">
-                                                <span>{{$index}}</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn btn-success" ng-click="removePoint($index,0); switchSubTool('createPoint'); setPointCreationData($index, 0)">
-                                                <span>{{$index}}</span></button>
-                                    </th>
-                                    <th>
-                                        <button ng-if="!keypointEditorData[$index].points[0]" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn-sm btn-danger" ng-click="removePoint($index,0)"><span class="glyphicon glyphicon-trash"></button>
-                                    </th>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <button class="btn-success" ng-click="updateAnnotation()">Save</button> -->
                     <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
                         <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
                             <thead>
