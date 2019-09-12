@@ -516,7 +516,8 @@ angular.module('CVGTool')
                     }
                 }
 
-                // Then, make all the frame requests
+                // Then, make all the frame requests and show message
+                // sendMessage('loading', 'Loading frames')
                 for (var i = 0;
                     ($scope.frameFrom + i) <= $scope.frameTo; i++) {
                     for (var j = 0; j < successData.videos.length; j++) {
@@ -524,6 +525,7 @@ angular.module('CVGTool')
                             $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
                     }
                 }
+
             });
         }
 

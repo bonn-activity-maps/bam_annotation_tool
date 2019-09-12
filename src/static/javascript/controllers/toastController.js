@@ -1,7 +1,9 @@
 angular.module('CVGTool')
     /*
      * Controller of the Toast/snackbar element
-     */
+     * Available notification types: primary, secondary, success, danger, warning, info, light, dark
+     * Special message: loading, finish
+     * */
     .controller('toastCtrl', ['$scope', '$rootScope', '$state', 'ngToast', function($scope, $rootScope, $state, ngToast) {
 
         // Event handler
@@ -9,6 +11,8 @@ angular.module('CVGTool')
 
             if (data.type === 'loading') {
                 $scope.loadingToast(data.msg)
+            } else if (data.type === 'finish') {
+                $scope.finishToast(data.msg)
             } else{
                 $scope.openToast(data.type, data.msg)
             }
@@ -26,28 +30,25 @@ angular.module('CVGTool')
         };
 
         $scope.loadingToast = function(msg) {
+            $scope.loadToast = ngToast.create({
+                content: msg,
+                className: 'info',
+                dismissOnTimeout: false,
+                dismissButton: false
+            });
+            // $scope.loadToast.create()
+        };
+
+        $scope.finishToast = function(msg) {
+            ngToast.dismiss($scope.loadToast);
             ngToast.create({
                 content: msg,
-                className: type,
-                dismissOnTimeout: false,
+                className: 'info',
+                dismissOnTimeout: true,
+                timeout: 3000,
                 dismissButton: true
             });
         };
 
-        //
-        // $scope.openToast = function(msg) {
-        //     $mdToast.show($mdToast.simple().textContent(msg).position(ctrl.toastPosition));
-        //     // Could also do $mdToast.showSimple('Hello');
-        // };
-
-
-        //
-        // $scope.warning = function(msg) {
-        //     ngToast.warning(msg);
-        // };
-        //
-        // $scope.error = function(msg) {
-        //     ngToast.danger(msg);
-        // };
 
     }]);
