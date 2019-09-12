@@ -25,7 +25,8 @@ angular.module('CVGTool')
                 className: type,
                 dismissOnTimeout: true,
                 timeout: 3000,
-                dismissButton: true
+                dismissButton: true,
+                animation: 'slide'
             });
         };
 
