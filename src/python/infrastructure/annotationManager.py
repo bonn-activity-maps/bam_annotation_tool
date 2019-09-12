@@ -218,7 +218,7 @@ class AnnotationManager:
 
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
         # Add object (uid, type, kps) and labels only if it's in objects
-        if datasetType is not None and datasetType is self.pt:
+        if datasetType is not None and datasetType == self.pt:
             category_id = objects["category_id"]
             track_id = objects["track_id"]
             if "labels" in objects:

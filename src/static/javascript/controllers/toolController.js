@@ -62,6 +62,21 @@ angular.module('CVGTool')
             }
         }
 
+        // Convert num to String and add 0s to the left of size size.
+        function pad(num, size) {
+            let s = String(num);
+            while (s.length < size) {s = "0" + s;}
+            return s;
+        }
+
+        // Function that generates a legit poseTrack UID for new objects
+        function generateNewOriginalUid(object, frame) {
+            let video = $scope.loadedCameras[0].filename;
+            frame = pad(frame, 4);
+            let track_id = pad(object.uid, 2);
+            return Number("1" + video + frame + track_id)
+        }
+
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
             $scope.keyPointEditorTab = true;
@@ -76,6 +91,12 @@ angular.module('CVGTool')
 
             // Check the dataset type
             if ($scope.activeDataset.type.localeCompare("poseTrack") === 0) {
+                // Add original UID to selected object. Create it if it doesn't exist.
+                if ($scope.objectManager.selectedObject.frames[frame].original_uid === undefined) {
+                    $scope.objectManager.selectedObject.frames[frame].original_uid = generateNewOriginalUid(object, frame);
+                }
+                $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame].original_uid;
+
                 pointStructure = {
                     label: "",
                     points: [
@@ -84,10 +105,11 @@ angular.module('CVGTool')
                     cameras: [""]
                 }
 
+
                 // Fill the keypointEditor data structure
                 for (var i = 0; i < labels.length; i++) {
                     var label = labels[i];
-                    var ps = JSON.parse(JSON.stringify(pointStructure))
+                    var ps = JSON.parse(JSON.stringify(pointStructure));
                     ps.label = label;
                     ps.points[0] = points[i];
                     ps.cameras[0] = $scope.canvases[0].activeCamera.filename;
@@ -1420,7 +1442,8 @@ angular.module('CVGTool')
         // Callback function of updateAnnotation
         var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
             window.alert("Annotation updated!");
-            $scope.interpolate(objectUid, objectType, frameTo);
+            // $scope.interpolate(objectUid, objectType, frameTo);
+            $scope.retrieveAnnotation(objectUid, frameTo);
         }
 
         // Function that triangulates the 3D point given the 2D points
@@ -1436,7 +1459,6 @@ angular.module('CVGTool')
         // Callback function of updateAnnotationPT
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
             window.alert("Annotation updated!");
-            return; //TODO check first everything else
             $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
         };
 
@@ -1445,7 +1467,7 @@ angular.module('CVGTool')
             // window.alert("Temporalmente roto!");
             console.log($scope.objectManager);
             console.log($scope.keypointEditorData);
-            return;
+            //return;
             if ($scope.keypointEditorData.length !== 0) {
                 // Update the object
                 toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
@@ -1477,7 +1499,7 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo) {
-            if (frameTo == $scope.frameFrom) {
+            if (frameTo === $scope.frameFrom) {
                 callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
                 return;
             }

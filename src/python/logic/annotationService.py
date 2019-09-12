@@ -150,7 +150,6 @@ class AnnotationService:
         result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object, datasetType)
         if result == 'Error':
             return False, 'Error updating annotation', 400
-
         return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed

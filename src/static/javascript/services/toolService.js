@@ -193,14 +193,14 @@ angular.module('CVGTool')
                     'scene': scene,
                     'frame': frame,
                     'object': {
-                        uid: object.frames[0].original_uid,
+                        uid: object.original_uid,
                         type: object.type,
                         track_id: object.uid
                     },
                     'points': points
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.uid, object.type, frame);
+                callbackSuccess(object.original_uid, object.type, frame);
             }, function errorCallback(response) {
                 console.log(response)
             })

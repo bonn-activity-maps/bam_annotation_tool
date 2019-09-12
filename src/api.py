@@ -223,8 +223,8 @@ def updateAnnotation():
 def updateAnnotationPT():
     req_data = request.get_json()
     success, msg, status = annotationService.updateAnnotationPT(req_data['dataset'], req_data['datasetType'],
-                                                              req_data['scene'], req_data['frame'],
-                                                              req_data['user'], req_data['object'], req_data['points'])
+                                                                req_data['scene'], req_data['frame'],
+                                                                req_data['user'], req_data['object'], req_data['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
