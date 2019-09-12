@@ -71,7 +71,7 @@ angular.module('CVGTool')
             // Create data structure for the editor
             $scope.keypointEditorData = [];
             var labels = $scope.objectManager.objectTypes[$scope.objectManager.selectedObject.type].labels;
-            var points = $scope.objectManager.selectedObject.frames[$scope.slider.value - $scope.frameFrom].keypoints;
+            var points = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].keypoints;
             var pointStructure = null;
 
             // Check the dataset type
@@ -1062,8 +1062,6 @@ angular.module('CVGTool')
 
                 var object = this.objectsIn2D[objectType.toString()].objects[objectUid.toString()];
 
-                console.log(this.objectsIn2D)
-
                 if (object.frames[frameToProject - $scope.frameFrom].keypoints.length !== 0) {
                     toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection);
                 } else {
@@ -1356,6 +1354,8 @@ angular.module('CVGTool')
         };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
+            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value)
+
             // Refresh the selected object so the table of annotations updates
             var selectedType = $scope.objectManager.selectedType.type;
             var selectedUID = $scope.objectManager.selectedObject.uid;
@@ -1370,15 +1370,15 @@ angular.module('CVGTool')
         }
 
         // Callback function of updateAnnotation
-        var updateAnnotationCallback = function(objectUid, objectType, frameTo) {
+        var updateAnnotationCallback = function(objectUid, objectType, frameTo, deleting) {
             window.alert("Annotation updated!");
-            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], frameTo)
-            $scope.interpolate(objectUid, objectType, frameTo);
+            $scope.interpolate(objectUid, objectType, frameTo, deleting);
         }
 
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
             // Construct the variable to store the annotation
+            var deleting = false;
             var structureOfPoint = {
                 p1: [],
                 cam1: "",
@@ -1436,6 +1436,7 @@ angular.module('CVGTool')
 
                     } else {
                         // If the point3D doesn't exist is because it has been removed or was never annotated. We leave it blank.
+                        deleting = true;
                     }
                 } else if (count >= 2) { // If count is >= 2 then we have to update/create that label (which is the same)
                     var points = $scope.keypointEditorData[i].points;
@@ -1453,7 +1454,7 @@ angular.module('CVGTool')
             }
 
             // Now with the object structure created, we can call the update
-            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, objects, updateAnnotationCallback);
+            toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, objects, deleting, updateAnnotationCallback);
         }
 
         // Function that creates a new object
@@ -1467,16 +1468,22 @@ angular.module('CVGTool')
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
-        $scope.interpolate = function(objectUid, objectType, frameTo) {
+        $scope.interpolate = function(objectUid, objectType, frameTo, deleting) {
             if (frameTo == $scope.frameFrom) {
                 callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+                return;
+            }
+
+            // If we were deleting the point, dont interpolate
+            if (deleting) {
+                callbackInterpolate(objectUid, [frameTo]);
                 return;
             }
 
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max(0, frameTo - 5); i--) {
+            for (var i = frameTo - 1; i >= Math.max(1, frameTo - 5); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
