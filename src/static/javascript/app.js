@@ -1,4 +1,4 @@
-angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rzSlider'])
+angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'rzSlider', 'ngToast'])
 
 .config(function($stateProvider, $urlRouterProvider) {
     $stateProvider
