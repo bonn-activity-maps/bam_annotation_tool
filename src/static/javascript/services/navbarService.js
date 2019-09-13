@@ -43,6 +43,11 @@ angular.module('CVGTool')
                 } else return activeDataset;
             },
 
+            // Return true iff the type of the active dataset is posetrack
+            isPosetrack: function() {
+                return activeDataset.type.localeCompare("poseTrack") === 0;
+            },
+
             // Set user to u
             setUser: function(u) {
                 user.name = u.name;
