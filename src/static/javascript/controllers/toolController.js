@@ -97,6 +97,7 @@ angular.module('CVGTool')
             } else if ($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
                 pointStructure = {
                     label: "",
+                    editable: false,
                     point3D: [],
                     points: [
                         [],
@@ -1186,7 +1187,7 @@ angular.module('CVGTool')
         // Create a new blank action
         $scope.createNewAction = function() {
             if ($scope.actionManager.selectedType == null) {
-                sendMessage("warning","Select an activity first.")
+                sendMessage("warning", "Select an activity first.")
             } else {
                 $scope.actionManager.actionList.push({
                     name: $scope.actionManager.selectedType,
@@ -1324,7 +1325,7 @@ angular.module('CVGTool')
                 if ($scope.canvases[i].hasActiveCamera()) counter++;
             }
             if (counter < 2) {
-                sendMessage("warning","You need at least 2 active cameras!")
+                sendMessage("warning", "You need at least 2 active cameras!")
             }
 
             // Generate epilines of existing points in cameras that are free of points
@@ -1372,7 +1373,7 @@ angular.module('CVGTool')
 
         // Callback function of updateAnnotation
         var updateAnnotationCallback = function(objectUid, objectType, frameTo, deleting) {
-            sendMessage("success","Annotation updated!");
+            sendMessage("success", "Annotation updated!");
             $scope.interpolate(objectUid, objectType, frameTo, deleting);
         }
 
@@ -1413,7 +1414,7 @@ angular.module('CVGTool')
 
                 // If count is equal to 1 we cant continue. We need 0 (to not change) or >= 2 points placed (to update/create)
                 if (count == 1) {
-                    sendMessage("warning","The label '" + $scope.keypointEditorData[i].label + "' needs to have 0 or at least 2 points placed.");
+                    sendMessage("warning", "The label '" + $scope.keypointEditorData[i].label + "' needs to have 0 or at least 2 points placed.");
                     return;
                 } else if (count == 0) { // If count is 0 we have to check if the point already existed
                     if ($scope.keypointEditorData[i].point3D.length > 0) {
@@ -1652,7 +1653,7 @@ angular.module('CVGTool')
 
         // Send message to toast
         var sendMessage = function(type, msg) {
-            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
+            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
         };
 
         $scope.retrieveAvailableObjectTypes();

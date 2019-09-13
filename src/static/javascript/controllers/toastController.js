@@ -7,13 +7,13 @@ angular.module('CVGTool')
     .controller('toastCtrl', ['$scope', '$rootScope', '$state', 'ngToast', function($scope, $rootScope, $state, ngToast) {
 
         // Event handler
-        $scope.$on('sendMsg', function (evt, data) {
+        $scope.$on('sendMsg', function(evt, data) {
 
             if (data.type === 'loading') {
                 $scope.loadingToast(data.msg)
             } else if (data.type === 'finish') {
                 $scope.finishToast(data.msg)
-            } else{
+            } else {
                 $scope.openToast(data.type, data.msg)
             }
         });

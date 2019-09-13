@@ -458,22 +458,27 @@
                                     <td><span ng-if="keypointEditorData[$index].point3D.length == 0" class="label label-primary">{{label}}</span>
                                         <span ng-if="keypointEditorData[$index].point3D.length != 0" class="label label-success">{{label}}</span></td>
                                     <th ng-if="activeDataset.dim == 3">
-                                        <button ng-if="keypointEditorData[$index].points[0].length == 0" class="btn btn-info" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
+                                        <div ng-if="keypointEditorData[$index].editable || keypointEditorData[$index].point3D.length == 0">
+                                            <button ng-if="keypointEditorData[$index].points[0].length == 0" class="btn btn-info" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
                                                         <span>1</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length != 0" class="btn btn-success" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[0].length != 0" class="btn btn-success" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
                                                         <span>1</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[1].length == 0" class="btn btn-info" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[1].length == 0" class="btn btn-info" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
                                                                 <span>2</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[1].length != 0" class="btn btn-success" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[1].length != 0" class="btn btn-success" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
                                                                 <span>2</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[2].length == 0" class="btn btn-info" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[2].length == 0" class="btn btn-info" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
                                                                     <span>3</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[2].length != 0" class="btn btn-success" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[2].length != 0" class="btn btn-success" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
                                                                     <span>3</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[3].length == 0" class="btn btn-info" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[3].length == 0" class="btn btn-info" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
                                                                     <span>4</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[3].length != 0" class="btn btn-success" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
+                                            <button ng-if="keypointEditorData[$index].points[3].length != 0" class="btn btn-success" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
                                                                     <span>4</span></button>
+                                        </div>
+                                        <div ng-if="!keypointEditorData[$index].editable && keypointEditorData[$index].point3D.length != 0">
+                                            <button ng-click="keypointEditorData[$index].editable = true;" class="btn btn-success">Edit<span class="glyphicon glyphicon-trash"></span></button>
+                                        </div>
                                     </th>
                                     <th>
                                         <button ng-if="keypointEditorData[$index].point3D.length == 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
