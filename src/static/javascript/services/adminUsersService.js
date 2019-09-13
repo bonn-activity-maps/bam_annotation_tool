@@ -3,7 +3,7 @@ angular.module('CVGTool')
     .factory('adminUsersSrvc', function($state, $http, $httpParamSerializer) {
 
         return {
-            getUsers: function (callbackSuccess) {
+            getUsers: function (callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
                     url: '/api/user/getUsers'
@@ -14,11 +14,11 @@ angular.module('CVGTool')
                         callbackSuccess(response.data.msg)
                     }
                 }, function errorCallBack(response) {
-                    console.log(response.data.msg)
+                    callbackError('danger', response.data.msg);
                 });
             },
 
-            getUsersByDataset: function (dataset, role,  callbackSuccess) {
+            getUsersByDataset: function (dataset, role,  callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
                     url: '/api/user/getUsersByDataset',
@@ -33,11 +33,11 @@ angular.module('CVGTool')
                         callbackSuccess(response.data.msg)
                     }
                 }, function errorCallBack(response) {
-                    console.log(response.data.msg)
+                    callbackError('danger', response.data.msg);
                 });
             },
 
-            createUser: function (userName, userEmail, userRole, userDatasets, callbackSuccess) {
+            createUser: function (userName, userEmail, userRole, userDatasets, callbackSuccess, callbackError) {
                 $http({
                     method: 'POST',
                     url: 'api/user/createUser',
@@ -51,11 +51,11 @@ angular.module('CVGTool')
                     console.log('User created successfully');
                     callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
-                    console.log('ERROR while creating user.')
+                    callbackError('danger', 'Error while creating user: ' + response.data.msg);
                 })
             },
 
-            updateUser: function(oldName, userName, userEmail, userRole, userDatasets, callback) {
+            updateUser: function(oldName, userName, userEmail, userRole, userDatasets, callbackUsers, callbackMsg) {
                 $http({
                     method: 'POST',
                     url: 'api/user/updateUser',
@@ -67,10 +67,10 @@ angular.module('CVGTool')
                         'oldName': oldName
                     }
                 }).then(function successCallback(response) {
-                    callback();
-                    console.log('User updated succesfully');
+                    callbackUsers();
+                    callbackMsg('success', 'User updated succesfully');
                 }, function errorCallback(response) {
-                    console.log('Error while updating user: ' + response.data.msg)
+                    callbackMsg('danger', 'Error while updating user: ' + response.data.msg);
                 })
             },
 

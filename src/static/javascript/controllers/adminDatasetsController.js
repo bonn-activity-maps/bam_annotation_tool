@@ -38,8 +38,6 @@ angular.module('CVGTool')
                 $scope.newFile = file;
             },
             'success' : function(file, xhr) {
-                console.log('finish upload, datasettype: ', $scope.datasetType)
-                console.log('dataset: ', file.name.split(".zip")[0])
                 $scope.getListOfDatasets();
                 $scope.getInfoOfVideos();
                 // TODO: Check this --> doesn't work for big datasets
@@ -57,7 +55,7 @@ angular.module('CVGTool')
 
         // Retrieve list of datasets in the system
         $scope.getListOfDatasets = function() {
-            adminDatasetsSrvc.getDatasets(updateListOfDatasets)
+            adminDatasetsSrvc.getDatasets(updateListOfDatasets, sendMessage)
         };
 
         // Update list of datasets variable
@@ -134,7 +132,7 @@ angular.module('CVGTool')
         };
 
         $scope.getZipFiles = function() {
-            adminDatasetsSrvc.getZipFiles($scope.showZipFilesDialog)
+            adminDatasetsSrvc.getZipFiles($scope.showZipFilesDialog, sendMessage)
         };
 
         // Function to retrieve from the server all information from the videos stored there
@@ -142,28 +140,24 @@ angular.module('CVGTool')
             if ($scope.selectedDataset.name.localeCompare('none') === 0){
                 $scope.listOfVideos = [];
             } else {
-                console.log('getVideos');
-                $rootScope.$broadcast("sendMsg", "some data");
-                adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, $scope.selectedDataset.name);
+                adminDatasetsSrvc.getInfoOfVideos(showListOfVideos, $scope.selectedDataset.name, sendMessage);
             }
-        };
-
-        // TODO: do we need this??
-        var readDataCallback = function(dataset) {
-            $scope.unwrapping = false;
-            console.log("Finish reading AIK data");
-            // adminDatasetsSrvc.updateVideoFrames(name, dataset, $scope.getInfoOfVideos)
         };
 
         // Function to retrieve data of dataset
         $scope.readData = function(file, type) {
-            $scope.unwrapping = true;
-            adminDatasetsSrvc.readData(file, type, /*, navSrvc.getActiveDataset(),*/ readDataCallback); //TODO: añadir callback
+            //$scope.unwrapping = true;
+            adminDatasetsSrvc.readData(file, type, sendMessage);  /*, navSrvc.getActiveDataset(), readDataCallback);*/
         };
 
         // Function to update the list of videos
         var showListOfVideos = function (list) {
             $scope.listOfVideos = list;
+        };
+
+        // Send message to toast
+        var sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
         };
 
         $scope.getListOfDatasets();

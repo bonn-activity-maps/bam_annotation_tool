@@ -3,8 +3,8 @@ angular.module('CVGTool')
     /*
      * Controller of admin page "Users"
      */
-    .controller('adminUsersCtrl', ['$scope', '$state', 'adminUsersSrvc', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog',
-                        function ($scope, $state, adminUsersSrvc, adminDatasetsSrvc, navSrvc, $mdDialog) {
+    .controller('adminUsersCtrl', ['$scope', '$rootScope', '$state', 'adminUsersSrvc', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog',
+                        function ($scope, $rootScope, $state, adminUsersSrvc, adminDatasetsSrvc, navSrvc, $mdDialog) {
         $scope.listOfUsers = []; // Contains the list of users to show, this varies depending on the user.
         $scope.availableRoles = []; // Contains the list of roles that the user is allowed to create.
         $scope.userRole = ""; // Role of the actual user.
@@ -31,9 +31,9 @@ angular.module('CVGTool')
         // Function that retrieves the list of users from the database.
         $scope.getUsers = function() {
             if ($scope.userRole.localeCompare('root') === 0){
-                adminUsersSrvc.getUsers(showListOfUsers);
+                adminUsersSrvc.getUsers(showListOfUsers, sendMessage);
             } else {
-                adminUsersSrvc.getUsersByDataset($scope.activeDataset.name, "user", showListOfUsers);
+                adminUsersSrvc.getUsersByDataset($scope.activeDataset.name, "user", showListOfUsers, sendMessage);
             }
         };
 
@@ -108,7 +108,7 @@ angular.module('CVGTool')
 
             console.log($scope.editUser);
             adminUsersSrvc.createUser($scope.editUser.username, $scope.editUser.email, $scope.editUser.role,
-                $scope.editUser.dataset, successCreation);
+                $scope.editUser.dataset, successCreation, sendMessage);
         };
 
         // Function that pops up the dialog to confirm if the user *really* wants to delete a user.
@@ -131,7 +131,7 @@ angular.module('CVGTool')
             // let datasets = [];
             // datasets.push($scope.editUser.dataset);
             adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email,
-                $scope.editUser.role, $scope.editUser.dataset, $scope.getUsers);
+                $scope.editUser.role, $scope.editUser.dataset, $scope.getUsers, sendMessage);
             $scope.mode = "creation";
             $scope.oldName = "";
             $scope.editUser = {
@@ -167,6 +167,11 @@ angular.module('CVGTool')
         // Function that resets the password, TODO
         $scope.resetPassword = function() {
             // pf pf pf prrr tututuu pap pap paap
+        };
+
+        // Send message to toast
+        var sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
         };
 
         $scope.getUserRole();
