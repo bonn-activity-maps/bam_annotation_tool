@@ -831,7 +831,7 @@ angular.module('CVGTool')
                         ctx.drawImage(this.images[$scope.slider.value - $scope.frameFrom], 0, 0, this.images[$scope.slider.value - $scope.frameFrom].width / this.zoom, this.images[$scope.slider.value - $scope.frameFrom].height / this.zoom, 0, 0, canvas.width, canvas.height)
 
                         // If we are creating points
-                        if ($scope.subTool.localeCompare("createPoint") == 0) {
+                        if ($scope.subTool.localeCompare("createPoint") === 0) {
                             // Draw the temporal points
                             var colors = ["green", "blue", "red", "orange"];
 
@@ -883,13 +883,17 @@ angular.module('CVGTool')
                                     j++;
                                 }
                             } else { // If there is one object selected, draw only its points
+                                console.log($scope.keypointEditorData);
                                 for (var i = 0; i < $scope.keypointEditorData.length; i++) {
                                     var label = $scope.keypointEditorData[i].label;
                                     var points = $scope.keypointEditorData[i].points;
                                     var cameras = $scope.keypointEditorData[i].cameras;
                                     var thereArePoints = false;
+                                    console.log("points ", points.length);
+                                    console.log(points);
+
                                     for (var j = 0; j < points.length; j++) {
-                                        if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) == 0) {
+                                        if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) === 0) {
                                             var imageCoords = this.toImage(points[j]);
                                             thereArePoints = true;
                                             this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
@@ -1509,6 +1513,28 @@ angular.module('CVGTool')
             // Now with the object structure created, we can call the update
             toolSrvc.updateAnnotation(navSrvc.getUser().name, $scope.activeDataset, $scope.activeDataset.name, $scope.slider.value, objects, deleting, updateAnnotationCallback, sendMessage);
         }
+
+        // Callback function of updateAnnotationPT
+        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
+            window.alert("Annotation updated!");
+            // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
+            $scope.retrieveAnnotationPT(objectUid, [frameTo]);
+        };
+
+        // Function to save the Annotation for PT
+        $scope.updateAnnotationPT = function() {
+            console.log($scope.objectManager);
+            console.log($scope.keypointEditorData);
+            if ($scope.keypointEditorData.length !== 0) {
+                // Update the object
+                toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
+                    $scope.slider.value, $scope.objectManager.selectedObject,
+                    $scope.keypointEditorData, updateAnnotationPTCallback);
+            } else {
+                sendMessage("warning", "You need to place both points or none.");
+            }
+
+        };
 
         // Function that creates a new object
         $scope.createNewObject = function() {
