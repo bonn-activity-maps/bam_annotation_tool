@@ -168,8 +168,8 @@ def getVideos():
 # Get frame from video
 @app.route('/api/dataset/getFrameVideo', methods=['GET'])
 def getVideoFrame():
-    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], int(request.headers['frame']),
-                                                        request.headers['dataset'])
+    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'],
+                                                        request.headers['dataset'], request.headers['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -200,7 +200,7 @@ def getAnnotations():
 @app.route('/api/annotation/getObjects', methods=['GET'])
 def getAnnotatedObjects():
     success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers['scene'],
-                                                                 request.headers['user'])
+                                                                 request.headers['user'], request.headers["datasetType"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # # Create new annotation

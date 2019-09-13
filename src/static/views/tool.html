@@ -1,3 +1,6 @@
+<div ng-controller="toastCtrl">
+</div>
+
 <div style="height: 98%;">
     <div class="row" style="height: 100%;">
         <!-- Videos panel -->
@@ -140,8 +143,8 @@
             </div>
         </div>
 
-        <!-- Kepoint Manager Panel -->
-        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true">
+        <!-- Kepoint Manager Panel for AIK -->
+        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true && activeDataset.type=='actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -201,33 +204,6 @@
                                 </table>
                             </div>
                         </div>
-                        <!-- <table class="table table-hover table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th class="zui-sticky-col">Objects</th>
-                                        <th ng-repeat="frame in frameList">{{frame}}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="object in objectManager.selectedType.objects">
-                                        <td class="zui-sticky-col">{{object.uid}}</td>
-                                        <th ng-repeat="f in object.frames">
-                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
-                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td class="zui-sticky-col">
-                                            <button class="btn btn-primary" ng-click="createNewObject()"><span
-                                                class="glyphicon glyphicon-plus"></span></button>
-                                        </td>
-                                    </tr>
-
-                                </tbody>
-                            </table> -->
-                        <!-- </div> -->
                     </div>
                     <!--                    Actions table -->
                     <div id="actions" class="tab-pane fade">
@@ -250,8 +226,148 @@
             </div>
         </div>
 
-        <!-- Keypoint editor mini panel-->
-        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true">
+        <!-- Kepoint Manager Panel for Posetrack-->
+        <div id="keyPointManagerPanelPT" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true && activeDataset.type=='poseTrack'">
+            <div class="panel-heading" ng-draggable='dragOptions'>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <span class="glyphicon glyphicon-move"></span>
+                    </div>
+                    <div class="col-sm-10">
+                        Keypoint Manager
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#2dkeypoints" target="_self">2D Keypoints</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <!--                    KeyPoints table -->
+                    <div id="2dkeypoints" class="tab-pane fade in active">
+                        <div class="form-group">
+                            <label for="selObjType">Select Object type:</label>
+                            <select class="form-control" id="selObjType" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                            </select>
+                        </div>
+                        <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
+                            <table class="table table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Objects</th>
+                                        <th ng-repeat="frame in frameList">{{frame}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="object in objectManager.selectedType.objects">
+                                        <td>{{object.uid}}</td>
+                                        <th ng-repeat="f in object.frames">
+                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="btn btn-primary" ng-click="createNewObject()"><span
+                                                class="glyphicon glyphicon-plus"></span></button>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keypoint editor mini panel PT-->
+        <div id="keyPointEditorPanelPT" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true && activeDataset.type=='poseTrack'">
+            <div class="panel-heading" ng-draggable='dragOptions'>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <span class="glyphicon glyphicon-move"></span>
+                    </div>
+                    <div class="col-sm-10">
+                        Keypoint Editor
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col col-md-8">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Object type:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Frame:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{slider.value}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">UID:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col col-md-4">
+                        Image of the person will go here
+                    </div>
+                </div>
+
+                <hr/>
+                <div>
+                    <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
+                        <table class="table table-hover table-bordered" style="height: 100px; width: 300px;">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Points</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
+                                    <td>{{label}}</td>
+                                    <th ng-if="activeDataset.dim == 2">
+                                        <button ng-if="!keypointEditorData[$index].points[0]" class="btn btn-info" ng-click="switchSubTool('createPoint'); setPointCreationData($index, 0)">
+                                        <span>{{$index}}</span></button>
+                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn btn-success" ng-click="removePoint($index,0); switchSubTool('createPoint'); setPointCreationData($index, 0)">
+                                        <span>{{$index}}</span></button>
+                                    </th>
+                                    <th>
+                                        <button ng-if="!keypointEditorData[$index].points[0]" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
+                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn-sm btn-danger" ng-click="removePoint($index,-1)"><span class="glyphicon glyphicon-trash"></button>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn-success" ng-click="updateAnnotation()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keypoint editor mini panel AIK-->
+        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true && activeDataset.type=='actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -326,53 +442,47 @@
                         </div>
                     </div>
                 </div>
-
-                <hr/>
-                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length != 0">
-                    <div class="col col-md-8">
-                        <span class="label label-success">Keypoint exists</span>
-                    </div>
-                    <div class="col col-md-2">
-                        <button class="btn-sm btn-danger" ng-click="removeAnnotation()">Remove</button>
-                    </div>
-                </div>
-                <div class="row" ng-if="objectManager.selectedObject.frames[slider.value - frameFrom].keypoints.length == 0">
-                    <div class="col col-md-8">
-                        <span class="label label-primary">Keypoint doesn't exist</span>
-                    </div>
-                    <div class="col col-md-2"></div>
-                </div>
-
                 <hr/>
                 <div>
-                    <div class="container" style="overflow: auto; max-height: 100px; max-width: 300px;">
+                    <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
                         <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
                             <thead>
                                 <tr>
                                     <th>Id</th>
                                     <th>Points</th>
+                                    <th>Remove</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
-                                    <td>{{label}}</td>
+                                    <td><span ng-if="keypointEditorData[$index].point3D.length == 0" class="label label-primary">{{label}}</span>
+                                        <span ng-if="keypointEditorData[$index].point3D.length != 0" class="label label-success">{{label}}</span></td>
                                     <th ng-if="activeDataset.dim == 3">
-                                        <button ng-if="newPoint.point1.length == 0" class="btn btn-info" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
-                                        <span>1</span></button>
-                                        <button ng-if="newPoint.point1.length != 0" class="btn btn-success" ng-click="clearNewPoint(1); switchSubTool('addFirstPoint');">
-                                        <span>1</span></button>
-                                        <button ng-if="newPoint.point2.length == 0" class="btn btn-info" ng-click="getEpilines(1); clearNewPoint(2); switchSubTool('addSecondPoint');">
-                                        <span>2</span></button>
-                                        <button ng-if="newPoint.point2.length != 0" class="btn btn-success" ng-click="getEpilines(1); clearNewPoint(2); switchSubTool('addSecondPoint');">
-                                        <span>2</span></button>
-                                        <button ng-if="newPoint.point3.length == 0" class="btn btn-info" ng-click="getEpilines(2); clearNewPoint(3); switchSubTool('addThirdPoint');">
-                                            <span>3</span></button>
-                                        <button ng-if="newPoint.point3.length != 0" class="btn btn-success" ng-click="getEpilines(2); clearNewPoint(3); switchSubTool('addThirdPoint');">
-                                            <span>3</span></button>
-                                        <button ng-if="newPoint.point4.length == 0" class="btn btn-info" ng-click="getEpilines(3); clearNewPoint(4); switchSubTool('addFourthPoint');">
-                                            <span>4</span></button>
-                                        <button ng-if="newPoint.point4.length != 0" class="btn btn-success" ng-click="getEpilines(3); clearNewPoint(4); switchSubTool('addFourthPoint');">
-                                            <span>4</span></button>
+                                        <div ng-if="keypointEditorData[$index].editable || keypointEditorData[$index].point3D.length == 0">
+                                            <button ng-if="keypointEditorData[$index].points[0].length == 0" class="btn btn-info" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
+                                                        <span>1</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[0].length != 0" class="btn btn-success" ng-click="removePoint($index, 0); setPointCreationData($index, 0); getEpilines(); switchSubTool('createPoint');">
+                                                        <span>1</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[1].length == 0" class="btn btn-info" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
+                                                                <span>2</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[1].length != 0" class="btn btn-success" ng-click="removePoint($index, 1); setPointCreationData($index, 1); getEpilines(); switchSubTool('createPoint');">
+                                                                <span>2</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[2].length == 0" class="btn btn-info" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
+                                                                    <span>3</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[2].length != 0" class="btn btn-success" ng-click="removePoint($index, 2); setPointCreationData($index, 2); getEpilines(); switchSubTool('createPoint');">
+                                                                    <span>3</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[3].length == 0" class="btn btn-info" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
+                                                                    <span>4</span></button>
+                                            <button ng-if="keypointEditorData[$index].points[3].length != 0" class="btn btn-success" ng-click="removePoint($index, 3); setPointCreationData($index, 3); getEpilines();  switchSubTool('createPoint');">
+                                                                    <span>4</span></button>
+                                        </div>
+                                        <div ng-if="!keypointEditorData[$index].editable && keypointEditorData[$index].point3D.length != 0">
+                                            <button ng-click="keypointEditorData[$index].editable = true;" class="btn btn-success">Edit<span class="glyphicon glyphicon-trash"></span></button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <button ng-if="keypointEditorData[$index].point3D.length == 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
+                                        <button ng-if="keypointEditorData[$index].point3D.length != 0" class="btn-sm btn-danger" ng-click="removePoint($index,-1)"><span class="glyphicon glyphicon-trash"></button>
                                     </th>
                                 </tr>
                             </tbody>
@@ -383,8 +493,8 @@
             </div>
         </div>
 
-        <!-- Actions editor panel -->
-        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 700px; height: 400px;" ng-show="actionsEditorTab==true">
+        <!-- Actions editor panel AIK -->
+        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 700px; height: 400px;" ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">

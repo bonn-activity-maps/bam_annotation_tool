@@ -3,7 +3,7 @@ angular.module('CVGTool')
     .factory('adminDatasetsSrvc', function ($state, $http, $httpParamSerializer) {
 
         return {
-            getInfoOfVideos: function (callbackSuccess, activeDataset) {
+            getInfoOfVideos: function (callbackSuccess, activeDataset, callbackError) {
                 $http({
                     method: 'GET',
                     url: '/api/dataset/getVideos',
@@ -17,66 +17,33 @@ angular.module('CVGTool')
                         callbackSuccess(response.data.msg)
                     }
                 }, function errorCallback(response) {
-                    console.log("ERROR while retrieving info from videos.")
+                    callbackError('danger', "Error while retrieving info from videos.")
                 });
             },
 
-          readData: function (dataset, type, callbackFinished) {
-              $http({
-                  method: 'POST',
-                  url: '/api/dataset/readData',
-                  data: {
-                      'dataset': dataset,
-                      'type': type
-                  }
-              }).then(function successCallback(response) {
-                  console.log('read data finished')
-                  //callbackFinished(dataset)
-              }, function errorCallback(response) {
-                  console.log(response.data.msg)
-              });
-          },
-
-            updateVideosFrames: function (dataset, callback) {
+            readData: function (dataset, type, callback) {
                 $http({
                     method: 'POST',
-                    url: '/api/dataset/updateVideosFrames',
-                    headers: {
-                        'dataset': dataset
-                    }
-                }).then(function successCallback(response) {
-                    callback();
-                    console.log("Updated frames for videos of" + dataset + " in database")
-                }, function errorCallback(response) {
-                    console.log(response.data.msg)
-                });
-            },
-
-            createDataset: function (name, type, callback) {
-                $http({
-                    method: 'POST',
-                    url: '/api/dataset/createDataset',
+                    url: '/api/dataset/readData',
                     data: {
-                        'name': name,
+                        'dataset': dataset,
                         'type': type
                     }
                 }).then(function successCallback(response) {
-                    console.log("Created dataset and videos in database");
-                    callback();
+                    callback('success', 'Load data finished')
                 }, function errorCallback(response) {
-                    console.log(response.data.msg)
+                    callback('danger', response.data.msg)
                 });
             },
 
-            getDatasets: function (callback) {
+            getDatasets: function (callback, callbackError) {
                 $http({
                     method: 'GET',
                     url: '/api/dataset/getDatasets'
                 }).then(function successCallback(response) {
                     callback(response.data.msg);
-                    console.log("Successfully retrieved list of users")
                 }, function errorCallback(response) {
-                    console.log(response.data.msg)
+                    callbackError('danger', response.data.msg)
                 });
             },
 
@@ -123,7 +90,7 @@ angular.module('CVGTool')
                 });
             },
 
-            getZipFiles: function(callback) {
+            getZipFiles: function(callback, callbackError) {
                 console.log("service");
                 $http({
                     method: 'GET',
@@ -131,7 +98,7 @@ angular.module('CVGTool')
                 }).then(function successCallback(response) {
                     callback(response.data.msg)
                 }, function errorCallback(response) {
-                    console.log(response.data.msg)
+                    callbackError('danger', response.data.msg)
                 })
             },
 
@@ -147,7 +114,6 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
                     callbackError(response.data.msg);
-                    console.log(response.data.msg)
                 })
             }
         }
