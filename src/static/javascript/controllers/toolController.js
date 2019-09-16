@@ -83,8 +83,33 @@ angular.module('CVGTool')
             return Number("1" + video + frame + track_id)
         }
 
+        // Struct to store the mugshots of the selectedObject
+        $scope.selectedObjectMugshots = [];
+
+        var getMugshotsCallback = function(mugshots) {
+            for (var i = 0; i < mugshots.length; i++) {
+                var imageData = mugshots[i].image.slice(2, mugshots[i].image.length - 1) // Process the image
+                var stringImage = "data:image/jpeg;base64," + imageData;
+
+                var image = new Image();
+                image.src = stringImage;
+
+                $scope.selectedObjectMugshots.push({ 'image': image });
+            }
+        }
+
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
+            // Check if the object has changed, so we can retrieve the mugshot
+            if ($scope.objectManager.selectedObject !== null) {
+                if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
+                    $scope.selectedObjectMugshots = [];
+                    toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, object.uid, getMugshotsCallback);
+                }
+            } else {
+                $scope.selectedObjectMugshots = [];
+                toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, object.uid, getMugshotsCallback);
+            }
             $scope.keyPointEditorTab = true;
             $scope.objectManager.selectedObject = object;
             $scope.slider.value = frame;
@@ -487,6 +512,7 @@ angular.module('CVGTool')
         };
 
         var callbackRetrievingFrame = function(image, filename, frame) {
+            console.log(image)
             var imageData = image.slice(2, image.length - 1) // Process the image
             var stringImage = "data:image/jpeg;base64," + imageData;
 
