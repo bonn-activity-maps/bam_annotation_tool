@@ -111,7 +111,7 @@ angular.module('CVGTool')
                         'type': type
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg)
+                    callbackSuccess('Load zip finished')
                 }, function errorCallback(response) {
                     callbackError(response.data.msg);
                 })
