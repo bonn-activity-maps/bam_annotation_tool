@@ -116,16 +116,14 @@ class AIKService:
             bbl, bbr
         ])
 
-    # Image to json
-    def im2json(self, im):
+    # Image to binary
+    def img2binary(self, im):
         _, imdata = cv2.imencode('.JPG', im)
-        # jstr = json.dumps(base64.b64encode(imdata.tostring()))
-        jstr = str(base64.b64encode(imdata.tostring())).replace("\n", "")
-        return jstr
+        return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
     def getMugshot(self, dataset, scene, user, personUid):
-        # Get 6 annotation of the object uid
+        # Get 10 annotation of the object uid
         result = annotationManager.getAnnotationsByObject(dataset, scene, user, personUid)
 
         images = []     # Final cropped images
@@ -144,12 +142,12 @@ class AIKService:
                 kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
                 kpX, kpY = int(kps2d[0]), int(kps2d[1])
 
-                # Read img, make mugshot 100px and add to final images
+                # Read img, make mugshot 200px and add to final images
                 img = cv2.imread(path)
-                kpY_min, kpY_max = max(kpY-50, 0), min(kpY+50, img.shape[0])
-                kpX_min, kpX_max = max(kpX-50, 0), min(kpX+50, img.shape[1])
+                kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
+                kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
                 cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
-                images.append({"image": self.im2json(cropImg)})
+                images.append({"image": self.img2binary(cropImg)})
 
         return True, images, 200
 
