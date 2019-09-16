@@ -406,14 +406,13 @@
                         </form>
                     </div>
                     <div class="col col-md-4">
-                        <carousel>
+                        <carousel style="width: 100px; height: 100px;">
                             <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
-                                <img ng-src="{{mugshot.image.src}}">
-                                <div class="carousel-caption">
-                                    <h4>{{$index+1}}</h4>
-                                </div>
+                                <img ng-src="{{mugshot.image}}">
                             </slide>
                         </carousel>
+                        </hr>
+                        <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
                     </div>
                 </div>
                 <hr/>

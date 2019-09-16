@@ -91,11 +91,14 @@ angular.module('CVGTool')
                 var imageData = mugshots[i].image.slice(2, mugshots[i].image.length - 1) // Process the image
                 var stringImage = "data:image/jpeg;base64," + imageData;
 
-                var image = new Image();
-                image.src = stringImage;
-
-                $scope.selectedObjectMugshots.push({ 'image': image });
+                $scope.selectedObjectMugshots.push({ 'image': stringImage });
             }
+        }
+
+        // Function that retrieves mugshots of the selected uid
+        $scope.getMugshots = function(uid) {
+            $scope.selectedObjectMugshots = [];
+            toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, uid, getMugshotsCallback);
         }
 
         // Function that opens the panel to edit keypoints
@@ -103,12 +106,10 @@ angular.module('CVGTool')
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
-                    $scope.selectedObjectMugshots = [];
-                    toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, object.uid, getMugshotsCallback);
+                    $scope.getMugshots(object.uid);
                 }
             } else {
-                $scope.selectedObjectMugshots = [];
-                toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, object.uid, getMugshotsCallback);
+                $scope.getMugshots(object.uid);
             }
             $scope.keyPointEditorTab = true;
             $scope.objectManager.selectedObject = object;
@@ -512,7 +513,6 @@ angular.module('CVGTool')
         };
 
         var callbackRetrievingFrame = function(image, filename, frame) {
-            console.log(image)
             var imageData = image.slice(2, image.length - 1) // Process the image
             var stringImage = "data:image/jpeg;base64," + imageData;
 
