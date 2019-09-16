@@ -71,7 +71,7 @@ angular.module('CVGTool')
         // Convert num to String and add 0s to the left of size size.
         function pad(num, size) {
             let s = String(num);
-            while (s.length < size) {s = "0" + s;}
+            while (s.length < size) { s = "0" + s; }
             return s;
         }
 
@@ -547,9 +547,10 @@ angular.module('CVGTool')
                     }
 
                     // Then, make all the frame requests
-                    for (var i = 0; ($scope.frameFrom + i) <= $scope.frameTo; i++) {
-                            toolSrvc.getFrame(successData.videos, $scope.frameFrom + i, $scope.activeDataset.name,
-                                $scope.activeDataset.type, callbackRetrievingFrame);
+                    for (var i = 0;
+                        ($scope.frameFrom + i) <= $scope.frameTo; i++) {
+                        toolSrvc.getFrame(successData.videos, $scope.frameFrom + i, $scope.activeDataset.name,
+                            $scope.activeDataset.type, callbackRetrievingFrame);
                     }
                 } else {
                     // First, create the structure for the new cameras
@@ -567,7 +568,7 @@ angular.module('CVGTool')
 
                     // Then, make all the frame requests
                     for (var i = 0;
-                         ($scope.frameFrom + i) <= $scope.frameTo; i++) {
+                        ($scope.frameFrom + i) <= $scope.frameTo; i++) {
                         for (var j = 0; j < successData.videos.length; j++) {
                             toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
                                 $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
@@ -854,13 +855,13 @@ angular.module('CVGTool')
                             if ($scope.objectManager.selectedObject == null) {
                                 var objects = null;
                                 // Select objects depending on the dataset
-                                if ($scope.isPosetrack()) {//TODO all objects instead of bbox
+                                if ($scope.isPosetrack()) { //TODO all objects instead of bbox
                                     // console.log($scope.objectManager.selectedType);
                                     // if ($scope.objectManager.selectedType !== undefined
                                     //     && $scope.objectManager.selectedType !== {}) { //TODO esto no va
                                     //     objects = this.objectsIn2D[$scope.objectManager.selectedType.type.toString()].objects;
                                     // } else {
-                                        objects = this.objectsIn2D["bbox"].objects;
+                                    objects = this.objectsIn2D["bbox"].objects;
                                     // }
                                 } else {
                                     // console.log(this.objectsIn2D);
@@ -1075,6 +1076,11 @@ angular.module('CVGTool')
 
                 // Set the flag to redraw
                 this.setRedraw();
+            }
+
+            // Update the 2D object Structure of the canvas
+            CanvasObject.prototype.updateObjects2D = function() {
+                this.objectsIn2D = JSON.parse(JSON.stringify($scope.objectManager.objectTypes));
             }
 
             // Auxiliar function to update the 2D point values
@@ -1417,10 +1423,16 @@ angular.module('CVGTool')
 
             $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
             $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
-            if (!$scope.isPosetrack()){
+            if (!$scope.isPosetrack()) {
                 for (var i = 0; i < $scope.canvases.length; i++) {
                     if ($scope.canvases[i].hasActiveCamera()) {
                         $scope.canvases[i].projectObject(objectUid, objectType, frame);
+                    }
+                }
+            } else {
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if ($scope.canvases[i].hasActiveCamera()) {
+                        $scope.canvases[i].updateObjects2D();
                     }
                 }
             }
@@ -1516,24 +1528,17 @@ angular.module('CVGTool')
 
         // Callback function of updateAnnotationPT
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
-            window.alert("Annotation updated!");
+            sendMessage("success", "Annotation updated!");
             // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
             $scope.retrieveAnnotationPT(objectUid, [frameTo]);
         };
 
         // Function to save the Annotation for PT
         $scope.updateAnnotationPT = function() {
-            console.log($scope.objectManager);
-            console.log($scope.keypointEditorData);
-            if ($scope.keypointEditorData.length !== 0) {
-                // Update the object
-                toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
-                    $scope.slider.value, $scope.objectManager.selectedObject,
-                    $scope.keypointEditorData, updateAnnotationPTCallback);
-            } else {
-                sendMessage("warning", "You need to place both points or none.");
-            }
-
+            // Update the object
+            toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
+                $scope.slider.value, $scope.objectManager.selectedObject,
+                $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
         };
 
         // Function that creates a new object
