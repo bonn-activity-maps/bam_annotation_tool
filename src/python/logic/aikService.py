@@ -119,7 +119,8 @@ class AIKService:
     # Image to json
     def im2json(self, im):
         _, imdata = cv2.imencode('.JPG', im)
-        jstr = json.dumps(base64.b64encode(imdata).decode('ascii'))
+        # jstr = json.dumps(base64.b64encode(imdata.tostring()))
+        jstr = str(base64.b64encode(imdata.tostring())).replace("\n", "")
         return jstr
 
     # Return 6 mugshot of person uid from different cameras
@@ -145,7 +146,9 @@ class AIKService:
 
                 # Read img, make mugshot 100px and add to final images
                 img = cv2.imread(path)
-                cropImg = img[kpY-50:kpY+50, kpX-50:kpX+50]
+                kpY_min, kpY_max = max(kpY-50, 0), min(kpY+50, img.shape[0])
+                kpX_min, kpX_max = max(kpX-50, 0), min(kpX+50, img.shape[1])
+                cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
                 images.append({"image": self.im2json(cropImg)})
 
         return True, images, 200
