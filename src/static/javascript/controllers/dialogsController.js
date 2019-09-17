@@ -153,7 +153,6 @@ angular.module('CVGTool')
 .controller('dialogRemoveUserCtrl', ['$scope', 'adminUsersSrvc', '$mdDialog', 'username', function($scope, adminUsersSrvc, $mdDialog, username) {
     var user = username;
 
-    console.log(user);
     $scope.mode = 'normal';
     $scope.msg = '';
 
@@ -337,4 +336,48 @@ angular.module('CVGTool')
         $scope.getListOfVideos();
 
     }
-]);
+])
+
+/*
+ * Controller of the dialog of change user password
+ */
+.controller('dialogChangePasswordCtrl', ['$scope', '$mdDialog', 'navSrvc', 'username',
+    function($scope, $mdDialog, navSrvc, username) {
+        var user = username;
+
+        $scope.mode = 'normal';
+        $scope.msg = '';
+        $scope.pwd = {};
+
+        // Function that generates the call to the server to change the pwd
+        $scope.updatePwd = function() {
+            if ($scope.pwd.newPwd === undefined || $scope.pwd.repeatPwd === undefined || $scope.pwd.newPwd.localeCompare($scope.pwd.repeatPwd) !== 0) {
+                $scope.inputError = true;
+                $scope.inputMsg = "The password must be the same.";
+                console.log('error')
+            } else {
+                navSrvc.changePassword(user, $scope.pwd.newPwd, showSuccess, showError)
+            }
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        // Recall function if the update worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response
+        };
+
+        // Recall function if the update didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response
+        }
+
+    }
+])
+
+;

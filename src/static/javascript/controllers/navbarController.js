@@ -1,7 +1,7 @@
 angular.module('CVGTool')
 
-.controller('navbarCtrl', ['$scope', '$state', 'navSrvc', 'adminDatasetsSrvc',
-    function($scope, $state, navSrvc, adminDatasetsSrvc) {
+.controller('navbarCtrl', ['$scope', '$state', 'navSrvc', 'adminDatasetsSrvc', '$mdDialog',
+    function($scope, $state, navSrvc, adminDatasetsSrvc, $mdDialog) {
         $scope.user = {
             name: "",
             email: "",
@@ -42,6 +42,18 @@ angular.module('CVGTool')
         // Activated when clicked on dropdown
         $scope.selectDataset = function(name) {
             adminDatasetsSrvc.getDataset(name, $scope.setActiveDataset);
+        };
+
+        // Function that opens the dialog that allow to change the pwd
+        $scope.changePassword = function(user) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/changePasswordDialog.html',
+                locals: {
+                    username: user.name
+                },
+                controller: 'dialogChangePasswordCtrl',
+                escapeToClose: false
+            });
         };
 
         // Watcher that detects changes in the state to get the info

@@ -131,4 +131,4 @@ class UserService:
         if result == 'Error':
             return False, 'Error updating password', 400
         else:
-            return True, result, 200
+            return True, 'Password successfully updated', 200
