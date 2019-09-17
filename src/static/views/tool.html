@@ -356,7 +356,7 @@
                                     </th>
                                     <th>
                                         <button ng-if="!keypointEditorData[$index].points[0]" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn-sm btn-danger" ng-click="removePoint($index,-1)"><span class="glyphicon glyphicon-trash"></button>
+                                        <button ng-if="keypointEditorData[$index].points[0]" class="btn-sm btn-danger" ng-click="removePoint($index,0)"><span class="glyphicon glyphicon-trash"></button>
                                     </th>
                                 </tr>
                             </tbody>
@@ -408,7 +408,7 @@
                     <div class="col col-md-4">
                         <carousel style="width: 100px; height: 100px;">
                             <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
-                                <img ng-src="{{mugshot.image}}">
+                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
                             </slide>
                         </carousel>
                         </hr>
