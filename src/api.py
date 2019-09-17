@@ -83,8 +83,8 @@ def updateUser():
 # Update existing user
 @app.route('/api/user/updateUserPassword', methods=['POST'])
 def updateUserPassword():
-    # TODO
-    success, msg, status = userService.updateUser(request.get_json())
+    req_data = request.get_json()
+    success, msg, status = userService.updateUserPassword(req_data['username'], req_data['password'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
