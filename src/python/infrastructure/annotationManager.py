@@ -45,7 +45,8 @@ class AnnotationManager:
             if datasetType == 'poseTrack':
                 result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
                                                     {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type",
-                                                                        "track_id": "$objects.track_id"}}},
+                                                                        "track_id": "$objects.track_id",
+                                                                        "frame": "$frame"}}},
                                                     {"$project": {"_id": 0, "object": "$_id"}},
                                                     {"$sort": SON([("object.track_id", 1)])}])
             else:
@@ -95,7 +96,7 @@ class AnnotationManager:
     def getAnnotationsByObject(self, dataset, scene, user, obj):
         try:
             result = self.collection.find({"dataset": dataset, "scene": scene, "user": user},
-                                        {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(6)
+                                        {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
@@ -118,6 +119,26 @@ class AnnotationManager:
     # The annotation is created if it doesn't exist and return 'ok
     # Validated flag is set to unchecked if is not received in params
     def updateAnnotation(self, dataset, scene, frame, user, objects, val='unchecked'):
+        query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
+        # Update all objects of the frame and validated flag.
+        newValues = {"$set": {"objects": objects, "validated": val}}
+
+        try:
+            result = self.collection.update_one(query, newValues, upsert=True)
+            # ok if object has been modified or new annotation has been created
+            if result.modified_count == 1 or result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating annotation in db')
+            return 'Error'
+
+    # Return 'ok' if the annotation has been updated.
+    # The annotation is created if it doesn't exist and return 'ok
+    # Validated flag is set to unchecked if is not received in params
+    # Basically same as above but for PoseTrack
+    def updateAnnotationPT(self, dataset, scene, frame, user, objects, val='unchecked'):
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
         newValues = {"$set": {"objects": objects, "validated": val}}
@@ -197,7 +218,7 @@ class AnnotationManager:
 
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
         # Add object (uid, type, kps) and labels only if it's in objects
-        if datasetType is not None and datasetType is self.pt:
+        if datasetType is not None and datasetType == self.pt:
             category_id = objects["category_id"]
             track_id = objects["track_id"]
             if "labels" in objects:

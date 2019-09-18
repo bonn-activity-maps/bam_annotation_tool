@@ -168,6 +168,31 @@ angular.module('CVGTool')
             })
         },
 
+        // Sends the 2D points to the server to triangulate and create the new 3D point
+        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/updateAnnotationPT',
+                data: {
+                    'user': user,
+                    'dataset': dataset.name,
+                    'datasetType': dataset.type,
+                    'scene': scene,
+                    'frame': frame,
+                    'object': {
+                        uid: object.original_uid,
+                        type: object.type,
+                        track_id: object.uid
+                    },
+                    'points': points
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(object.original_uid, object.type, frame);
+            }, function errorCallback(response) {
+                callbackError('danger', response);
+            })
+        },
+
         // Create new object
         createNewObject: function(user, dataset, scene, type, frame, callbackSuccess, callbackError) {
             $http({
@@ -303,6 +328,24 @@ angular.module('CVGTool')
                 function errorCallback(response) {
                     callbackError('danger', response);
                 })
+        },
+
+        // Get mughsots of an object
+        getMugshots: function(dataset, scene, user, objectUID, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/aik/getMugshot',
+                headers: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'user': user,
+                    'uid': objectUID
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            }, function errorCallback(response) {
+                console.log(response)
+            })
         }
     }
 });

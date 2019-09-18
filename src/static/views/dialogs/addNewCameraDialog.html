@@ -3,12 +3,21 @@
         <md-dialog-content>
             <div ng-if="!retrievingData">
                 <h3>Select a camera recording</h3>
-                <div class="container">
+                <div ng-if="activeDataset.type == 'poseTrack'" class="container">
+                    <div class="form-group">
+                        <label>Videos</label>
+                        <select size=4 class="form-control" ng-model="videosSelected.videos" style="/*width: 970px*/">
+                      <option  ng-repeat="video in listOfVideos" >{{video.name}}</option>
+                    </select>
+                    </div>
+
+                </div>
+                <div ng-if="activeDataset.type != 'poseTrack'" class="container">
                     <div class="form-group">
                         <label>Videos (hold shift or ctrl to select more than one)</label>
                         <select multiple class="form-control" ng-model="videosSelected.videos">
-                      <option  ng-repeat="video in listOfVideos" >{{video.name}}</option>
-                    </select>
+                            <option  ng-repeat="video in listOfVideos" >{{video.name}}</option>
+                        </select>
                     </div>
 
                 </div>

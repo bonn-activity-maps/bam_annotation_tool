@@ -116,37 +116,41 @@ class AIKService:
             bbl, bbr
         ])
 
-    # Image to json
-    def im2json(self, im):
+    # Image to binary
+    def img2binary(self, im):
         _, imdata = cv2.imencode('.JPG', im)
-        jstr = json.dumps(base64.b64encode(imdata).decode('ascii'))
-        return jstr
+        return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
     def getMugshot(self, dataset, scene, user, personUid):
-        # Get 6 annotation of the object uid
+        # Get 10 annotation of the object uid
         result = annotationManager.getAnnotationsByObject(dataset, scene, user, personUid)
-
         images = []     # Final cropped images
 
         for r in result:
-            kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
-            camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
+            if 'objects' in r:    
+                kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
+                camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
+                
+                # Check camera parameters and frame path
+                frameResult = frameManager.getFrame(r['frame'], camera, dataset)
+                if frameResult != 'Error':
+                    cameraParams = frameResult['cameraParameters']
+                    path = frameResult['path']
 
-            # Check camera parameters and frame path
-            frameResult = frameManager.getFrame(r['frame'], camera, dataset)
-            if frameResult != 'Error':
-                cameraParams = frameResult['cameraParameters']
-                path = frameResult['path']
+                    # Obtain 2d keypoints for corresponding camera
+                    kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
+                    kpX, kpY = int(kps2d[0]), int(kps2d[1])
 
-                # Obtain 2d keypoints for corresponding camera
-                kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
-                kpX, kpY = int(kps2d[0]), int(kps2d[1])
-
-                # Read img, make mugshot 100px and add to final images
-                img = cv2.imread(path)
-                cropImg = img[kpY-50:kpY+50, kpX-50:kpX+50]
-                images.append({"image": self.im2json(cropImg)})
+                    # Read img, make mugshot 200px and add to final images
+                    img = cv2.imread(path)
+                    if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
+                        kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
+                        kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
+                        cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
+                        images.append({"image": self.img2binary(cropImg)})
+            else:
+                break    
 
         return True, images, 200
 

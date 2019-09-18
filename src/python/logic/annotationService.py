@@ -139,6 +139,19 @@ class AnnotationService:
                     return False, 'Error updating annotation', 400
         return True, 'Ok', 200
 
+    # Return 'ok' if the annotation has been updated
+    # Same as above but for PoseTrack
+    def updateAnnotationPT(self, dataset, datasetType, scene, frame, user, object, points):
+        keypoints = []
+        for point in points:
+            keypoints.append(point["points"][0])
+        object["keypoints"] = keypoints
+        object["category_id"] = 1
+        result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object, datasetType)
+        if result == 'Error':
+            return False, 'Error updating annotation', 400
+        return True, 'Ok', 200
+
     # Return 'ok' if the annotation has been removed
     def removeAnnotation(self, dataset, scene, frame, user):
         result = annotationManager.removeAnnotation(dataset, scene, frame, user)
