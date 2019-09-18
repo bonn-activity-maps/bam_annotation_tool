@@ -103,6 +103,9 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
+            for (var i = 0; i < $scope.canvases.length; i++) {
+                console.log($scope.canvases[i].objectsIn2D)
+            }
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
@@ -910,14 +913,11 @@ angular.module('CVGTool')
                                     j++;
                                 }
                             } else { // If there is one object selected, draw only its points
-                                console.log($scope.keypointEditorData);
                                 for (var i = 0; i < $scope.keypointEditorData.length; i++) {
                                     var label = $scope.keypointEditorData[i].label;
                                     var points = $scope.keypointEditorData[i].points;
                                     var cameras = $scope.keypointEditorData[i].cameras;
                                     var thereArePoints = false;
-                                    console.log("points ", points.length);
-                                    console.log(points);
 
                                     for (var j = 0; j < points.length; j++) {
                                         if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) === 0) {
@@ -973,9 +973,18 @@ angular.module('CVGTool')
 
             // Generates the image of the given frame
             CanvasObject.prototype.createImage = function(frame) {
+                var scale = {
+                    x: 1,
+                    y: 1
+                }
                 var image = new Image();
+                image.onload = function() {
+                    scale.x = image.width / canvas.width;
+                    scale.y = image.height / canvas.height;
+                };
                 image.src = this.activeCamera.frames[frame].image;
                 this.images[frame] = image;
+                this.scale = scale;
                 this.valid = false;
             }
 
@@ -1079,6 +1088,7 @@ angular.module('CVGTool')
 
             // Switches the active camera of the Canvas for "camera"
             CanvasObject.prototype.setCamera = function(camera) {
+                this.scaleLoaded = false;
                 if (this.activeCamera !== null) {
                     // If there was already a video there, move it back to the loadedCameras array
                     $scope.loadedCameras.push(this.activeCamera);
@@ -1123,7 +1133,7 @@ angular.module('CVGTool')
                 var callbackProjection = function(canvasNumber, uid, type, frame, point) {
                     $scope.canvases[canvasNumber - 1].update2DPoints(uid, type, frame, point);
                 }
-                this.objectsIn2D = JSON.parse(JSON.stringify($scope.objectManager.objectTypes)); // Copy the object
+                this.objectsIn2D = JSON.parse(JSON.stringify($scope.objectManager.objectTypes)); // Copy the object with 3D points
                 var objectTypes = this.objectsIn2D;
                 // Go through all the objectTypes
                 for (objectType in objectTypes) {
