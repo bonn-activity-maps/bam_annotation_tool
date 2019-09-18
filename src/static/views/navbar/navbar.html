@@ -49,13 +49,13 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown">
+                    <a href="" class="dropdown-toggle" data-toggle="dropdown">
                         <span class="glyphicon glyphicon-user"></span> {{user.name}} </a>
                     <ul class="dropdown-menu">
-                        <li ng-click="changePassword(user)"><a>Change password</a></li>
+                        <li ng-click="changePassword(user)"><a><span class="glyphicon glyphicon-wrench"></span> Change password</a></li>
                     </ul>
                 </li>
-                <li><a href="#" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+                <li><a href="" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
             </ul>
         </div>
     </div>
