@@ -328,6 +328,24 @@ angular.module('CVGTool')
                 function errorCallback(response) {
                     callbackError('danger', response);
                 })
+        },
+
+        // Get mughsots of an object
+        getMugshots: function(dataset, scene, user, objectUID, callbackSuccess) {
+            $http({
+                method: 'GET',
+                url: '/api/aik/getMugshot',
+                headers: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'user': user,
+                    'uid': objectUID
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            }, function errorCallback(response) {
+                console.log(response)
+            })
         }
     }
 });
