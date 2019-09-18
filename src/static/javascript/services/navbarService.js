@@ -63,6 +63,21 @@ angular.module('CVGTool')
                     type: dataset.type,
                     dim: dataset.keypointDim
                 };
+            },
+
+            changePassword: function (user, pwd, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/user/updateUserPassword',
+                    data: {
+                        'username': user,
+                        'password': pwd
+                    }
+                }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                }, function errorCallback(response) {
+                    callbackError(response.data.msg)
+                });
             }
         }
     });

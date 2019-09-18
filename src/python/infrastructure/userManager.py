@@ -87,13 +87,27 @@ class UserManager:
         newValues = {"$set": {"name": user, "assignedTo": assignedTo, "role": role, "email": email}}
         try:
             result = self.collection.update_one(query, newValues, upsert=False)
-            print(result)
             if result.modified_count == 1:
                 return 'ok'
             else:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error updating user in db')
+            return 'Error'
+
+    # Return 'ok' if the password has been updated. if user doesn't exist, it isn't created
+    def updateUserPassword(self, user, pwd):
+        query = {"name": user}  # Search by user name
+        # Update password
+        newValues = {"$set": {"password": pwd}}
+        try:
+            result = self.collection.update_one(query, newValues, upsert=False)
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating password of user in db')
             return 'Error'
 
     # Return 'ok' if the user has been removed

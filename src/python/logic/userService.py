@@ -124,3 +124,11 @@ class UserService:
                 return False, 'Error duplicating annotations', 400
             else:
                 return True, result, 200
+
+    # Return 'ok' if the password of 'user' has been updated
+    def updateUserPassword(self, user, pwd):
+        result = userManager.updateUserPassword(user, self.getHashedPassword(pwd))
+        if result == 'Error':
+            return False, 'Error updating password', 400
+        else:
+            return True, 'Password successfully updated', 200
