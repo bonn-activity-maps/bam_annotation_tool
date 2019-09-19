@@ -884,14 +884,12 @@ angular.module('CVGTool')
                             if ($scope.objectManager.selectedObject == null) {
                                 var objects = null;
                                 // Select objects depending on the dataset
-                                if ($scope.isPosetrack()) { //TODO all objects instead of bbox
-                                    // console.log($scope.objectManager.selectedType);
-                                    // if ($scope.objectManager.selectedType !== undefined
-                                    //     && $scope.objectManager.selectedType !== {}) { //TODO esto no va
-                                    //     objects = this.objectsIn2D[$scope.objectManager.selectedType.type.toString()].objects;
-                                    // } else {
-                                    objects = this.objectsIn2D["bbox"].objects;
-                                    // }
+                                if ($scope.isPosetrack()) {
+                                    if (Object.entries($scope.objectManager.selectedType).length === 0 && $scope.objectManager.selectedType.constructor === Object) {
+                                        objects = this.objectsIn2D["bbox"].objects;
+                                    } else {
+                                        objects = this.objectsIn2D[$scope.objectManager.selectedType.type].objects;
+                                    }
                                 } else {
                                     // console.log(this.objectsIn2D);
                                     objects = this.objectsIn2D["personAIK"].objects
@@ -1227,6 +1225,10 @@ angular.module('CVGTool')
             }
         };
 
+        $scope.changeSelectedType = function() {
+            console.log("changing type");
+            $scope.canvases[0].setRedraw();
+        };
         //                                          //
         //              ACTION MANAGEMENT           //
         //                                          //
