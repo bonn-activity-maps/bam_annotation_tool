@@ -885,13 +885,13 @@ angular.module('CVGTool')
                                 var objects = null;
                                 // Select objects depending on the dataset
                                 if ($scope.isPosetrack()) {
+                                    // Draw selected type, if nothing selected then draw bbox
                                     if (Object.entries($scope.objectManager.selectedType).length === 0 && $scope.objectManager.selectedType.constructor === Object) {
                                         objects = this.objectsIn2D["bbox"].objects;
                                     } else {
                                         objects = this.objectsIn2D[$scope.objectManager.selectedType.type].objects;
                                     }
                                 } else {
-                                    // console.log(this.objectsIn2D);
                                     objects = this.objectsIn2D["personAIK"].objects
                                 }
 
@@ -1225,10 +1225,11 @@ angular.module('CVGTool')
             }
         };
 
+        // Function called everytime the selector type changes
         $scope.changeSelectedType = function() {
-            console.log("changing type");
             $scope.canvases[0].setRedraw();
         };
+
         //                                          //
         //              ACTION MANAGEMENT           //
         //                                          //
