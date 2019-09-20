@@ -122,9 +122,9 @@ class AIKService:
         return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
-    def getMugshot(self, dataset, scene, user, personUid):
+    def getMugshot(self, dataset, datasetType, scene, user, personUid):
         # Get 10 annotation of the object uid
-        result = annotationManager.getAnnotationsByObject(dataset, scene, user, personUid)
+        result = annotationManager.getAnnotationsByObject(dataset, datasetType, scene, user, personUid)
         images = []     # Final cropped images
 
         for r in result:
@@ -149,8 +149,7 @@ class AIKService:
                         kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
                         cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
                         images.append({"image": self.img2binary(cropImg)})
-            else:
-                break    
+
 
         return True, images, 200
 

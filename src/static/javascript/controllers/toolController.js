@@ -98,7 +98,7 @@ angular.module('CVGTool')
         // Function that retrieves mugshots of the selected uid
         $scope.getMugshots = function(uid) {
             $scope.selectedObjectMugshots = [];
-            toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.name, navSrvc.getUser().name, uid, getMugshotsCallback);
+            toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, navSrvc.getUser().name, uid, getMugshotsCallback);
         }
 
         // Function that opens the panel to edit keypoints
@@ -1582,7 +1582,7 @@ angular.module('CVGTool')
 
         // Function that creates a new object
         $scope.createNewObject = function() {
-            toolSrvc.createNewObject(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, $scope.objectManager.selectedType.type, $scope.slider.value, callbackCreateNewObject, sendMessage);
+            toolSrvc.createNewObject(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, $scope.objectManager.selectedType.type, $scope.slider.value, callbackCreateNewObject, sendMessage);
         }
 
         // Auxiliar callback function for the interpolation
@@ -1619,7 +1619,7 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate, sendMessage);
+                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate, sendMessage);
             } else callbackInterpolate(objectUid, [frameTo]);
 
         }
@@ -1660,7 +1660,7 @@ angular.module('CVGTool')
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotation = function(objectUid, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.name, objectUid, frameArray[i], callbackRetrievingFrameObject, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, frameArray[i], callbackRetrievingFrameObject, sendMessage);
             }
         }
 
@@ -1668,7 +1668,7 @@ angular.module('CVGTool')
         // Same but for PT
         $scope.retrieveAnnotationPT = function(objectUid, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name,
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                     $scope.loadedCameras[0].filename, objectUid, frameArray[i], callbackRetrievingFrameObject);
             }
         };
@@ -1773,7 +1773,7 @@ angular.module('CVGTool')
                 console.log("Posetrack does not load annotations now.")
             } else if (dataset.type.localeCompare("actionInKitchen") === 0) {
                 for (var i = 0; i < $scope.frameList.length; i++) {
-                    toolSrvc.getAnnotationOfFrame(dataset.name, $scope.frameList[i],
+                    toolSrvc.getAnnotationOfFrame(dataset.name, $scope.activeDataset.type, $scope.frameList[i],
                         dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects, sendMessage);
                 }
             }
@@ -1781,7 +1781,7 @@ angular.module('CVGTool')
 
         $scope.retrieveAnnotationsPT = function() {
             for (var i = 0; i < $scope.frameList.length; i++) {
-                toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.frameList[i],
+                toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.activeDataset.type, $scope.frameList[i],
                     $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
             }
         };

@@ -185,7 +185,8 @@ def updateVideosFrames():
 # Get annotation info for given frame, dataset, scene and user
 @app.route('/api/annotation/getAnnotation', methods=['GET'])
 def getAnnotation():
-    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers['scene'],
+    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers["datasetType"],
+                                                           request.headers['scene'],
                                                            request.headers['frame'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -193,7 +194,8 @@ def getAnnotation():
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
 def getAnnotations():
-    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers['scene'], request.headers['user'])
+    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers["datasetType"],
+                                                            request.headers['scene'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get all annotated objects for dataset, scene and user
@@ -227,15 +229,15 @@ def updateAnnotationPT():
                                                                 req_data['user'], req_data['object'], req_data['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
-# Delete annotation
-# TODO: do we need to filter in remove by validated flag?
-@app.route('/api/annotation/removeAnnotation', methods=['POST'])
-def removeAnnotation():
-    req_data = request.get_json()
-    success, msg, status = annotationService.removeAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
-                                                              req_data['user'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+# # Delete annotation
+# # TODO: do we need to filter in remove by validated flag?
+# @app.route('/api/annotation/removeAnnotation', methods=['POST'])
+# def removeAnnotation():
+#     req_data = request.get_json()
+#     success, msg, status = annotationService.removeAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
+#                                                               req_data['user'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Validate frames for given dataset, video and user
@@ -251,7 +253,7 @@ def updateAnnotationValidation():
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
 def createNewUidObject():
     req_data = request.get_json()
-    success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['scene'],
+    success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['datasetType'], req_data['scene'],
                                                                 req_data['frame'], req_data['user'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -260,7 +262,8 @@ def createNewUidObject():
 def interpolateAnnotation():
     req_data = request.get_json()
     # uid, startFrame y endFrame
-    success, msg, status = annotationService.interpolateAnnotation(req_data['dataset'], req_data['scene'], req_data['user'],
+    success, msg, status = annotationService.interpolateAnnotation(req_data['dataset'], req_data['datasetType'],
+                                                         req_data['scene'], req_data['user'],
                                                          req_data['startFrame'], req_data['endFrame'], req_data['uidObject'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -269,7 +272,7 @@ def interpolateAnnotation():
 # Get annotation of one object in frame for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def getAnnotationFrameObject():
-    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'],
+    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
                                                                       request.headers['scene'],
                                                                       int(request.headers['frame']), request.headers['user'],
                                                                       int(request.headers['uidObject']))
@@ -479,7 +482,7 @@ def computeEpiline():
 # Return 6 mugshot of person uid from different cameras
 @app.route('/api/aik/getMugshot', methods=['GET'])
 def getMugshot():
-    success, msg, status = aikService.getMugshot(request.headers['dataset'], request.headers['scene'],
+    success, msg, status = aikService.getMugshot(request.headers['dataset'], request.headers['datasetType'], request.headers['scene'],
                                                 request.headers['user'], int(request.headers['uid']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 

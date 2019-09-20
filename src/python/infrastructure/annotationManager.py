@@ -16,10 +16,15 @@ class AnnotationManager:
     pt = 'poseTrack'
 
     # Get annotation info for given frame, dataset, scene and user. Not return mongo id
-    def getAnnotation(self, dataset, scene, frame, user):
+    # AIK: ignore user parameter
+    def getAnnotation(self, dataset, datasetType, scene, frame, user):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)},
-                                              {'_id': 0})
+            if datasetType == self.aik:
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": int(frame)}, {'_id': 0})
+            else:
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)},
+                                                  {'_id': 0})
+
             if result is None:
                 return {}
             else:
@@ -29,26 +34,36 @@ class AnnotationManager:
             return 'Error'
 
     # Get all annotations for given dataset, scene, user and val. Not return mongo id
-    def getAnnotations(self, dataset, scene, user, val):
+    # AIK: ignore user parameter
+    def getAnnotations(self, dataset, datasetType, scene, user, val):
         try:
-            # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "validated": val}, {'_id': 0})
-            result = self.collection.find({"dataset": dataset, "scene": scene, "user": user}, {'_id': 0})
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene}, {'_id': 0})
+            else:
+                # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "validated": val}, {'_id': 0})
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user}, {'_id': 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
             return 'Error'
 
     # Get objects with uid and type for given dataset, scene and user.
+    # AIK: ignore user parameter
     def getAnnotatedObjects(self, dataset, scene, user, datasetType):
         try:
             # If posetrack, return track_id too
-            if datasetType == 'poseTrack':
+            if datasetType == self.pt:
                 result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
                                                     {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type",
                                                                         "track_id": "$objects.track_id",
                                                                         "frame": "$frame"}}},
                                                     {"$project": {"_id": 0, "object": "$_id"}},
                                                     {"$sort": SON([("object.track_id", 1)])}])
+            elif datasetType == self.aik:
+                result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene}},
+                                                    {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
+                                                    {"$project": {"_id": 0, "object": "$_id"}},
+                                                    {"$sort": SON([("object.uid", 1)])}])
             else:
                 result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
                                                     {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type"}}},
@@ -80,9 +95,14 @@ class AnnotationManager:
             return 'Error'
 
     # Get annotation for object in frame, without mongo id
-    def getFrameObject(self, dataset, scene, frame, user, obj):
+    # AIK: ignore user parameter
+    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj):
         try:
-            result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
+            if datasetType == self.aik:
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
+                                                  {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+            else:
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
                                               {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
@@ -93,9 +113,13 @@ class AnnotationManager:
             return 'Error'
 
     # Get annotations for object in different frames, without mongo id
-    def getAnnotationsByObject(self, dataset, scene, user, obj):
+    def getAnnotationsByObject(self, dataset, datasetType, scene, user, obj):
         try:
-            result = self.collection.find({"dataset": dataset, "scene": scene, "user": user},
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene},
+                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
+            else:
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user},
                                         {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
@@ -211,12 +235,17 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation for an object in a frame has been created.
+    # AIK: ignore user parameter
     def createFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
+        if datasetType is not None and datasetType == self.aik:
+            query = {"dataset": dataset, "scene": scene, "frame": frame}
+        else:
+            query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
+
         # Add object (uid, type, kps) and labels only if it's in objects
         if datasetType is not None and datasetType == self.pt:
             category_id = objects["category_id"]
@@ -247,12 +276,17 @@ class AnnotationManager:
 
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # The annotation is not created if it doesn't exist and return Error
+    # AIK: ignore user parameter
     def updateFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         uidObj = objects["uid"]
         type = objects["type"]
         keypoints = objects["keypoints"]
 
-        query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj}
+        if datasetType is not None and datasetType == self.aik:
+            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj}
+        else:
+            query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj}
+
         arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
 
         # Update object (uid, type, kps) and labels only if it's in objects
