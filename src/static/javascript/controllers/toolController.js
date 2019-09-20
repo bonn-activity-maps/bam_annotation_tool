@@ -1697,8 +1697,6 @@ angular.module('CVGTool')
 
         // Callback function for retrieving the existing objects
         var callbackRetrieveObjectsPT = function(objects) {
-            // console.log("OBJECTS");
-            // console.log(objects);
             for (obj in objects) {
                 var object = objects[obj].object;
                 $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
@@ -1719,7 +1717,7 @@ angular.module('CVGTool')
                 var object = objects[obj].object;
                 if (object.frame >= $scope.frameFrom && object.frame <= $scope.frameTo) {
                     $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                        .frames[object.frame].original_uid = object.uid;
+                        .frames[object.frame - $scope.frameFrom].original_uid = object.uid;
                 }
             }
             // console.log($scope.objectManager);
