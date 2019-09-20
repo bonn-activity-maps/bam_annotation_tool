@@ -116,10 +116,10 @@ class AnnotationManager:
     def getAnnotationsByObject(self, dataset, datasetType, scene, user, obj):
         try:
             if datasetType == self.aik:
-                result = self.collection.find({"dataset": dataset, "scene": scene},
+                result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
                                               {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
             else:
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user},
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.uid": obj},
                                         {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
