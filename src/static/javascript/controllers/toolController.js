@@ -103,9 +103,9 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                console.log($scope.canvases[i].objectsIn2D)
-            }
+            // for (var i = 0; i < $scope.canvases.length; i++) {
+            //     console.log($scope.canvases[i].objectsIn2D)
+            // }
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
@@ -127,10 +127,10 @@ angular.module('CVGTool')
             // Check the dataset type
             if ($scope.isPosetrack()) {
                 // Add original UID to selected object. Create it if it doesn't exist.
-                if ($scope.objectManager.selectedObject.frames[frame].original_uid === undefined) {
-                    $scope.objectManager.selectedObject.frames[frame].original_uid = generateNewOriginalUid(object, frame);
+                if ($scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid === undefined) {
+                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = generateNewOriginalUid(object, frame);
                 }
-                $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame].original_uid;
+                $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid;
 
                 pointStructure = {
                     label: "",
