@@ -124,13 +124,14 @@ angular.module('CVGTool')
             var points = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].keypoints;
             var pointStructure = null;
 
+
             // Check the dataset type
             if ($scope.isPosetrack()) {
                 // Add original UID to selected object. Create it if it doesn't exist.
-                if ($scope.objectManager.selectedObject.frames[frame].original_uid === undefined) {
-                    $scope.objectManager.selectedObject.frames[frame].original_uid = generateNewOriginalUid(object, frame);
+                if ($scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid === undefined) {
+                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = generateNewOriginalUid(object, frame);
                 }
-                $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame].original_uid;
+                $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid;
 
                 pointStructure = {
                     label: "",
@@ -146,7 +147,9 @@ angular.module('CVGTool')
                     var label = labels[i];
                     var ps = JSON.parse(JSON.stringify(pointStructure));
                     ps.label = label;
-                    ps.points[0] = points[i];
+                    if (points[i] !== undefined) {
+                        ps.points[0] = points[i];
+                    } else ps.points[0] = [];
                     ps.cameras[0] = $scope.canvases[0].activeCamera.filename;
                     $scope.keypointEditorData.push(ps);
                 }
@@ -866,7 +869,7 @@ angular.module('CVGTool')
                             var colors = ["green", "blue", "red", "orange"];
 
                             // Draw points if they exist and they are placed in the actual camera
-                            for (var i = 0; i < $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points.length; i++) {
+                            for (let i = 0; i < $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points.length; i++) {
                                 if ($scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[i] !== null && $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[i] !== undefined && $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[i].localeCompare(this.activeCamera.filename) == 0) {
                                     var imageCoords = this.toImage($scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[i]);
                                     this.drawCircle(this.ctx, imageCoords[0], imageCoords[1], colors[i]);
@@ -911,13 +914,13 @@ angular.module('CVGTool')
                                     j++;
                                 }
                             } else { // If there is one object selected, draw only its points
-                                for (var i = 0; i < $scope.keypointEditorData.length; i++) {
+                                for (let i = 0; i < $scope.keypointEditorData.length; i++) {
                                     var label = $scope.keypointEditorData[i].label;
                                     var points = $scope.keypointEditorData[i].points;
                                     var cameras = $scope.keypointEditorData[i].cameras;
                                     var thereArePoints = false;
 
-                                    for (var j = 0; j < points.length; j++) {
+                                    for (let j = 0; j < points.length; j++) {
                                         if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) === 0) {
                                             var imageCoords = this.toImage(points[j]);
                                             thereArePoints = true;
@@ -926,8 +929,8 @@ angular.module('CVGTool')
                                     }
                                     if (!thereArePoints) {
                                         var objectKP = this.objectsIn2D[$scope.objectManager.selectedObject.type].objects[$scope.objectManager.selectedObject.uid].frames[$scope.slider.value - $scope.frameFrom];
-                                        for (var i = 0; i < objectKP.keypoints.length; i++) {
-                                            var imageCoords = this.toImage(objectKP.keypoints[i]);
+                                        for (var k = 0; k < objectKP.keypoints.length; k++) {
+                                            var imageCoords = this.toImage(objectKP.keypoints[k]);
                                             this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
                                         }
                                     }
