@@ -103,9 +103,9 @@ class UserService:
             if data['type'] == 'poseTrack':     # In the future, probably for posetrack too
                 videos = videoManager.getVideos(dataset)
                 for video in videos:
-                    annotations = annotationManager.getAnnotations(dataset, video['name'], user, None)
+                    annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], user, None)
                     if not annotations:  # Else already exist
-                        annotations = annotationManager.getAnnotations(dataset, video['name'], 'root', None)
+                        annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], 'root', None)
                         for annotation in annotations:
                             result = annotationManager.updateAnnotation(dataset, video['name'], annotation['frame'],
                                                                         user, annotation['objects'])

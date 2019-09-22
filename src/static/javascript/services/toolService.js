@@ -41,7 +41,7 @@ angular.module('CVGTool')
         },
 
         // Gets the annotations of a frame, from a video, a dataset and a user
-        getAnnotationOfFrame: function(scene, frame, dataset, user, callbackSuccess, callbackError) {
+        getAnnotationOfFrame: function(scene, datasetType, frame, dataset, user, callbackSuccess, callbackError) {
             $http({
                     method: 'GET',
                     url: '/api/annotation/getAnnotation',
@@ -49,6 +49,7 @@ angular.module('CVGTool')
                         'scene': scene,
                         'frame': frame,
                         'dataset': dataset,
+                        'datasetType': datasetType,
                         'user': user
                     }
                 }).then(function successCallback(response) {
@@ -130,12 +131,13 @@ angular.module('CVGTool')
         },
 
         // Retrieves the object defined by objectUid
-        getAnnotationOfFrameByUID: function(user, dataset, scene, objectUid, frame, callbackSuccess, callbackError) {
+        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, frame, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: "/api/annotation/getAnnotation/object",
                 headers: {
                     "dataset": dataset,
+                    "datasetType": datasetType,
                     "user": user,
                     "scene": scene,
                     "frame": frame,
@@ -194,7 +196,7 @@ angular.module('CVGTool')
         },
 
         // Create new object
-        createNewObject: function(user, dataset, scene, type, frame, callbackSuccess, callbackError) {
+        createNewObject: function(user, dataset, datasetType, scene, type, frame, callbackSuccess, callbackError) {
             $http({
                     method: 'POST',
                     url: '/api/annotation/createNewUidObject',
@@ -203,7 +205,8 @@ angular.module('CVGTool')
                         'dataset': dataset,
                         'scene': scene,
                         'type': type,
-                        'frame': frame
+                        'frame': frame,
+                        'datasetType': datasetType
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg.maxUid, type)
@@ -213,7 +216,7 @@ angular.module('CVGTool')
                 }
         },
 
-        interpolate: function(user, dataset, scene, startFrame, endFrame, uidObject, frameArray, callbackSuccess, callbackError) {
+        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",
@@ -223,7 +226,8 @@ angular.module('CVGTool')
                     'scene': scene,
                     'startFrame': startFrame,
                     'endFrame': endFrame,
-                    'uidObject': uidObject
+                    'uidObject': uidObject,
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(uidObject, frameArray);
@@ -331,12 +335,13 @@ angular.module('CVGTool')
         },
 
         // Get mughsots of an object
-        getMugshots: function(dataset, scene, user, objectUID, callbackSuccess) {
+        getMugshots: function(dataset, datasetType, scene, user, objectUID, callbackSuccess) {
             $http({
                 method: 'GET',
                 url: '/api/aik/getMugshot',
                 headers: {
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'scene': scene,
                     'user': user,
                     'uid': objectUID

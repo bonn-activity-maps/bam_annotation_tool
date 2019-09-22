@@ -25,16 +25,16 @@ class AnnotationService:
     pt = 'poseTrack'
 
     # Get annotation info for given frame, dataset, video and user
-    def getAnnotation(self, dataset, scene, frame, user):
-        result = annotationManager.getAnnotation(dataset, scene, frame, user)
+    def getAnnotation(self, dataset, datasetType, scene, frame, user):
+        result = annotationManager.getAnnotation(dataset, datasetType, scene, frame, user)
         if result == 'Error':
             return False, 'The frame does not have an annotation', 400
         else:
             return True, result, 200
 
     # Get annotations  (all frames) for given dataset, video which are validated and ready to export (user = Root)
-    def getAnnotations(self, dataset, video, user):
-        result = annotationManager.getAnnotations(dataset, video, user, "correct")
+    def getAnnotations(self, dataset, datasetType, video, user):
+        result = annotationManager.getAnnotations(dataset, datasetType, video, user, "correct")
         if result == 'Error':
             return False, 'The video in dataset does not have the final annotations', 400
         else:
@@ -127,7 +127,7 @@ class AnnotationService:
                 return False, 'Error incorrect keypoints', 400
 
             # Update only one object in the annotation for concrete frame
-            result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects)
+            result = self.updateAnnotationFrameObject(dataset, scene, frame, user, objects, datasetType)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
             else:
@@ -176,7 +176,7 @@ class AnnotationService:
             return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
 
     # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
-    def createNewUidObject(self, dataset, scene, frame, user, objectType):
+    def createNewUidObject(self, dataset, datasetType, scene, frame, user, objectType):
         maxUid = annotationManager.maxUidObjectDataset(dataset)
 
         if maxUid == 'Error':
@@ -185,7 +185,7 @@ class AnnotationService:
             # Create new object with maxUid+1
             newUid = maxUid + 1
             objects = {'uid': newUid, 'type': objectType, 'keypoints': []}
-            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects)
+            result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
 
             if result == 'Error':
                 return False, 'Error creating new object in annotation', 400
@@ -193,8 +193,8 @@ class AnnotationService:
                 return True, {'maxUid': newUid}, 200
 
     # Get annotation of object in frame
-    def getAnnotationFrameObject(self, dataset, scene, frame, user, obj):
-        result = annotationManager.getFrameObject(dataset, scene, frame, user, obj)
+    def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj):
+        result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj)
         if result == 'Error':
             return False, 'The object does not exist in frame '+frame, 400
         else:
@@ -205,7 +205,7 @@ class AnnotationService:
     def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
-        found = annotationManager.getFrameObject(dataset, scene, frame, user, uidObj)
+        found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj)
 
         if found == 'Error':
             return 'Error'
@@ -215,7 +215,7 @@ class AnnotationService:
             if datasetType == 'poseTrack' and found['type'] != objects['type']:
                 result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
             else:
-                result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects)
+                result = annotationManager.updateFrameObject(dataset, scene, frame, user, objects, datasetType)
 
         return result
 
@@ -250,10 +250,10 @@ class AnnotationService:
         return finalKpts
 
     # Interpolate and store the interpolated 3d points
-    def interpolateAnnotation(self, dataset, scene, user, startFrame, endFrame, uidObject):
+    def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject):
         # Search object in respective start and end frames
-        obj1 = annotationManager.getFrameObject(dataset, scene, startFrame, user, uidObject)
-        obj2 = annotationManager.getFrameObject(dataset, scene, endFrame, user, uidObject)
+        obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject)
+        obj2 = annotationManager.getFrameObject(dataset, datasetType, scene, endFrame, user, uidObject)
 
         type = obj1['type']
         kps1 = obj1['keypoints']
@@ -271,7 +271,7 @@ class AnnotationService:
         for i in range(1, finalKpts.shape[0]-1):
             obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
 
-            result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj)
+            result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj, datasetType)
             if result == 'Error':
                 finalResult = 'There was some error interpolating the keypoints, please check them'
 
