@@ -267,11 +267,12 @@
                                 <tbody>
                                     <tr ng-repeat="object in objectManager.selectedType.objects">
                                         <td>{{object.uid}}</td>
+
                                         <th ng-repeat="f in object.frames">
                                             <button class="btn btn-success" ng-if="hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                                                    class="glyphicon glyphicon-pushpin"></span></button>
                                             <button class="btn btn-info" ng-if="!hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                                                    class="glyphicon glyphicon-pushpin"></span></button>
                                         </th>
                                     </tr>
                                     <tr>
@@ -346,17 +347,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
+                                <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') != 0 && objectManager.selectedObject.type.localeCompare('bbox_head') != 0" ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
                                     <td>{{label}}</td>
-                                    <th ng-if="activeDataset.dim == 2">
+                                    <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData($index, 0); switchSubTool('createPoint');">
-                                        <span>{{$index}}</span></button>
+                                                    <span>{{$index}}</span></button>
                                         <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint($index,0); setPointCreationData($index, 0); switchSubTool('createPoint');">
-                                        <span>{{$index}}</span></button>
+                                                    <span>{{$index}}</span></button>
                                     </th>
+
                                     <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
                                         <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint($index,0)"><span class="glyphicon glyphicon-trash"></button>
+                                    </th>
+                                </tr>
+                                <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
+                                    <td>Box</td>
+                                    <th ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
+                                        <button ng-if="keypointEditorData[0].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData(0, 0); switchSubTool('createBox');">
+                                                    <span class="glyphicon glyphicon-modal-window"></span></button>
+                                        <button ng-if="keypointEditorData[0].points[0].length > 0" class="btn btn-success" ng-click="removePoint(0,-1); setPointCreationData(0, 0); switchSubTool('createBox');">
+                                                    <span class="glyphicon glyphicon-modal-window"></span></button>
+                                    </th>
+                                    <th>
+                                        <button ng-if="keypointEditorData[0].points[0].length <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
+                                        <button ng-if="keypointEditorData[0].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint(0,-1)"><span class="glyphicon glyphicon-trash"></button>
                                     </th>
                                 </tr>
                             </tbody>

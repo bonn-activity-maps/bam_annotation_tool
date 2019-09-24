@@ -680,6 +680,7 @@ angular.module('CVGTool')
             this.valid = true; // when set to true, the canvas will redraw everything
             this.dragging = false; // Keep track of when we are dragging
             this.selection = null; // Current selected object
+            this.creatingBox = false;
 
             //----- 2D Projections -----//
             this.objectsIn2D;
@@ -794,6 +795,12 @@ angular.module('CVGTool')
                     canvasObj.setRedraw();
                 }
 
+                if ($scope.subTool.localeCompare('createBox') == 0) {
+                    $scope.keypointEditorData[0].points = canvasObj.toCamera([mouse.x, mouse.y]);
+                    canvasObj.creatingBox = true;
+                    canvasObj.setRedraw();
+                }
+
 
             }, true);
 
@@ -811,11 +818,18 @@ angular.module('CVGTool')
                     canvasObj.move(canvasObj.mouse.pos.x - canvasObj.mouse.posLast.x, canvasObj.mouse.pos.y - canvasObj.mouse.posLast.y);
                 }
 
+                if (canvasObj.creatingBox) {
+                    $scope.keypointEditorData[1].points = canvasObj.toCamera([mouse.x, mouse.y]);
+                    canvasObj.setRedraw();
+                }
+
             }, true);
 
             // MouseUp event
             canvas.addEventListener('mouseup', function(e) {
                 canvasObj.dragging = false; // Stop dragging
+                canvasObj.creatingBox = false;
+                $scope.switchSubTool("");
             }, true);
 
             //----- FUNCTIONS -----//
@@ -897,44 +911,71 @@ angular.module('CVGTool')
                                 } else {
                                     objects = this.objectsIn2D["personAIK"].objects
                                 }
-
                                 // Draw objects
-                                let j = 0;
-                                for (obj in objects) {
-                                    if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {
-                                        let colors = ["red", "blue", "yellow", "purple", "brown", "white", "grey", "cyan",
-                                            "pink", "lilac", "orange", "canary"
-                                        ];
-                                        for (let i = 0; i < objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length; i++) {
-                                            var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[i];
-                                            var imageCoords = this.toImage([coords[0], coords[1]]);
-                                            this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], colors[j], objects[obj].uid);
+                                if ($scope.objectManager.selectedType.type.toString().localeCompare("bbox") == 0 || $scope.objectManager.selectedType.type.localeCompare("bbox_head") == 0) {
+                                    let j = 0;
+                                    for (obj in objects) {
+                                        var keypoints = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints;
+                                        if ($scope.hasAnnotation(keypoints)) {
+                                            let colors = ["red", "blue", "yellow", "purple", "brown", "white", "grey", "cyan",
+                                                "pink", "lilac", "orange", "canary"
+                                            ];
+                                            var imageCoords1 = this.toImage(keypoints[0]);
+                                            var imageCoords2 = this.toImage(keypoints[1]);
+                                            var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
+                                            var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
+                                            this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, colors[j], objects[obj].uid);
                                         }
                                     }
-                                    j++;
+                                } else {
+                                    let j = 0;
+                                    for (obj in objects) {
+                                        if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {
+                                            let colors = ["red", "blue", "yellow", "purple", "brown", "white", "grey", "cyan",
+                                                "pink", "lilac", "orange", "canary"
+                                            ];
+                                            for (let i = 0; i < objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length; i++) {
+                                                var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[i];
+                                                var imageCoords = this.toImage([coords[0], coords[1]]);
+                                                this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], colors[j], objects[obj].uid);
+                                            }
+                                        }
+                                        j++;
+                                    }
                                 }
-                            } else { // If there is one object selected, draw only its points
-                                for (let i = 0; i < $scope.keypointEditorData.length; i++) {
-                                    var label = $scope.keypointEditorData[i].label;
-                                    var points = $scope.keypointEditorData[i].points;
-                                    var cameras = $scope.keypointEditorData[i].cameras;
-                                    var thereArePoints = false;
 
-                                    for (let j = 0; j < points.length; j++) {
-                                        if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) === 0) {
-                                            var imageCoords = this.toImage(points[j]);
-                                            thereArePoints = true;
-                                            this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
+                            } else { // If there is one object selected, draw only its points
+                                if ($scope.objectManager.selectedObject.type.localeCompare("bbox") == 0 || $scope.objectManager.selectedObject.type.toString().localeCompare("bbox_head") == 0) {
+                                    var imageCoords1 = this.toImage($scope.keypointEditorData[0].points);
+                                    var imageCoords2 = this.toImage($scope.keypointEditorData[1].points);
+                                    var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
+                                    var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
+                                    this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, 'green');
+
+                                } else {
+                                    for (let i = 0; i < $scope.keypointEditorData.length; i++) {
+                                        var label = $scope.keypointEditorData[i].label;
+                                        var points = $scope.keypointEditorData[i].points;
+                                        var cameras = $scope.keypointEditorData[i].cameras;
+                                        var thereArePoints = false;
+
+                                        for (let j = 0; j < points.length; j++) {
+                                            if (points[j].length > 0 && cameras[j].localeCompare(this.activeCamera.filename) === 0) {
+                                                var imageCoords = this.toImage(points[j]);
+                                                thereArePoints = true;
+                                                this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
+                                            }
                                         }
-                                    }
-                                    if (!thereArePoints) {
-                                        var objectKP = this.objectsIn2D[$scope.objectManager.selectedObject.type].objects[$scope.objectManager.selectedObject.uid].frames[$scope.slider.value - $scope.frameFrom];
-                                        for (var k = 0; k < objectKP.keypoints.length; k++) {
-                                            var imageCoords = this.toImage(objectKP.keypoints[k]);
-                                            this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
+                                        if (!thereArePoints) {
+                                            var objectKP = this.objectsIn2D[$scope.objectManager.selectedObject.type].objects[$scope.objectManager.selectedObject.uid].frames[$scope.slider.value - $scope.frameFrom];
+                                            for (var k = 0; k < objectKP.keypoints.length; k++) {
+                                                var imageCoords = this.toImage(objectKP.keypoints[k]);
+                                                this.drawCircleWithText(this.ctx, imageCoords[0], imageCoords[1], 'green', label);
+                                            }
                                         }
                                     }
                                 }
+
                             }
                         }
 
@@ -1017,6 +1058,33 @@ angular.module('CVGTool')
                 context.fillStyle = color;
                 context.fill();
                 context.closePath();
+            }
+
+            // Draws a rectangle
+            CanvasObject.prototype.drawRectangle = function(context, coordX, coordY, width, height, color) {
+                context.beginPath();
+                context.strokeStyle = color;
+                context.lineWidth = 3;
+                context.rect(coordX, coordY, width, height);
+                context.stroke();
+                context.closePath();
+            }
+
+            // Draws a rectangle
+            CanvasObject.prototype.drawRectangleWithText = function(context, coordX, coordY, width, height, color, text) {
+                context.beginPath();
+                context.strokeStyle = color;
+                context.lineWidth = 3;
+                context.rect(coordX, coordY, width, height);
+                context.stroke();
+                context.beginPath();
+                context.font = "12px sans-serif";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.strokeText(text.toString(), coordX - 8, coordY + 5);
+                context.fillStyle = "white";
+                context.fillText(text.toString(), coordX - 8, coordY + 5);
+                context.fill();
             }
 
             // Draws a circle with the UID of the object inside
@@ -1570,7 +1638,7 @@ angular.module('CVGTool')
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
             sendMessage("success", "Annotation updated!");
             // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
-            $scope.retrieveAnnotationPT(objectUid, objectType,[frameTo]);
+            $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
         };
 
         // Function to save the Annotation for PT
@@ -1607,7 +1675,7 @@ angular.module('CVGTool')
             // Find the closest previous annotated frame for that object
             var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max(1, frameTo - 5); i--) {
+            for (var i = frameTo - 1; i >= Math.max(1, frameTo - 7); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
