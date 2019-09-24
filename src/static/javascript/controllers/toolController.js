@@ -1384,6 +1384,8 @@ angular.module('CVGTool')
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
             }
+
+            console.log($scope.keypointEditorData);
         }
 
         // Function that fill the pointCreationData
@@ -1786,6 +1788,15 @@ angular.module('CVGTool')
                     $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
             }
         };
+
+        $scope.hasAnnotation = function(keypoints) {
+            for (var i = 0; i < keypoints.length; i++) {
+                if (keypoints[i].length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         // Send message to toast
         var sendMessage = function(type, msg) {

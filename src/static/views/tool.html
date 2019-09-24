@@ -268,9 +268,9 @@
                                     <tr ng-repeat="object in objectManager.selectedType.objects">
                                         <td>{{object.uid}}</td>
                                         <th ng-repeat="f in object.frames">
-                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                            <button class="btn btn-success" ng-if="hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
                                                 class="glyphicon glyphicon-pushpin"></span></button>
-                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                            <button class="btn btn-info" ng-if="!hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
                                                 class="glyphicon glyphicon-pushpin"></span></button>
                                         </th>
                                     </tr>
@@ -349,9 +349,9 @@
                                 <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
                                     <td>{{label}}</td>
                                     <th ng-if="activeDataset.dim == 2">
-                                        <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="switchSubTool('createPoint'); setPointCreationData($index, 0)">
+                                        <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData($index, 0); switchSubTool('createPoint');">
                                         <span>{{$index}}</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint($index,0); switchSubTool('createPoint'); setPointCreationData($index, 0)">
+                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint($index,0); setPointCreationData($index, 0); switchSubTool('createPoint');">
                                         <span>{{$index}}</span></button>
                                     </th>
                                     <th>
