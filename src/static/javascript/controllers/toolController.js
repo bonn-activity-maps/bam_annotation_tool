@@ -103,9 +103,6 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                console.log($scope.canvases[i].objectsIn2D)
-            }
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
@@ -1646,8 +1643,6 @@ angular.module('CVGTool')
 
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
-            console.log("Received annotation ", frame);
-            console.log(annotation);
             if (angular.equals({}, annotation)) return; // Check if we received something
             if ($scope.isPosetrack()) {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
