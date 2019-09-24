@@ -193,12 +193,13 @@ class AnnotationService:
                 return True, {'maxUid': newUid}, 200
 
     # Get annotation of object in frame
-    def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj):
-        result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj)
+    def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
+        result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj, objectType)
         if result == 'Error':
             return False, 'The object does not exist in frame '+frame, 400
         else:
             return True, result, 200
+
 
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db

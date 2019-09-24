@@ -96,14 +96,15 @@ class AnnotationManager:
 
     # Get annotation for object in frame, without mongo id
     # AIK: ignore user parameter
-    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj):
+    # PT: Filter by type too
+    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
         try:
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
                                                   {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
             else:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+                                              {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
             else:

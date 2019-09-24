@@ -1459,7 +1459,7 @@ angular.module('CVGTool')
         };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
-            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value)
+            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
 
             // Refresh the selected object so the table of annotations updates
             var selectedType = $scope.objectManager.selectedType.type;
@@ -1474,11 +1474,7 @@ angular.module('CVGTool')
                     }
                 }
             } else {
-                for (var i = 0; i < $scope.canvases.length; i++) {
-                    if ($scope.canvases[i].hasActiveCamera()) {
-                        $scope.canvases[i].updateObjects2D();
-                    }
-                }
+                $scope.canvases[0].updateObjects2D();
             }
         }
 
@@ -1574,7 +1570,7 @@ angular.module('CVGTool')
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
             sendMessage("success", "Annotation updated!");
             // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
-            $scope.retrieveAnnotationPT(objectUid, [frameTo]);
+            $scope.retrieveAnnotationPT(objectUid, objectType,[frameTo]);
         };
 
         // Function to save the Annotation for PT
@@ -1652,6 +1648,8 @@ angular.module('CVGTool')
 
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
+            console.log("Received annotation ", frame);
+            console.log(annotation);
             if (angular.equals({}, annotation)) return; // Check if we received something
             if ($scope.isPosetrack()) {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
@@ -1671,10 +1669,10 @@ angular.module('CVGTool')
 
         // Function that returns the annotations defined by objectUid
         // Same but for PT
-        $scope.retrieveAnnotationPT = function(objectUid, frameArray) {
+        $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                    $scope.loadedCameras[0].filename, objectUid, frameArray[i], callbackRetrievingFrameObject);
+                toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                    $scope.loadedCameras[0].filename, objectUid, frameArray[i], objectType, callbackRetrievingFrameObject, sendMessage);
             }
         };
 
