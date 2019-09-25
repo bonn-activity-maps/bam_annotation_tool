@@ -98,9 +98,7 @@ angular.module('CVGTool')
         // Function that retrieves mugshots of the selected uid
         $scope.getMugshots = function(uid) {
             $scope.selectedObjectMugshots = [];
-            // TODO cambiar escena
             if ($scope.isPosetrack()) {
-                console.log($scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].activeCamera.filename, navSrvc.getUser().name, uid);
                 toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].activeCamera.filename, navSrvc.getUser().name, uid, getMugshotsCallback);
             }
             else{
@@ -113,12 +111,11 @@ angular.module('CVGTool')
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.isPosetrack()) {
-                    console.log("Requesting mugshot");
-                    console.log(object.original_uid);
-                    console.log($scope.objectManager.selectedObject);
+                    if (object.original_uid === undefined) {
+                        object.original_uid = generateNewOriginalUid(object, frame);
+                    }
                     if ($scope.objectManager.selectedObject.original_uid.toString().localeCompare(object.original_uid.toString()) !== 0) {
-                        console.log("yas")
-                        $scope.getMugshots(object.original_uid);
+                        $scope.getMugshots(object.uid);
                     }
                 }
                 else {
@@ -128,9 +125,10 @@ angular.module('CVGTool')
                 }
             } else {
                 if ($scope.isPosetrack()) {
-                    console.log("AQUI");
-                    console.log(object.original_uid);
-                    $scope.getMugshots(object.original_uid);
+                    if (object.original_uid === undefined) {
+                        object.original_uid = generateNewOriginalUid(object, frame);
+                    }
+                    $scope.getMugshots(object.uid);
                 } else {
                     $scope.getMugshots(object.uid);
                 }
