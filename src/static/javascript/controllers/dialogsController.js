@@ -224,7 +224,6 @@ angular.module('CVGTool')
  */
 .controller('dialogShowZipFilesCtrl', ['$scope', '$mdDialog', 'files', 'adminDatasetsSrvc',
     function($scope, $mdDialog, files, adminDatasetsSrvc) {
-        console.log("Files: " + files);
         $scope.variables = {
             files: files,
             datasetType: ''
