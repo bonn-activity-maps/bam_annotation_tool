@@ -77,7 +77,7 @@ angular.module('CVGTool')
 
         // Function that generates a legit poseTrack UID for new objects
         function generateNewOriginalUid(object, frame) {
-            let video = $scope.loadedCameras[0].filename;
+            let video = $scope.canvases[0].activeCamera.filename;
             frame = pad(frame, 4);
             let track_id = pad(object.uid, 2);
             return Number("1" + video + frame + track_id)
@@ -925,7 +925,9 @@ angular.module('CVGTool')
                                     objects = this.objectsIn2D["personAIK"].objects
                                 }
                                 // Draw objects
-                                if ($scope.objectManager.selectedType.type.toString().localeCompare("bbox") == 0 || $scope.objectManager.selectedType.type.localeCompare("bbox_head") == 0) {
+                                if ($scope.objectManager.selectedType.type !== undefined &&
+                                    ($scope.objectManager.selectedType.type.toString().localeCompare("bbox") === 0
+                                    || $scope.objectManager.selectedType.type.localeCompare("bbox_head") === 0)) {
                                     let j = 0;
                                     for (obj in objects) {
                                         var keypoints = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints;
@@ -1660,7 +1662,7 @@ angular.module('CVGTool')
         // Function to save the Annotation for PT
         $scope.updateAnnotationPT = function() {
             // Update the object
-            toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.loadedCameras[0].filename,
+            toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.canvases[0].activeCamera.filename,
                 $scope.slider.value, $scope.objectManager.selectedObject,
                 $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
         };
@@ -1754,7 +1756,7 @@ angular.module('CVGTool')
         $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
                 toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                    $scope.loadedCameras[0].filename, objectUid, frameArray[i], objectType, callbackRetrievingFrameObject, sendMessage);
+                    $scope.canvases[0].activeCamera.filename, objectUid, frameArray[i], objectType, callbackRetrievingFrameObject, sendMessage);
             }
         };
 
