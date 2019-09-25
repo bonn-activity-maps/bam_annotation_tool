@@ -103,9 +103,6 @@ angular.module('CVGTool')
 
         // Function that opens the panel to edit keypoints
         $scope.openKeyPointEditor = function(object, frame) {
-            // for (var i = 0; i < $scope.canvases.length; i++) {
-            //     console.log($scope.canvases[i].objectsIn2D)
-            // }
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) != 0) {
@@ -177,9 +174,6 @@ angular.module('CVGTool')
                     $scope.keypointEditorData.push(ps);
                 }
             }
-
-
-
             // Set redraw to draw the selected object
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
@@ -796,7 +790,7 @@ angular.module('CVGTool')
                 }
 
                 if ($scope.subTool.localeCompare('createBox') == 0) {
-                    $scope.keypointEditorData[0].points = canvasObj.toCamera([mouse.x, mouse.y]);
+                    $scope.keypointEditorData[0].points[0] = canvasObj.toCamera([mouse.x, mouse.y]);
                     canvasObj.creatingBox = true;
                     canvasObj.setRedraw();
                 }
@@ -819,7 +813,7 @@ angular.module('CVGTool')
                 }
 
                 if (canvasObj.creatingBox) {
-                    $scope.keypointEditorData[1].points = canvasObj.toCamera([mouse.x, mouse.y]);
+                    $scope.keypointEditorData[1].points[0] = canvasObj.toCamera([mouse.x, mouse.y]);
                     canvasObj.setRedraw();
                 }
 
@@ -829,6 +823,7 @@ angular.module('CVGTool')
             canvas.addEventListener('mouseup', function(e) {
                 canvasObj.dragging = false; // Stop dragging
                 canvasObj.creatingBox = false;
+                console.log($scope.keypointEditorData)
                 $scope.switchSubTool("");
             }, true);
 
@@ -924,8 +919,9 @@ angular.module('CVGTool')
                                             var imageCoords2 = this.toImage(keypoints[1]);
                                             var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
                                             var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
-                                            this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, colors[j], objects[obj].uid);
+                                            this.drawRectangleWithText(this.ctx, imageCoords1[0], imageCoords1[1], width, height, colors[j], objects[obj].uid);
                                         }
+                                        j++;
                                     }
                                 } else {
                                     let j = 0;
@@ -946,8 +942,8 @@ angular.module('CVGTool')
 
                             } else { // If there is one object selected, draw only its points
                                 if ($scope.objectManager.selectedObject.type.localeCompare("bbox") == 0 || $scope.objectManager.selectedObject.type.toString().localeCompare("bbox_head") == 0) {
-                                    var imageCoords1 = this.toImage($scope.keypointEditorData[0].points);
-                                    var imageCoords2 = this.toImage($scope.keypointEditorData[1].points);
+                                    var imageCoords1 = this.toImage($scope.keypointEditorData[0].points[0]);
+                                    var imageCoords2 = this.toImage($scope.keypointEditorData[1].points[0]);
                                     var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
                                     var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
                                     this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, 'green');
@@ -1078,12 +1074,16 @@ angular.module('CVGTool')
                 context.rect(coordX, coordY, width, height);
                 context.stroke();
                 context.beginPath();
+                context.rect(coordX - 1, coordY, 40, -20);
+                context.fillStyle = color;
+                context.fill();
+                context.beginPath();
                 context.font = "12px sans-serif";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
-                context.strokeText(text.toString(), coordX - 8, coordY + 5);
+                context.strokeText(text.toString(), coordX + 3, coordY - 9);
                 context.fillStyle = "white";
-                context.fillText(text.toString(), coordX - 8, coordY + 5);
+                context.fillText(text.toString(), coordX + 3, coordY - 9);
                 context.fill();
             }
 
@@ -1452,8 +1452,6 @@ angular.module('CVGTool')
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].setRedraw();
             }
-
-            console.log($scope.keypointEditorData);
         }
 
         // Function that fill the pointCreationData
@@ -1716,8 +1714,6 @@ angular.module('CVGTool')
 
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
-            console.log("Received annotation ", frame);
-            console.log(annotation);
             if (angular.equals({}, annotation)) return; // Check if we received something
             if ($scope.isPosetrack()) {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
