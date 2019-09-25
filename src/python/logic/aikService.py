@@ -131,9 +131,7 @@ class AIKService:
     # Return 6 mugshot of person uid from different cameras
     def getMugshot(self, dataset, datasetType, scene, user, personUid):
         # Get 10 annotation of the object uid
-        print(dataset, datasetType, scene, user, personUid)
         result = annotationManager.getAnnotationsByObject(dataset, datasetType, scene, user, personUid)
-        print("annotations ", result)
         images = []     # Final cropped images
 
         for r in result:
@@ -153,26 +151,26 @@ class AIKService:
                         images.append({"image": self.img2binary(cropImg)})
                 else:
                     kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
-                    camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
 
-                    # Check camera parameters and frame path
-                    frameResult = frameManager.getFrame(r['frame'], camera, dataset)
-                    if frameResult != 'Error':
-                        cameraParams = frameResult['cameraParameters']
-                        path = frameResult['path']
+                    # Check annotations in all 12 cameras
+                    for camera in range(12):
+                        # Check camera parameters and frame path
+                        frameResult = frameManager.getFrame(r['frame'], camera, dataset)
+                        if frameResult != 'Error':
+                            cameraParams = frameResult['cameraParameters']
+                            path = frameResult['path']
 
-                        # Obtain 2d keypoints for corresponding camera
-                        kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
-                        kpX, kpY = int(kps2d[0]), int(kps2d[1])
+                            # Obtain 2d keypoints for corresponding camera
+                            kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
+                            kpX, kpY = int(kps2d[0]), int(kps2d[1])
 
-                        # Read img, make mugshot 200px and add to final images
-                        img = cv2.imread(path)
-                        if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
-                            kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
-                            kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
-                            cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
-                            images.append({"image": self.img2binary(cropImg)})
-
+                            # Read img, make mugshot 200px and add to final images
+                            img = cv2.imread(path)
+                            if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
+                                kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
+                                kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
+                                cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
+                                images.append({"image": self.img2binary(cropImg)})
 
         return True, images, 200
 
