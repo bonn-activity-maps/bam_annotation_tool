@@ -118,7 +118,7 @@ class AnnotationManager:
         try:
             if datasetType == self.aik:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
+                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
             else:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.track_id": obj, "objects.type": "bbox_head"},
                                         {"objects": {"$elemMatch": {"track_id": obj, "type": "bbox_head"}},

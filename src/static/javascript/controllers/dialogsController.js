@@ -224,7 +224,6 @@ angular.module('CVGTool')
  */
 .controller('dialogShowZipFilesCtrl', ['$scope', '$mdDialog', 'files', 'adminDatasetsSrvc',
     function($scope, $mdDialog, files, adminDatasetsSrvc) {
-        console.log("Files: " + files);
         $scope.variables = {
             files: files,
             datasetType: ''
@@ -311,12 +310,12 @@ angular.module('CVGTool')
         // Recall function if the rename worked
         $scope.getListOfVideos = function() {
             $scope.activeDataset = navSrvc.getActiveDataset();
-            console.log($scope.activeDataset);
             toolSrvc.getInfoOfVideos(showListOfVideos, $scope.activeDataset.name);
         };
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
+            console.log($scope.videosSelected)
             $mdDialog.hide($scope.videosSelected);
         };
 
