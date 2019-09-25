@@ -3,7 +3,8 @@ angular.module('CVGTool')
 /*
  * Controller of admin page "Users"
  */
-.controller('taskHomeCtrl', ['$scope', '$state', '$mdDialog', 'navSrvc', function($scope, $state, $mdDialog, navSrvc) {
+.controller('taskHomeCtrl', ['$scope', '$rootScope', '$state', '$mdDialog', 'navSrvc', 'taskHomeSrvc','adminDatasetsSrvc',
+    function($scope, $rootScope, $state, $mdDialog, navSrvc, taskHomeSrvc, adminDatasetsSrvc) {
     $scope.slider = { // Options and values for the slider
         from: 1,
         to: 1,
@@ -25,14 +26,51 @@ angular.module('CVGTool')
         }
     };
 
+    $scope.isPosetrack = function() {
+        return navSrvc.getActiveDataset().type.localeCompare("poseTrack") === 0;
+    };
+
+    $scope.videos = [];
+
+    $scope.fillTableFrames = function(frameInfoOfVideo, video) {
+        for (let i = 0; i < $scope.videos.length; i++) {
+            if ($scope.videos[i].name.localeCompare(video) === 0) {
+                $scope.videos[i].frameStart = frameInfoOfVideo[0].number;
+                $scope.videos[i].frameEnd = frameInfoOfVideo[1].number;
+                break;
+            }
+        }
+    };
+
+    $scope.fillTable = function(videos) {
+        $scope.videos = videos;
+        if (videos !== []) {
+            for (let i = 0; i < videos.length; i++) {
+                taskHomeSrvc.getFrameInfo(navSrvc.getActiveDataset().name, videos[i].name, $scope.fillTableFrames, sendMessage)
+            }
+        }
+    };
+
+    $scope.loadVideoTable = function() {
+        if (navSrvc.getActiveDataset() === undefined || navSrvc.getActiveDataset().name === undefined || navSrvc.getActiveDataset().name.localeCompare("") === 0) {
+            window.alert("Select a dataset from the selector in the navbar!");
+            return;
+        }
+        if (!$scope.isPosetrack()) {
+            sendMessage('danger', 'Please ignore the button you just pressed. I was in a hurry :-)');
+            return;
+        }
+        adminDatasetsSrvc.getInfoOfVideos($scope.fillTable, navSrvc.getActiveDataset().name, sendMessage);
+    };
+
     $scope.goToTool = function() {
-        if (navSrvc.getActiveDataset() == undefined || navSrvc.getActiveDataset().name === undefined || navSrvc.getActiveDataset().name.localeCompare("") == 0) {
-            window.alert("Select a dataset from the selector in the navbar!")
+        if (navSrvc.getActiveDataset() === undefined || navSrvc.getActiveDataset().name === undefined || navSrvc.getActiveDataset().name.localeCompare("") === 0) {
+            window.alert("Select a dataset from the selector in the navbar!");
             return;
         }
         var range = Math.abs($scope.slider.from - $scope.slider.to);
         if (range < 0) {
-            window.alert("At least one frame must be selected.")
+            window.alert("At least one frame must be selected.");
             return;
         }
 
@@ -42,5 +80,10 @@ angular.module('CVGTool')
         }
 
         $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to } });
+    };
+
+    // Send message to toast
+    var sendMessage = function(type, msg) {
+        $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
     };
 }]);
