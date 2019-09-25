@@ -191,7 +191,7 @@ angular.module('CVGTool')
             })
         },
 
-        // Sends the 2D points to the server to triangulate and create the new 3D point
+        // Sends the 2D points to the server
         updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
