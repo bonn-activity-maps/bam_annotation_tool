@@ -100,10 +100,8 @@ angular.module('CVGTool')
             $scope.selectedObjectMugshots = [];
             // TODO cambiar escena
             if ($scope.isPosetrack()) {
-                console.log($scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].activeCamera.filename, navSrvc.getUser().name, uid);
                 toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].activeCamera.filename, navSrvc.getUser().name, uid, getMugshotsCallback);
-            }
-            else{
+            } else {
                 toolSrvc.getMugshots($scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, navSrvc.getUser().name, uid, getMugshotsCallback);
             }
         }
@@ -113,23 +111,16 @@ angular.module('CVGTool')
             // Check if the object has changed, so we can retrieve the mugshot
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.isPosetrack()) {
-                    console.log("Requesting mugshot");
-                    console.log(object.original_uid);
-                    console.log($scope.objectManager.selectedObject);
                     if ($scope.objectManager.selectedObject.original_uid.toString().localeCompare(object.original_uid.toString()) !== 0) {
-                        console.log("yas")
                         $scope.getMugshots(object.original_uid);
                     }
-                }
-                else {
+                } else {
                     if ($scope.objectManager.selectedObject.uid.toString().localeCompare(object.uid.toString()) !== 0) {
                         $scope.getMugshots(object.uid);
                     }
                 }
             } else {
                 if ($scope.isPosetrack()) {
-                    console.log("AQUI");
-                    console.log(object.original_uid);
                     $scope.getMugshots(object.original_uid);
                 } else {
                     $scope.getMugshots(object.uid);
@@ -584,16 +575,14 @@ angular.module('CVGTool')
             }).then(function(successData) {
                 if ($scope.isPosetrack()) {
                     // First, create the structure for the new cameras
-                    for (var i = 0; i < successData.videos.length; i++) {
-                        $scope.loadedCameras.push({
-                            filename: successData.videos,
-                            frames: [],
-                        })
+                    $scope.loadedCameras.push({
+                        filename: successData.videos,
+                        frames: []
+                    });
 
-                        // Push empty frame spaces
-                        for (var j = 0; j < $scope.numberOfFrames; j++) {
-                            $scope.loadedCameras[i].frames.push({})
-                        }
+                    // Push empty frame spaces
+                    for (var j = 0; j < $scope.numberOfFrames; j++) {
+                        $scope.loadedCameras[0].frames.push({})
                     }
 
                     // Then, make all the frame requests
