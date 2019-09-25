@@ -253,8 +253,7 @@
                     <div id="2dkeypoints" class="tab-pane fade in active">
                         <div class="form-group">
                             <label for="selObjType">Select Object type:</label>
-                            <select class="form-control" id="selObjType" ng-change="changeSelectedType()"
-                                    ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                            <select class="form-control" id="selObjType" ng-change="changeSelectedType()" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
                             </select>
                         </div>
                         <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
@@ -268,11 +267,12 @@
                                 <tbody>
                                     <tr ng-repeat="object in objectManager.selectedType.objects">
                                         <td>{{object.uid}}</td>
+
                                         <th ng-repeat="f in object.frames">
-                                            <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
-                                            <button class="btn btn-info" ng-if="f.keypoints.length == 0" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                            <button class="btn btn-success" ng-if="hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                                    class="glyphicon glyphicon-pushpin"></span></button>
+                                            <button class="btn btn-info" ng-if="!hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                                    class="glyphicon glyphicon-pushpin"></span></button>
                                         </th>
                                     </tr>
                                     <tr>
@@ -330,8 +330,24 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col col-md-4">
-                        Image of the person will go here
+                    <div ng-if="!isPosetrack()" class="col col-md-4">
+                        <carousel style="width: 100px; height: 100px;">
+                            <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
+                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
+                            </slide>
+                        </carousel>
+                        </hr>
+                        <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
+                    </div>
+<!--                    If Posetrack, change function's attribute -->
+                    <div ng-if="isPosetrack()" class="col col-md-4">
+                        <carousel style="width: 100px; height: 100px;">
+                            <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
+                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
+                            </slide>
+                        </carousel>
+                        </hr>
+                        <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
                     </div>
                 </div>
 
@@ -347,17 +363,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
+                                <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') != 0 && objectManager.selectedObject.type.localeCompare('bbox_head') != 0" ng-repeat="label in objectManager.objectTypes[objectManager.selectedObject.type].labels">
                                     <td>{{label}}</td>
-                                    <th ng-if="activeDataset.dim == 2">
-                                        <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="switchSubTool('createPoint'); setPointCreationData($index, 0)">
-                                        <span>{{$index}}</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint($index,0); switchSubTool('createPoint'); setPointCreationData($index, 0)">
-                                        <span>{{$index}}</span></button>
+                                    <th>
+                                        <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData($index, 0); switchSubTool('createPoint');">
+                                                    <span>{{$index}}</span></button>
+                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint($index,0); setPointCreationData($index, 0); switchSubTool('createPoint');">
+                                                    <span>{{$index}}</span></button>
                                     </th>
+
                                     <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
                                         <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint($index,0)"><span class="glyphicon glyphicon-trash"></button>
+                                    </th>
+                                </tr>
+                                <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
+                                    <td>Box</td>
+                                    <th ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
+                                        <button ng-if="keypointEditorData[0].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData(0, 0); switchSubTool('createBox');">
+                                                    <span class="glyphicon glyphicon-modal-window"></span></button>
+                                        <button ng-if="keypointEditorData[0].points[0].length > 0" class="btn btn-success" ng-click="removePoint(0,-1); removePoint(1,-1); setPointCreationData(0, 0); switchSubTool('createBox');">
+                                                    <span class="glyphicon glyphicon-modal-window"></span></button>
+                                    </th>
+                                    <th>
+                                        <button ng-if="keypointEditorData[0].points[0].length <= 0 && keypointEditorData[1].points[0] <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
+                                        <button ng-if="keypointEditorData[0].points[0].length > 0 || keypointEditorData[1].points[0] > 0" class="btn-sm btn-danger" ng-click="removePoint(0,-1); removePoint(1,-1);"><span class="glyphicon glyphicon-trash"></button>
                                     </th>
                                 </tr>
                             </tbody>

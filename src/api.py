@@ -179,6 +179,12 @@ def updateVideosFrames():
     success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get initial and ending frame number of a video
+@app.route('/api/video/getFrameInfoOfVideo', methods=['GET'])
+def getFrameInfoOfVideo():
+    success, msg, status = frameService.getFrameInfoOfVideo(request.headers['dataset'], request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### ANNOTATION ####
 
@@ -276,6 +282,15 @@ def getAnnotationFrameObject():
                                                                       request.headers['scene'],
                                                                       int(request.headers['frame']), request.headers['user'],
                                                                       int(request.headers['uidObject']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get annotation of one object in frame for given frame, dataset, video and user
+@app.route('/api/annotation/getAnnotation/objectPT', methods=['GET'])
+def getAnnotationFrameObjectPT():
+    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
+                                                                      request.headers['scene'],
+                                                                      int(request.headers['frame']), request.headers['user'],
+                                                                      int(request.headers['uidObject']), request.headers['objectType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

@@ -150,6 +150,27 @@ angular.module('CVGTool')
             })
         },
 
+        // Retrieves the object defined by objectUid
+        getAnnotationOfFrameByUIDAndType: function(user, dataset, datasetType, scene, objectUid, frame, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: "/api/annotation/getAnnotation/objectPT",
+                headers: {
+                    "dataset": dataset,
+                    "datasetType": datasetType,
+                    "user": user,
+                    "scene": scene,
+                    "frame": frame,
+                    "uidObject": objectUid,
+                    "objectType": objectType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg, frame);
+            }, function errorCallback(response) {
+                callbackError('danger', response);
+            })
+        },
+
         // Sends the 2D points to the server to triangulate and create the new 3D point
         updateAnnotation: function(user, dataset, scene, frame, objects, deleting, callbackSuccess, callbackError) {
             $http({
@@ -170,7 +191,7 @@ angular.module('CVGTool')
             })
         },
 
-        // Sends the 2D points to the server to triangulate and create the new 3D point
+        // Sends the 2D points to the server
         updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',

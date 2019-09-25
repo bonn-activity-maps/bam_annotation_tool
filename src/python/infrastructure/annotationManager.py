@@ -96,14 +96,15 @@ class AnnotationManager:
 
     # Get annotation for object in frame, without mongo id
     # AIK: ignore user parameter
-    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj):
+    # PT: Filter by type too
+    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
         try:
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
                                                   {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
             else:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+                                              {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
             else:
@@ -117,10 +118,11 @@ class AnnotationManager:
         try:
             if datasetType == self.aik:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
+                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
             else:
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.uid": obj},
-                                        {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.track_id": obj, "objects.type": "bbox_head"},
+                                        {"objects": {"$elemMatch": {"track_id": obj, "type": "bbox_head"}},
+                                         "frame": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
