@@ -19,6 +19,13 @@ frameManager = FrameManager()
 
 class AIKService:
 
+    # Method to read a dictionary key that may not exist.
+    def safelyReadDictionary(self, dict, key):
+        try:
+            return dict[key]
+        except KeyError:
+            return None
+
     # Auxiliar function that creates a "AIK camera obejct" from the given camera parameters
     def createCamera(self, cameraParams):
         return Camera(cameraParams['K'], cameraParams['rvec'], cameraParams['tvec'], cameraParams['dist_coef'], cameraParams['w'], cameraParams['h'])
@@ -124,31 +131,47 @@ class AIKService:
     # Return 6 mugshot of person uid from different cameras
     def getMugshot(self, dataset, datasetType, scene, user, personUid):
         # Get 10 annotation of the object uid
+        print(dataset, datasetType, scene, user, personUid)
         result = annotationManager.getAnnotationsByObject(dataset, datasetType, scene, user, personUid)
+        print("annotations ", result)
         images = []     # Final cropped images
 
         for r in result:
-            if 'objects' in r:    
-                kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
-                camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
-                
-                # Check camera parameters and frame path
-                frameResult = frameManager.getFrame(r['frame'], camera, dataset)
-                if frameResult != 'Error':
-                    cameraParams = frameResult['cameraParameters']
-                    path = frameResult['path']
+            if 'objects' in r:
+                if datasetType == "poseTrack" and self.safelyReadDictionary(r['objects'][0], "type") == "bbox_head":
+                    points = r['objects'][0]['keypoints']
 
-                    # Obtain 2d keypoints for corresponding camera
-                    kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
-                    kpX, kpY = int(kps2d[0]), int(kps2d[1])
+                    frameResult = frameManager.getFrame(r['frame'], scene, dataset)
+                    if frameResult != 'Error':
+                        path = frameResult['path']
 
-                    # Read img, make mugshot 200px and add to final images
-                    img = cv2.imread(path)
-                    if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
-                        kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
-                        kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
-                        cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
+                        kpX, kpY = points[0]
+                        kpX2, kpY2 = points[1]
+
+                        img = cv2.imread(path)
+                        cropImg = img[kpY:kpY2, kpX:kpX2]
                         images.append({"image": self.img2binary(cropImg)})
+                else:
+                    kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
+                    camera = random.randint(0, 11)              # Random camera for random mugshot (always 12 cameras)
+
+                    # Check camera parameters and frame path
+                    frameResult = frameManager.getFrame(r['frame'], camera, dataset)
+                    if frameResult != 'Error':
+                        cameraParams = frameResult['cameraParameters']
+                        path = frameResult['path']
+
+                        # Obtain 2d keypoints for corresponding camera
+                        kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
+                        kpX, kpY = int(kps2d[0]), int(kps2d[1])
+
+                        # Read img, make mugshot 200px and add to final images
+                        img = cv2.imread(path)
+                        if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
+                            kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
+                            kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
+                            cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
+                            images.append({"image": self.img2binary(cropImg)})
 
 
         return True, images, 200

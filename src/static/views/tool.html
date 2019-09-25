@@ -331,7 +331,13 @@
                         </form>
                     </div>
                     <div class="col col-md-4">
-                        Image of the person will go here
+                        <carousel style="width: 100px; height: 100px;">
+                            <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
+                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
+                            </slide>
+                        </carousel>
+                        </hr>
+                        <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
                     </div>
                 </div>
 
