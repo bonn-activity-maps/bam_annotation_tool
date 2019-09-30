@@ -152,21 +152,21 @@ class DatasetService:
     # Return true if all videos have been updated, False ow
     def addVideosPT(self, dataset):
         datasetDir = os.path.join(self.STORAGE_DIR, dataset)
-        if self.checkIntegrityPT(datasetDir):
-            dirs = ["train", "test", "val"]
-            for type in dirs:
-                imagesDir = os.path.join(datasetDir, "images/" + type)
-                listDir = os.listdir(imagesDir)
-                for f in listDir:
-                    save_path = os.path.join(imagesDir, f)
-                    if os.path.isdir(save_path):
-                        result = self.createVideo(f.split('_')[0], dataset, save_path, type, frames=self.getFramesVideo(save_path))
-                        r, _, _ = result
-                        if not r:
-                            return result
-            return 'ok'
-        else:
-            return  'Error'
+        # if self.checkIntegrityPT(datasetDir):
+        dirs = ["train", "test", "val"]
+        for type in dirs:
+            imagesDir = os.path.join(datasetDir, "images/" + type)
+            listDir = os.listdir(imagesDir)
+            for f in listDir:
+                save_path = os.path.join(imagesDir, f)
+                if os.path.isdir(save_path):
+                    result = self.createVideo(f.split('_')[0], dataset, save_path, type, frames=self.getFramesVideo(save_path))
+                    r, _, _ = result
+                    if not r:
+                        return result
+        return 'ok'
+        # else:
+        #     return  'Error'
 
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
@@ -464,7 +464,8 @@ class DatasetService:
 
         # Check integrity depending on the dataset type
         if type == self.pt:
-            integrity = self.checkIntegrityPT(self.STORAGE_DIR + dataset)
+            # integrity = self.checkIntegrityPT(self.STORAGE_DIR + dataset)
+            integrity = True
         elif type == self.aik:
             integrity = self.checkIntegrityAIK(self.STORAGE_DIR + dataset)
         else:
