@@ -155,15 +155,18 @@ class DatasetService:
         # if self.checkIntegrityPT(datasetDir):
         dirs = ["train", "test", "val"]
         for type in dirs:
-            imagesDir = os.path.join(datasetDir, "images/" + type)
-            listDir = os.listdir(imagesDir)
-            for f in listDir:
-                save_path = os.path.join(imagesDir, f)
-                if os.path.isdir(save_path):
-                    result = self.createVideo(f.split('_')[0], dataset, save_path, type, frames=self.getFramesVideo(save_path))
-                    r, _, _ = result
-                    if not r:
-                        return result
+            try:
+                imagesDir = os.path.join(datasetDir, "images/" + type)
+                listDir = os.listdir(imagesDir)
+                for f in listDir:
+                    save_path = os.path.join(imagesDir, f)
+                    if os.path.isdir(save_path):
+                        result = self.createVideo(f.split('_')[0], dataset, save_path, type, frames=self.getFramesVideo(save_path))
+                        r, _, _ = result
+                        if not r:
+                            return result
+            except FileNotFoundError:
+                log.exception("Folder called " + str(type) + " not found")
         return 'ok'
         # else:
         #     return  'Error'
@@ -176,12 +179,15 @@ class DatasetService:
         finalResult = True
         types = ["test", "train", "val"]
         for type in types:
-            dirpath = os.path.join(dir, "annotations/" + type)
-            listdir = os.listdir(dirpath)
-            for file in listdir:
-                tempResult = self.processAnnotationFilePT(dataset, file, dirpath)
-                finalResult = finalResult and tempResult
-
+            try:
+                dirpath = os.path.join(dir, "annotations/" + type)
+                listdir = os.listdir(dirpath)
+                for file in listdir:
+                    tempResult = self.processAnnotationFilePT(dataset, file, dirpath)
+                    finalResult = finalResult and tempResult
+            except FileNotFoundError:
+                # TODO Check if this is still the case in the future...
+                log.exception("Folder called " + str(type) + " not found")
         return 'ok' if finalResult else 'Error'
 
     # Process one file entirely from JSON to our DB, including images, categories and anotations info.
@@ -201,9 +207,21 @@ class DatasetService:
         categories = self.safelyReadDictionary(annotation, "categories")
         annotations = self.safelyReadDictionary(annotation, "annotations")
 
-        resultCategories = self.addCategoriesPT(categories) if categories is not None else True
-        resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
-        resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
+        try:
+            resultCategories = self.addCategoriesPT(categories) if categories is not None else True
+        except:
+            log.exception("Error while processing Categories")
+            resultCategories = True
+        try:
+            resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
+        except:
+            log.exception("Error while processing Frames")
+            resultFrames = True
+        try:
+            resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
+        except:
+            log.exception("Error while processing Annotations")
+            resultAnnotations = True
 
         return resultFrames and resultAnnotations and resultCategories
 
@@ -592,9 +610,31 @@ class DatasetService:
     def exportDataset(self, dataset, datasetType):
         if datasetType == self.aik:
             result = self.exportDatasetAIK(dataset)
+        elif datasetType == self.pt:
+            result = self.exportDatasetPT(dataset)
         else:
             result = 'Incorrect dataset type'
         return True, result, 200
+
+    # Export annotation file for PT datasets to a file for a given dataset
+    def exportDatasetPT(self, dataset):
+        videos = videoManager.getVideos(dataset)
+        for j in range(0, len(videos)):
+            file = dict()
+            frames = frameService.getFrames(videos[j]["name"], dataset)
+            for i in range(0, len(frames)):
+                frames[i]["vid_id"] = frames[i]["video"]
+                frames[i]["file_name"] = frames[i]["path"].split("/")[3:-1]
+                del(frames[i]["number"])
+                del(frames[i]["dataset"])
+                del(frames[i]["video"])
+                del(frames[i]["path"])
+                del(frames[i]["has_ignore_regions"])
+            file["images"] = frames
+            # TODO change system to unique annotation
+            annotations = annotationService.getAnnotations(dataset, videos[j]["name"])
+
+        return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
     def exportDatasetAIK(self, dataset):

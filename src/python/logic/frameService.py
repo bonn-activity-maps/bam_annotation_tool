@@ -40,7 +40,10 @@ class FrameService:
         if result == 'Error':
             return False, 'Error searching frame', 400
         else:
-            return True, [result[0], result[-1]], 200
+            if result:
+                return True, [result[0], result[-1]], 200
+            else:
+                return False, 'Error: no frames for video', 400
 
     # Return camera parameters
     def getCameraParameters(self, frame, video, dataset):
