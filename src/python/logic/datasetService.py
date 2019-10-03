@@ -1,8 +1,6 @@
 import os, subprocess, json, shutil
-import cv2
 import logging
 from werkzeug.utils import secure_filename
-import moviepy.editor as mp
 import base64
 import zipfile
 from aik.dataset import AIK
@@ -11,9 +9,11 @@ from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.actionManager import ActionManager
+from python.infrastructure.frameManager import FrameManager
 from python.logic.frameService import FrameService
 from python.logic.annotationService import AnnotationService
 from python.logic.objectTypeService import ObjectTypeService
+
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
@@ -22,6 +22,7 @@ datasetManager = DatasetManager()
 videoManager = VideoManager()
 annotationManager = AnnotationManager()
 actionManager = ActionManager()
+frameManager = FrameManager()
 frameService = FrameService()
 annotationService = AnnotationService()
 objectTypeService = ObjectTypeService()
@@ -428,6 +429,28 @@ class DatasetService:
                     return False
         return True
 
+    # Add camera parameters to frames in database from camera directory (only for 'video')
+    # Return true if all have been updated, False ow
+    def addFrameVideoAIK(self, dataset, datasetDir, video):
+        # Load dataset
+        aik = AIK(datasetDir)
+        for frame in aik.valid_frames:
+            path, cameras = aik.get_frame(frame, return_paths=True)
+            for i, cam in enumerate(cameras):
+                if i == video:
+
+                    # Frame directory, join datasetDir with relative path
+                    framePath = os.path.join(datasetDir, path[i])
+
+                    # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
+                    frameDictionary = {"number": frame, "video": i, "dataset": dataset, "path": framePath,
+                                       "cameraParameters": json.loads(cam.to_json())}
+                    result, _, _ = frameService.createFrame(frameDictionary)
+
+                    if not result:
+                        return False
+        return True
+
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if has been some problem
     def addAnnotationsAIK(self, dataset, dir):
@@ -755,3 +778,25 @@ class DatasetService:
                 return False, 'Error creating dataset', 400
             else:
                 return self.addVideosAIK(name) if type == self.aik else self.addVideosPT(name)
+
+
+    ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
+    # Remove and insert new frames for one video and dataset
+    def insertFrames(self, dataset, video):
+        datasetDir = os.path.join(self.STORAGE_DIR, dataset)
+
+        # Delete frames of selected dataset and camera
+        result = frameManager.removeFramesByDatasetAndVideo(dataset, video)
+        print('Result of deleting frames of dataset ', dataset, ' camera ', video, ': ', result)
+
+        if result == 'Error':
+            return False, 'Error deleting existing frames of dataset', 400
+
+        # Add new frames
+        result = self.addFrameVideoAIK(dataset, datasetDir, video)
+        print('Result of adding new frames of dataset ', dataset, ' camera ', video, ': ', result)
+
+        if result:
+            return True, 'ok', 200
+        else:
+            return False, 'Error inserting new frames', 400

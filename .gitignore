@@ -7,4 +7,5 @@ venv
 *.iml
 docker-compose.yml
 initialize.js
+src/static/node_modules/
 

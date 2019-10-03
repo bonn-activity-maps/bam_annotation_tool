@@ -820,12 +820,12 @@ angular.module('CVGTool')
             canvas.addEventListener('mousemove', function(e) {
                 var mouse = canvasObj.getMouse(e);
 
+                canvasObj.mouse.pos.x = mouse.x;
+                canvasObj.mouse.pos.y = mouse.y;
+
                 if (canvasObj.dragging) {
                     canvasObj.mouse.posLast.x = canvasObj.mouse.pos.x;
                     canvasObj.mouse.posLast.y = canvasObj.mouse.pos.y;
-
-                    canvasObj.mouse.pos.x = mouse.x;
-                    canvasObj.mouse.pos.y = mouse.y;
 
                     canvasObj.move(canvasObj.mouse.pos.x - canvasObj.mouse.posLast.x, canvasObj.mouse.pos.y - canvasObj.mouse.posLast.y);
                 }
@@ -835,14 +835,20 @@ angular.module('CVGTool')
                     canvasObj.setRedraw();
                 }
 
+                if ($scope.subTool.localeCompare('createBox') == 0) {
+                    canvasObj.setRedraw();
+                }
+
             }, true);
 
             // MouseUp event
             canvas.addEventListener('mouseup', function(e) {
                 canvasObj.dragging = false; // Stop dragging
-                canvasObj.creatingBox = false;
-                console.log($scope.keypointEditorData)
-                $scope.switchSubTool("");
+                if (canvasObj.creatingBox) {
+                    canvasObj.creatingBox = false;
+                    $scope.switchSubTool("");
+                }
+
             }, true);
 
             //----- FUNCTIONS -----//
@@ -926,8 +932,8 @@ angular.module('CVGTool')
                                 }
                                 // Draw objects
                                 if ($scope.objectManager.selectedType.type !== undefined &&
-                                    ($scope.objectManager.selectedType.type.toString().localeCompare("bbox") === 0
-                                    || $scope.objectManager.selectedType.type.localeCompare("bbox_head") === 0)) {
+                                    ($scope.objectManager.selectedType.type.toString().localeCompare("bbox") === 0 ||
+                                        $scope.objectManager.selectedType.type.localeCompare("bbox_head") === 0)) {
                                     let j = 0;
                                     for (obj in objects) {
                                         var keypoints = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints;
@@ -967,6 +973,10 @@ angular.module('CVGTool')
                                     var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
                                     var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
                                     this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, 'green');
+
+                                    if ($scope.subTool.localeCompare('createBox') == 0) {
+                                        this.drawGuideLines(this.ctx, this.mouse.pos.x, this.mouse.pos.y, 'red');
+                                    }
 
                                 } else {
                                     for (let i = 0; i < $scope.keypointEditorData.length; i++) {
@@ -1024,7 +1034,7 @@ angular.module('CVGTool')
                         this.scale = scale;
                         this.images[i] = image;
                     }
-                    this.valid = false;
+                    this.setRedraw();
                 }
 
             }
@@ -1043,7 +1053,7 @@ angular.module('CVGTool')
                 image.src = this.activeCamera.frames[frame].image;
                 this.images[frame] = image;
                 this.scale = scale;
-                this.valid = false;
+                this.setRedraw();
             }
 
             // From image frame to camera frame
@@ -1135,6 +1145,27 @@ angular.module('CVGTool')
                 context.fillText(this.activeCamera.filename, 20, 20);
                 context.fill();
                 context.closePath();
+            }
+
+            // Draws guide lines to aid in the creation of bounding boxes
+            CanvasObject.prototype.drawGuideLines = function(context, centerX, centerY, color) {
+                context.save();
+                context.setLineDash([5, 3]);
+                // Draw horizontal line
+                context.beginPath();
+                context.strokeStyle = color;
+                context.moveTo(centerX, centerY);
+                context.lineTo(centerX + 1000, centerY);
+                context.stroke();
+                context.closePath();
+                // Draw vertical line
+                context.beginPath();
+                context.strokeStyle = color;
+                context.moveTo(centerX, centerY);
+                context.lineTo(centerX, centerY + 1000);
+                context.stroke();
+                context.closePath();
+                context.restore();
             }
 
             // Set Epiline
