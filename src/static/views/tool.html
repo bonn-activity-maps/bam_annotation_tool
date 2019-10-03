@@ -330,7 +330,6 @@
                             </div>
                         </form>
                     </div>
-                    <!--                    If Posetrack, change function's attribute -->
                     <div ng-if="isPosetrack()" class="col col-md-4">
                         <!-- <carousel style="width: 100px; height: 100px;">
                             <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
@@ -428,6 +427,11 @@
                         </form>
                     </div>
                     <div class="col col-md-4">
+                        <div uib-carousel active="active" style="width: 100px; height: 100px;">
+                            <div uib-slide ng-repeat="mugshot in selectedObjectMugshots">
+                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
+                            </div>
+                        </div>
                         <!-- <carousel style="width: 100px; height: 100px;">
                             <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
                                 <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
