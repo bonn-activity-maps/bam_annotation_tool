@@ -81,6 +81,18 @@ class FrameManager:
             log.exception('Error removing annotations in db')
             return 'Error'
 
+    # Return 'ok' if the frames of dataset and camera has been removed
+    def removeFramesByDatasetAndVideo(self, dataset, video):
+        try:
+            result = self.collection.delete_many({"dataset": dataset, "video": video})
+            if result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error removing annotations in db')
+            return 'Error'
+
     # Return path of frame if exist in DB. Ignore mongo id
     def getFramePath(self, frame, video, dataset):
         try:

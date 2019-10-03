@@ -534,5 +534,15 @@ def removeFrame():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
+# Remove and insert new frames for one video and dataset
+@app.route('/api/dataset/insertFramesError', methods=['POST'])
+def insertFrames():
+    req_data = request.get_json()
+    success, msg, status = datasetService.insertFrames(req_data['dataset'], int(req_data['video']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
