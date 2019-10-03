@@ -5,7 +5,37 @@
             <hr/> Don't forget to select a dataset from the selector in the navbar!
             <hr/> Temporal, but for now, select the frame range you want to work with. <b>If you have already annotated one range of frames and want to continue with the next range, select at least one frame of the previous range so the objects already created
             will appear in your new range, keeping the correspondences between them.</b>
-            <div syle="padding-top: 20px;" class="container">
+            <div style="padding-top: 20px;" class="container">
+                <button ng-if="videos.length <= 0" class="md-button-primary" ng-click="loadVideoTable()">Load video info</button>
+<!--                <button ng-if="videos.length > 0" class="md-button-primary" ng-click="loadVideoTable()">Refresh video info</button>-->
+            </div>
+            <div ng-if="videos.length > 0" style="padding-top: 20px;" class="container">
+                <div style="overflow-y: auto; max-height: 400px;">
+                    <table class="table table-bordered table-responsive text-center">
+                        <thead>
+                            <tr>
+                                <th class="col-md-8" colspan="5">Video Info</th>
+                            </tr>
+                            <tr>
+                                <td class="col-md-2">Name<br></td>
+                                <td class="col-md-2">Type</td>
+                                <td class="col-md-1">Start Frame<br></td>
+                                <td class="col-md-1">End Frame</td>
+                                <td class="col-md-1">Total Frames<br></td>
+                            </tr>
+                        </thead>
+
+                        <tr ng-repeat="video in videos">
+                            <td>{{video.name}}</td>
+                            <td>{{video.type}}</td>
+                            <td>{{video.frameStart}}</td>
+                            <td>{{video.frameEnd}}</td>
+                            <td>{{video.frames}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div style="padding-top: 20px;" class="container">
                 <hr />
                 <!-- Select frame intervals -->
                 <div class="form">

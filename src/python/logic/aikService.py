@@ -136,19 +136,18 @@ class AIKService:
 
         for r in result:
             if 'objects' in r:
-                if datasetType == "poseTrack" and self.safelyReadDictionary(r['objects'][0], "type") == "bbox_head":
-                    points = r['objects'][0]['keypoints']
+                points = r['objects'][0]['keypoints']
 
-                    frameResult = frameManager.getFrame(r['frame'], scene, dataset)
-                    if frameResult != 'Error':
-                        path = frameResult['path']
+                frameResult = frameManager.getFrame(r['frame'], scene, dataset)
+                if frameResult != 'Error':
+                    path = frameResult['path']
 
-                        kpX, kpY = points[0]
-                        kpX2, kpY2 = points[1]
+                    kpX, kpY = points[0]
+                    kpX2, kpY2 = points[1]
 
-                        img = cv2.imread(path)
-                        cropImg = img[kpY:kpY2, kpX:kpX2]
-                        images.append({"image": self.img2binary(cropImg)})
+                    img = cv2.imread(path)
+                    cropImg = img[kpY:kpY2, kpX:kpX2]
+                    images.append({"image": self.img2binary(cropImg)})
                 else:
                     kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
 

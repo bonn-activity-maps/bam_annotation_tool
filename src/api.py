@@ -179,6 +179,12 @@ def updateVideosFrames():
     success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get initial and ending frame number of a video
+@app.route('/api/video/getFrameInfoOfVideo', methods=['GET'])
+def getFrameInfoOfVideo():
+    success, msg, status = frameService.getFrameInfoOfVideo(request.headers['dataset'], request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### ANNOTATION ####
 

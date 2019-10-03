@@ -120,8 +120,9 @@ class AnnotationManager:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
                                               {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
             else:
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.uid": obj},
-                                        {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(10)
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.track_id": obj, "objects.type": "bbox_head"},
+                                        {"objects": {"$elemMatch": {"track_id": obj, "type": "bbox_head"}},
+                                         "frame": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
