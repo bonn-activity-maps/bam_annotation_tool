@@ -331,11 +331,11 @@
                         </form>
                     </div>
                     <div ng-if="isPosetrack()" class="col col-md-4">
-                        <!-- <carousel style="width: 100px; height: 100px;">
-                            <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
+                        <div uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
+                            <div uib-slide ng-repeat="mugshot in selectedObjectMugshots" index="$index">
                                 <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
-                            </slide>
-                        </carousel> -->
+                            </div>
+                        </div>
                         </hr>
                         <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
                     </div>
@@ -427,16 +427,11 @@
                         </form>
                     </div>
                     <div class="col col-md-4">
-                        <div uib-carousel active="active" style="width: 100px; height: 100px;">
-                            <div uib-slide ng-repeat="mugshot in selectedObjectMugshots">
+                        <div uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
+                            <div uib-slide ng-repeat="mugshot in selectedObjectMugshots" index="$index">
                                 <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
                             </div>
                         </div>
-                        <!-- <carousel style="width: 100px; height: 100px;">
-                            <slide ng-repeat="mugshot in selectedObjectMugshots" active="mugshot.active">
-                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
-                            </slide>
-                        </carousel> -->
                         </hr>
                         <button ng-click="getMugshots(objectManager.selectedObject.uid)" class="btn- btn-default">Refresh <span class="glyphicon glyphicon-refresh"></span></button>
                     </div>
