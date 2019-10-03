@@ -490,15 +490,17 @@ class DatasetService:
             integrity = False
 
         if integrity:
-            os.remove(self.STORAGE_DIR + filename)  # Remove zip file
+            if type == self.aik:    #TODO enable it again once pt fixed
+                os.remove(self.STORAGE_DIR + filename)  # Remove zip file
             result = datasetManager.createDataset(dataset, type, kpDim)
             if result == 'Error':
                 return False, 'Error creating dataset in database', 500
             else:
                 return True, result, 200
         else:
+            if type == self.aik:    #TODO enable it again once pt fixed
+                os.remove(self.STORAGE_DIR + filename)  # Remove zip file
             shutil.rmtree(self.STORAGE_DIR + dataset)
-            os.remove(self.STORAGE_DIR + filename)
             return False, 'Error on folder subsystem, check your file and try again', 400
 
     # Store item of a dataset in corresponding folder in $STORAGE_DIR
