@@ -174,7 +174,6 @@
                             <select class="form-control" id="sel1" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
                             </select>
                         </div>
-                        <!-- <div class="container" style="max-height: 300px; max-width: 700px;"> -->
                         <div class="zui-wrapper">
                             <div class="zui-scroller">
                                 <table class="zui-table">
@@ -256,34 +255,35 @@
                             <select class="form-control" id="selObjType" ng-change="changeSelectedType()" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
                             </select>
                         </div>
-                        <div class="container" style="overflow: auto; max-height: 300px; max-width: 700px;">
-                            <table class="table table-hover table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Objects</th>
-                                        <th ng-repeat="frame in frameList">{{frame}}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-repeat="object in objectManager.selectedType.objects">
-                                        <td>{{object.uid}}</td>
+                        <div class="zui-wrapper">
+                            <div class="zui-scroller">
+                                <table class="zui-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="zui-sticky-col">Objects</th>
+                                            <th ng-repeat="frame in frameList">{{frame}}</th>
+                                        </tr>
 
-                                        <th ng-repeat="f in object.frames">
-                                            <button class="btn btn-success" ng-if="hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                                    class="glyphicon glyphicon-pushpin"></span></button>
-                                            <button class="btn btn-info" ng-if="!hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
-                                                                    class="glyphicon glyphicon-pushpin"></span></button>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <button class="btn btn-primary" ng-click="createNewObject()"><span
-                                                class="glyphicon glyphicon-plus"></span></button>
-                                        </td>
-                                    </tr>
-
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="object in objectManager.selectedType.objects">
+                                            <td class="zui-sticky-col">{{object.uid}}</td>
+                                            <th ng-repeat="f in object.frames">
+                                                <button class="btn btn-success" ng-if="hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                                <button class="btn btn-info" ng-if="!hasAnnotation(f.keypoints);" ng-click="openKeyPointEditor(object,f.frame)"><span
+                                                                class="glyphicon glyphicon-pushpin"></span></button>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <td class="zui-sticky-col">
+                                                <button class="btn btn-primary" ng-click="createNewObject()"><span
+                                                                class="glyphicon glyphicon-plus"></span></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
