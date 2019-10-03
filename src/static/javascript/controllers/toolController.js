@@ -959,6 +959,7 @@ angular.module('CVGTool')
                                     var imageCoords2 = this.toImage($scope.keypointEditorData[1].points[0]);
                                     var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
                                     var height = Math.abs(imageCoords2[1] - imageCoords1[1]);
+                                    this.drawGuideLines(this.ctx, imageCoords1[0], imageCoords1[1], 'red');
                                     this.drawRectangle(this.ctx, imageCoords1[0], imageCoords1[1], width, height, 'green');
 
                                 } else {
@@ -1017,7 +1018,7 @@ angular.module('CVGTool')
                         this.scale = scale;
                         this.images[i] = image;
                     }
-                    this.valid = false;
+                    this.setRedraw();
                 }
 
             }
@@ -1036,7 +1037,7 @@ angular.module('CVGTool')
                 image.src = this.activeCamera.frames[frame].image;
                 this.images[frame] = image;
                 this.scale = scale;
-                this.valid = false;
+                this.setRedraw();
             }
 
             // From image frame to camera frame
@@ -1127,6 +1128,24 @@ angular.module('CVGTool')
                 context.fillStyle = "white";
                 context.fillText(this.activeCamera.filename, 20, 20);
                 context.fill();
+                context.closePath();
+            }
+
+            // Draws guide lines to aid in the creation of bounding boxes
+            CanvasObject.prototype.drawGuideLines = function(context, centerX, centerY, color) {
+                context.setLineDash([5, 3]);
+                // Draw horizontal line
+                context.beginPath();
+                context.strokeStyle = color;
+                context.moveTo(centerX, centerY);
+                context.lineTo(centerX + 1000, centerY);
+                context.stroke();
+                context.closePath();
+                // Draw vertical line
+                context.beginPath();
+                context.strokeStyle = color;
+                context.moveTo(centerX, centerY);
+                context.lineTo(centerX, centerY - 1000);
                 context.closePath();
             }
 
