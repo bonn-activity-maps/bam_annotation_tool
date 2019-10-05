@@ -268,6 +268,7 @@ class DatasetService:
     def addAnnotationsPT(self, dataset, annotations):
 
         for annotation in annotations:
+            print('leyendo annotation ',self.safelyReadDictionary(annotation, "id"))
             image_id = self.safelyReadDictionary(annotation, "image_id")
             bbox_head = self.safelyReadDictionary(annotation, "bbox_head")
             bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
@@ -315,8 +316,10 @@ class DatasetService:
             og_objects.append(object_bbox_head)     # Append new object
             # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
             # print(og_objects)
+            print('antes update')
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
+            print('despues update')
             if result == 'error':
                 return False
         return True
