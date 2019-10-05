@@ -284,7 +284,9 @@ class DatasetService:
             track_id = self.safelyReadDictionary(annotation, "track_id")
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
+            print('antes get frame')
             result, og_frame, _ = frameService.getFrameByID(image_id)
+            print('despues get frame')
             og_objects = []
             # Create new objects for person, bbox and bbox_head and add it to objects
             object_person = {
@@ -314,12 +316,12 @@ class DatasetService:
                 "category_id": category_id
             }
             og_objects.append(object_bbox_head)     # Append new object
+            print('finish append')
             # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
             # print(og_objects)
-            print('antes update')
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
-            print('despues update')
+            print('finish reading annotation')
             if result == 'error':
                 return False
         return True
