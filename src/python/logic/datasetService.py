@@ -210,19 +210,16 @@ class DatasetService:
 
         try:
             resultCategories = self.addCategoriesPT(categories) if categories is not None else True
-            print('finish categories')
         except:
             log.exception("Error while processing Categories")
             resultCategories = True
         try:
             resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
-            print('finish frames')
         except:
             log.exception("Error while processing Frames")
             resultFrames = True
         try:
             resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
-            print('finish annotations')
         except:
             log.exception("Error while processing Annotations")
             resultAnnotations = True
@@ -268,7 +265,6 @@ class DatasetService:
     def addAnnotationsPT(self, dataset, annotations):
 
         for annotation in annotations:
-            print('leyendo annotation ',self.safelyReadDictionary(annotation, "id"))
             image_id = self.safelyReadDictionary(annotation, "image_id")
             bbox_head = self.safelyReadDictionary(annotation, "bbox_head")
             bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
@@ -284,9 +280,7 @@ class DatasetService:
             track_id = self.safelyReadDictionary(annotation, "track_id")
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
-            print('antes get frame')
             result, og_frame, _ = frameService.getFrameByID(image_id)
-            print('despues get frame')
             og_objects = []
             # Create new objects for person, bbox and bbox_head and add it to objects
             object_person = {
@@ -316,12 +310,10 @@ class DatasetService:
                 "category_id": category_id
             }
             og_objects.append(object_bbox_head)     # Append new object
-            print('finish append')
             # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
             # print(og_objects)
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
-            print('finish reading annotation')
             if result == 'error':
                 return False
         return True
