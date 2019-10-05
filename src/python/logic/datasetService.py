@@ -210,16 +210,19 @@ class DatasetService:
 
         try:
             resultCategories = self.addCategoriesPT(categories) if categories is not None else True
+            print('finish categories')
         except:
             log.exception("Error while processing Categories")
             resultCategories = True
         try:
             resultFrames = self.addFramesPT(dataset, frames) if frames is not None else True
+            print('finish frames')
         except:
             log.exception("Error while processing Frames")
             resultFrames = True
         try:
             resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
+            print('finish annotations')
         except:
             log.exception("Error while processing Annotations")
             resultAnnotations = True
