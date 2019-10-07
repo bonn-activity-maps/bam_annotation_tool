@@ -2,7 +2,7 @@ db.video.getIndexes()
 
 db.video.createIndex( {"dataset": 1,"name":1} );
 db.frame.createIndex( {"dataset": 1, "video": 1 ,"number":1})
-db.frame.createIndex( {"frame_id": 1})
+db.frame.createIndex( {"frame_id": 1, "dataset": 1})
 
 db.annotation.createIndex( {"dataset":1, "scene": 1, "user": 1, "frame": 1})
 

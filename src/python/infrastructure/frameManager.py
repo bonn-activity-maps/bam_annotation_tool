@@ -24,9 +24,9 @@ class FrameManager:
             return 'Error'
 
     # Return info of frame by frame ID if it exists in the DB. Ignore mongo id
-    def getFrameById(self, frameId):
+    def getFrameById(self, frameId, dataset):
         try:
-            result = self.collection.find_one({"frame_id": frameId}, {"_id": 0})
+            result = self.collection.find_one({"frame_id": frameId, "dataset": dataset}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
