@@ -12,7 +12,7 @@ angular.module('CVGTool')
             if (data.type === 'loading') {
                 $scope.loadingToast(data.msg)
             } else if (data.type === 'finish') {
-                $scope.finishToast(data.msg)
+                $scope.finishToast(data.msg, data.finishType)
             } else {
                 $scope.openToast(data.type, data.msg)
             }
@@ -40,11 +40,11 @@ angular.module('CVGTool')
             // $scope.loadToast.create()
         };
 
-        $scope.finishToast = function(msg) {
+        $scope.finishToast = function(msg, finishType) {
             ngToast.dismiss($scope.loadToast);
             ngToast.create({
                 content: msg,
-                className: 'info',
+                className: finishType,
                 dismissOnTimeout: true,
                 timeout: 3000,
                 dismissButton: true
