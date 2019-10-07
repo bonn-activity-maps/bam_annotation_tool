@@ -14,6 +14,13 @@ angular.module('CVGTool')
             type: ""
         };
 
+        $scope.sessionData = {
+            frameStart: 0, // Starting frame
+            frameEnd: 0, // Ending frame
+            loadedCameras: [], // Filenames of the cameras that have been loaded
+            canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+        };
+
         $scope.activeState = $scope.user.assignedTo[0];
 
         // Set activeDataset to dataset
@@ -34,10 +41,6 @@ angular.module('CVGTool')
         $scope.logOut = function() {
             navSrvc.logout();
         };
-
-        $scope.goBackToTaskHome = function() {
-            $state.go('taskHome');
-        }
 
         // Activated when clicked on dropdown
         $scope.selectDataset = function(name) {
@@ -64,6 +67,25 @@ angular.module('CVGTool')
             if (oldVal.localeCompare('login') === 0) {
                 $scope.getUserInfo();
             }
+        });
+
+        $scope.goBackToTaskHome = function() {
+            $state.go('taskHome');
+        }
+
+        // Function to move the tool to the next range
+        $scope.goNextRange = function() {
+            // Check if its possible. Notify if its not possible.
+        }
+
+        // Function to move the tool to the previous range
+        $scope.goPreviousRange = function() {
+
+        }
+
+        // Function that is executed when a message is received. Then, it updates the info about the sessionData
+        $scope.$on('sessionDataMsg', function(evt, data) {
+            $scope.sessionData = navSrvc.getSessionData();
         });
     }
 ]);

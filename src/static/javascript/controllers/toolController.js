@@ -585,6 +585,9 @@ angular.module('CVGTool')
                         frames: []
                     });
 
+                    // Store the name in the navBar struct
+                    navSrvc.addLoadedCamera(successData.videos);
+
                     // Push empty frame spaces
                     for (var j = 0; j < $scope.numberOfFrames; j++) {
                         $scope.loadedCameras[0].frames.push({})
@@ -603,6 +606,9 @@ angular.module('CVGTool')
                             filename: successData.videos[i],
                             frames: [],
                         })
+
+                        // Store the name in the navBar struct
+                        navSrvc.addLoadedCamera(successData.videos[i]);
 
                         // Push empty frame spaces
                         for (var j = 0; j < $scope.numberOfFrames; j++) {
@@ -643,6 +649,9 @@ angular.module('CVGTool')
         // Switches the video "video" to the canvas specified by "number"
         $scope.switchVideo = function(video, number) {
             $scope.canvases[number - 1].setCamera(video); // Set the camera
+
+            // Updatethe navBar struct
+            navSrvc.setCanvasCamera(video.filename, number);
 
             // When the video is set in a canvas, remove it from the array of loadedCameras
             for (var i = 0; i < $scope.loadedCameras.length; i++) {

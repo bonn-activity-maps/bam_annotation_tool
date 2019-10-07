@@ -85,7 +85,12 @@ angular.module('CVGTool')
             if (navSrvc.getActiveDataset().type.localeCompare("actionInKitchen") == 0 && $scope.slider.from == 0) {
                 $scope.slider.from = 1;
             }
+            // Update navBar info
+            navSrvc.setFrameStart($scope.slider.from);
+            navSrvc.setFrameEnd($scope.slider.to);
+            navSrvc.setFrameRange($scope.slider.to - $scope.slider.from);
 
+            // Go to the tool screen
             $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to } });
         };
 

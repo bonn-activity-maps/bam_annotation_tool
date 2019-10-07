@@ -35,9 +35,11 @@
 
             </ul>
 
-            <!-- Button to return to taskHome -->
+            <!-- Tool control buttons -->
             <ul class="nav navbar-nav" ng-if="user.role=='user' && activeState == 'tool'">
+                <button class="btn btn-default" ng-click=""><span class="glyphicon glyphicon-chevron-left"></span>-{{sessionData.frameEnd - sessionData.frameStart}}</button>
                 <button class="btn btn-default" ng-click="goBackToTaskHome()">Finish & return</button>
+                <button class="btn btn-default" ng-click="">+{{sessionData.frameEnd - sessionData.frameStart}}<span class="glyphicon glyphicon-chevron-right"></span></button>
             </ul>
 
             <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
