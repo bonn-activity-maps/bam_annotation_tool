@@ -1686,8 +1686,8 @@ angular.module('CVGTool')
         // Callback function of updateAnnotationPT
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
             sendMessage("success", "Annotation updated!");
-            // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
-            $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
+            $scope.interpolate(objectUid, objectType, frameTo, false); //TODO: check in the future
+            // $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
         };
 
         // Function to save the Annotation for PT
@@ -1704,25 +1704,30 @@ angular.module('CVGTool')
         }
 
         // Auxiliar callback function for the interpolation
-        var callbackInterpolate = function(objectUid, frames) {
-            $scope.retrieveAnnotation(objectUid, frames);
+        var callbackInterpolate = function(objectUid, frames, objectType) {
+            if ($scope.isPosetrack()) {
+                $scope.retrieveAnnotationPT(objectUid, objectType, frames);
+            } else {
+                $scope.retrieveAnnotation(objectUid, frames);
+            }
+
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo, deleting) {
             if (frameTo === $scope.frameFrom) {
-                callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+                callbackInterpolate(objectUid, [frameTo], objectType); // If its not possible to interpolate, jump this step
                 return;
             }
 
             // If we were deleting the point, dont interpolate
             if (deleting) {
-                callbackInterpolate(objectUid, [frameTo]);
+                callbackInterpolate(objectUid, [frameTo], objectType);
                 return;
             }
 
             // Find the closest previous annotated frame for that object
-            var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
+            var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()]; //TODO change UID to track_id
             var frameFrom = null;
             for (var i = frameTo - 1; i >= Math.max(1, frameTo - 7); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
@@ -1737,8 +1742,16 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate, sendMessage);
-            } else callbackInterpolate(objectUid, [frameTo]);
+                if ($scope.isPosetrack()){
+                    toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                        $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
+                        callbackInterpolate, sendMessage);
+                } else {
+                    toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                        $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType,
+                        callbackInterpolate, sendMessage);
+                }
+            } else callbackInterpolate(objectUid, [frameTo], objectType);
 
         }
 
