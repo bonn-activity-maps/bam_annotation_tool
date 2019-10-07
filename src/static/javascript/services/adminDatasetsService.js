@@ -30,9 +30,9 @@ angular.module('CVGTool')
                         'type': type
                     }
                 }).then(function successCallback(response) {
-                    callback('success', 'Load data finished')
+                    callback('finish', 'Load data finished', 'success')
                 }, function errorCallback(response) {
-                    callback('danger', response.data.msg)
+                    callback('finish', response.data.msg, 'danger')
                 });
             },
 
