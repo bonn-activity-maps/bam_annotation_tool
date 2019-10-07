@@ -266,52 +266,63 @@ class DatasetService:
 
         for annotation in annotations:
             image_id = self.safelyReadDictionary(annotation, "image_id")
-            bbox_head = self.safelyReadDictionary(annotation, "bbox_head")
-            bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
-                              [bbox_head[2], bbox_head[3]]]
-            bbox = self.safelyReadDictionary(annotation, "bbox")
-            bbox_keypoints = [[bbox[0], bbox[1]],
-                              [bbox[2], bbox[3]]]
-            keypoints = self.safelyReadDictionary(annotation, "keypoints")
-            person_keypoints = []   # Keypoints of the skeleton, ordered
-            # Create array of 3d keypoints (z = visibility)
-            for i in range(0, len(keypoints), 3):
-                person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
+            # Read invariable data
             track_id = self.safelyReadDictionary(annotation, "track_id")
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
             result, og_frame, _ = frameService.getFrameByID(image_id, dataset)
             og_objects = []
-            # Create new objects for person, bbox and bbox_head and add it to objects
-            object_person = {
-                "uid": id,
-                "type": "person",
-                "keypoints": person_keypoints,
-                "validate": "unchecked",
-                "track_id": track_id,
-                "category_id": category_id
-            }
-            og_objects.append(object_person)        # Append new object
-            object_bbox = {
-                "uid": id,
-                "type": "bbox",
-                "keypoints": self.transformToXYXY(bbox_keypoints),
-                "validate": "unchecked",
-                "track_id": track_id,
-                "category_id": category_id
-            }
-            og_objects.append(object_bbox)          # Append new object
-            object_bbox_head = {
-                "uid": id,
-                "type": "bbox_head",
-                "keypoints": self.transformToXYXY(bbox_head_keypoints),
-                "validate": "unchecked",
-                "track_id": track_id,
-                "category_id": category_id
-            }
-            og_objects.append(object_bbox_head)     # Append new object
-            # print("OG OBJECTS of annotation scene ", og_frame["video"], og_frame["number"])
-            # print(og_objects)
+            # Read variable data (Data that may or may not be
+            try:
+                bbox_head = self.safelyReadDictionary(annotation, "bbox_head")
+                bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
+                                  [bbox_head[2], bbox_head[3]]]
+                # Create object for bbox_head and add it to the objects list
+                object_bbox_head = {
+                    "uid": id,
+                    "type": "bbox_head",
+                    "keypoints": self.transformToXYXY(bbox_head_keypoints),
+                    "validate": "unchecked",
+                    "track_id": track_id,
+                    "category_id": category_id
+                }
+                og_objects.append(object_bbox_head)     # Append new object
+            except:
+                log.exception("Error reading bbox_head")
+            try:
+                bbox = self.safelyReadDictionary(annotation, "bbox")
+                bbox_keypoints = [[bbox[0], bbox[1]],
+                                  [bbox[2], bbox[3]]]
+                object_bbox = {
+                    "uid": id,
+                    "type": "bbox",
+                    "keypoints": self.transformToXYXY(bbox_keypoints),
+                    "validate": "unchecked",
+                    "track_id": track_id,
+                    "category_id": category_id
+                }
+                og_objects.append(object_bbox)          # Append new object
+            except:
+                log.exception("Error reading bbox")
+            keypoints = self.safelyReadDictionary(annotation, "keypoints")
+            person_keypoints = []   # Keypoints of the skeleton, ordered
+            # Create array of 3d keypoints (z = visibility)
+            try:
+                for i in range(0, len(keypoints), 3):
+                    person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
+                object_person = {
+                    "uid": id,
+                    "type": "person",
+                    "keypoints": person_keypoints,
+                    "validate": "unchecked",
+                    "track_id": track_id,
+                    "category_id": category_id
+                }
+                og_objects.append(object_person)        # Append new object
+            except:
+                log.exception("Error reading person")
+
+            # Update annotation with the resulting objects
             result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
             if result == 'error':
