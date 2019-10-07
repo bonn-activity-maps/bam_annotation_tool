@@ -280,7 +280,7 @@ class DatasetService:
             track_id = self.safelyReadDictionary(annotation, "track_id")
             category_id = 1
             id = self.safelyReadDictionary(annotation, "id")
-            result, og_frame, _ = frameService.getFrameByID(image_id)
+            result, og_frame, _ = frameService.getFrameByID(image_id, dataset)
             og_objects = []
             # Create new objects for person, bbox and bbox_head and add it to objects
             object_person = {
