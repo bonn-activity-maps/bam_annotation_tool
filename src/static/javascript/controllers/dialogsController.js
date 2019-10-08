@@ -315,7 +315,6 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            console.log($scope.videosSelected)
             $mdDialog.hide($scope.videosSelected);
         };
 

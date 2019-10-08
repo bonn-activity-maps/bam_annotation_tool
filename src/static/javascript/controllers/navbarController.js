@@ -84,7 +84,6 @@ angular.module('CVGTool')
         // Function to move the tool to the next range
         $scope.goNextRange = function() {
             // TODO: Check if its possible. Notify if its not possible.
-            console.log($scope.sessionData)
             $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
         }
 

@@ -647,6 +647,9 @@ angular.module('CVGTool')
                     loadedCameras: cams
                 }
             }).then(function(successData) {
+                if ($scope.isPosetrack()) {
+                    successData = { videos: [successData.videos] }
+                }
                 $scope.createCameras(successData);
                 $scope.fillCameras(successData);
             });
@@ -654,57 +657,33 @@ angular.module('CVGTool')
 
         // Function that creates the camera objects
         $scope.createCameras = function(cameraNames) {
-            if ($scope.isPosetrack()) {
-                // First, create the structure for the new cameras
+            for (var i = 0; i < cameraNames.videos.length; i++) {
                 $scope.loadedCameras.push({
-                    filename: cameraNames.videos,
-                    frames: []
-                });
+                    filename: cameraNames.videos[i],
+                    frames: [],
+                })
 
                 // Store the name in the navBar struct
-                navSrvc.addLoadedCamera(cameraNames.videos);
+                navSrvc.addLoadedCamera(cameraNames.videos[i]);
 
                 // Push empty frame spaces
                 for (var j = 0; j < $scope.numberOfFrames; j++) {
-                    $scope.loadedCameras[0].frames.push({})
-                }
-            } else {
-                // First, create the structure for the new cameras
-                for (var i = 0; i < cameraNames.videos.length; i++) {
-                    $scope.loadedCameras.push({
-                        filename: cameraNames.videos[i],
-                        frames: [],
-                    })
-
-                    // Store the name in the navBar struct
-                    navSrvc.addLoadedCamera(cameraNames.videos[i]);
-
-                    // Push empty frame spaces
-                    for (var j = 0; j < $scope.numberOfFrames; j++) {
-                        $scope.loadedCameras[i].frames.push({})
-                    }
+                    $scope.loadedCameras[i].frames.push({})
                 }
             }
+
         }
 
         // Function that fills the cameras as needed
         $scope.fillCameras = function(successData) {
-            //  Make frame requests
-            if ($scope.isPosetrack()) {
-                for (var i = 0;
-                    ($scope.frameFrom + i) <= $scope.frameTo; i++) {
-                    toolSrvc.getFrame(successData.videos, $scope.frameFrom + i, $scope.activeDataset.name,
-                        $scope.activeDataset.type, sendMessage);
-                }
-            } else {
-                for (var i = 0;
-                    ($scope.frameFrom + i) <= $scope.frameTo; i++) {
-                    for (var j = 0; j < successData.videos.length; j++) {
-                        toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
-                            $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
-                    }
+            for (var i = 0;
+                ($scope.frameFrom + i) <= $scope.frameTo; i++) {
+                for (var j = 0; j < successData.videos.length; j++) {
+                    toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
+                        $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
                 }
             }
+
         }
 
         // Function that opens the dialog in charge of moving one camera to one canvas
@@ -1955,16 +1934,11 @@ angular.module('CVGTool')
 
         // Function that return the available objects
         $scope.retrieveAnnotations = function() {
-            dataset = $scope.activeDataset;
-
-            if (dataset.type.localeCompare("poseTrack") === 0) { // Check the dataset type to select the correct value for "scene"
-                console.log("Posetrack does not load annotations now.")
-            } else if (dataset.type.localeCompare("actionInKitchen") === 0) {
-                for (var i = 0; i < $scope.frameList.length; i++) {
-                    toolSrvc.getAnnotationOfFrame(dataset.name, $scope.activeDataset.type, $scope.frameList[i],
-                        dataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects, sendMessage);
-                }
+            for (var i = 0; i < $scope.frameList.length; i++) {
+                toolSrvc.getAnnotationOfFrame($scope.activeDataset.name, $scope.activeDataset.type, $scope.frameList[i],
+                    $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects, sendMessage);
             }
+
         };
 
         $scope.retrieveAnnotationsPT = function() {
