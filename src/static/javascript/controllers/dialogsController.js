@@ -319,19 +319,6 @@ angular.module('CVGTool')
             $mdDialog.hide($scope.videosSelected);
         };
 
-        // Function that will be called everytime a frame has been retrieved from the server
-        var callbackRetrievingFrame = function(image, fileName, frame) {
-            $scope.retrievedFrames.push({ // Store the retrieved frame
-                image: image,
-                filename: fileName,
-                frame: parseInt(frame)
-            });
-
-            // Check if we are done
-            if ($scope.retrievedFrames.length == $scope.targetFrames) {
-                $scope.end();
-            }
-        };
         $scope.getListOfVideos();
 
     }

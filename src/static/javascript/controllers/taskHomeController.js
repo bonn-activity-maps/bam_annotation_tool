@@ -91,7 +91,7 @@ angular.module('CVGTool')
             navSrvc.setFrameRange($scope.slider.to - $scope.slider.from);
 
             // Go to the tool screen
-            $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to } });
+            $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to, originalRange: $scope.slider.to - $scope.slider.from, loadedCameras: [], canvasCameras: ["", "", "", ""], fromTaskHome: true } });
         };
 
         // Send message to toast

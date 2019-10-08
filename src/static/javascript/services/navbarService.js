@@ -58,6 +58,17 @@ angular.module('CVGTool')
                 updateSessionData();
             },
 
+            // Reset sessionData
+            resetSessionData: function() {
+                sessionData = {
+                    frameStart: 0, // Starting frame
+                    frameEnd: 0, // Ending frame
+                    frameRange: 0, // Range
+                    loadedCameras: [], // Filenames of the cameras that have been loaded
+                    canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+                };
+            },
+
             // Set camera to a specific canvas in the sessionData struct
             setCanvasCamera: function(camera, canvasID) {
                 // If the canvas has a camera, move it to the loaded cameras
