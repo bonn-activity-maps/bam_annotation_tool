@@ -35,9 +35,9 @@ angular.module('CVGTool')
                 content: msg,
                 className: 'info',
                 dismissOnTimeout: false,
-                dismissButton: false
+                dismissButton: false,
+                dismissOnClick: false
             });
-            // $scope.loadToast.create()
         };
 
         $scope.finishToast = function(msg, finishType) {
