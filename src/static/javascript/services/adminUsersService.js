@@ -37,7 +37,7 @@ angular.module('CVGTool')
                 });
             },
 
-            createUser: function (userName, userEmail, userRole, userDatasets, callbackSuccess, callbackError) {
+            createUser: function (userName, userEmail, userRole, userDatasets, callbackSuccess, callbackMsg) {
                 $http({
                     method: 'POST',
                     url: 'api/user/createUser',
@@ -48,10 +48,10 @@ angular.module('CVGTool')
                         'assignedTo': userDatasets
                     }
                 }).then(function successCallback(response) {
-                    console.log('User created successfully');
+                    callbackMsg('finish', 'User created succesfully', 'success');
                     callbackSuccess(response.data.msg)
                 }, function errorCallback(response) {
-                    callbackError('danger', 'Error while creating user: ' + response.data.msg);
+                    callbackMsg('finish', 'Error while creating user: ' + response.data.msg, 'danger');
                 })
             },
 
@@ -68,9 +68,9 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackUsers();
-                    callbackMsg('success', 'User updated succesfully');
+                    callbackMsg('finish', 'User updated succesfully', 'success');
                 }, function errorCallback(response) {
-                    callbackMsg('danger', 'Error while updating user: ' + response.data.msg);
+                    callbackMsg('finish', 'Error while updating user: ' + response.data.msg, 'danger');
                 })
             },
 

@@ -146,7 +146,7 @@ angular.module('CVGTool')
 
         // Function to retrieve data of dataset
         $scope.readData = function(file, type) {
-            //$scope.unwrapping = true;
+            sendMessage('loading', 'Loading data, please wait');
             adminDatasetsSrvc.readData(file, type, sendMessage);  /*, navSrvc.getActiveDataset(), readDataCallback);*/
         };
 
@@ -156,8 +156,8 @@ angular.module('CVGTool')
         };
 
         // Send message to toast
-        var sendMessage = function(type, msg) {
-            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
+        var sendMessage = function(type, msg, finishType) {
+            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg, 'finishType': finishType});
         };
 
         $scope.getListOfDatasets();

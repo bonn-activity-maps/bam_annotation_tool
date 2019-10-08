@@ -106,7 +106,7 @@ angular.module('CVGTool')
             // let datasets = [];
             // datasets.push($scope.editUser.dataset);
 
-            console.log($scope.editUser);
+            sendMessage('loading', 'Creating user, please wait');
             adminUsersSrvc.createUser($scope.editUser.username, $scope.editUser.email, $scope.editUser.role,
                 $scope.editUser.dataset, successCreation, sendMessage);
         };
@@ -128,8 +128,8 @@ angular.module('CVGTool')
 
         // Function that sends the order to update a user in the backend.
         $scope.updateUser = function() {
-            // let datasets = [];
-            // datasets.push($scope.editUser.dataset);
+            sendMessage('loading', 'Updating user, please wait');
+
             adminUsersSrvc.updateUser($scope.oldName, $scope.editUser.username, $scope.editUser.email,
                 $scope.editUser.role, $scope.editUser.dataset, $scope.getUsers, sendMessage);
             $scope.mode = "creation";
@@ -170,8 +170,8 @@ angular.module('CVGTool')
         };
 
         // Send message to toast
-        var sendMessage = function(type, msg) {
-            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg});
+        var sendMessage = function(type, msg, finishType) {
+            $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg, 'finishType': finishType});
         };
 
         $scope.getUserRole();
