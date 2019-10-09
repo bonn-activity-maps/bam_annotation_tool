@@ -85,8 +85,13 @@ angular.module('CVGTool')
             if (navSrvc.getActiveDataset().type.localeCompare("actionInKitchen") == 0 && $scope.slider.from == 0) {
                 $scope.slider.from = 1;
             }
+            // Update navBar info
+            navSrvc.setFrameStart($scope.slider.from);
+            navSrvc.setFrameEnd($scope.slider.to);
+            navSrvc.setFrameRange($scope.slider.to - $scope.slider.from);
 
-            $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to } });
+            // Go to the tool screen
+            $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to, originalRange: $scope.slider.to - $scope.slider.from, loadedCameras: [], canvasCameras: ["", "", "", ""], fromTaskHome: true } });
         };
 
         // Send message to toast

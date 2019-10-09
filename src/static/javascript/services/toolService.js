@@ -369,9 +369,7 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
-            }, function errorCallback(response) {
-                console.log(response)
-            })
+            }, function errorCallback(response) {})
         }
     }
 });
