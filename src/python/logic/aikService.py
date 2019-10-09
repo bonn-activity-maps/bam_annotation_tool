@@ -19,6 +19,9 @@ frameManager = FrameManager()
 
 class AIKService:
 
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
+
     # Method to read a dictionary key that may not exist.
     def safelyReadDictionary(self, dict, key):
         try:
@@ -135,19 +138,21 @@ class AIKService:
         images = []     # Final cropped images
 
         for r in result:
-            if 'objects' in r:
-                points = r['objects'][0]['keypoints']
+            if 'objects' in r and r['objects'][0]['keypoints'] != []:
 
-                frameResult = frameManager.getFrame(r['frame'], scene, dataset)
-                if frameResult != 'Error':
-                    path = frameResult['path']
+                if datasetType == self.pt:
+                    points = r['objects'][0]['keypoints']
 
-                    kpX, kpY = points[0]
-                    kpX2, kpY2 = points[1]
+                    frameResult = frameManager.getFrame(r['frame'], scene, dataset)
+                    if frameResult != 'Error':
+                        path = frameResult['path']
 
-                    img = cv2.imread(path)
-                    cropImg = img[kpY:kpY2, kpX:kpX2]
-                    images.append({"image": self.img2binary(cropImg)})
+                        kpX, kpY = points[0]
+                        kpX2, kpY2 = points[1]
+
+                        img = cv2.imread(path)
+                        cropImg = img[kpY:kpY2, kpX:kpX2]
+                        images.append({"image": self.img2binary(cropImg)})
                 else:
                     kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
 
