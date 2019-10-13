@@ -14,7 +14,21 @@ angular.module('CVGTool')
             type: ""
         };
 
+        $scope.sessionData = {
+            frameStart: 0, // Starting frame
+            frameEnd: 0, // Ending frame
+            frameRange: 0, // Range of frames
+            loadedCameras: [], // Filenames of the cameras that have been loaded
+            canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+        };
+
         $scope.activeState = $scope.user.assignedTo[0];
+
+        // Auxiliar function to check if the actual dataset is posetrack
+        $scope.isPosetrack = function() {
+            return navSrvc.isPosetrack();
+        }
+
 
         // Set activeDataset to dataset
         $scope.setActiveDataset = function(dataset) {
@@ -34,10 +48,6 @@ angular.module('CVGTool')
         $scope.logOut = function() {
             navSrvc.logout();
         };
-
-        $scope.goBackToTaskHome = function() {
-            $state.go('taskHome');
-        }
 
         // Activated when clicked on dropdown
         $scope.selectDataset = function(name) {
@@ -64,6 +74,37 @@ angular.module('CVGTool')
             if (oldVal.localeCompare('login') === 0) {
                 $scope.getUserInfo();
             }
+        });
+
+        $scope.goBackToTaskHome = function() {
+            navSrvc.resetSessionData();
+            $state.go('taskHome');
+        }
+
+        // Function to move the tool to the next range
+        $scope.goNextRange = function() {
+            // TODO: Check if its possible. Notify if its not possible.
+            $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+        }
+
+        // Function to move the tool to the previous range
+        $scope.goPreviousRange = function() {
+            var minFrame = 0;
+            if (!$scope.isPosetrack()) {
+                minFrame = 1;
+            }
+
+            // Check if we can go to the previous range
+            if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < minFrame) {
+                $state.go('tool', { obj: { from: minFrame, to: minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+            } else {
+                $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+            }
+        }
+
+        // Function that is executed when a message is received. Then, it updates the info about the sessionData
+        $scope.$on('sessionDataMsg', function(evt, data) {
+            $scope.sessionData = navSrvc.getSessionData();
         });
     }
 ]);
