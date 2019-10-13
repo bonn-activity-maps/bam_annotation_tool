@@ -250,7 +250,7 @@ class AnnotationManager:
 
         # Add object (uid, type, kps) and labels only if it's in objects
         if datasetType is not None and datasetType == self.pt:
-            category_id = objects["category_id"]
+            category_id = objects["category_id"] if "category_id" in objects else 1
             track_id = objects["track_id"]
             if "labels" in objects:
                 labels = objects["labels"]

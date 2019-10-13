@@ -270,7 +270,9 @@ def interpolateAnnotation():
     # uid, startFrame y endFrame
     success, msg, status = annotationService.interpolateAnnotation(req_data['dataset'], req_data['datasetType'],
                                                          req_data['scene'], req_data['user'],
-                                                         req_data['startFrame'], req_data['endFrame'], req_data['uidObject'])
+                                                         req_data['startFrame'], req_data['endFrame'],
+                                                         req_data['uidObject'], req_data['objectType'],
+                                                         req_data['uidObject2'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #####

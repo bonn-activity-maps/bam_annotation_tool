@@ -1705,6 +1705,7 @@ angular.module('CVGTool')
 
         // Auxiliar callback function for the interpolation
         var callbackInterpolate = function(objectUid, frames, objectType) {
+            console.log("callback interpolate");
             if ($scope.isPosetrack()) {
                 $scope.retrieveAnnotationPT(objectUid, objectType, frames);
             } else {
@@ -1715,7 +1716,9 @@ angular.module('CVGTool')
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo, deleting) {
+            console.log("interpolate call", $scope.frameFrom, frameTo);
             if (frameTo === $scope.frameFrom) {
+                console.log("yikes, not possible");
                 callbackInterpolate(objectUid, [frameTo], objectType); // If its not possible to interpolate, jump this step
                 return;
             }
@@ -1727,9 +1730,12 @@ angular.module('CVGTool')
             }
 
             // Find the closest previous annotated frame for that object
-            var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()]; //TODO change UID to track_id
+            var object = $scope.isPosetrack() ?
+                $scope.objectManager.objectTypes[objectType.toString()].objects[$scope.objectManager.selectedObject.uid.toString()] :
+                $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max(1, frameTo - 7); i--) {
+            console.log(object);
+            for (var i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - 7); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
@@ -1737,6 +1743,7 @@ angular.module('CVGTool')
             }
 
             // Interpolate if possible
+            console.log("interpolating: ", frameFrom, frameTo);
             if (frameFrom != null) {
                 var frameArray = [];
                 for (var i = frameFrom; i <= frameTo; i++) {
@@ -1745,10 +1752,10 @@ angular.module('CVGTool')
                 if ($scope.isPosetrack()){
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
-                        callbackInterpolate, sendMessage);
+                        object.frames[frameFrom].original_uid, callbackInterpolate, sendMessage);
                 } else {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                        $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType,
+                        $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType, 0,
                         callbackInterpolate, sendMessage);
                 }
             } else callbackInterpolate(objectUid, [frameTo], objectType);
@@ -1779,6 +1786,7 @@ angular.module('CVGTool')
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
             if (angular.equals({}, annotation)) return; // Check if we received something
+            console.log(annotation);
             if ($scope.isPosetrack()) {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
                 $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
