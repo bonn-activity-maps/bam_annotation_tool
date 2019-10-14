@@ -54,13 +54,13 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-2">
-                                <button ng-click="previousFrame()" class="btn btn-default"><span
+                                <button ng-click="previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
                                         class="glyphicon glyphicon-chevron-left"></span></button>
-                                <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default"><span
+                                <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
                                         class="glyphicon glyphicon-play"></button>
-                                <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default"><span
+                                <button ng-if="isPlaying" ng-click="switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
                                         class="glyphicon glyphicon-pause"></button>
-                                <button ng-click="nextFrame()" class="btn btn-default"><span
+                                <button ng-click="nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
                                         class="glyphicon glyphicon-chevron-right"></span></button>
                             </div>
                             <div class="col-md-10">

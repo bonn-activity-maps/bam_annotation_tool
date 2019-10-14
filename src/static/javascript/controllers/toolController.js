@@ -1,7 +1,8 @@
 angular.module('CVGTool')
 
-.controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', '$stateParams',
-    function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, $stateParams) {
+.controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', 'hotkeys', '$stateParams',
+    function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, hotkeys, $stateParams) {
+
         /////////
         // INITIALIZE STARTING VARIABLES
         /////////
@@ -2018,9 +2019,31 @@ angular.module('CVGTool')
             // Fill all cameras
             $scope.fillCameras(camerasToLoad);
         }
-
         /////////
         // END OF INITIALIZATION CALLS
+        /////////
+
+        /////////
+        // KEYBINDINGS
+        /////////
+        hotkeys.bindTo($scope).add({
+                combo: 'right',
+                description: 'Go to the next frame',
+                callback: function() { $scope.nextFrame() }
+            })
+            .add({
+                combo: 'left',
+                description: 'Go to the previous frame',
+                callback: function() { $scope.previousFrame() }
+            })
+            .add({
+                combo: 'space',
+                description: 'Play/Pause',
+                callback: function() { $scope.switchPlay() }
+            });
+
+        /////////
+        // END OF KEYBINDINGS 
         /////////
     }
 ]);
