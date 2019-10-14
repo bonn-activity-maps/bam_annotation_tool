@@ -52,8 +52,12 @@
             <div class="row" style="height: 10%">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <div class="row">
-                            <div class="col-md-2">
+                        <div class="col-md-2">
+                            <div class="row">
+                                <select class="form-control" id="selFrames" ng-change="test" ng-model="frameJumpNumber" ng-options="option.id as option.tag for option in frameJumpNumberOptions" convert-to-number>                     
+                                    </select>
+                            </div>
+                            <div class="row">
                                 <button ng-click="previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
                                         class="glyphicon glyphicon-chevron-left"></span></button>
                                 <button ng-if="!isPlaying" ng-click="switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
@@ -63,9 +67,9 @@
                                 <button ng-click="nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
                                         class="glyphicon glyphicon-chevron-right"></span></button>
                             </div>
-                            <div class="col-md-10">
-                                <rzslider rz-slider-model="slider.value" rz-slider-options="slider.options"></rzslider>
-                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <rzslider rz-slider-model="slider.value" rz-slider-options="slider.options"></rzslider>
                         </div>
                     </div>
                 </div>

@@ -11,6 +11,8 @@ angular.module('CVGTool')
         $scope.frameTo = $stateParams.obj.to;
         $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom;
         $scope.fromTaskHome = $stateParams.obj.fromTaskHome;
+        $scope.frameJumpNumber = 1;
+        $scope.frameJumpNumberOptions = [{ id: 1, tag: "1" }, { id: 2, tag: "2" }, { id: 3, tag: "3" }, { id: 4, tag: "4" }, { id: 5, tag: "5" }, { id: 6, tag: "6" }, { id: 7, tag: "7" }, { id: 8, tag: "8" }, { id: 9, tag: "9" }, { id: 10, tag: "10" }];
         $scope.activeDataset = navSrvc.getActiveDataset(); // Get the active dataset information
 
         /////////
@@ -556,14 +558,14 @@ angular.module('CVGTool')
             $scope.isPlaying = !$scope.isPlaying;
 
             if ($scope.isPlaying == true) {
-                promise = $interval(function() { $scope.nextFrame(); }, 500);
+                promise = $interval(function() { $scope.nextFrameAlwaysOne(); }, 500);
             } else {
                 $interval.cancel(promise);
             }
         }
 
         // Function that increases the frame of the timeline by 1
-        $scope.nextFrame = function() {
+        $scope.nextFrameAlwaysOne = function() {
             if ($scope.slider.value + 1 > $scope.slider.options.ceil) {
                 $scope.slider.value = $scope.slider.options.ceil;
                 $scope.isPlaying = false; // If we are in the last frame, stop "playing"
@@ -573,12 +575,23 @@ angular.module('CVGTool')
             }
         }
 
+        // Function that increases the frame of the timeline by frameJumpNumber
+        $scope.nextFrame = function() {
+            if ($scope.slider.value + $scope.frameJumpNumber > $scope.slider.options.ceil) {
+                $scope.slider.value = $scope.slider.options.ceil;
+                $scope.isPlaying = false; // If we are in the last frame, stop "playing"
+                $interval.cancel(promise); // If we are in the last frame, stop the $interval
+            } else {
+                $scope.slider.value += $scope.frameJumpNumber;
+            }
+        }
+
         // Function that decreases the frame of the timeline by 1
         $scope.previousFrame = function() {
-            if ($scope.slider.value - 1 < $scope.slider.options.floor) {
+            if ($scope.slider.value - $scope.frameJumpNumber < $scope.slider.options.floor) {
                 $scope.slider.value = $scope.slider.options.floor;
             } else {
-                $scope.slider.value -= 1;
+                $scope.slider.value -= $scope.frameJumpNumber;
             }
         }
 
