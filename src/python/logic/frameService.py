@@ -35,8 +35,8 @@ class FrameService:
             return True, result, 200
 
     # Return frames info
-    def getFrameInfoOfVideo(self, video, dataset):
-        result = frameManager.getFrames(dataset, video)
+    def getFrameInfoOfVideo(self, dataset, video):
+        result = frameManager.getFrames(video, dataset)
         if result == 'Error':
             return False, 'Error searching frame', 400
         else:
