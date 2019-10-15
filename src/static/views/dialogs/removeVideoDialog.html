@@ -5,8 +5,8 @@
             <p>Are your sure?</p>
         </md-dialog-content>
         <md-dialog-actions>
-            <button ng-click="cancel()" class="btn btn-primary">Cancel</button>
-            <button ng-click="remove()" class="btn btn-danger">Delete</button>
+            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+            <button ng-click="remove()" class="btn btn-primary">Delete</button>
         </md-dialog-actions>
     </div>
     <div class="panel" ng-if="mode == 'error'">
@@ -16,7 +16,7 @@
             </div>
         </md-dialog-content>
         <md-dialog-actions>
-            <button ng-click="cancel()" class="btn btn-primary">Close</button>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
         </md-dialog-actions>
     </div>
     <div class="panel" ng-if="mode == 'success'">
@@ -26,7 +26,7 @@
             </div>
         </md-dialog-content>
         <md-dialog-actions>
-            <button ng-click="cancel()" class="btn btn-primary">Close</button>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
         </md-dialog-actions>
     </div>
 </md-dialog>
