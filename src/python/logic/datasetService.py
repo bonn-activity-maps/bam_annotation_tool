@@ -604,14 +604,6 @@ class DatasetService:
         save_path = os.path.join(self.STORAGE_DIR, secure_filename(filename))
         return self.processDataset(save_path, filename, type)
 
-    # Return info videos, duration and frames
-    def getVideos(self, dataset):
-        result = videoManager.getVideos(dataset)
-        if result == 'Error':
-            return False, 'Error pulling videos from database', 400
-        else:
-            return True, result, 200
-
     # Return the corresponding frame of video
     def getVideoFrame(self, video, frame, dataset, type):
         # Get path of frame
@@ -791,6 +783,41 @@ class DatasetService:
                 return False, 'Error creating dataset', 400
             else:
                 return self.addVideosAIK(name) if type == self.aik else self.addVideosPT(name)
+
+    # Return info of video
+    def getVideo(self, dataset, video, datasetType):
+        result = videoManager.getVideo(dataset, video, datasetType)
+        if result == 'Error':
+            return False, 'Error pulling video from database', 400
+        else:
+            return True, result, 200
+
+    # Return info videos, duration and frames
+    def getVideos(self, dataset):
+        result = videoManager.getVideos(dataset)
+        if result == 'Error':
+            return False, 'Error pulling videos from database', 400
+        else:
+            return True, result, 200
+
+    # Return max frame of video
+    # PT: total #frames is not the last frame
+    def getMaxFrame(self, dataset, video, datasetType):
+        if datasetType == self.pt:
+            result, frames, _ = frameService.getFrameInfoOfVideo(dataset, video)
+
+            if not result:
+                return False, 'Error getting max frame', 400
+            else:
+                return True, {"frames": frames[1]['number']}, 200
+
+        else:
+            result = videoManager.getVideo(dataset, video, datasetType)
+
+            if result == 'Error':
+                return False, 'Error getting max frame', 400
+            else:
+                return True, {"frames": result['frames']}, 200
 
 
     ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES

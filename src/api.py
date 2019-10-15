@@ -157,6 +157,12 @@ def readData():
     success, msg, status = datasetService.addInfo(req_data['dataset'], req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get info of video
+@app.route('/api/dataset/getVideo', methods=['GET'])
+def getVideo():
+    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['video'],
+                                                   request.headers['datasetType'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get list of videos and length
 @app.route('/api/dataset/getVideos', methods=['GET'])
@@ -183,6 +189,13 @@ def updateVideosFrames():
 @app.route('/api/video/getFrameInfoOfVideo', methods=['GET'])
 def getFrameInfoOfVideo():
     success, msg, status = frameService.getFrameInfoOfVideo(request.headers['dataset'], request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get max frame of video
+@app.route('/api/video/getMaxFrame', methods=['GET'])
+def getMaxFrame():
+    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['video'],
+                                                   request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
