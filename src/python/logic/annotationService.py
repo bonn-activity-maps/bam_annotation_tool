@@ -286,8 +286,10 @@ class AnnotationService:
 
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, finalKpts.shape[0] - 1):
-            obj = {'uid': self.generateNewOriginalUid(abs(uidObject) % 100, scene, startFrame + i), 'type': type, 'keypoints': finalKpts[i].tolist()}
-
+            if datasetType == self.pt:
+                obj = {'uid': self.generateNewOriginalUid(abs(uidObject) % 100, scene, startFrame + i), 'type': type, 'keypoints': finalKpts[i].tolist()}
+            else:
+                obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
             result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj, datasetType)
             if result == 'Error':
                 finalResult = 'There was some error interpolating the keypoints, please check them'
