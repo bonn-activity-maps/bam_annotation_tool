@@ -24,10 +24,10 @@
         </md-dialog-content>
         <md-dialog-actions>
             <div>
-                <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
+                <button ng-click="cancel()" class="btn btn-primary">Cancel</button>
             </div>
             <div ng-if="isVideoSelected()">
-                <md-button ng-if="isVideoSelected" ng-click="end()" class="md-warn md-raised">Add</md-button>
+                <button ng-if="isVideoSelected" ng-click="end()" class="btn btn-danger">Add</button>
             </div>
         </md-dialog-actions>
         </div>

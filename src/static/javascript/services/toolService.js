@@ -239,19 +239,6 @@ angular.module('CVGTool')
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
                               uidObject2, callbackSuccess, callbackError) {
-            console.log("Interpolando bitches");
-            var data = {
-                'user': user,
-                    'dataset': dataset,
-                    'scene': scene,
-                    'startFrame': startFrame,
-                    'endFrame': endFrame,
-                    'uidObject': uidObject,
-                    'datasetType': datasetType,
-                    'objectType': objectType,
-                    'uidObject2': uidObject2
-            };
-            console.log(data);
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",

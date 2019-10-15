@@ -7,21 +7,21 @@
             </select>
             <table class="table table-bordered table-responsive text-center">
                 <thead>
-                <tr>
-                    <th class="col-md-8">Name</th>
-                    <th class="col-md-4">Size</th>
-                </tr>
+                    <tr>
+                        <th class="col-md-8">Name</th>
+                        <th class="col-md-4">Size</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr ng-if="files.length != 0" ng-repeat="file in variables.files" ng-click="selectZip(file)">
-                    <td>{{file.name}}</td>
-                    <td>{{file.size}}</td>
-                </tr>
+                    <tr ng-if="files.length != 0" ng-repeat="file in variables.files" ng-click="selectZip(file)">
+                        <td>{{file.name}}</td>
+                        <td>{{file.size}}</td>
+                    </tr>
                 </tbody>
             </table>
         </md-dialog-content>
         <md-dialog-actions>
-            <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
+            <button ng-click="cancel()" class="btn btn-primary">Close</button>
         </md-dialog-actions>
     </div>
     <div class="panel" ng-if="mode == 'progress'">
@@ -41,7 +41,7 @@
             </div>
         </md-dialog-content>
         <md-dialog-actions>
-            <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
+            <button ng-click="cancel()" class="btn btn-primary">Close</button>
         </md-dialog-actions>
     </div>
     <div class="panel" ng-if="mode == 'success'">
@@ -51,7 +51,7 @@
             </div>
         </md-dialog-content>
         <md-dialog-actions>
-            <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
+            <button ng-click="cancel()" class="btn btn-primary">Close</button>
         </md-dialog-actions>
     </div>
 </md-dialog>
