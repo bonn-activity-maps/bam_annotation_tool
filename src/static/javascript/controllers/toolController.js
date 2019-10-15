@@ -320,9 +320,6 @@ angular.module('CVGTool')
             $scope.tool = '';
         }
 
-        // $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
-        // $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
-
         // Function to minimize/maximize the keypoint editor tab
         $scope.minimizeMaximizeKeypointManagerTab = function() {
             $scope.keyPointManagerTabMinimized = !$scope.keyPointManagerTabMinimized;
@@ -1826,10 +1823,10 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                if ($scope.isPosetrack()){
+                if ($scope.isPosetrack()) {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
-                        object.frames[frameFrom].original_uid,  callbackInterpolate, sendMessage);
+                        object.frames[frameFrom].original_uid, callbackInterpolate, sendMessage);
                 } else {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType, 0,
