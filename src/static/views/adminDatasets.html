@@ -27,14 +27,14 @@
                                         <td>{{dataset.type}}</td>
                                         <td>
                                             <button ng-click="exportDataset(dataset)" class="btn btn-primary"><span class="glyphicon glyphicon-download"></button>
-                                            <button ng-click="removeDataset(dataset)" class="btn btn-warning"><span class="glyphicon glyphicon-trash"></button>
+                                            <button ng-click="removeDataset(dataset)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></button>
                                         </td>
                                         <td ng-if="selectedDataset.name != dataset.name">
                                             <button ng-click="selectDataset(dataset)" class="btn btn-primary"><span
                                                 class="glyphicon glyphicon-chevron-right"></button>
                                         </td>
                                         <td ng-if="selectedDataset.name == dataset.name">
-                                            <button ng-click="deselectDataset()" class="btn btn-warning"><span
+                                            <button ng-click="deselectDataset()" class="btn btn-danger"><span
                                                 class="glyphicon glyphicon-chevron-left"></button>
                                         </td>
                                     </tr>

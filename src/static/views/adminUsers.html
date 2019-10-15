@@ -27,7 +27,7 @@
                                     <td>{{user.dataset.toString()}}</td>
                                     <td>{{user.email}}</td>
                                     <td ng-if="user.role != 'root'">
-                                        <button ng-click="enableEdit(user)" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></button><button ng-click="removeUser(user)" class="btn btn-warning"><span class="glyphicon glyphicon-trash"></button></td>
+                                        <button ng-click="enableEdit(user)" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></button><button ng-click="removeUser(user)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></button></td>
                                 </tr>
                                 <tr ng-if="listOfUsers.length == 0">
                                     <td class="text-left">No users created for this dataset.</td>
