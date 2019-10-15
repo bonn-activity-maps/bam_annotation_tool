@@ -1549,12 +1549,18 @@ angular.module('CVGTool')
             $scope.refreshProjectionOfCanvases();
         }
 
+        // $scope.pointCreationData = {
+        //     labelIndex: null,
+        //     pID: null,
+        //     cam
+
         // Function to remove the point in the keypointEditor
         $scope.removePoint = function(index, pointID) {
             // If the pointID is -1, remove all
             if (pointID == -1) {
                 for (var i = 0; i < $scope.keypointEditorData[index].points.length; i++) {
                     $scope.keypointEditorData[index].points[i] = [];
+                    $scope.keypointEditorData[index].cameras[i] = "";
                 }
 
                 if ($scope.activeDataset.type.localeCompare("actionInKitchen") == 0) {
@@ -1562,6 +1568,7 @@ angular.module('CVGTool')
                 }
             } else {
                 $scope.keypointEditorData[index].points[pointID] = [];
+                $scope.keypointEditorData[index].cameras[pointID] = "";
             }
 
 
