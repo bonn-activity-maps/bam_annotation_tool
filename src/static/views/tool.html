@@ -149,14 +149,20 @@
         </div>
 
         <!-- Kepoint Manager Panel for AIK -->
-        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true && activeDataset.type=='actionInKitchen'">
+        <div id="keyPointManagerPanel" class="panel panel-default" style="position: absolute; width: 800px;" ng-show="keyPointManagerTab==true && activeDataset.type=='actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
                         <span class="glyphicon glyphicon-move"></span>
                     </div>
-                    <div class="col-sm-10">
+                    <div class="col-sm-9">
                         Keypoint Manager
+                    </div>
+                    <div class="col-sm-1">
+                        <button ng-if="!keyPointManagerTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointManagerTab()"><span
+                            class="glyphicon glyphicon-minus"></span></button>
+                        <button ng-if="keyPointManagerTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointManagerTab()"><span
+                                class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-sm-1">
                         <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span
@@ -164,7 +170,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
+            <div ng-show="!keyPointManagerTabMinimized" style="height: 500px;" class="panel-body">
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#3dkeypoints" target="_self">3D Keypoints</a></li>
                     <li><a data-toggle="tab" href="#actions" target="_self">Actions</a></li>
@@ -231,14 +237,20 @@
         </div>
 
         <!-- Kepoint Manager Panel for Posetrack-->
-        <div id="keyPointManagerPanelPT" class="panel panel-default" style="position: absolute; width: 800px; height: 500px;" ng-show="keyPointManagerTab==true && activeDataset.type=='poseTrack'">
+        <div id="keyPointManagerPanelPT" class="panel panel-default" style="position: absolute; width: 800px;" ng-show="keyPointManagerTab==true && activeDataset.type=='poseTrack'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
                         <span class="glyphicon glyphicon-move"></span>
                     </div>
-                    <div class="col-sm-10">
+                    <div class="col-sm-9">
                         Keypoint Manager
+                    </div>
+                    <div class="col-sm-1">
+                        <button ng-if="!keyPointManagerTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointManagerTab()"><span
+                            class="glyphicon glyphicon-minus"></span></button>
+                        <button ng-if="keyPointManagerTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointManagerTab()"><span
+                                class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-sm-1">
                         <button class="btn-invisible btn-xs" ng-click="closeKeyPointManager()"><span
@@ -246,7 +258,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
+            <div ng-show="!keyPointManagerTabMinimized" style="height: 500px;" class="panel-body">
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#2dkeypoints" target="_self">2D Keypoints</a></li>
                 </ul>
@@ -295,14 +307,20 @@
         </div>
 
         <!-- Keypoint editor mini panel PT-->
-        <div id="keyPointEditorPanelPT" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true && activeDataset.type=='poseTrack'">
+        <div id="keyPointEditorPanelPT" class="panel panel-default" style="position: absolute; width: 450px;" ng-show="keyPointEditorTab==true && activeDataset.type=='poseTrack'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
                         <span class="glyphicon glyphicon-move"></span>
                     </div>
-                    <div class="col-sm-10">
+                    <div class="col-sm-9">
                         Keypoint Editor
+                    </div>
+                    <div class="col-sm-1">
+                        <button ng-if="!keyPointEditorTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointEditorTab()"><span
+                            class="glyphicon glyphicon-minus"></span></button>
+                        <button ng-if="keyPointEditorTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointEditorTab()"><span
+                                class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-sm-1">
                         <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span
@@ -310,7 +328,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
+            <div ng-show="!keyPointEditorTabMinimized" style="height: 500px;" class="panel-body">
                 <div class="row">
                     <div class="col col-md-8">
                         <form class="form-horizontal">
@@ -393,14 +411,20 @@
         </div>
 
         <!-- Keypoint editor mini panel AIK-->
-        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 500px;" ng-show="keyPointEditorTab==true && activeDataset.type=='actionInKitchen'">
+        <div id="keyPointEditorPanel" class="panel panel-default" style="position: absolute; width: 450px;" ng-show="keyPointEditorTab==true && activeDataset.type=='actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
                         <span class="glyphicon glyphicon-move"></span>
                     </div>
-                    <div class="col-sm-10">
+                    <div class="col-sm-9">
                         Keypoint Editor
+                    </div>
+                    <div class="col-sm-1">
+                        <button ng-if="!keyPointEditorTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointEditorTab()"><span
+                            class="glyphicon glyphicon-minus"></span></button>
+                        <button ng-if="keyPointEditorTabMinimized" class="btn-invisible btn-xs" ng-click="minimizeMaximizeKeypointEditorTab()"><span
+                                class="glyphicon glyphicon-plus"></span></button>
                     </div>
                     <div class="col-sm-1">
                         <button class="btn-invisible btn-xs" ng-click="closeKeyPointEditor()"><span
@@ -408,7 +432,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
+            <div ng-show="!keyPointEditorTabMinimized" style="height: 500px;" class="panel-body">
                 <div class="row">
                     <div class="col col-md-8">
                         <form class="form-horizontal">

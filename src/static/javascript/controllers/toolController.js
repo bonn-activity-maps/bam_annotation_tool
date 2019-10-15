@@ -27,6 +27,8 @@ angular.module('CVGTool')
         $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
         $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
         $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
+        $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
+        $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
         // Mugshots
@@ -316,6 +318,19 @@ angular.module('CVGTool')
         $scope.closeKeyPointManager = function() {
             $scope.keyPointManagerTab = false;
             $scope.tool = '';
+        }
+
+        // $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
+        // $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
+
+        // Function to minimize/maximize the keypoint editor tab
+        $scope.minimizeMaximizeKeypointManagerTab = function() {
+            $scope.keyPointManagerTabMinimized = !$scope.keyPointManagerTabMinimized;
+        }
+
+        // Function to maximize/maximize the keypoint editor tab
+        $scope.minimizeMaximizeKeypointEditorTab = function() {
+            $scope.keyPointEditorTabMinimized = !$scope.keyPointEditorTabMinimized;
         }
 
         /////////
