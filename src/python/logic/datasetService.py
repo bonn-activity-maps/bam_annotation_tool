@@ -184,8 +184,10 @@ class DatasetService:
                 dirpath = os.path.join(dir, "annotations/" + type)
                 listdir = os.listdir(dirpath)
                 for file in listdir:
-                    tempResult = self.processAnnotationFilePT(dataset, file, dirpath)
-                    finalResult = finalResult and tempResult
+                    filename, filextension = os.path.splitext(file)
+                    if filextension == '.json':
+                        tempResult = self.processAnnotationFilePT(dataset, file, dirpath)
+                    finalResult = finalResult   # and tempResult # TODO check in the future
             except FileNotFoundError:
                 # TODO Check if this is still the case in the future...
                 log.exception("Folder called " + str(type) + " not found")
