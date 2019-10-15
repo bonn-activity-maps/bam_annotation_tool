@@ -604,6 +604,7 @@ class DatasetService:
         save_path = os.path.join(self.STORAGE_DIR, secure_filename(filename))
         return self.processDataset(save_path, filename, type)
 
+    # DELETE WHEN NEW FRAMESVIDEO IS WORKING
     # Return the corresponding frame of video
     def getVideoFrame(self, video, frame, dataset, type):
         # Get path of frame
@@ -617,6 +618,24 @@ class DatasetService:
                 return True, {'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame}, 200
         else:
             return False, 'Frame does not exist', 500
+
+    # Return the corresponding range of frames in video
+    def getVideoFrames(self, dataset, type, video, startFrame, endFrame):
+        imgs = []
+
+        for frame in range(startFrame, endFrame):
+            # Get path of frame
+            result = frameService.getFramePath(frame, int(video), dataset) if type == self.aik \
+                else frameService.getFramePath(frame, video, dataset)
+            _, framePath, _ = result
+            # Read file as binary, encode to base64 and remove newlines
+            if os.path.isfile(framePath):
+                with open(framePath, "rb") as image_file:
+                    encodedImage = base64.b64encode(image_file.read())
+                    imgs.append({'image': str(encodedImage).replace("\n", ""), 'filename': video, 'frame': frame})
+
+        return True, imgs, 200
+
 
     # Update frames of videos in DB
     def updateVideosFrames(self, dataset):

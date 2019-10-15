@@ -170,12 +170,20 @@ def getVideos():
     success, msg, status = datasetService.getVideos(request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
+# DELETE WHEN NEW FRAMESVIDEO IS WORKING
 # Get frame from video
 @app.route('/api/dataset/getFrameVideo', methods=['GET'])
 def getVideoFrame():
     success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'],
                                                         request.headers['dataset'], request.headers['type'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get a range of frames from video
+@app.route('/api/dataset/getFramesVideo', methods=['GET'])
+def getVideoFrames():
+    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['type'],
+                                                         request.headers['fileName'], int(request.headers['startFrame']),
+                                                         int(request.headers['endFrame']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
