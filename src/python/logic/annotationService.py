@@ -30,9 +30,9 @@ class AnnotationService:
             s = "0" + s
         return s
 
-    def generateNewOriginalUid(self, object, video, frame):
+    def generateNewOriginalUid(self, track_id, video, frame):
         frame = self.pad(frame, 4)
-        track_id = self.pad(object["uid"], 2)
+        track_id = self.pad(track_id, 2)
         return int("1" + video + frame + track_id)
 
     # Get annotation info for given frame, dataset, video and user
@@ -53,9 +53,7 @@ class AnnotationService:
 
     # Get all annotated objects for dataset, scene and user
     def getAnnotatedObjects(self, dataset, scene, user, datasetType):
-        # print("Looking for Annotated Objects ", dataset, scene, user)
         result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
-        # print("Got Annotated objects: ", result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -261,7 +259,7 @@ class AnnotationService:
 
             # Build interpolated keypoints for each frame
             for k in range(len(interpolatedKps[0])):
-                finalKpts[k, i] = interpolatedKps[:, k]  # TODO this fails because of some 3D vs 2D problem
+                finalKpts[k, i] = interpolatedKps[:, k]
 
         return finalKpts
 
@@ -269,16 +267,10 @@ class AnnotationService:
     def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject, objectType,
                               uidObject2):
         # Search object in respective start and end frames
-        print("looking up: ", dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
-            if datasetType == self.aik \
-            else print("looking up: ", dataset, datasetType, scene, startFrame, user, uidObject2, objectType)
         obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
             if datasetType == self.aik \
             else annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject2, objectType)
-        print("got ", obj1)
-        print("looking up: ", dataset, datasetType, scene, endFrame, user, uidObject, objectType)
         obj2 = annotationManager.getFrameObject(dataset, datasetType, scene, endFrame, user, uidObject, objectType)
-        print("got ", obj2)
 
         type = obj1['type']
         kps1 = obj1['keypoints']
@@ -294,7 +286,7 @@ class AnnotationService:
 
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, finalKpts.shape[0] - 1):
-            obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}  # TODO uid for every annotation
+            obj = {'uid': self.generateNewOriginalUid(abs(uidObject) % 100, scene, startFrame + i), 'type': type, 'keypoints': finalKpts[i].tolist()}
 
             result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj, datasetType)
             if result == 'Error':

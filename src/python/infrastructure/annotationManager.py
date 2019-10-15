@@ -230,7 +230,6 @@ class AnnotationManager:
             if result == []:    # If there are no objects -> max uid is 0
                 return 0
             else:               # Return max
-                # print(result[0]['max'])
                 return result[0]['max']
         except errors.PyMongoError as e:
             log.exception('Error finding maximum id in annotation in db')
@@ -251,7 +250,7 @@ class AnnotationManager:
         # Add object (uid, type, kps) and labels only if it's in objects
         if datasetType is not None and datasetType == self.pt:
             category_id = objects["category_id"] if "category_id" in objects else 1
-            track_id = objects["track_id"]
+            track_id = objects["track_id"] if "track_id" in objects else abs(uidObj) % 100
             if "labels" in objects:
                 labels = objects["labels"]
                 newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels,
