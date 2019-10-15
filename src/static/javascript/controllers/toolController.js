@@ -1549,11 +1549,6 @@ angular.module('CVGTool')
             $scope.refreshProjectionOfCanvases();
         }
 
-        // $scope.pointCreationData = {
-        //     labelIndex: null,
-        //     pID: null,
-        //     cam
-
         // Function to remove the point in the keypointEditor
         $scope.removePoint = function(index, pointID) {
             // If the pointID is -1, remove all
