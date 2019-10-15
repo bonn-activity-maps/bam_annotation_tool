@@ -186,10 +186,10 @@ angular.module('CVGTool')
         }
 
         // Function that generates a legit poseTrack UID for new objects
-        function generateNewOriginalUid(object, frame) {
+        function generateNewOriginalUid(track_id, frame) {
             let video = $scope.canvases[0].activeCamera.filename;
             frame = pad(frame, 4);
-            let track_id = pad(object.uid, 2);
+            track_id = pad(track_id, 2);
             return Number("1" + video + frame + track_id)
         }
 
@@ -206,7 +206,7 @@ angular.module('CVGTool')
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.isPosetrack()) {
                     if (object.original_uid === undefined) {
-                        object.original_uid = generateNewOriginalUid(object, frame);
+                        object.original_uid = generateNewOriginalUid(object.uid, frame);
                     }
                     if ($scope.objectManager.selectedObject.original_uid.toString().localeCompare(object.original_uid.toString()) !== 0) {
                         $scope.getMugshots(object.uid);
@@ -219,7 +219,7 @@ angular.module('CVGTool')
             } else {
                 if ($scope.isPosetrack()) {
                     if (object.original_uid === undefined) {
-                        object.original_uid = generateNewOriginalUid(object, frame);
+                        object.original_uid = generateNewOriginalUid(object.uid, frame);
                     }
                     $scope.getMugshots(object.uid);
                 } else {
@@ -241,7 +241,7 @@ angular.module('CVGTool')
             if ($scope.isPosetrack()) {
                 // Add original UID to selected object. Create it if it doesn't exist.
                 if ($scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid === undefined) {
-                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = generateNewOriginalUid(object, frame);
+                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = generateNewOriginalUid(object.uid, frame);
                 }
                 $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid;
 
@@ -1768,8 +1768,8 @@ angular.module('CVGTool')
         // Callback function of updateAnnotationPT
         var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
             sendMessage("success", "Annotation updated!");
-            // $scope.interpolate(objectUid, objectType, frameTo); //TODO check for poseTrack
-            $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
+            $scope.interpolate(objectUid, objectType, frameTo, false); //TODO: check in the future
+            // $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
         };
 
         // Function to save the Annotation for PT
@@ -1786,27 +1786,34 @@ angular.module('CVGTool')
         }
 
         // Auxiliar callback function for the interpolation
-        var callbackInterpolate = function(objectUid, frames) {
-            $scope.retrieveAnnotation(objectUid, frames);
+        var callbackInterpolate = function(objectUid, frames, objectType) {
+            if ($scope.isPosetrack()) {
+                $scope.retrieveAnnotationPT(objectUid, objectType, frames);
+            } else {
+                $scope.retrieveAnnotation(objectUid, frames);
+            }
+
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
         $scope.interpolate = function(objectUid, objectType, frameTo, deleting) {
             if (frameTo === $scope.frameFrom) {
-                callbackInterpolate(objectUid, [frameTo]); // If its not possible to interpolate, jump this step
+                callbackInterpolate(objectUid, [frameTo], objectType); // If its not possible to interpolate, jump this step
                 return;
             }
 
             // If we were deleting the point, dont interpolate
             if (deleting) {
-                callbackInterpolate(objectUid, [frameTo]);
+                callbackInterpolate(objectUid, [frameTo], objectType);
                 return;
             }
 
             // Find the closest previous annotated frame for that object
-            var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
+            var object = $scope.isPosetrack() ?
+                $scope.objectManager.objectTypes[objectType.toString()].objects[$scope.objectManager.selectedObject.uid.toString()] :
+                $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max(1, frameTo - 7); i--) {
+            for (var i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - 7); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
@@ -1819,8 +1826,16 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, callbackInterpolate, sendMessage);
-            } else callbackInterpolate(objectUid, [frameTo]);
+                if ($scope.isPosetrack()){
+                    toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                        $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
+                        object.frames[frameFrom].original_uid,  callbackInterpolate, sendMessage);
+                } else {
+                    toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                        $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType, 0,
+                        callbackInterpolate, sendMessage);
+                }
+            } else callbackInterpolate(objectUid, [frameTo], objectType);
 
         }
 
@@ -1869,7 +1884,9 @@ angular.module('CVGTool')
         $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
                 toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                    $scope.canvases[0].activeCamera.filename, objectUid, frameArray[i], objectType, callbackRetrievingFrameObject, sendMessage);
+                    $scope.canvases[0].activeCamera.filename,
+                    generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
+                    callbackRetrievingFrameObject, sendMessage);
             }
         };
 

@@ -24,6 +24,17 @@ class AnnotationService:
     aik = 'actionInKitchen'
     pt = 'poseTrack'
 
+    def pad(self, num, size):
+        s = str(num)
+        while len(s) < size:
+            s = "0" + s
+        return s
+
+    def generateNewOriginalUid(self, track_id, video, frame):
+        frame = self.pad(frame, 4)
+        track_id = self.pad(track_id, 2)
+        return int("1" + video + frame + track_id)
+
     # Get annotation info for given frame, dataset, video and user
     def getAnnotation(self, dataset, datasetType, scene, frame, user):
         result = annotationManager.getAnnotation(dataset, datasetType, scene, frame, user)
@@ -42,9 +53,7 @@ class AnnotationService:
 
     # Get all annotated objects for dataset, scene and user
     def getAnnotatedObjects(self, dataset, scene, user, datasetType):
-        # print("Looking for Annotated Objects ", dataset, scene, user)
         result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
-        # print("Got Annotated objects: ", result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -62,7 +71,7 @@ class AnnotationService:
     # Triangulate points from 2D points to 3D
     def obtain3dPointsAIK(self, frame, dataset, objects):
         keypoints2d = objects["keypoints"]
-        keypoints3d = []                        # New 3d kps
+        keypoints3d = []  # New 3d kps
 
         # Triangulate all keypoints of object
         for kp in keypoints2d:
@@ -91,14 +100,14 @@ class AnnotationService:
                 keypointsTriangulate.append(kp["p4"])
                 cameraParamsTriangulate.append(frame4["cameraParameters"])
 
-            if len(keypointsTriangulate) == 0:      # If 0 points, let the keypoint empty
+            if len(keypointsTriangulate) == 0:  # If 0 points, let the keypoint empty
                 keypointsTriangulate.append([])
                 cameraParamsTriangulate.append([])
-            elif len(keypointsTriangulate) < 2:     # Error if only 1 points
+            elif len(keypointsTriangulate) < 2:  # Error if only 1 points
                 return objects, True
-            else:                                   # Triangulate using all available points
+            else:  # Triangulate using all available points
                 point3d = aikService.triangulate2DPoints(keypointsTriangulate, cameraParamsTriangulate)
-                keypoints3d.append(point3d.tolist())    # Store 3d point
+                keypoints3d.append(point3d.tolist())  # Store 3d point
 
         # Modify original objects which contains info of object with calculated 3d keypoints
         objects["keypoints"] = keypoints3d
@@ -167,7 +176,8 @@ class AnnotationService:
         # All frames in an array have to be modified with its correspondent flag
         result = []
         for i, v in enumerate(req['validated']):
-            result.append(annotationManager.updateValidation(req['dataset'], req['video'], req['frames'][i], req['user'], v))
+            result.append(
+                annotationManager.updateValidation(req['dataset'], req['video'], req['frames'][i], req['user'], v))
 
         # Return 'ok' only if all results are correct ('ok')
         if result.count(result[0]) == len(result) and result[0] == 'ok':
@@ -196,10 +206,9 @@ class AnnotationService:
     def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
         result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj, objectType)
         if result == 'Error':
-            return False, 'The object does not exist in frame '+frame, 400
+            return False, 'The object does not exist in frame ' + frame, 400
         else:
             return True, result, 200
-
 
     # Store annotation for an object for given frame, dataset, video and user
     # If the object does not exist, it's stored in db
@@ -213,9 +222,9 @@ class AnnotationService:
 
         if found == 'Error':
             return 'Error'
-        elif found == 'No annotation':   # Add new existing object in frame
+        elif found == 'No annotation':  # Add new existing object in frame
             result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
-        else:   # Update object in frame
+        else:  # Update object in frame
             if datasetType == 'poseTrack' and found['type'] != objects['type']:
                 result = annotationManager.createFrameObject(dataset, scene, frame, user, objects, datasetType)
             else:
@@ -225,7 +234,8 @@ class AnnotationService:
 
     # Remove annotation for an object for given frame, dataset, video and user
     def removeAnnotationFrameObject(self, req):
-        result = annotationManager.removeFrameObject(req['dataset'], req['video'], req['frame'], req['user'], req['uidObject'])
+        result = annotationManager.removeFrameObject(req['dataset'], req['video'], req['frame'], req['user'],
+                                                     req['uidObject'])
         if result == 'ok':
             return True, result, 200
         else:
@@ -234,7 +244,7 @@ class AnnotationService:
     # Interpolate all keypoints between 2 points
     def interpolate(self, numFrames, numKpts, kpDim, kps1, kps2):
         # Structure to store all keypoints ordered by frame (row: frame, column:kpt)
-        finalKpts = np.zeros((numFrames, numKpts, 3))
+        finalKpts = np.zeros((numFrames, numKpts, 3)) if kpDim == 3 else np.zeros((numFrames, numKpts, 2))
 
         # Interpolate for all keypoints in all frames in between
         for i in range(numKpts):
@@ -249,21 +259,24 @@ class AnnotationService:
 
             # Build interpolated keypoints for each frame
             for k in range(len(interpolatedKps[0])):
-                finalKpts[k,i] = interpolatedKps[:,k]
+                finalKpts[k, i] = interpolatedKps[:, k]
 
         return finalKpts
 
     # Interpolate and store the interpolated 3d points
-    def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject):
+    def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject, objectType,
+                              uidObject2):
         # Search object in respective start and end frames
-        obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject)
-        obj2 = annotationManager.getFrameObject(dataset, datasetType, scene, endFrame, user, uidObject)
+        obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
+            if datasetType == self.aik \
+            else annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject2, objectType)
+        obj2 = annotationManager.getFrameObject(dataset, datasetType, scene, endFrame, user, uidObject, objectType)
 
         type = obj1['type']
         kps1 = obj1['keypoints']
         kps2 = obj2['keypoints']
 
-        numFrames = endFrame-startFrame+1
+        numFrames = endFrame - startFrame + 1
         numKpts = len(kps1)
         kpDim = int(datasetManager.getDataset(dataset)['keypointDim'])
         finalResult = 'ok'
@@ -272,9 +285,11 @@ class AnnotationService:
         finalKpts = self.interpolate(numFrames, numKpts, kpDim, kps1, kps2)
 
         # Store interpolated keypoints for frames in between (avoid start and end frame)
-        for i in range(1, finalKpts.shape[0]-1):
-            obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
-
+        for i in range(1, finalKpts.shape[0] - 1):
+            if datasetType == self.pt:
+                obj = {'uid': self.generateNewOriginalUid(abs(uidObject) % 100, scene, startFrame + i), 'type': type, 'keypoints': finalKpts[i].tolist()}
+            else:
+                obj = {'uid': uidObject, 'type': type, 'keypoints': finalKpts[i].tolist()}
             result = self.updateAnnotationFrameObject(dataset, scene, startFrame + i, user, obj, datasetType)
             if result == 'Error':
                 finalResult = 'There was some error interpolating the keypoints, please check them'
@@ -284,4 +299,3 @@ class AnnotationService:
         else:
             log.error('Error interpolating keypoints')
             return False, finalResult, 500
-
