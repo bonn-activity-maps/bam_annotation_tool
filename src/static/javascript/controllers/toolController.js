@@ -27,6 +27,8 @@ angular.module('CVGTool')
         $scope.subTool = ''; // Subtool inside tool, for example "addKeypoint";
         $scope.keyPointManagerTab = false; // Boolean to control if the keypoint edit panel is activated
         $scope.keyPointEditorTab = false; // Boolean to control if the keypoint editor panel is activated
+        $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
+        $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
 
         // Mugshots
@@ -316,6 +318,16 @@ angular.module('CVGTool')
         $scope.closeKeyPointManager = function() {
             $scope.keyPointManagerTab = false;
             $scope.tool = '';
+        }
+
+        // Function to minimize/maximize the keypoint editor tab
+        $scope.minimizeMaximizeKeypointManagerTab = function() {
+            $scope.keyPointManagerTabMinimized = !$scope.keyPointManagerTabMinimized;
+        }
+
+        // Function to maximize/maximize the keypoint editor tab
+        $scope.minimizeMaximizeKeypointEditorTab = function() {
+            $scope.keyPointEditorTabMinimized = !$scope.keyPointEditorTabMinimized;
         }
 
         /////////
@@ -1811,7 +1823,7 @@ angular.module('CVGTool')
                 for (var i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
-                if ($scope.isPosetrack()){
+                if ($scope.isPosetrack()) {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
                         object.frames[frameFrom - $scope.frameFrom].original_uid,  callbackInterpolate, sendMessage);
@@ -1849,7 +1861,6 @@ angular.module('CVGTool')
         var callbackRetrievingFrameObject = function(annotation, frame) {
             if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
             if ($scope.isPosetrack()) {
-
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
                 $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
             } else {
