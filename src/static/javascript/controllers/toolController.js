@@ -184,7 +184,7 @@ angular.module('CVGTool')
         }
 
         // Function that generates a legit poseTrack UID for new objects
-        function generateNewOriginalUid(track_id, frame) {
+        $scope.generateNewOriginalUid = function (track_id, frame) {
             let video = $scope.canvases[0].activeCamera.filename;
             frame = pad(frame, 4);
             track_id = pad(track_id, 2);
@@ -204,7 +204,7 @@ angular.module('CVGTool')
             if ($scope.objectManager.selectedObject !== null) {
                 if ($scope.isPosetrack()) {
                     if (object.original_uid === undefined) {
-                        object.original_uid = generateNewOriginalUid(object.uid, frame);
+                        object.original_uid = $scope.generateNewOriginalUid(object.uid, frame);
                     }
                     if ($scope.objectManager.selectedObject.original_uid.toString().localeCompare(object.original_uid.toString()) !== 0) {
                         $scope.getMugshots(object.uid);
@@ -217,7 +217,7 @@ angular.module('CVGTool')
             } else {
                 if ($scope.isPosetrack()) {
                     if (object.original_uid === undefined) {
-                        object.original_uid = generateNewOriginalUid(object.uid, frame);
+                        object.original_uid = $scope.generateNewOriginalUid(object.uid, frame);
                     }
                     $scope.getMugshots(object.uid);
                 } else {
@@ -239,7 +239,7 @@ angular.module('CVGTool')
             if ($scope.isPosetrack()) {
                 // Add original UID to selected object. Create it if it doesn't exist.
                 if ($scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid === undefined) {
-                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = generateNewOriginalUid(object.uid, frame);
+                    $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid = $scope.generateNewOriginalUid(object.uid, frame);
                 }
                 $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.frameFrom].original_uid;
 
@@ -1814,7 +1814,7 @@ angular.module('CVGTool')
                 if ($scope.isPosetrack()){
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
-                        object.frames[frameFrom].original_uid,  callbackInterpolate, sendMessage);
+                        object.frames[frameFrom - $scope.frameFrom].original_uid,  callbackInterpolate, sendMessage);
                 } else {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType, 0,
@@ -1847,8 +1847,9 @@ angular.module('CVGTool')
 
         // Callback function for retrieving one object
         var callbackRetrievingFrameObject = function(annotation, frame) {
-            if (angular.equals({}, annotation)) return; // Check if we received something
+            if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
             if ($scope.isPosetrack()) {
+
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
                 $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
             } else {
@@ -1870,7 +1871,7 @@ angular.module('CVGTool')
             for (var i = 0; i < frameArray.length; i++) {
                 toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                     $scope.canvases[0].activeCamera.filename,
-                    generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
+                    $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
                     callbackRetrievingFrameObject, sendMessage);
             }
         };
