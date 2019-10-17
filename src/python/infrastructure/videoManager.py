@@ -15,7 +15,7 @@ class VideoManager:
 
     # Return info video if exist in DB. Ignore mongo id
     # Video in aik is int, string ow
-    def getVideo(self, dataset, video, datasetType):
+    def getVideo(self, dataset, datasetType, video):
         try:
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "name": int(video)}, {"_id": 0})
