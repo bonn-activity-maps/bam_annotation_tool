@@ -24,7 +24,8 @@ angular.module('CVGTool')
             frameEnd: 0, // Ending frame
             frameRange: 0, // Range
             loadedCameras: [], // Filenames of the cameras that have been loaded
-            canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            maxFrame: 0 // Max frame of the session to check frame range displacements
         };
 
         return {
@@ -52,6 +53,12 @@ angular.module('CVGTool')
                 updateSessionData();
             },
 
+            // Checks if the maxFrame is already placed
+            isMaxFramePlaced: function() {
+                if (sessionData.maxFrame == 0) return false;
+                else return true;
+            },
+
             // Adds the camera filename to the sessionData struct
             addLoadedCamera: function(camera) {
                 sessionData.loadedCameras.push(camera);
@@ -65,7 +72,8 @@ angular.module('CVGTool')
                     frameEnd: 0, // Ending frame
                     frameRange: 0, // Range
                     loadedCameras: [], // Filenames of the cameras that have been loaded
-                    canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+                    canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+                    maxFrame: 0
                 };
             },
 
@@ -85,6 +93,23 @@ angular.module('CVGTool')
                     }
                 }
                 updateSessionData();
+            },
+
+            // Check the max number of frames for the video
+            setMaxFrame: function(dataset, datasetType, video) {
+                $http({
+                    method: 'GET',
+                    url: '/api/video/getMaxFrame',
+                    headers: {
+                        'dataset': dataset,
+                        'datasetType': datasetType,
+                        'video': video
+                    }
+                }).then(function successCallback(response) {
+                    sessionData.maxFrame = response.data.msg.frames; // Directly set the maxFrame
+                }, function errorCallback(response) {
+                    console.log(response.data.msg)
+                });
             },
 
             /* User login functions */
