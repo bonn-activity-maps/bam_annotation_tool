@@ -160,8 +160,8 @@ def readData():
 # Get info of video
 @app.route('/api/dataset/getVideo', methods=['GET'])
 def getVideo():
-    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['video'],
-                                                   request.headers['datasetType'])
+    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['datasetType'],
+                                                   request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get list of videos and length

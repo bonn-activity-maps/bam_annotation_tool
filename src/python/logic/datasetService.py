@@ -804,8 +804,8 @@ class DatasetService:
                 return self.addVideosAIK(name) if type == self.aik else self.addVideosPT(name)
 
     # Return info of video
-    def getVideo(self, dataset, video, datasetType):
-        result = videoManager.getVideo(dataset, video, datasetType)
+    def getVideo(self, dataset, datasetType, video):
+        result = videoManager.getVideo(dataset, datasetType, video)
         if result == 'Error':
             return False, 'Error pulling video from database', 400
         else:
@@ -831,7 +831,7 @@ class DatasetService:
                 return True, {"frames": frames[1]['number']}, 200
 
         else:
-            result = videoManager.getVideo(dataset, video, datasetType)
+            result = videoManager.getVideo(dataset, datasetType, video)
 
             if result == 'Error':
                 return False, 'Error getting max frame', 400
