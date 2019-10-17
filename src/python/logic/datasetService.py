@@ -821,7 +821,7 @@ class DatasetService:
 
     # Return max frame of video
     # PT: total #frames is not the last frame
-    def getMaxFrame(self, dataset, video, datasetType):
+    def getMaxFrame(self, dataset, datasetType, video):
         if datasetType == self.pt:
             result, frames, _ = frameService.getFrameInfoOfVideo(dataset, video)
 

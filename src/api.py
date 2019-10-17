@@ -181,8 +181,8 @@ def getVideoFrame():
 # Get a range of frames from video
 @app.route('/api/dataset/getFramesVideo', methods=['GET'])
 def getVideoFrames():
-    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['type'],
-                                                         request.headers['fileName'], int(request.headers['startFrame']),
+    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['datasetType'],
+                                                         request.headers['video'], int(request.headers['startFrame']),
                                                          int(request.headers['endFrame']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -202,8 +202,8 @@ def getFrameInfoOfVideo():
 # Get max frame of video
 @app.route('/api/video/getMaxFrame', methods=['GET'])
 def getMaxFrame():
-    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['video'],
-                                                   request.headers['datasetType'])
+    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['datasetType'],
+                                                      request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
