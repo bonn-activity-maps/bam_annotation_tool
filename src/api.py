@@ -160,8 +160,8 @@ def readData():
 # Get info of video
 @app.route('/api/dataset/getVideo', methods=['GET'])
 def getVideo():
-    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['video'],
-                                                   request.headers['datasetType'])
+    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['datasetType'],
+                                                   request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get list of videos and length
@@ -181,8 +181,8 @@ def getVideoFrame():
 # Get a range of frames from video
 @app.route('/api/dataset/getFramesVideo', methods=['GET'])
 def getVideoFrames():
-    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['type'],
-                                                         request.headers['fileName'], int(request.headers['startFrame']),
+    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['datasetType'],
+                                                         request.headers['video'], int(request.headers['startFrame']),
                                                          int(request.headers['endFrame']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -202,8 +202,8 @@ def getFrameInfoOfVideo():
 # Get max frame of video
 @app.route('/api/video/getMaxFrame', methods=['GET'])
 def getMaxFrame():
-    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['video'],
-                                                   request.headers['datasetType'])
+    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['datasetType'],
+                                                      request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -228,15 +228,9 @@ def getAnnotations():
 # Get all annotated objects for dataset, scene and user
 @app.route('/api/annotation/getObjects', methods=['GET'])
 def getAnnotatedObjects():
-    success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers['scene'],
-                                                                 request.headers['user'], request.headers["datasetType"])
+    success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers["datasetType"],
+                                                                 request.headers['scene'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# # Create new annotation
-# @app.route('/api/annotation/createAnnotation', methods=['POST'])
-# def createAnnotation():
-#     success, msg, status = annotationService.createAnnotation(request.get_json())
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update existing annotation for given frame, dataset, video and user
 @app.route('/api/annotation/updateAnnotation', methods=['POST'])
@@ -270,11 +264,10 @@ def updateAnnotationPT():
 # Validate frames for given dataset, video and user
 # frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]
 # Each validated flag corresponds to an array of frames (the same position)
-@app.route('/api/annotation/updateAnnotation/validate', methods=['POST'])
-def updateAnnotationValidation():
-    success, msg, status = annotationService.updateValidation(request.get_json())
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
+# @app.route('/api/annotation/updateAnnotation/validate', methods=['POST'])
+# def updateAnnotationValidation():
+#     success, msg, status = annotationService.updateValidation(request.get_json())
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
@@ -324,12 +317,11 @@ def getAnnotationFrameObjectPT():
 #     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# TODO: check
-# Remove object in annotation for given frame, dataset, video and user
-@app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
-def removeAnnotationFrameObject():
-    success, msg, status = annotationService.removeAnnotationFrameObject(request.get_json())
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# # Remove object in annotation for given frame, dataset, video and user
+# @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
+# def removeAnnotationFrameObject():
+#     success, msg, status = annotationService.removeAnnotationFrameObject(request.get_json())
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 #### OBJECT TYPE ####
