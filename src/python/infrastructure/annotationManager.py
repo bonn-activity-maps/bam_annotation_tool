@@ -49,7 +49,7 @@ class AnnotationManager:
 
     # Get objects with uid and type for given dataset, scene and user.
     # AIK: ignore user parameter
-    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
+    def getAnnotatedObjects(self, dataset, datasetType, scene, user):
         try:
             # If posetrack, return track_id too
             if datasetType == self.pt:

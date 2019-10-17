@@ -52,21 +52,12 @@ class AnnotationService:
             return True, result, 200
 
     # Get all annotated objects for dataset, scene and user
-    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
-        result = annotationManager.getAnnotatedObjects(dataset, scene, user, datasetType)
+    def getAnnotatedObjects(self, dataset, datasetType, scene, user):
+        result = annotationManager.getAnnotatedObjects(dataset, datasetType, scene, user)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
             return True, result, 200
-
-    # # Return 'ok' if the annotation has been updated
-    # def createAnnotation(self, req):
-    #     result = annotationManager.updateAnnotation(req['dataset'], req['video'], req['frame'], req['user'],
-    #                                                 req['objects'], req['validated'], req['keypointDim'])
-    #     if result == 'Error':
-    #         return False, 'Error creating annotation', 400
-    #     else:
-    #         return True, result, 200
 
     # Triangulate points from 2D points to 3D
     def obtain3dPointsAIK(self, frame, dataset, objects):
