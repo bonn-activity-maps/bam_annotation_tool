@@ -22,7 +22,8 @@ class AnnotationManager:
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": int(frame)}, {'_id': 0})
             else:
-                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)},
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}, # User instead of root
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": "root", "frame": int(frame)},
                                                   {'_id': 0})
 
             if result is None:
@@ -41,7 +42,8 @@ class AnnotationManager:
                 result = self.collection.find({"dataset": dataset, "scene": scene}, {'_id': 0})
             else:
                 # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "validated": val}, {'_id': 0})
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user}, {'_id': 0})
+                # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user}, {'_id': 0}) # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root"}, {'_id': 0})
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
@@ -49,11 +51,12 @@ class AnnotationManager:
 
     # Get objects with uid and type for given dataset, scene and user.
     # AIK: ignore user parameter
-    def getAnnotatedObjects(self, dataset, scene, user, datasetType):
+    def getAnnotatedObjects(self, dataset, datasetType, scene, user):
         try:
             # If posetrack, return track_id too
             if datasetType == self.pt:
-                result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}},
+                # result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": user}}, # User instead of root
+                result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset, "scene": scene, "user": "root"}},
                                                     {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type",
                                                                         "track_id": "$objects.track_id",
                                                                         "frame": "$frame"}}},
@@ -103,8 +106,9 @@ class AnnotationManager:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
                                                   {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
             else:
-                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame},
-                                              {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, '_id': 0})
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
+                result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": "root", "frame": frame},
+                                                  {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
             else:
@@ -120,7 +124,9 @@ class AnnotationManager:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
                                               {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
             else:
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, "objects.track_id": obj, "objects.type": "bbox_head"},
+                # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root",
+                                               "objects.track_id": obj, "objects.type": "bbox_head"},
                                         {"objects": {"$elemMatch": {"track_id": obj, "type": "bbox_head"}},
                                          "frame": 1, '_id': 0}).limit(10)
             return list(result)
@@ -165,7 +171,8 @@ class AnnotationManager:
     # Validated flag is set to unchecked if is not received in params
     # Basically same as above but for PoseTrack
     def updateAnnotationPT(self, dataset, scene, frame, user, objects, val='unchecked'):
-        query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
+        # query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # User instead of Root
+        query = {"dataset": dataset, "scene": scene, "user": "root", "frame": int(frame)}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
         newValues = {"$set": {"objects": objects, "validated": val}}
 
@@ -181,7 +188,7 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation has been removed
-    def removeAnnotation(self, dataset, scene, frame, user):
+    def removeAnnotation(self, dataset, scene, frame, user): #TODO PT remove
         try:
             result = self.collection.delete_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)})
             if result.deleted_count == 1:
@@ -205,7 +212,7 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the validated flag has been updated in all frames. if annotation doesn't exist, it isn't created
-    def updateValidation(self, dataset, scene, frames, user, val):
+    def updateValidation(self, dataset, scene, frames, user, val):  #TODO PT validation
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": {"$in": frames}}   # Search by dataset, video, user, and all frames in array
         # Update validated flag
         newValues = {"$set": {"validated": val}}
@@ -230,7 +237,6 @@ class AnnotationManager:
             if result == []:    # If there are no objects -> max uid is 0
                 return 0
             else:               # Return max
-                # print(result[0]['max'])
                 return result[0]['max']
         except errors.PyMongoError as e:
             log.exception('Error finding maximum id in annotation in db')
@@ -246,12 +252,13 @@ class AnnotationManager:
         if datasetType is not None and datasetType == self.aik:
             query = {"dataset": dataset, "scene": scene, "frame": frame}
         else:
-            query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame}
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame} # User instead of root
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame}
 
         # Add object (uid, type, kps) and labels only if it's in objects
         if datasetType is not None and datasetType == self.pt:
-            category_id = objects["category_id"]
-            track_id = objects["track_id"]
+            category_id = objects["category_id"] if "category_id" in objects else 1
+            track_id = objects["track_id"] if "track_id" in objects else abs(uidObj) % 100
             if "labels" in objects:
                 labels = objects["labels"]
                 newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels,
@@ -287,7 +294,8 @@ class AnnotationManager:
         if datasetType is not None and datasetType == self.aik:
             query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj}
         else:
-            query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj}
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj}
 
         arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
 

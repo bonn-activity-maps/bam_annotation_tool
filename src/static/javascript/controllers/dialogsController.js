@@ -296,11 +296,19 @@ angular.module('CVGTool')
             $scope.listOfVideos = [];
             for (i = 0; i < list.length; i++) {
                 if (!$scope.loadedCameras.includes(list[i].name.toString())) { // If the camera is loaded, dont show it again
+                    // Add train/test/val type to posetrack
+                    if ($scope.isPosetrack()){
+                        $scope.videoType =  list[i].type
+                    } else{
+                        $scope.videoType = ''
+                    }
+
                     $scope.listOfVideos.push({
                         "name": list[i].name,
                         "extension": list[i].extension,
                         "duration": list[i].duration,
-                        "frames": list[i].frames
+                        "frames": list[i].frames,
+                        "type": $scope.videoType
                     });
                 }
             }
@@ -315,24 +323,19 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            console.log($scope.videosSelected)
+            if ($scope.isPosetrack()){
+                $scope.videosSelected.videos = $scope.videosSelected.videos.split(' - ')[0]
+            }
             $mdDialog.hide($scope.videosSelected);
         };
 
-        // Function that will be called everytime a frame has been retrieved from the server
-        var callbackRetrievingFrame = function(image, fileName, frame) {
-            $scope.retrievedFrames.push({ // Store the retrieved frame
-                image: image,
-                filename: fileName,
-                frame: parseInt(frame)
-            });
-
-            // Check if we are done
-            if ($scope.retrievedFrames.length == $scope.targetFrames) {
-                $scope.end();
-            }
-        };
         $scope.getListOfVideos();
+
+        // Auxiliary function that encapsulates navSrvc's isPosetrack which returns True iff the activeDataset's
+        // type is posetrack.
+        $scope.isPosetrack = function() {
+            return navSrvc.isPosetrack();
+        }
 
     }
 ])

@@ -1,41 +1,41 @@
 <md-dialog style="display: flex;">
-  <div class="panel" ng-if="mode == 'normal'">
-    <md-dialog-content ng-if="mode == 'normal'">
-      <h2>Rename video</h2>
-      <p>{{oldName}}</p>
-      <div ng-if="inputError">
-        <div class="alert alert-danger">
-            <strong>&#10008</strong> {{inputMsg}}
-        </div>
-      </div>
-      <div class="form-group">
-        <label>New name:</label>
-        <input ng-click="hideError()" type="text" class="form-control" ng-model="newName.name" required>
-      </div>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
-      <md-button ng-click="rename()" class="md-primary md-raised">Rename</md-button>
-    </md-dialog-actions>
-  </div>
-  <div ng-if="mode == 'error'">
-    <md-dialog-content>
-      <div class="alert alert-danger">
-          <strong>&#10008</strong> {{msg}}
-      </div>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
-    </md-dialog-actions>
-  </div>
-  <div ng-if="mode == 'success'">
-    <md-dialog-content>
-      <div class="alert alert-success">
-          <strong>&#10004</strong> {{msg}}
-      </div>
-    </md-dialog-content>
-    <md-dialog-actions>
-      <md-button ng-click="cancel()" class="md-primary md-raised">Close</md-button>
-    </md-dialog-actions>
-  </div>
+    <div class="panel" ng-if="mode == 'normal'">
+        <md-dialog-content ng-if="mode == 'normal'">
+            <h2>Rename video</h2>
+            <p>{{oldName}}</p>
+            <div ng-if="inputError">
+                <div class="alert alert-danger">
+                    <strong>&#10008</strong> {{inputMsg}}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>New name:</label>
+                <input ng-click="hideError()" type="text" class="form-control" ng-model="newName.name" required>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+            <button ng-click="rename()" class="btn btn-primary">Rename</button>
+        </md-dialog-actions>
+    </div>
+    <div ng-if="mode == 'error'">
+        <md-dialog-content>
+            <div class="alert alert-danger">
+                <strong>&#10008</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
+        </md-dialog-actions>
+    </div>
+    <div ng-if="mode == 'success'">
+        <md-dialog-content>
+            <div class="alert alert-success">
+                <strong>&#10004</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
+        </md-dialog-actions>
+    </div>
 </md-dialog>

@@ -10,10 +10,18 @@ class VideoManager:
     db = c.cvg
     collection = db.video
 
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
+
     # Return info video if exist in DB. Ignore mongo id
-    def getVideo(self, video, dataset):
+    # Video in aik is int, string ow
+    def getVideo(self, dataset, datasetType, video):
         try:
-            result = self.collection.find_one({"dataset": dataset, "name": video}, {"_id": 0})
+            if datasetType == self.aik:
+                result = self.collection.find_one({"dataset": dataset, "name": int(video)}, {"_id": 0})
+            else:
+                result = self.collection.find_one({"dataset": dataset, "name": video}, {"_id": 0})
+
             if result is None:
                 return 'Error'
             else:

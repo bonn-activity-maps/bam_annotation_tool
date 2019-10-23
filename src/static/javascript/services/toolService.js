@@ -237,7 +237,8 @@ angular.module('CVGTool')
                 }
         },
 
-        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, callbackSuccess, callbackError) {
+        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
+                              uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",
@@ -248,10 +249,12 @@ angular.module('CVGTool')
                     'startFrame': startFrame,
                     'endFrame': endFrame,
                     'uidObject': uidObject,
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'objectType': objectType,
+                    'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess(uidObject, frameArray);
+                    callbackSuccess(uidObject, frameArray, objectType);
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);
@@ -369,9 +372,7 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
-            }, function errorCallback(response) {
-                console.log(response)
-            })
+            }, function errorCallback(response) {})
         }
     }
 });
