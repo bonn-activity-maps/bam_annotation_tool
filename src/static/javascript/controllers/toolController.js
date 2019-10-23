@@ -186,7 +186,7 @@ angular.module('CVGTool')
         }
 
         // Function that generates a legit poseTrack UID for new objects
-        $scope.generateNewOriginalUid = function (track_id, frame) {
+        $scope.generateNewOriginalUid = function(track_id, frame) {
             let video = $scope.canvases[0].activeCamera.filename;
             frame = pad(frame, 4);
             track_id = pad(track_id, 2);
@@ -691,6 +691,11 @@ angular.module('CVGTool')
 
                 // Store the name in the navBar struct
                 navSrvc.addLoadedCamera(cameraNames.videos[i]);
+
+                // If its the first camera, store also the maxFrame
+                if (navSrvc.isMaxFramePlaced() == false) {
+                    navSrvc.setMaxFrame($scope.activeDataset.name, $scope.activeDataset.type, cameraNames.videos[i]);
+                }
 
                 // Push empty frame spaces
                 for (var j = 0; j < $scope.numberOfFrames; j++) {
@@ -1826,7 +1831,7 @@ angular.module('CVGTool')
                 if ($scope.isPosetrack()) {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
-                        object.frames[frameFrom - $scope.frameFrom].original_uid,  callbackInterpolate, sendMessage);
+                        object.frames[frameFrom - $scope.frameFrom].original_uid, callbackInterpolate, sendMessage);
                 } else {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.activeDataset.name, frameFrom, frameTo, objectUid, frameArray, objectType, 0,

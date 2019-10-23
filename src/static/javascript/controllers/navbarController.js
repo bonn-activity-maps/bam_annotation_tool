@@ -19,7 +19,8 @@ angular.module('CVGTool')
             frameEnd: 0, // Ending frame
             frameRange: 0, // Range of frames
             loadedCameras: [], // Filenames of the cameras that have been loaded
-            canvasCameras: ["", "", "", ""] // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            maxFrame: 0 // Max frame of the session to check frame range displacements
         };
 
         $scope.activeState = $scope.user.assignedTo[0];
@@ -83,8 +84,12 @@ angular.module('CVGTool')
 
         // Function to move the tool to the next range
         $scope.goNextRange = function() {
-            // TODO: Check if its possible. Notify if its not possible.
-            $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+            if ($scope.sessionData.frameEnd + $scope.sessionData.frameRange > $scope.sessionData.maxFrame) {
+                $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+
+            } else {
+                $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+            }
         }
 
         // Function to move the tool to the previous range
