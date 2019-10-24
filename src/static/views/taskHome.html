@@ -42,12 +42,12 @@
                     <div class="form-group">
                         <label class="control-label col-md-2">Select range of frames:</label>
                         <div class="col-md-10">
-                            From:
-                            <input type="number" ng-model="slider.from" ng-blur="checkSlider()" />
-                            <br/>To:
-                            <input type="number" ng-model="slider.to" ng-blur="checkSlider()" />
+                            Initial frame:
+                            <input type="number" ng-model="initialFrame" min="{{slider.options.floor}}" ng-blur="checkSlider()"/>
+                            <br/>Range:
+                            <input type="number" ng-model="slider.range" min="{{slider.options.floor}}" max="{{slider.options.ceil}}" />
                             <br/>
-                            <rzslider rz-slider-model="slider.from" rz-slider-high="slider.to" rz-slider-options="slider.options"></rzslider>
+                            <rzslider rz-slider-model="slider.range" rz-slider-options="slider.options"></rzslider>
                         </div>
                     </div>
                 </div>

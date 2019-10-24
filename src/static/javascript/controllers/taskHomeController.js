@@ -6,24 +6,21 @@ angular.module('CVGTool')
 .controller('taskHomeCtrl', ['$scope', '$rootScope', '$state', '$mdDialog', 'navSrvc', 'taskHomeSrvc', 'adminDatasetsSrvc',
     function($scope, $rootScope, $state, $mdDialog, navSrvc, taskHomeSrvc, adminDatasetsSrvc) {
 
+        $scope.initialFrame = 0;
         $scope.slider = { // Options and values for the slider
-            from: 0,
-            to: 1,
+            range: 1,
             options: {
                 floor: 0,
-                ceil: 100000,
-                step: 1
-            },
+                ceil: 100,
+                step: 1,
+                showSelectionBar: true
+            }
         };
 
         // Function called everytime the number input of the slider is changed to check those values
         $scope.checkSlider = function() {
-            if ($scope.slider.from < $scope.slider.options.floor) {
-                $scope.slider.from = $scope.slider.options.floor;
-            }
-
-            if ($scope.slider.to > $scope.slider.options.ceil) {
-                $scope.slider.to = $scope.slider.options.ceil
+            if ($scope.initialFrame < $scope.slider.options.floor) {
+                $scope.initialFrame = $scope.slider.options.floor;
             }
         };
 
@@ -70,28 +67,27 @@ angular.module('CVGTool')
                 return;
             }
 
-            var range = Math.abs($scope.slider.from - $scope.slider.to);
-            if (range < 0) {
-                window.alert("At least one frame must be selected.");
+            if ($scope.slider.range <= 0 || $scope.slider.range > $scope.slider.options.ceil ) {
+                window.alert("Choose a frame range between 1 and "+ $scope.slider.options.ceil +".");
                 return;
             }
 
-            if ($scope.slider.from > $scope.slider.to) {
-                window.alert("The value of 'from' cannot be higher than the value of 'to'.");
+            if ($scope.initialFrame < 0) {
+                window.alert("Initial frame must be at least 0");
                 return;
             }
 
             // Check if the dataset is "AIK" to change the starting frame in case its 0. (Only PT has frame 0)
-            if (navSrvc.getActiveDataset().type.localeCompare("actionInKitchen") == 0 && $scope.slider.from == 0) {
-                $scope.slider.from = 1;
+            if (navSrvc.getActiveDataset().type.localeCompare("actionInKitchen") == 0 && $scope.initialFrame == 0) {
+                $scope.initialFrame = 1;
             }
             // Update navBar info
-            navSrvc.setFrameStart($scope.slider.from);
-            navSrvc.setFrameEnd($scope.slider.to);
-            navSrvc.setFrameRange($scope.slider.to - $scope.slider.from);
+            navSrvc.setFrameStart($scope.initialFrame);
+            navSrvc.setFrameEnd($scope.initialFrame + $scope.slider.range);
+            navSrvc.setFrameRange($scope.slider.range);
 
             // Go to the tool screen
-            $state.go('tool', { obj: { from: $scope.slider.from, to: $scope.slider.to, originalRange: $scope.slider.to - $scope.slider.from, loadedCameras: [], canvasCameras: ["", "", "", ""], fromTaskHome: true } });
+            $state.go('tool', { obj: { from: $scope.initialFrame, to: $scope.initialFrame + $scope.slider.range, originalRange: $scope.slider.range, loadedCameras: [], canvasCameras: ["", "", "", ""], fromTaskHome: true } });
         };
 
         // Send message to toast
