@@ -3,8 +3,7 @@
         <div class="panel-body">
             <h4>Tasks</h4>
             <hr/> Don't forget to select a dataset from the selector in the navbar!
-            <hr/> Temporal, but for now, select the frame range you want to work with. <b>If you have already annotated one range of frames and want to continue with the next range, select at least one frame of the previous range so the objects already created
-            will appear in your new range, keeping the correspondences between them.</b>
+            <hr/>
             <div style="padding-top: 20px;" class="container">
                 <button ng-if="videos.length <= 0" class="btn btn-primary" ng-click="loadVideoTable()">Load video info</button>
                 <!--                <button ng-if="videos.length > 0" class="btn btn-primary" ng-click="loadVideoTable()">Refresh video info</button>-->
@@ -48,6 +47,8 @@
                             <input type="number" ng-model="slider.range" min="{{slider.options.floor}}" max="{{slider.options.ceil}}" />
                             <br/>
                             <rzslider rz-slider-model="slider.range" rz-slider-options="slider.options"></rzslider>
+
+                            Loading frames from {{initialFrame}} to {{initialFrame+slider.range}}
                         </div>
                     </div>
                 </div>
