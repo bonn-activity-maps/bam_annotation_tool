@@ -97,20 +97,21 @@ class UserService:
                 return True, {'name': name, 'password': pwd}, 200
 
     # Check if the the user has annotations of his own for the assignated datasets and create a copy of root's otherwise
+    # Deactivated temporarily due to switch to Master annotation. Left here for possible switch back.
     def duplicateAnnotations(self, datasets, user):
-        for dataset in datasets:
-            data = datasetManager.getDataset(dataset)
-            if data['type'] == 'poseTrack':     # In the future, probably for posetrack too
-                videos = videoManager.getVideos(dataset)
-                for video in videos:
-                    annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], user, None)
-                    if not annotations:  # Else already exist
-                        annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], 'root', None)
-                        for annotation in annotations:
-                            result = annotationManager.updateAnnotation(dataset, video['name'], annotation['frame'],
-                                                                        user, annotation['objects'])
-                            if result == 'Error':
-                                return False
+        # for dataset in datasets:
+        #     data = datasetManager.getDataset(dataset)
+        #     if data['type'] == 'poseTrack':     # In the future, probably for posetrack too
+        #         videos = videoManager.getVideos(dataset)
+        #         for video in videos:
+        #             annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], user, None)
+        #             if not annotations:  # Else already exist
+        #                 annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], 'root', None)
+        #                 for annotation in annotations:
+        #                     result = annotationManager.updateAnnotation(dataset, video['name'], annotation['frame'],
+        #                                                                 user, annotation['objects'])
+        #                     if result == 'Error':
+        #                         return False
         return True
 
     # Return 'ok' if the user has been updated
