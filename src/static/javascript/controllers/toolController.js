@@ -12,9 +12,9 @@ angular.module('CVGTool')
         $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom;
         $scope.fromTaskHome = $stateParams.obj.fromTaskHome;
         $scope.frameJumpNumber = 1;
-        $scope.frameJumpNumberOptions = [{ id: 1, tag: "1" }, { id: 2, tag: "2" }, { id: 3, tag: "3" }, { id: 4, tag: "4" }, { id: 5, tag: "5" }, { id: 6, tag: "6" }, { id: 7, tag: "7" }, { id: 8, tag: "8" }, { id: 9, tag: "9" }, { id: 10, tag: "10" }];
+        $scope.frameJumpNumberOptions = [{ id: 1, tag: "1" }, { id: 2, tag: "2" }, { id: 3, tag: "3" }, { id: 4, tag: "4" }, { id: 5, tag: "5" }, { id: 6, tag: "6" }, { id: 7, tag: "7" }, { id: 8, tag: "8" }, { id: 9, tag: "9" }, { id: 10, tag: "10" }, { id: 15, tag: "15" }];
         $scope.activeDataset = navSrvc.getActiveDataset(); // Get the active dataset information
-
+        $scope.interpolationRange = 15;
         /////////
         // END OF INITIALIZE STARTING VARIABLES
         /////////
@@ -1815,7 +1815,7 @@ angular.module('CVGTool')
                 $scope.objectManager.objectTypes[objectType.toString()].objects[$scope.objectManager.selectedObject.uid.toString()] :
                 $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - 7); i--) {
+            for (var i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - $scope.interpolationRange); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
