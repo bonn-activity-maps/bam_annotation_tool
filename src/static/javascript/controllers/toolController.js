@@ -1829,7 +1829,7 @@ angular.module('CVGTool')
                 $scope.objectManager.objectTypes[objectType.toString()].objects[$scope.objectManager.selectedObject.uid.toString()] :
                 $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
-            for (var i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - 7); i--) {
+            for (let i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - 7); i--) {
                 if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
                     frameFrom = i;
                     break;
@@ -1839,7 +1839,7 @@ angular.module('CVGTool')
             // Interpolate if possible
             if (frameFrom != null) {
                 var frameArray = [];
-                for (var i = frameFrom; i <= frameTo; i++) {
+                for (let i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
                 if ($scope.isPosetrack()) {
@@ -1881,6 +1881,7 @@ angular.module('CVGTool')
             if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
             if ($scope.isPosetrack()) {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
+                $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].original_uid = annotation.uid;                $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
                 $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
             } else {
                 $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
