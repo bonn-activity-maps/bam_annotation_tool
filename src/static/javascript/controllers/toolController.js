@@ -697,6 +697,11 @@ angular.module('CVGTool')
                     navSrvc.setMaxFrame($scope.activeDataset.name, $scope.activeDataset.type, cameraNames.videos[i]);
                 }
 
+                // If its the first camera, store also the minFrame
+                if (navSrvc.isMinFramePlaced() == false) {
+                    navSrvc.setMinFrame($scope.activeDataset.name, $scope.activeDataset.type, cameraNames.videos[i]);
+                }
+
                 // Push empty frame spaces
                 for (var j = 0; j < $scope.numberOfFrames; j++) {
                     $scope.loadedCameras[i].frames.push({})
