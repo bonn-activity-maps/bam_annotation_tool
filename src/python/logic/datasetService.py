@@ -838,6 +838,21 @@ class DatasetService:
             else:
                 return True, {"frames": result['frames']}, 200
 
+    # Return min frame of video
+    # PT: change the 1st frame for each video
+    def getMinFrame(self, dataset, datasetType, video):
+        if datasetType == self.pt:
+            result, frames, _ = frameService.getFrameInfoOfVideo(dataset, video)
+
+            if not result:
+                return False, 'Error getting min frame', 400
+            else:
+                return True, {"frames": frames[0]['number']}, 200
+
+        else:
+            # AIK: first frame always 1 (info not stored in db)
+            return True, {"frames": 1}, 200
+
 
     ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
     # Remove and insert new frames for one video and dataset
