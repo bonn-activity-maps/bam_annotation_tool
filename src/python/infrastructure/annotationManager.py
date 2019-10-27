@@ -34,6 +34,25 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get annotations info for given frame range, dataset, scene and user. Not return mongo id
+    # AIK: ignore user parameter
+    def getAnnotationsByFrameRange(self, dataset, datasetType, scene, startFrame, endFrame, user):
+        try:
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene,
+                                               "frame": {"$gte": int(startFrame), "$lte": int(endFrame)}},
+                                               {'_id': 0}).sort("frame", 1)
+            else:
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}, # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root",
+                                               "frame": {"$gte": int(startFrame), "$lte": int(endFrame)}},
+                                                {'_id': 0}).sort("frame", 1)
+
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
     # Get all annotations for given dataset, scene, user and val. Not return mongo id
     # AIK: ignore user parameter
     def getAnnotations(self, dataset, datasetType, scene, user, val):
