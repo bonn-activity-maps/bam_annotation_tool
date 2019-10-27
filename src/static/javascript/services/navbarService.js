@@ -25,7 +25,8 @@ angular.module('CVGTool')
             frameRange: 0, // Range
             loadedCameras: [], // Filenames of the cameras that have been loaded
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
-            maxFrame: 0 // Max frame of the session to check frame range displacements
+            maxFrame: -1, // Max frame of the session to check frame range displacements
+            minFrame: -1 // Min frame of the session to check frame range displacements
         };
 
         return {
@@ -55,7 +56,13 @@ angular.module('CVGTool')
 
             // Checks if the maxFrame is already placed
             isMaxFramePlaced: function() {
-                if (sessionData.maxFrame == 0) return false;
+                if (sessionData.maxFrame == -1) return false;
+                else return true;
+            },
+
+            // Checks if the minFrame is already placed
+            isMinFramePlaced: function() {
+                if (sessionData.minFrame == -1) return false;
                 else return true;
             },
 
@@ -73,7 +80,8 @@ angular.module('CVGTool')
                     frameRange: 0, // Range
                     loadedCameras: [], // Filenames of the cameras that have been loaded
                     canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
-                    maxFrame: 0
+                    maxFrame: -1,
+                    minFrame: -1
                 };
             },
 
@@ -107,6 +115,23 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     sessionData.maxFrame = response.data.msg.frames; // Directly set the maxFrame
+                }, function errorCallback(response) {
+                    console.log(response.data.msg)
+                });
+            },
+
+            // Check the min number of frames for the video
+            setMinFrame: function(dataset, datasetType, video) {
+                $http({
+                    method: 'GET',
+                    url: '/api/video/getMinFrame',
+                    headers: {
+                        'dataset': dataset,
+                        'datasetType': datasetType,
+                        'video': video
+                    }
+                }).then(function successCallback(response) {
+                    sessionData.minFrame = response.data.msg.frames; // Directly set the minFrame
                 }, function errorCallback(response) {
                     console.log(response.data.msg)
                 });

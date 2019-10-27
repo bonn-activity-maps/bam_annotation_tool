@@ -206,6 +206,13 @@ def getMaxFrame():
                                                       request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get min frame of video
+@app.route('/api/video/getMinFrame', methods=['GET'])
+def getMinFrame():
+    success, msg, status = datasetService.getMinFrame(request.headers['dataset'], request.headers['datasetType'],
+                                                      request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### ANNOTATION ####
 
