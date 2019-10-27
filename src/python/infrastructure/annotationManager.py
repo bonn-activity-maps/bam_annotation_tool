@@ -34,6 +34,25 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
+    # Get annotations info for given frame range, dataset, scene and user. Not return mongo id
+    # AIK: ignore user parameter
+    def getAnnotationsByFrameRange(self, dataset, datasetType, scene, startFrame, endFrame, user):
+        try:
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene,
+                                               "frame": {"$gte": int(startFrame), "$lte": int(endFrame)}},
+                                               {'_id': 0}).sort("frame", 1)
+            else:
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}, # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root",
+                                               "frame": {"$gte": int(startFrame), "$lte": int(endFrame)}},
+                                                {'_id': 0}).sort("frame", 1)
+
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding annotation in db')
+            return 'Error'
+
     # Get all annotations for given dataset, scene, user and val. Not return mongo id
     # AIK: ignore user parameter
     def getAnnotations(self, dataset, datasetType, scene, user, val):
@@ -102,6 +121,7 @@ class AnnotationManager:
     # PT: Filter by type too
     def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
         try:
+            # Change aik method, use the same filter as in pt once objectType is added to /getannotation/objects api call
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
                                                   {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
@@ -292,22 +312,23 @@ class AnnotationManager:
         keypoints = objects["keypoints"]
 
         if datasetType is not None and datasetType == self.aik:
-            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj}
+            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj, "objects.type": type}
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
-            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj}
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj, "objects.type": type}
 
-        arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
+        arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
-            newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
+            newValues = {"$set": {"objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
         else:
-            newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints}}
+            newValues = {"$set": {"objects.$[elem].keypoints": keypoints}}
 
         try:
             result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
+
             # ok if no error (it doesn't matter if the keypoints have not been modified)
             if result.acknowledged == 1:
                 return 'ok'

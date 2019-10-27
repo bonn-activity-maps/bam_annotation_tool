@@ -224,6 +224,15 @@ def getAnnotation():
                                                            request.headers['frame'], request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get annotation info for given frame range, dataset, scene and user
+@app.route('/api/annotation/getAnnotationsByFrameRange', methods=['GET'])
+def getAnnotationsByFrameRange():
+    success, msg, status = annotationService.getAnnotationsByFrameRange(request.headers['dataset'],
+                                                                        request.headers["datasetType"], request.headers['scene'],
+                                                                        int(request.headers['startFrame']), int(request.headers['endFrame']),
+                                                                        request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
