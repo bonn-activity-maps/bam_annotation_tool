@@ -49,6 +49,14 @@
     width: 120px;
 }
 
+.panel-loading {
+    /* filter: blur(8px);
+    -webkit-filter: blur(8px); */
+    /* background-color: transparent !important; */
+    border-color: transparent !important;
+    text-align: center;
+}
+
 .body {
     font-family: 'Roboto', sans-serif !important;
     padding-top: 65px;
