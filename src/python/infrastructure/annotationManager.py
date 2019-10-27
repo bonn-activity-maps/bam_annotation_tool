@@ -303,11 +303,16 @@ class AnnotationManager:
         # Update object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
-            newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
+            if datasetType is not None and datasetType == self.aik:
+                newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
+            else:
+                newValues = {"$set": {"objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
+
         elif datasetType is not None and datasetType == self.aik:
             newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints}}
         else:
             newValues = {"$set": {"objects.$[elem].keypoints": keypoints}}
+
         try:
             result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
             # ok if no error (it doesn't matter if the keypoints have not been modified)
