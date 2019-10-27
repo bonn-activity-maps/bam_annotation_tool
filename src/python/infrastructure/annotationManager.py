@@ -293,19 +293,21 @@ class AnnotationManager:
 
         if datasetType is not None and datasetType == self.aik:
             query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj}
+            arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
-            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj}
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj, "objects.type": type}
+            arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
-        arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
             newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
-        else:
+        elif datasetType is not None and datasetType == self.aik:
             newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints}}
-
+        else:
+            newValues = {"$set": {"objects.$[elem].keypoints": keypoints}}
         try:
             result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
             # ok if no error (it doesn't matter if the keypoints have not been modified)
