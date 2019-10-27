@@ -102,6 +102,7 @@ class AnnotationManager:
     # PT: Filter by type too
     def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
         try:
+            # Change aik method, use the same filter as in pt once objectType is added to /getannotation/objects api call
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
                                                   {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
@@ -292,29 +293,23 @@ class AnnotationManager:
         keypoints = objects["keypoints"]
 
         if datasetType is not None and datasetType == self.aik:
-            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj}
-            arrayFilter = [{"elem.uid": {"$eq": uidObj}}]     # Filter by object uid
+            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj, "objects.type": type}
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
             query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj, "objects.type": type}
-            arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
+        arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if "labels" in objects:
             labels = objects["labels"]
-            if datasetType is not None and datasetType == self.aik:
-                newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
-            else:
-                newValues = {"$set": {"objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
-
-        elif datasetType is not None and datasetType == self.aik:
-            newValues = {"$set": {"objects.$[elem].type": type, "objects.$[elem].keypoints": keypoints}}
+            newValues = {"$set": {"objects.$[elem].keypoints": keypoints, "objects.$[elem].labels": labels}}
         else:
             newValues = {"$set": {"objects.$[elem].keypoints": keypoints}}
 
         try:
             result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
+
             # ok if no error (it doesn't matter if the keypoints have not been modified)
             if result.acknowledged == 1:
                 return 'ok'

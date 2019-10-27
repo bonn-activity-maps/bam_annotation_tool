@@ -206,10 +206,9 @@ class AnnotationService:
     def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
-        if datasetType == 'poseTrack':
-            found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj, objects["type"])
-        else:
-            found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj)
+        type = objects["type"]
+
+        found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj, type)
 
         if found == 'Error':
             return 'Error'
