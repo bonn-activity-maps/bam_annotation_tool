@@ -39,7 +39,15 @@ class AnnotationService:
     def getAnnotation(self, dataset, datasetType, scene, frame, user):
         result = annotationManager.getAnnotation(dataset, datasetType, scene, frame, user)
         if result == 'Error':
-            return False, 'The frame does not have an annotation', 400
+            return False, 'Error retrieving annotation', 400
+        else:
+            return True, result, 200
+
+    # Get annotation info for given frame range, dataset, video and user
+    def getAnnotationsByFrameRange(self, dataset, datasetType, scene, startFrame, endFrame, user):
+        result = annotationManager.getAnnotationsByFrameRange(dataset, datasetType, scene, startFrame, endFrame, user)
+        if result == 'Error':
+            return False, 'Error retrieving annotations', 400
         else:
             return True, result, 200
 
@@ -47,7 +55,7 @@ class AnnotationService:
     def getAnnotations(self, dataset, datasetType, video, user):
         result = annotationManager.getAnnotations(dataset, datasetType, video, user, "correct")
         if result == 'Error':
-            return False, 'The video in dataset does not have the final annotations', 400
+            return False, 'Error retrieving annotations', 400
         else:
             return True, result, 200
 
@@ -206,10 +214,9 @@ class AnnotationService:
     def updateAnnotationFrameObject(self, dataset, scene, frame, user, objects, datasetType=None):
         # Read uid object  and check if it exists
         uidObj = objects["uid"]
-        if datasetType == 'poseTrack':
-            found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj, objects["type"])
-        else:
-            found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj)
+        type = objects["type"]
+
+        found = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, uidObj, type)
 
         if found == 'Error':
             return 'Error'
