@@ -206,6 +206,13 @@ def getMaxFrame():
                                                       request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get min frame of video
+@app.route('/api/video/getMinFrame', methods=['GET'])
+def getMinFrame():
+    success, msg, status = datasetService.getMinFrame(request.headers['dataset'], request.headers['datasetType'],
+                                                      request.headers['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### ANNOTATION ####
 
@@ -215,6 +222,15 @@ def getAnnotation():
     success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers["datasetType"],
                                                            request.headers['scene'],
                                                            request.headers['frame'], request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get annotation info for given frame range, dataset, scene and user
+@app.route('/api/annotation/getAnnotationsByFrameRange', methods=['GET'])
+def getAnnotationsByFrameRange():
+    success, msg, status = annotationService.getAnnotationsByFrameRange(request.headers['dataset'],
+                                                                        request.headers["datasetType"], request.headers['scene'],
+                                                                        int(request.headers['startFrame']), int(request.headers['endFrame']),
+                                                                        request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

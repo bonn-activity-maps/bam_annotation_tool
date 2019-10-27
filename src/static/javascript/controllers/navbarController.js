@@ -20,7 +20,8 @@ angular.module('CVGTool')
             frameRange: 0, // Range of frames
             loadedCameras: [], // Filenames of the cameras that have been loaded
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
-            maxFrame: 0 // Max frame of the session to check frame range displacements
+            maxFrame: -1, // Max frame of the session to check frame range displacements
+            minFrame: -1 // Min frame of the session to check frame range displacements
         };
 
         $scope.activeState = $scope.user.assignedTo[0];
@@ -94,14 +95,9 @@ angular.module('CVGTool')
 
         // Function to move the tool to the previous range
         $scope.goPreviousRange = function() {
-            var minFrame = 0;
-            if (!$scope.isPosetrack()) {
-                minFrame = 1;
-            }
-
             // Check if we can go to the previous range
-            if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < minFrame) {
-                $state.go('tool', { obj: { from: minFrame, to: minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+            if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < $scope.sessionData.minFrame) {
+                $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             } else {
                 $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             }
