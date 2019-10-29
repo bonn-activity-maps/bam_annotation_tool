@@ -231,13 +231,13 @@ class AnnotationService:
         return result
 
     # Remove annotation for an object for given frame, dataset, video and user
-    def removeAnnotationFrameObject(self, req):
-        result = annotationManager.removeFrameObject(req['dataset'], req['video'], req['frame'], req['user'],
-                                                     req['uidObject'])
+    def removeAnnotationFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType):
+        #TODO: in PT the uidobject change for each frame, so we need to iterate for all frames with the corresponding id
+        result = annotationManager.removeFrameObject(dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType)
         if result == 'ok':
             return True, result, 200
         else:
-            return False, result, 500
+            return False, 'Error deleting annotation', 500
 
     # Interpolate all keypoints between 2 points
     def interpolate(self, numFrames, numKpts, kpDim, kps1, kps2):
