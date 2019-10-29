@@ -266,17 +266,6 @@ def updateAnnotationPT():
                                                                 req_data['user'], req_data['object'], req_data['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-#
-# # Delete annotation
-# # TODO: do we need to filter in remove by validated flag?
-# @app.route('/api/annotation/removeAnnotation', methods=['POST'])
-# def removeAnnotation():
-#     req_data = request.get_json()
-#     success, msg, status = annotationService.removeAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
-#                                                               req_data['user'])
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
 # Validate frames for given dataset, video and user
 # frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]
 # Each validated flag corresponds to an array of frames (the same position)
@@ -333,11 +322,16 @@ def getAnnotationFrameObjectPT():
 #     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# # Remove object in annotation for given frame, dataset, video and user
-# @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
-# def removeAnnotationFrameObject():
-#     success, msg, status = annotationService.removeAnnotationFrameObject(request.get_json())
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# Delete annotation for given frame, dataset, video and user and object id
+@app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
+def removeAnnotation():
+    req_data = request.get_json()
+    success, msg, status = annotationService.removeAnnotationFrameObject(req_data['dataset'], req_data['datasetType'],
+                                                                         req_data['scene'],
+                                                                         int(req_data['startFrame']), int(req_data['endFrame']),
+                                                                         req_data['user'],
+                                                                         int(req_data['uidObject']), req_data['objectType'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 #### OBJECT TYPE ####

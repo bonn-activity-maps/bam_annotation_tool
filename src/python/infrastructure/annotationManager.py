@@ -208,7 +208,7 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation has been removed
-    def removeAnnotation(self, dataset, scene, frame, user): #TODO PT remove
+    def removeAnnotation(self, dataset, scene, frame, user):
         try:
             result = self.collection.delete_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)})
             if result.deleted_count == 1:
@@ -338,14 +338,29 @@ class AnnotationManager:
             log.exception('Error updating object in annotation in db')
             return 'Error'
 
-    # Return 'ok' if the annotation for an object in a frame has been removed.
-    def removeFrameObject(self, dataset, video, frame, user, uidObject):
-        query = {"dataset": dataset, "video": video, "user": user, "frame": frame}
-        # Remove object where object.uid == uidObject
-        newValues = {"$pull": {"objects": {"uid": uidObject}}}
+    # Update an annotation and let the object empty in selected frames
+    # Return 'ok' if the annotation for an object in a frame has been updated.
+    # AIK: ignore user parameter
+    def removeFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObj, objectType):
+
+        if datasetType is not None and datasetType == self.aik:
+            query = {"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                     "objects.uid": int(uidObj), "objects.type": objectType}
+        else:
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+            #          "objects.uid": uidObj, "objects.type": objectType}         # User instead of root
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                     "objects.uid": int(uidObj), "objects.type": objectType}
+
+        # Filter each annotation and select only objects with uid and type
+        arrayFilter = [{"elem.uid": {"$eq": int(uidObj)}, "elem.type": {"$eq": objectType}}]
+
+        # Update object to empty list
+        newValues = {"$set": {"objects.$[elem].keypoints": []}}
+
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
-            if result.modified_count == 1:
+            result = self.collection.update_many(query, newValues, upsert=False, array_filters=arrayFilter)
+            if result.modified_count > 0:
                 return 'ok'
             else:
                 return 'Error'
