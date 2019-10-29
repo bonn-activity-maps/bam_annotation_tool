@@ -40,11 +40,30 @@ angular.module('CVGTool')
             });
         },
 
+        // Gets the image of a frame range, from a video and a dataset
+        getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/dataset/getFramesVideo',
+                headers: {
+                    'video': fileName,
+                    'startFrame': frameStart,
+                    'endFrame': frameEnd,
+                    'dataset': dataset,
+                    'datasetType': datasetType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            });
+        },
+
         // Gets the annotations of a frame range, from a video, a dataset and a user
-        getAnnotationByFrameRange: function(scene, datasetType, frameStart, frameEnd, dataset, user, callbackSuccess, callbackError) {
+        getAnnotationsByFrameRange: function(scene, datasetType, frameStart, frameEnd, dataset, user, callbackSuccess, callbackError) {
             $http({
                     method: 'GET',
-                    url: '/api/annotation/getAnnotationByFrameRange',
+                    url: '/api/annotation/getAnnotationsByFrameRange',
                     headers: {
                         'scene': scene,
                         'startFrame': frameStart,

@@ -623,7 +623,7 @@ class DatasetService:
     def getVideoFrames(self, dataset, type, video, startFrame, endFrame):
         imgs = []
 
-        for frame in range(startFrame, endFrame):
+        for frame in range(startFrame, endFrame + 1):
             # Get path of frame
             result = frameService.getFramePath(frame, int(video), dataset) if type == self.aik \
                 else frameService.getFramePath(frame, video, dataset)
