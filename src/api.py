@@ -294,7 +294,6 @@ def interpolateAnnotation():
                                                          req_data['uidObject2'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-#####
 
 # Get annotation of one object in frame for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])

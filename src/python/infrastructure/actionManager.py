@@ -99,8 +99,8 @@ class ActionManager:
     # Remove the action specified with the attributes
     def removeAction(self, dataset, objectUID, user, name, startFrame, endFrame):
         try:
-            result = self.collection.delete_one({"dataset": dataset, "objectUID": int(objectUID), "name": name, "user": user,
-                                                 "startFrame": int(startFrame), "endFrame": int(endFrame)})
+            result = self.collection.delete_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+                                                 "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -111,8 +111,8 @@ class ActionManager:
 
     # Update an action identified by old attributes with the new attributes
     def updateAction(self, dataset, objectUID, user, oldName, oldStartFrame, oldEndFrame, newName, newStartFrame, newEndFrame):
-        query = {"dataset": dataset, "objectUID": int(objectUID), "name": oldName, "user": user,
-                 "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame)}  # Search by old attributes
+        query = {"dataset": dataset, "user": user, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
+                 "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
         # Update all values
         newValues = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
         try:

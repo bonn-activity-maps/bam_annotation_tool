@@ -312,10 +312,10 @@ class AnnotationManager:
         keypoints = objects["keypoints"]
 
         if datasetType is not None and datasetType == self.aik:
-            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj, "objects.type": type}
+            query = {"dataset": dataset, "scene": scene, "objects.uid": uidObj, "objects.type": type, "frame": frame}
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
-            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj, "objects.type": type}
+            query = {"dataset": dataset, "scene": scene, "user": "root", "objects.uid": uidObj, "objects.type": type, "frame": frame}
 
         arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
