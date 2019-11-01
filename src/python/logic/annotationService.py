@@ -232,8 +232,16 @@ class AnnotationService:
 
     # Remove annotation for an object for given frame, dataset, video and user
     def removeAnnotationFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType):
-        #TODO: in PT the uidobject change for each frame, so we need to iterate for all frames with the corresponding id
-        result = annotationManager.removeFrameObject(dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType)
+        # PT: the uidObject change for each frame, iterate for all frames with the corresponding id
+        if datasetType == self.pt:
+            result = 'ok'
+            for f in range(startFrame, endFrame+1):
+                originalUid = self.generateNewOriginalUid(uidObject, scene, f)
+                r = annotationManager.removeFrameObject(dataset, datasetType, scene, f, f, user, originalUid, objectType)
+                if r == 'Error': result = 'Error'
+        else:
+            result = annotationManager.removeFrameObject(dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType)
+
         if result == 'ok':
             return True, result, 200
         else:

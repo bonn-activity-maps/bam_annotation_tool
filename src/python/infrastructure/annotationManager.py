@@ -343,7 +343,7 @@ class AnnotationManager:
     # AIK: ignore user parameter
     def removeFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObj, objectType):
 
-        if datasetType is not None and datasetType == self.aik:
+        if datasetType == self.aik:
             query = {"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
                      "objects.uid": int(uidObj), "objects.type": objectType}
         else:
@@ -360,7 +360,7 @@ class AnnotationManager:
 
         try:
             result = self.collection.update_many(query, newValues, upsert=False, array_filters=arrayFilter)
-            if result.modified_count > 0:
+            if result.acknowledged == 1:
                 return 'ok'
             else:
                 return 'Error'
