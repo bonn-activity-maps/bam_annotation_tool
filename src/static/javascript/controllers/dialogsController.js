@@ -297,9 +297,9 @@ angular.module('CVGTool')
             for (i = 0; i < list.length; i++) {
                 if (!$scope.loadedCameras.includes(list[i].name.toString())) { // If the camera is loaded, dont show it again
                     // Add train/test/val type to posetrack
-                    if ($scope.isPosetrack()){
-                        $scope.videoType =  list[i].type
-                    } else{
+                    if ($scope.isPosetrack()) {
+                        $scope.videoType = list[i].type
+                    } else {
                         $scope.videoType = ''
                     }
 
@@ -323,7 +323,7 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            if ($scope.isPosetrack()){
+            if ($scope.isPosetrack()) {
                 $scope.videosSelected.videos = $scope.videosSelected.videos.split(' - ')[0]
             }
             $mdDialog.hide($scope.videosSelected);
@@ -387,4 +387,18 @@ angular.module('CVGTool')
     }
 ])
 
-;
+/*
+ * Controller of the dialog of loading
+ */
+.controller('loadingDialogCtrl', ['$scope', '$mdDialog',
+    function($scope, $mdDialog) {
+
+        // Event handler
+        $scope.$on('sendMsg', function(evt, data) {
+            if (data.type = "finishLoadingDialog") {
+                $mdDialog.cancel();
+            }
+
+        });
+    }
+]);

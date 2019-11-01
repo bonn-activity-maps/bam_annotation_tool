@@ -40,14 +40,34 @@ angular.module('CVGTool')
             });
         },
 
-        // Gets the annotations of a frame, from a video, a dataset and a user
-        getAnnotationOfFrame: function(scene, datasetType, frame, dataset, user, callbackSuccess, callbackError) {
+        // Gets the image of a frame range, from a video and a dataset
+        getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/dataset/getFramesVideo',
+                headers: {
+                    'video': fileName,
+                    'startFrame': frameStart,
+                    'endFrame': frameEnd,
+                    'dataset': dataset,
+                    'datasetType': datasetType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            });
+        },
+
+        // Gets the annotations of a frame range, from a video, a dataset and a user
+        getAnnotationsByFrameRange: function(scene, datasetType, frameStart, frameEnd, dataset, user, callbackSuccess, callbackError) {
             $http({
                     method: 'GET',
-                    url: '/api/annotation/getAnnotation',
+                    url: '/api/annotation/getAnnotationsByFrameRange',
                     headers: {
                         'scene': scene,
-                        'frame': frame,
+                        'startFrame': frameStart,
+                        'endFrame': frameEnd,
                         'dataset': dataset,
                         'datasetType': datasetType,
                         'user': user
@@ -238,7 +258,7 @@ angular.module('CVGTool')
         },
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
-                              uidObject2, callbackSuccess, callbackError) {
+            uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",

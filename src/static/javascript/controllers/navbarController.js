@@ -85,6 +85,8 @@ angular.module('CVGTool')
 
         // Function to move the tool to the next range
         $scope.goNextRange = function() {
+            if ($scope.sessionData.frameEnd == $scope.sessionData.maxFrame) return; // Check if it is possible to advance
+
             if ($scope.sessionData.frameEnd + $scope.sessionData.frameRange > $scope.sessionData.maxFrame) {
                 $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
 
@@ -95,6 +97,7 @@ angular.module('CVGTool')
 
         // Function to move the tool to the previous range
         $scope.goPreviousRange = function() {
+            if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // CHeck if it is possible to go backwards
             // Check if we can go to the previous range
             if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < $scope.sessionData.minFrame) {
                 $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
