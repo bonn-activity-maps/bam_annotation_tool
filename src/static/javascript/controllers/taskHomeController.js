@@ -3,8 +3,8 @@ angular.module('CVGTool')
 /*
  * Controller of admin page "Users"
  */
-.controller('taskHomeCtrl', ['$scope', '$rootScope', '$state', '$mdDialog', 'navSrvc', 'taskHomeSrvc', 'adminDatasetsSrvc',
-    function($scope, $rootScope, $state, $mdDialog, navSrvc, taskHomeSrvc, adminDatasetsSrvc) {
+.controller('taskHomeCtrl', ['$scope', '$rootScope', '$state', '$mdDialog', 'navSrvc', 'taskHomeSrvc',
+    function($scope, $rootScope, $state, $mdDialog, navSrvc, taskHomeSrvc) {
 
         $scope.initialFrame = 0;
         $scope.slider = { // Options and values for the slider
@@ -16,6 +16,7 @@ angular.module('CVGTool')
                 showSelectionBar: true
             }
         };
+        $scope.videos = [];
 
         // Function called everytime the number input of the slider is changed to check those values
         $scope.checkSlider = function() {
@@ -28,25 +29,8 @@ angular.module('CVGTool')
             return navSrvc.getActiveDataset().type.localeCompare("poseTrack") === 0;
         };
 
-        $scope.videos = [];
-
-        $scope.fillTableFrames = function(frameInfoOfVideo, video) {
-            for (let i = 0; i < $scope.videos.length; i++) {
-                if ($scope.videos[i].name.localeCompare(video) === 0) {
-                    $scope.videos[i].frameStart = frameInfoOfVideo[0].number;
-                    $scope.videos[i].frameEnd = frameInfoOfVideo[1].number;
-                    break;
-                }
-            }
-        };
-
         $scope.fillTable = function(videos) {
             $scope.videos = videos;
-            if (videos !== []) {
-                for (let i = 0; i < videos.length; i++) {
-                    taskHomeSrvc.getFrameInfo(navSrvc.getActiveDataset().name, videos[i].name, $scope.fillTableFrames, sendMessage)
-                }
-            }
         };
 
         $scope.loadVideoTable = function() {
@@ -58,7 +42,7 @@ angular.module('CVGTool')
                 sendMessage('danger', 'Please ignore the button you just pressed. I was in a hurry :-)');
                 return;
             }
-            adminDatasetsSrvc.getInfoOfVideos($scope.fillTable, navSrvc.getActiveDataset().name, sendMessage);
+            taskHomeSrvc.getFrameInfo(navSrvc.getActiveDataset().name, navSrvc.getActiveDataset().type, $scope.fillTable, sendMessage);
         };
 
         $scope.goToTool = function() {
