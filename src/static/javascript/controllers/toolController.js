@@ -1704,6 +1704,7 @@ angular.module('CVGTool')
 
         $scope.refreshProjectionOfCanvases = function() {
             if ($scope.isPosetrack()) {
+                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
                 if ($scope.canvases[0].hasActiveCamera()) {
                     $scope.canvases[0].updateObjects2D();
                 }
@@ -1966,6 +1967,10 @@ angular.module('CVGTool')
 
                 // Fill all cameras
                 $scope.fillCameras(camerasToLoad);
+            } else {
+                if ($scope.isPosetrack()) {
+                    $scope.addCamera();
+                }
             }
         }
 
@@ -2092,7 +2097,6 @@ angular.module('CVGTool')
                     objects: {}
                 }
             }
-
             sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
             $scope.checkWhereAreWeComingFrom();
         }

@@ -392,7 +392,6 @@ angular.module('CVGTool')
  */
 .controller('loadingDialogCtrl', ['$scope', '$mdDialog',
     function($scope, $mdDialog) {
-
         // Event handler
         $scope.$on('sendMsg', function(evt, data) {
             if (data.type = "finishLoadingDialog") {
