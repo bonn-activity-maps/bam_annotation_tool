@@ -1921,6 +1921,54 @@ angular.module('CVGTool')
             })
         }
 
+        $scope.checkWhereAreWeComingFrom = function() {
+            // Check if we come from task home or from the tool itself
+            if (!$scope.fromTaskHome) { // If we come from the tool
+                $scope.setLoadingDialog();
+                var camerasToLoad = { videos: [] };
+                var canvasCameras = $stateParams.obj.canvasCameras;
+                var originalRange = $stateParams.obj.originalRange;
+                // First create the array with all the camera names
+                for (var i = 0; i < $stateParams.obj.loadedCameras.length; i++) {
+                    if ($stateParams.obj.loadedCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        camerasToLoad.videos.push($stateParams.obj.loadedCameras[i]);
+                    }
+                }
+
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        camerasToLoad.videos.push(canvasCameras[i]);
+                    }
+                }
+
+                // Reset sessionData of the cameras
+                navSrvc.resetSessionData();
+
+                // Create the cameras
+                $scope.createCameras(camerasToLoad);
+
+                // Fill the ranges again
+                navSrvc.setFrameStart($scope.frameFrom);
+                navSrvc.setFrameEnd($scope.frameTo);
+                navSrvc.setFrameRange(originalRange);
+
+                // Place cameras in canvases if needed
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        for (var j = 0; j < $scope.loadedCameras.length; j++) {
+                            if (canvasCameras[i].localeCompare($scope.loadedCameras[j].filename) == 0) {
+                                $scope.switchVideo($scope.loadedCameras[j], i + 1); // + 1 needed because the function switch video already substracts 1
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Fill all cameras
+                $scope.fillCameras(camerasToLoad);
+            }
+        }
+
         /////////
         // END OF OTHER FUNCTIONS
         /////////
@@ -1978,7 +2026,10 @@ angular.module('CVGTool')
 
         // Callback function for retrieveAnnotations
         var callbackGetAnnotationsByFrameRangeAIK = function(annotations) {
-            if (annotations.length == 0) return; // Check if we received something
+            if (annotations.length == 0) { // Check if we received something
+                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+                return;
+            }; 
             for (var j = 0; j < annotations.length; j++) {
                 var annotation = annotations[j];
                 for (var i = 0; i < annotation.objects.length; i++) {
@@ -2043,6 +2094,7 @@ angular.module('CVGTool')
             }
 
             sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+            $scope.checkWhereAreWeComingFrom();
         }
 
         // Retrieve available objects and fill the array
@@ -2090,7 +2142,11 @@ angular.module('CVGTool')
 
         // Callback function for retrieveAnnotations
         var callbackGetAnnotationsByFrameRangePT = function(annotations) {
-            if (annotations.length == 0) return; // Check if we received something
+            if (annotations.length == 0) {  // Check if we received something
+                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+                return;
+            }
+
             for (var j = 0; j < annotations.length; j++) {
                 var annotation = annotations[j];
                 for (var i = 0; i < annotation.objects.length; i++) {
@@ -2101,7 +2157,6 @@ angular.module('CVGTool')
                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                         .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.frameFrom].frame =
                         annotation.frame;
-
                 }
             }
             sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
@@ -2153,58 +2208,13 @@ angular.module('CVGTool')
         /////////
         $scope.initializeCanvases(); // First, initialize canvases
 
-        // Check if we come from task home or from the tool itself
-        if (!$scope.fromTaskHome) { // If we come from the tool
-            $scope.setLoadingDialog();
-            var camerasToLoad = { videos: [] };
-            var canvasCameras = $stateParams.obj.canvasCameras;
-            var originalRange = $stateParams.obj.originalRange;
-            // First create the array with all the camera names
-            for (var i = 0; i < $stateParams.obj.loadedCameras.length; i++) {
-                if ($stateParams.obj.loadedCameras[i].localeCompare("") != 0) { // If there is a camera there
-                    camerasToLoad.videos.push($stateParams.obj.loadedCameras[i]);
-                }
-            }
-
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
-                    camerasToLoad.videos.push(canvasCameras[i]);
-                }
-            }
-
-            // Reset sessionData of the cameras
-            navSrvc.resetSessionData();
-
-            // Create the cameras
-            $scope.createCameras(camerasToLoad);
-
-            // Fill the ranges again
-            navSrvc.setFrameStart($scope.frameFrom);
-            navSrvc.setFrameEnd($scope.frameTo);
-            navSrvc.setFrameRange(originalRange);
-
-            // Place cameras in canvases if needed
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
-                    for (var j = 0; j < $scope.loadedCameras.length; j++) {
-                        if (canvasCameras[i].localeCompare($scope.loadedCameras[j].filename) == 0) {
-                            $scope.switchVideo($scope.loadedCameras[j], i + 1); // + 1 needed because the function switch video already substracts 1
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Fill all cameras
-            $scope.fillCameras(camerasToLoad);
-        }
-
         if ($scope.isPosetrack()) {
             $scope.PTWorkFlow();
         } else {
+            $scope.checkWhereAreWeComingFrom();
             $scope.AIKWorkFlow();
         }
-
+        
         /////////
         // END OF INITIALIZATION CALLS
         /////////
@@ -2228,9 +2238,16 @@ angular.module('CVGTool')
                 callback: function() { $scope.switchPlay() }
             })
             .add({
-                combo: 'lcrtl + s',
+                combo: 's',
                 description: 'Save annotation',
                 callback: function() { //check if the keypoint editor is open and then save
+                    if ($scope.keyPointEditorTab == true) {
+                        if ($scope.isPosetrack()) {
+                            $scope.updateAnnotationPT();
+                        } else {
+                            $scope.updateAnnotation();
+                        }
+                    }
                 }
             });
 
