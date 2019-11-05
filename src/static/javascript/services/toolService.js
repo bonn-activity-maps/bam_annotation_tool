@@ -151,7 +151,7 @@ angular.module('CVGTool')
         },
 
         // Retrieves the object defined by objectUid
-        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, frame, callbackSuccess, callbackError) {
+        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, frame, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: "/api/annotation/getAnnotation/object",
@@ -160,6 +160,7 @@ angular.module('CVGTool')
                     "datasetType": datasetType,
                     "user": user,
                     "scene": scene,
+                    "objectType": objectType,
                     "frame": frame,
                     "uidObject": objectUid
                 }

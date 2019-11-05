@@ -2067,7 +2067,7 @@ angular.module('CVGTool')
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotationAIK = function(objectUid, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, $scope.objectManager.selectedObject.type ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
             }
         }
 
@@ -2177,7 +2177,6 @@ angular.module('CVGTool')
                 toolSrvc.getAnnotationsByFrameRange($scope.canvases[0].getActiveCamera().filename, $scope.activeDataset.type, $scope.frameFrom, $scope.frameTo,
                     $scope.activeDataset.name, navSrvc.getUser().name, callbackGetAnnotationsByFrameRangePT);
             }
-
         };
 
         // Callback function for retrieving one object
@@ -2191,11 +2190,13 @@ angular.module('CVGTool')
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                    $scope.canvases[0].activeCamera.filename,
-                    $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
-                    callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
+                // toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
+                //     $scope.canvases[0].activeCamera.filename,
+                //     $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
+                //     callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]),$scope.objectManager.selectedObject.type ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
             }
+
         };
 
         $scope.PTWorkFlow = function() {
