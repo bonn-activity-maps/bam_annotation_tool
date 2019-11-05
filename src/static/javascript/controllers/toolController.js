@@ -2059,17 +2059,26 @@ angular.module('CVGTool')
         };
 
         // Callback function for retrieving one object
-        var callbackGetAnnotationsByFrameRangeAndUIDAIK = function(annotation, frame) {
-            if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
-            $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
-            $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type, frame);
+        var callbackGetAnnotationsByFrameRangeAndUIDAIK = function(annotations) {
+            if (annotations.length <= 0) return;
+
+            for(var j= 0; j< annotations.length; j++) {
+                var frame = annotations[j].frame;
+                var objects = annotations[j].objects;
+                for (var i=0; i< objects.length; i++) {
+                    $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = objects[i].keypoints;
+                    $scope.refreshProjectionOfCanvasesByUID(objects[i].uid, objects[i].type, frame);
+                }
+            }
         }
 
 
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotationAIK = function(objectUid, objectType, frameArray) {
-            for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+            if (frameArray.length == 1) {   // If there is only one frame
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[0], frameArray[0], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+            } else {
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[0], frameArray[frameArray.length - 1],callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
             }
         }
 
@@ -2181,17 +2190,21 @@ angular.module('CVGTool')
         };
 
         // Callback function for retrieving one object
-        var callbackGetAnnotationsByFrameRangeAndUIDPT = function(annotation, frame) {
-            if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
-            $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
-            $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].original_uid = annotation.uid;
-            $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
+        var callbackGetAnnotationsByFrameRangeAndUIDPT = function(annotation) {
+            if (annotation.length <= 0) return; // Check if we received something
+            var frame = annotation[0].frame;
+            var objects = annotation[0].objects;
+            for (var i= 0; i< objects.length; i++) {
+                $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.frameFrom].keypoints = objects[i].keypoints;
+                $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.frameFrom].original_uid = objects[i].uid;
+                $scope.refreshProjectionOfCanvasesByUID(objects[i].track_id, objects[i].type, frame);
+            } 
         }
 
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), objectType ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), objectType ,frameArray[i], frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
             }
 
         };
