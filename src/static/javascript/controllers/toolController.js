@@ -30,7 +30,7 @@ angular.module('CVGTool')
         $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
         $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
-
+      
         // Mugshots
         $scope.selectedObjectMugshots = []; // Struct to store the mugshots of the selectedObject
 
@@ -673,7 +673,7 @@ angular.module('CVGTool')
                     for (var i = 0; i < $scope.canvases.length; i++) {
                         $scope.canvases[i].setRedraw();
                     }
-                    sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+                    sendMessage("closeLoadingDialog", ""); // Unlock loading dialog
                 }
             }
         };
@@ -697,7 +697,7 @@ angular.module('CVGTool')
                 $scope.numberOfLoadedCameras = 0;
                 $scope.numberOfCamerasToLoad = successData.videos.length;
 
-                $scope.setLoadingDialog(); // Launch the loading dialog to block user actions
+                $scope.setLoadingDialog();
                 $scope.createCameras(successData);
                 $scope.fillCameras(successData);
             });
@@ -1704,7 +1704,6 @@ angular.module('CVGTool')
 
         $scope.refreshProjectionOfCanvases = function() {
             if ($scope.isPosetrack()) {
-                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
                 if ($scope.canvases[0].hasActiveCamera()) {
                     $scope.canvases[0].updateObjects2D();
                 }
@@ -1715,7 +1714,6 @@ angular.module('CVGTool')
                     }
                 }
             }
-
         };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
@@ -1851,7 +1849,7 @@ angular.module('CVGTool')
             if ($scope.isPosetrack()) {
                 $scope.retrieveAnnotationPT(objectUid, objectType, frames);
             } else {
-                $scope.retrieveAnnotationAIK(objectUid, frames);
+                $scope.retrieveAnnotationAIK(objectUid, objectType, frames);
             }
 
         }
@@ -1914,14 +1912,6 @@ angular.module('CVGTool')
             $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
         };
 
-        $scope.setLoadingDialog = function() {
-            $mdDialog.show({
-                templateUrl: '/static/views/dialogs/loadingDialog.html',
-                controller: 'loadingDialogCtrl',
-                escapeToClose: false,
-            })
-        }
-
         $scope.checkWhereAreWeComingFrom = function() {
             // Check if we come from task home or from the tool itself
             if (!$scope.fromTaskHome) { // If we come from the tool
@@ -1972,6 +1962,18 @@ angular.module('CVGTool')
                     $scope.addCamera();
                 }
             }
+        }
+
+        $scope.setLoadingDialog = function() {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/loadingDialog.html',
+                controller: 'loadingDialogCtrl',
+                escapeToClose: false,
+            })
+        }
+
+        $scope.closeLoadingDialog = function() {
+            sendMessage("closeLoadingDialog", "");
         }
 
         /////////
@@ -2032,7 +2034,7 @@ angular.module('CVGTool')
         // Callback function for retrieveAnnotations
         var callbackGetAnnotationsByFrameRangeAIK = function(annotations) {
             if (annotations.length == 0) { // Check if we received something
-                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+                $scope.closeLoadingDialog();
                 return;
             }; 
             for (var j = 0; j < annotations.length; j++) {
@@ -2046,7 +2048,7 @@ angular.module('CVGTool')
 
                 }
             }
-            sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+            $scope.closeLoadingDialog();
             $scope.refreshProjectionOfCanvases();
         }
 
@@ -2065,15 +2067,14 @@ angular.module('CVGTool')
 
 
         // Function that returns the annotations defined by objectUid
-        $scope.retrieveAnnotationAIK = function(objectUid, frameArray) {
+        $scope.retrieveAnnotationAIK = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, $scope.objectManager.selectedObject.type ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
             }
         }
 
-
         $scope.AIKWorkFlow = function() {
-            $scope.setLoadingDialog(); // Launch the loading dialog to block user actions
+            $scope.setLoadingDialog();
             $scope.retrieveAvailableObjectTypesAIK(); // Lastly, take all objectTypes, objects and annotations in a chain of requests
 
         }
@@ -2097,7 +2098,7 @@ angular.module('CVGTool')
                     objects: {}
                 }
             }
-            sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+            $scope.closeLoadingDialog();
             $scope.checkWhereAreWeComingFrom();
         }
 
@@ -2147,7 +2148,7 @@ angular.module('CVGTool')
         // Callback function for retrieveAnnotations
         var callbackGetAnnotationsByFrameRangePT = function(annotations) {
             if (annotations.length == 0) {  // Check if we received something
-                sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+                $scope.closeLoadingDialog();
                 return;
             }
 
@@ -2163,7 +2164,7 @@ angular.module('CVGTool')
                         annotation.frame;
                 }
             }
-            sendMessage("finishLoadingDialog", ""); // Unlock loading dialog
+            $scope.closeLoadingDialog();
 
             $scope.refreshProjectionOfCanvases();
         }
@@ -2190,17 +2191,13 @@ angular.module('CVGTool')
         // Function that returns the annotations defined by objectUid
         $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
             for (var i = 0; i < frameArray.length; i++) {
-                // toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                //     $scope.canvases[0].activeCamera.filename,
-                //     $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
-                //     callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]),$scope.objectManager.selectedObject.type ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), objectType ,frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
             }
 
         };
 
         $scope.PTWorkFlow = function() {
-            $scope.setLoadingDialog(); // Launch the loading dialog to block user actions
+            $scope.setLoadingDialog();
             $scope.retrieveAvailableObjectTypesPT(); // Lastly, take all objectTypes, objects and annotations in a chain of requests
         }
 
