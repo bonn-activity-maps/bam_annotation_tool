@@ -295,7 +295,7 @@ def getAnnotationFrameObject():
     success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
                                                                       request.headers['scene'],
                                                                       int(request.headers['frame']), request.headers['user'],
-                                                                      int(request.headers['uidObject']))
+                                                                      int(request.headers['uidObject']), request.headers['objectType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation of one object in frame for given frame, dataset, video and user
