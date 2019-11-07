@@ -1717,14 +1717,16 @@ angular.module('CVGTool')
         };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
-            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
+            if ($scope.objectManager.selectedObject !== null) {
+                $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
+                // Refresh the selected object so the table of annotations updates
+                var selectedType = $scope.objectManager.selectedType.type;
+                var selectedUID = $scope.objectManager.selectedObject.uid;
 
-            // Refresh the selected object so the table of annotations updates
-            var selectedType = $scope.objectManager.selectedType.type;
-            var selectedUID = $scope.objectManager.selectedObject.uid;
-
-            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
-            $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
+                $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
+                $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
+            }
+        
             if (!$scope.isPosetrack()) {
                 for (var i = 0; i < $scope.canvases.length; i++) {
                     if ($scope.canvases[i].hasActiveCamera()) {
@@ -1974,6 +1976,35 @@ angular.module('CVGTool')
 
         $scope.closeLoadingDialog = function() {
             sendMessage("closeLoadingDialog", "");
+        }
+
+
+        $scope.openBatchDelete = function(object) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/batchDeleteDialog.html',
+                controller: 'batchDeleteCtrl',
+                escapeToClose: false,
+                locals: {
+                    toolSrvc: toolSrvc,
+                    object: object,
+                    minFrame: $scope.frameFrom,
+                    maxFrame: $scope.frameTo,
+                    dataset: $scope.activeDataset,
+                    scene: $scope.activeDataset.name, // For PT this will be different
+                    username: navSrvc.getUser().name
+                }
+            }).then(function(data) { // When finished, update the frames
+                if (data.msg.localeCompare("success") == 0) {
+                    sendMessage("success", "Annotations deleted!")
+                    var frameArray = [];
+                    for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
+                        frameArray.push(i);
+                    }
+                    $scope.retrieveAnnotationAIK(data.object.uid, data.object.type, frameArray);
+                } else if (data.msg.localeCompare("error") == 0) {
+                    sendMessage("warning", "Something went wrong")
+                }
+            }) 
         }
 
         /////////

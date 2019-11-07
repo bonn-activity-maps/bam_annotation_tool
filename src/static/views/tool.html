@@ -189,6 +189,7 @@
                                 <table class="zui-table">
                                     <thead>
                                         <tr>
+                                            <th></th>
                                             <th class="zui-sticky-col">Objects</th>
                                             <th ng-repeat="frame in frameList">{{frame}}</th>
                                         </tr>
@@ -196,7 +197,9 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="object in objectManager.selectedType.objects">
-                                            <td class="zui-sticky-col">{{object.uid}}</td>
+                                            <th><button class="btn btn-danger" ng-click="openBatchDelete(object)"><span
+                                                class="glyphicon glyphicon-transfer"></span></button></th>
+                                            <td class="zui-sticky-col">{{object.uid}} </td>
                                             <th ng-repeat="f in object.frames">
                                                 <button class="btn btn-success" ng-if="f.keypoints.length != 0" ng-click="openKeyPointEditor(object,f.frame)"><span
                                                                 class="glyphicon glyphicon-pushpin"></span></button>

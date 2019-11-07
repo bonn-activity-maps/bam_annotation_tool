@@ -395,6 +395,50 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
             }, function errorCallback(response) {})
+        },
+
+        // Delete annotations
+        deleteAnnotation: function(dataset, datasetType, scene, frame ,username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': frame,
+                    'endFrame': frame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
+        },
+
+        // Batch delete annotations
+        batchDeleteAnnotations: function(dataset, datasetType, scene, startFrame, endFrame, username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
         }
     }
 });
