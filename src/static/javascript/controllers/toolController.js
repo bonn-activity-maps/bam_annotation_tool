@@ -1718,15 +1718,19 @@ angular.module('CVGTool')
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
             if ($scope.objectManager.selectedObject !== null) {
-                $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
                 // Refresh the selected object so the table of annotations updates
                 var selectedType = $scope.objectManager.selectedType.type;
                 var selectedUID = $scope.objectManager.selectedObject.uid;
 
                 $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
                 $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
+                $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
             }
-        
+            
+            if ($scope.objectManager.selectedType !== null) {
+                $scope.objectManager.selectedType = $scope.objectManager.objectTypes[objectType];
+            }
+
             if (!$scope.isPosetrack()) {
                 for (var i = 0; i < $scope.canvases.length; i++) {
                     if ($scope.canvases[i].hasActiveCamera()) {
