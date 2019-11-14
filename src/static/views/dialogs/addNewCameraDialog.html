@@ -24,7 +24,7 @@
         </md-dialog-content>
         <md-dialog-actions>
             <div>
-                <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+                <button ng-if="activeDataset.type != 'poseTrack'" ng-click="cancel()" class="btn btn-danger">Cancel</button>
             </div>
             <div ng-if="isVideoSelected()">
                 <button ng-if="isVideoSelected" ng-click="end()" class="btn btn-primary">Add</button>

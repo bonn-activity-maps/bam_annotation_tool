@@ -1,0 +1,45 @@
+<md-dialog>
+        <div class="panel" ng-if="mode=='normal'">
+            <md-dialog-content>
+                <h2>Batch delete</h2>
+                <hr/>
+                <div class="form-group">
+                        <label>Object ID</label>
+                        <p>{{object.uid}}</p>
+                </div>
+                <div class="form-group">
+                        <label>Object type</label>
+                        <p>{{object.type}}</p>
+                </div>
+                <div class="form-group">
+                        <label>From</label>
+                        <input type="number" ng-model="values.deleteFrom" min="minFrame" max="maxFrame" ng-blur="checkSlider()"/>
+                </div>
+                <div class="form-group">
+                        <label>To</label>
+                        <input type="number" ng-model="values.deleteTo" min="minFrame" max="maxFrame" ng-blur="checkSlider()"/>
+                </div>
+                <div class="form-group">
+                    <p><b>Minimum frame: </b>{{minFrame}} | <b>Maximum frame: </b>{{maxFrame}}</p>
+                </div>
+            </md-dialog-content>
+            <md-dialog-actions>
+                <button ng-click="close()" class="btn btn-danger">Close</button>
+                <button ng-click="delete()" class="btn btn-primary">Delete range</button>
+            </md-dialog-actions>
+        </div>
+        <div class="panel" ng-if="mode=='check'">
+            <md-dialog-content>
+                <h2>Confirmation</h2>
+                <hr/>
+                <p>You are going to delete the range of annotations from <b>{{values.deleteFrom}}</b> to <b>{{values.deleteTo}}</b> of the
+                    object with UID <b>{{object.uid}}</b> that has a type <b>{{object.type}}</b>.
+                </p>
+                <h3>Are you sure?</h3>
+            </md-dialog-content>
+            <md-dialog-actions>
+                <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+                <button ng-click="confirm()" class="btn btn-primary">Confirm</button>
+            </md-dialog-actions>
+        </div>
+    </md-dialog>

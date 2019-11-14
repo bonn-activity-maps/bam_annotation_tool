@@ -50,11 +50,21 @@
 }
 
 .panel-loading {
-    /* filter: blur(8px);
-    -webkit-filter: blur(8px); */
-    /* background-color: transparent !important; */
+    position: absolute; 
+    width: 110%; 
+    height: 110%; 
+    background: rgba(0,0,0,0.5);
     border-color: transparent !important;
     text-align: center;
+}
+
+.animate-show-hide.ng-hide {
+    opacity: 0;
+}
+
+.animate-show-hide.ng-hide-add,
+.animate-show-hide.ng-hide-remove {
+transition: all linear 0.2s;
 }
 
 .body {

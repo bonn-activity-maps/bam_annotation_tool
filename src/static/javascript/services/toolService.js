@@ -151,7 +151,7 @@ angular.module('CVGTool')
         },
 
         // Retrieves the object defined by objectUid
-        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, frame, callbackSuccess, callbackError) {
+        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, startFrame, endFrame, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: "/api/annotation/getAnnotation/object",
@@ -161,11 +161,12 @@ angular.module('CVGTool')
                     "user": user,
                     "scene": scene,
                     "objectType": objectType,
-                    "frame": frame,
+                    "startFrame": startFrame,
+                    "endFrame": endFrame,
                     "uidObject": objectUid
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, frame);
+                callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })
@@ -213,7 +214,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
+        updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotationPT',
@@ -231,7 +232,7 @@ angular.module('CVGTool')
                     'points': points
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame);
+                callbackSuccess(object.original_uid, object.type, frame, deleting);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })
@@ -394,6 +395,50 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
             }, function errorCallback(response) {})
+        },
+
+        // Delete annotations
+        deleteAnnotation: function(dataset, datasetType, scene, frame ,username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': frame,
+                    'endFrame': frame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
+        },
+
+        // Batch delete annotations
+        batchDeleteAnnotations: function(dataset, datasetType, scene, startFrame, endFrame, username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
         }
     }
 });

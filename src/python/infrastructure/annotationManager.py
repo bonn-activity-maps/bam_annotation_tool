@@ -135,6 +135,25 @@ class AnnotationManager:
             log.exception('Error finding object in annotation in db')
             return 'Error'
 
+    # Get annotations for object in frame range, without mongo id
+    # AIK: ignore user parameter
+    def getObjectInFrames(self, dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType):
+        try:
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                                               "objects.uid": obj, "objects.type": objectType},
+                                                {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, "frame": 1,  '_id': 0}).sort("frame", 1)
+            else:
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root", "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                                               "objects.uid": obj, "objects.type": objectType},
+                                                {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, "frame": 1, '_id': 0}).sort("frame", 1)
+
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
+            return 'Error'
+
     # Get annotations for object in different frames, without mongo id
     def getAnnotationsByObject(self, dataset, datasetType, scene, user, obj):
         try:

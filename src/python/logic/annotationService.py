@@ -202,10 +202,10 @@ class AnnotationService:
                 return True, {'maxUid': newUid}, 200
 
     # Get annotation of object in frame
-    def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType):
-        result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj, objectType)
+    def getAnnotationFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType):
+        result = annotationManager.getObjectInFrames(dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType)
         if result == 'Error':
-            return False, 'The object does not exist in frame ' + frame, 400
+            return False, 'The object does not exist in frames', 400
         else:
             return True, result, 200
 
@@ -272,6 +272,7 @@ class AnnotationService:
     # Interpolate and store the interpolated 3d points
     def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject, objectType,
                               uidObject2):
+        print("llego")
         # Search object in respective start and end frames
         obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
             if datasetType == self.aik \
