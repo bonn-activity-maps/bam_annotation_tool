@@ -28,6 +28,9 @@ angular.module('CVGTool')
         // Switch between editing and creating user.
         $scope.mode = "creation";
 
+        $scope.sortType = 'role';       // default sort by name
+        $scope.sortReverse = false;     // default sort order
+
         // Function that retrieves the list of users from the database.
         $scope.getUsers = function() {
             if ($scope.userRole.localeCompare('root') === 0){
@@ -167,6 +170,11 @@ angular.module('CVGTool')
         // Function that resets the password, TODO
         $scope.resetPassword = function() {
             // pf pf pf prrr tututuu pap pap paap
+        };
+
+        $scope.sortBy = function(element){
+            $scope.sortType = element;
+            $scope.sortReverse = !$scope.sortReverse
         };
 
         // Send message to toast
