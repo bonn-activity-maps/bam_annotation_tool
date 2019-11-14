@@ -55,6 +55,7 @@ angular.module('CVGTool')
 
         // Loading dialog
         $scope.loading = false;
+        $scope.loadingCounter = 0;
 
         // Cameras
         $scope.loadedCameras = []; // Struct to store all loaded cameras placed in the left side of the screen
@@ -666,11 +667,12 @@ angular.module('CVGTool')
                 }
             }
             $scope.numberOfLoadedCameras++;
-
+            
             // After all frames have loaded, call retrieve objects in PT
             if ($scope.isPosetrack()) {
                 $scope.retrieveObjectsPT();
             } else { // If we are not in PT and we are finished, we can dismiss de dialog
+     
                 if ($scope.numberOfLoadedCameras >= $scope.numberOfCamerasToLoad) {
                     // Set redraw to draw the selected object
                     for (var i = 0; i < $scope.canvases.length; i++) {
@@ -1899,13 +1901,14 @@ angular.module('CVGTool')
                     break;
                 }
             }
-
+            
             // Interpolate if possible
             if (frameFrom != null) {
                 var frameArray = [];
                 for (let i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
+
                 if ($scope.isPosetrack()) {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
@@ -1975,6 +1978,8 @@ angular.module('CVGTool')
                         }
                     }
                 }
+                $scope.numberOfLoadedCameras = 0;
+                $scope.numberOfCamerasToLoad = camerasToLoad.videos.length;
 
                 // Fill all cameras
                 $scope.fillCameras(camerasToLoad);
@@ -1988,15 +1993,21 @@ angular.module('CVGTool')
 
         $scope.setLoadingDialog = function() {
             $scope.loading = true;
-            // $mdDialog.show({
-            //     templateUrl: '/static/views/dialogs/loadingDialog.html',
-            //     controller: 'loadingDialogCtrl',
-            //     escapeToClose: false,
-            // })
+            $scope.loadingCounter++;
+        //     console.log($scope.loadingCounter)
+        //     $mdDialog.show({
+        //         templateUrl: '/static/views/dialogs/loadingDialog.html',
+        //         controller: 'loadingDialogCtrl',
+        //         escapeToClose: false,
+        //     })
         }
 
         $scope.closeLoadingDialog = function() {
-            $scope.loading = false;
+            $scope.loadingCounter--;
+            if ($scope.loadingCounter == 0) {
+                $scope.loading = false;
+            }
+            
             // sendMessage("closeLoadingDialog", "");
             // $scope.loadingModal.closeModal();
             // $scope.loadingModal = null;
