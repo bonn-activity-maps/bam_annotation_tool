@@ -390,18 +390,18 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of loading
  */
-.controller('loadingDialogCtrl', ['$scope', '$mdDialog',
-    function($scope, $mdDialog) {
-        // // Event handler
-        $scope.mdDialog = $mdDialog;
-        $scope.$on('sendMsg', function(evt, data)  {
-            if (data.type == "closeLoadingDialog") {
-                console.log("chapo")
-                $scope.mdDialog.cancel();
-            }
-        });
-    }
-])
+// .controller('loadingDialogCtrl', ['$scope', '$mdDialog',
+//     function($scope, $mdDialog) {
+//         // // Event handler
+//         $scope.mdDialog = $mdDialog;
+//         $scope.$on('sendMsg', function(evt, data)  {
+//             if (data.type == "closeLoadingDialog") {
+//                 console.log("chapo")
+//                 $scope.mdDialog.cancel();
+//             }
+//         });
+//     }
+// ])
 
 /*
  * Controller of the dialog of batch delete

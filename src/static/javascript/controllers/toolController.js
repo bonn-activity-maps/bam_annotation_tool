@@ -53,6 +53,9 @@ angular.module('CVGTool')
             }
         };
 
+        // Loading dialog
+        $scope.loading = false;
+
         // Cameras
         $scope.loadedCameras = []; // Struct to store all loaded cameras placed in the left side of the screen
         /*
@@ -673,7 +676,7 @@ angular.module('CVGTool')
                     for (var i = 0; i < $scope.canvases.length; i++) {
                         $scope.canvases[i].setRedraw();
                     }
-                    sendMessage("closeLoadingDialog", ""); // Unlock loading dialog
+                    $scope.closeLoadingDialog();
                 }
             }
         };
@@ -1620,25 +1623,29 @@ angular.module('CVGTool')
         }
 
         // Function to remove the point in the keypointEditor
-        $scope.removePoint = function(index, pointID) {
+        $scope.removePoint = function(indexes, pointID) {
             // If the pointID is -1, remove all
-            if (pointID == -1) {
-                for (var i = 0; i < $scope.keypointEditorData[index].points.length; i++) {
-                    $scope.keypointEditorData[index].points[i] = [];
-                    $scope.keypointEditorData[index].cameras[i] = "";
+            for (index in indexes) {
+                if (pointID == -1) {
+                    for (var i = 0; i < $scope.keypointEditorData[index].points.length; i++) {
+                        $scope.keypointEditorData[index].points[i] = [];
+                        $scope.keypointEditorData[index].cameras[i] = "";
+                    }
+    
+                    if ($scope.activeDataset.type.localeCompare("actionInKitchen") == 0) {
+                        $scope.keypointEditorData[index].point3D = [];
+                    }
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].setRedraw();
+                    }
+                    $scope.removePointUpdate();
+                } else {
+                    $scope.keypointEditorData[index].points[pointID] = [];
+                    $scope.keypointEditorData[index].cameras[pointID] = "";
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].setRedraw();
+                    }
                 }
-
-                if ($scope.activeDataset.type.localeCompare("actionInKitchen") == 0) {
-                    $scope.keypointEditorData[index].point3D = [];
-                }
-            } else {
-                $scope.keypointEditorData[index].points[pointID] = [];
-                $scope.keypointEditorData[index].cameras[pointID] = "";
-            }
-
-
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                $scope.canvases[i].setRedraw();
             }
         }
 
@@ -1831,19 +1838,28 @@ angular.module('CVGTool')
         }
 
         // Callback function of updateAnnotationPT
-        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
+        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo, deleting) {
             sendMessage("success", "Annotation updated!");
-            $scope.interpolate(objectUid, objectType, frameTo, false); //TODO: check in the future
-            // $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
+            $scope.interpolate(objectUid, objectType, frameTo, deleting);        
         };
 
         // Function to save the Annotation for PT
         $scope.updateAnnotationPT = function() {
             // Update the object
             toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.canvases[0].activeCamera.filename,
-                $scope.slider.value, $scope.objectManager.selectedObject,
+                $scope.slider.value, $scope.objectManager.selectedObject, false,
                 $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
         };
+
+        $scope.removePointUpdate = function() {
+            if ($scope.isPosetrack()) {
+                toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.canvases[0].activeCamera.filename,
+                $scope.slider.value, $scope.objectManager.selectedObject, true,
+                $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
+            } else {
+                $scope.updateAnnotation();
+            }
+        }
 
         // Function that creates a new object
         $scope.createNewObject = function() {
@@ -1857,7 +1873,6 @@ angular.module('CVGTool')
             } else {
                 $scope.retrieveAnnotationAIK(objectUid, objectType, frames);
             }
-
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
@@ -1969,17 +1984,22 @@ angular.module('CVGTool')
                 }
             }
         }
+        
 
         $scope.setLoadingDialog = function() {
-            $mdDialog.show({
-                templateUrl: '/static/views/dialogs/loadingDialog.html',
-                controller: 'loadingDialogCtrl',
-                escapeToClose: false,
-            })
+            $scope.loading = true;
+            // $mdDialog.show({
+            //     templateUrl: '/static/views/dialogs/loadingDialog.html',
+            //     controller: 'loadingDialogCtrl',
+            //     escapeToClose: false,
+            // })
         }
 
         $scope.closeLoadingDialog = function() {
-            sendMessage("closeLoadingDialog", "");
+            $scope.loading = false;
+            // sendMessage("closeLoadingDialog", "");
+            // $scope.loadingModal.closeModal();
+            // $scope.loadingModal = null;
         }
 
 
@@ -2209,7 +2229,6 @@ angular.module('CVGTool')
                 }
             }
             $scope.closeLoadingDialog();
-
             $scope.refreshProjectionOfCanvases();
         }
 

@@ -214,7 +214,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
+        updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotationPT',
@@ -232,7 +232,7 @@ angular.module('CVGTool')
                     'points': points
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame);
+                callbackSuccess(object.original_uid, object.type, frame, deleting);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })

@@ -272,6 +272,7 @@ class AnnotationService:
     # Interpolate and store the interpolated 3d points
     def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject, objectType,
                               uidObject2):
+        print("llego")
         # Search object in respective start and end frames
         obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
             if datasetType == self.aik \
