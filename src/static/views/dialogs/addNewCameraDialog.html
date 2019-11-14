@@ -4,10 +4,11 @@
             <div ng-if="!retrievingData">
                 <h3>Select a camera recording</h3>
                 <div ng-if="activeDataset.type == 'poseTrack'" class="container">
+                    <p><input class="form-control" type="text" ng-model="search" placeholder="Search.."></p>
                     <div class="form-group">
                         <label>Videos</label>
                         <select size=4 class="form-control" ng-model="videosSelected.videos" style="/*width: 970px*/">
-                      <option  ng-repeat="video in listOfVideos" >{{video.name}} - {{video.type}}</option>
+                      <option  ng-repeat="video in listOfVideos | filter:search" >{{video.name}} - {{video.type}}</option>
                     </select>
                     </div>
 
