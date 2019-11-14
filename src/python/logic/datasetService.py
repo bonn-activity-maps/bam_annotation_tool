@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import base64
 import zipfile
 from aik.dataset import AIK
+import numpy as np
 
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
@@ -60,7 +61,7 @@ class DatasetService:
         x1, y1 = points[0]
         x2, y2 = points[1]
 
-        return [[x1, y1], [x2 - x1, y2 - y1]]
+        return [x1, y1, x2 - x1, y2 - y1]
 
     # Return #frames of videos
     def getFramesVideo(self, dir):
@@ -665,24 +666,176 @@ class DatasetService:
             result = 'Incorrect dataset type'
         return True, result, 200
 
+    def isTrackIdOnList(self, lst, uid, track_id):
+        for i in range(0, len(lst)):
+            if lst[i]["id"] == uid and lst[i]["track_id"] == track_id:
+                return i
+        return -1
+
     # Export annotation file for PT datasets to a file for a given dataset
     def exportDatasetPT(self, dataset):
         videos = videoManager.getVideos(dataset)
         for j in range(0, len(videos)):
-            file = dict()
-            frames = frameService.getFrames(videos[j]["name"], dataset)
-            for i in range(0, len(frames)):
+            final_annotation = dict()
+            # Process frame data
+            _, frames, _ = frameService.getFrames(videos[j]["name"], dataset)
+            for i in range(0, len(frames)): #TODO ignore regions
                 frames[i]["vid_id"] = frames[i]["video"]
-                frames[i]["file_name"] = frames[i]["path"].split("/")[3:-1]
+                frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[4:-1])
                 del(frames[i]["number"])
                 del(frames[i]["dataset"])
                 del(frames[i]["video"])
                 del(frames[i]["path"])
                 del(frames[i]["has_ignore_regions"])
-            file["images"] = frames
-            # TODO change system to unique annotation
-            annotations = annotationService.getAnnotations(dataset, videos[j]["name"])
-
+            final_annotation["images"] = frames
+            # Process annotation data
+            _, annotations_db, _ = annotationService.getAnnotations(dataset, self.pt, videos[j]["name"], "root")
+            annotations_file = list()
+            for i in range(0, len(annotations_db)):
+                objects = annotations_db[i]["objects"]
+                for obj in objects:
+                    index = self.isTrackIdOnList(annotations_file, obj["uid"], obj["track_id"])
+                    # If not already an annotation
+                    if index == -1:
+                        if obj["type"] == "bbox":
+                            obj["bbox"] = self.transformToXYWH(obj["keypoints"])
+                            del(obj["keypoints"])
+                        elif obj["type"] == "bbox_head":
+                            obj["bbox_head"] = self.transformToXYWH(obj["keypoints"])
+                            del(obj["keypoints"])
+                        else:   # else is person , so flatten keypoints array
+                            obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                        # Always delete type field, as it is unnecessary
+                        del(obj["type"])
+                        obj["id"] = obj["uid"]
+                        del(obj["uid"])
+                        obj["image_id"] = int(obj["id"]/100)
+                        obj["scores"] = []
+                        annotations_file.append(obj)
+                    else:   # If already in annotation, just add what we want
+                        if obj["type"] == "bbox":
+                            annotations_file[index]["bbox"] = self.transformToXYWH(obj["keypoints"])
+                        elif obj["type"] == "bbox_head":
+                            annotations_file[index]["bbox_head"] = self.transformToXYWH(obj["keypoints"])
+                        elif obj["type"] == "person":
+                            annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+            final_annotation["annotations"] = annotations_file
+            # Hardcoded categories because they don't change and are a very special case...
+            categories = [{
+                "supercategory": "person",
+                "id": 1,
+                "name": "person",
+                "keypoints": [
+                    "nose",
+                    "head_bottom",
+                    "head_top",
+                    "left_ear",
+                    "right_ear",
+                    "left_shoulder",
+                    "right_shoulder",
+                    "left_elbow",
+                    "right_elbow",
+                    "left_wrist",
+                    "right_wrist",
+                    "left_hip",
+                    "right_hip",
+                    "left_knee",
+                    "right_knee",
+                    "left_ankle",
+                    "right_ankle"
+                ],
+                "skeleton": [
+                    [
+                        16,
+                        14
+                    ],
+                    [
+                        14,
+                        12
+                    ],
+                    [
+                        17,
+                        15
+                    ],
+                    [
+                        15,
+                        13
+                    ],
+                    [
+                        12,
+                        13
+                    ],
+                    [
+                        6,
+                        12
+                    ],
+                    [
+                        7,
+                        13
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        6,
+                        8
+                    ],
+                    [
+                        7,
+                        9
+                    ],
+                    [
+                        8,
+                        10
+                    ],
+                    [
+                        9,
+                        11
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        1,
+                        3
+                    ],
+                    [
+                        2,
+                        4
+                    ],
+                    [
+                        3,
+                        5
+                    ],
+                    [
+                        4,
+                        6
+                    ],
+                    [
+                        5,
+                        7
+                    ]
+                ]
+            }]
+            final_annotation["categories"] = categories
+            # Write to file
+            path = os.path.join(self.STORAGE_DIR + dataset + "_export", videos[j]["type"])
+            # Get file name from original path name
+            if videos[j]["type"] == "val":
+                print(frames[0])    # TODO this crashes
+            else:
+                print(frames[0]["file_name"].split("/")[-1])
+            file = os.path.join(path, frames[0]["file_name"].split("/")[-1] + '.json')
+            if not os.path.exists(path):
+                os.makedirs(path)
+            with open(file, 'w') as outfile:
+                json.dump(final_annotation, outfile)
         return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
