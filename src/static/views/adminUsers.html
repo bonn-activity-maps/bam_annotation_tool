@@ -13,15 +13,39 @@
                         <table class="table table-bordered table-responsive text-center">
                             <thead>
                                 <tr>
-                                    <th class="col-md-2">Username</th>
-                                    <th class="col-md-1">Role</th>
-                                    <th class="col-md-2">Dataset</th>
-                                    <th class="col-md-5">E-mail</th>
+                                    <th class="col-md-2">
+                                        <a ng-click="sortBy('name')">
+                                            Username
+                                            <span ng-show="sortType == 'name' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
+                                            <span ng-show="sortType == 'name' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
+                                        </a>
+                                    </th>
+                                    <th class="col-md-1">
+                                        <a ng-click="sortBy('role')">
+                                            Role
+                                            <span ng-show="sortType == 'role' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
+                                            <span ng-show="sortType == 'role' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
+                                        </a>
+                                    </th>
+                                    <th class="col-md-2">
+                                        <a ng-click="sortBy('dataset')">
+                                            Dataset
+                                            <span ng-show="sortType == 'dataset' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
+                                            <span ng-show="sortType == 'dataset' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
+                                        </a>
+                                    </th>
+                                    <th class="col-md-5">
+                                        <a ng-click="sortBy('email')">
+                                            E-mail
+                                            <span ng-show="sortType == 'email' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
+                                            <span ng-show="sortType == 'email' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
+                                        </a>
+                                    </th>
                                     <th class="col-md-2">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
+                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers  | orderBy:sortType:sortReverse">
                                     <td class="text-left">{{user.name}}</td>
                                     <td>{{user.role}}</td>
                                     <td>{{user.dataset.toString()}}</td>
