@@ -827,15 +827,14 @@ class DatasetService:
             # Write to file
             path = os.path.join(self.STORAGE_DIR + dataset + "_export", videos[j]["type"])
             # Get file name from original path name
-            if videos[j]["type"] == "val":
-                print(frames[0])    # TODO this crashes
-            else:
-                print(frames[0]["file_name"].split("/")[-1])
-            file = os.path.join(path, frames[0]["file_name"].split("/")[-1] + '.json')
-            if not os.path.exists(path):
-                os.makedirs(path)
-            with open(file, 'w') as outfile:
-                json.dump(final_annotation, outfile)
+            try:
+                file = os.path.join(path, frames[0]["file_name"].split("/")[-1] + '.json')
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                with open(file, 'w') as outfile:
+                    json.dump(final_annotation, outfile)
+            except:
+                print("Empty video")
         return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
