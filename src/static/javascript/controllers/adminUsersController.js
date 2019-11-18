@@ -30,6 +30,7 @@ angular.module('CVGTool')
 
         $scope.sortType = 'role';       // default sort by name
         $scope.sortReverse = false;     // default sort order
+        $scope.searchBy = '';           // default search -> filter all fields
 
         // Function that retrieves the list of users from the database.
         $scope.getUsers = function() {
@@ -174,7 +175,7 @@ angular.module('CVGTool')
 
         $scope.sortBy = function(element){
             $scope.sortType = element;
-            $scope.sortReverse = !$scope.sortReverse
+            $scope.sortReverse = !$scope.sortReverse;
         };
 
         // Send message to toast
