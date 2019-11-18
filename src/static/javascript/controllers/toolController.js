@@ -190,7 +190,12 @@ angular.module('CVGTool')
 
         // Function that generates a legit poseTrack UID for new objects
         $scope.generateNewOriginalUid = function(track_id, frame) {
-            let video = $scope.canvases[0].activeCamera.filename;
+            let video = "";
+            try{
+                video = $scope.canvases[0].activeCamera.filename;
+            } catch (e) {
+                video = $scope.loadedCameras[0].filename;
+            }
             frame = pad(frame, 4);
             track_id = pad(track_id, 2);
             return Number("1" + video + frame + track_id)
@@ -2193,7 +2198,7 @@ angular.module('CVGTool')
                 let object = objects[obj].object;
                 if (object.frame >= $scope.frameFrom && object.frame <= $scope.frameTo) {
                     $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                        .frames[object.frame - $scope.frameFrom].original_uid = object.uid;
+                        .frames[object.frame - $scope.frameFrom].original_uid = $scope.generateNewOriginalUid(object.track_id, object.frame); // TODO change back is necessary to object.uid
                 }
             }
             $scope.retrieveAnnotationsPT();
