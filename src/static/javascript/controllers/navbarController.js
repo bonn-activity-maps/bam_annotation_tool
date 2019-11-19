@@ -1,7 +1,7 @@
 angular.module('CVGTool')
 
-.controller('navbarCtrl', ['$scope', '$state', 'navSrvc', 'adminDatasetsSrvc', '$mdDialog',
-    function($scope, $state, navSrvc, adminDatasetsSrvc, $mdDialog) {
+.controller('navbarCtrl', ['$scope', '$rootScope', '$state', 'navSrvc', 'adminDatasetsSrvc', '$mdDialog',
+    function($scope, $rootScope, $state, navSrvc, adminDatasetsSrvc, $mdDialog) {
         $scope.user = {
             name: "",
             email: "",
@@ -81,30 +81,39 @@ angular.module('CVGTool')
         $scope.goBackToTaskHome = function() {
             navSrvc.resetSessionData();
             $state.go('taskHome');
-        }
+        };
 
         // Function to move the tool to the next range
         $scope.goNextRange = function() {
             if ($scope.sessionData.frameEnd == $scope.sessionData.maxFrame) return; // Check if it is possible to advance
 
             if ($scope.sessionData.frameEnd + $scope.sessionData.frameRange > $scope.sessionData.maxFrame) {
+                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
 
             } else {
+                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             }
-        }
+        };
 
         // Function to move the tool to the previous range
         $scope.goPreviousRange = function() {
             if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // CHeck if it is possible to go backwards
             // Check if we can go to the previous range
             if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < $scope.sessionData.minFrame) {
+                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             } else {
+                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             }
-        }
+        };
+
+        // Send message to toolCtrl to check if all annotations are complete
+        $scope.checkAnnotations = function() {
+            $rootScope.$broadcast('checkAnnotations', {'msg': 'blabla'});
+        };
 
         // Function that is executed when a message is received. Then, it updates the info about the sessionData
         $scope.$on('sessionDataMsg', function(evt, data) {

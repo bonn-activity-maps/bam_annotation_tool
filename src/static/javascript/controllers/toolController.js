@@ -1931,6 +1931,34 @@ angular.module('CVGTool')
             return false;
         }
 
+        // Function that is executed when checkAnnotations msg is received.
+        // Check if all annotations are complete
+        // Structure: incompleteObjects:
+        // {'type1': {
+        //     'obj1': ['frame1', 'frame2', ...],
+        //     'objX': [...] },
+        //  'type2': { ...}, ...
+        // }
+        $scope.$on('checkAnnotations', function(evt, data) {
+            var incompleteObjects = {};
+            console.log('objmanager.objectTypes: ', $scope.objectManager.objectTypes)
+            for (objType in $scope.objectManager.objectTypes) {
+                incompleteObjects[objType] = {};
+                for (obj in $scope.objectManager.objectTypes[objType].objects) {
+                    incompleteObjects[objType][obj] = [];
+                    for (f in $scope.objectManager.objectTypes[objType].objects[obj].frames){
+                        var keypoints = $scope.objectManager.objectTypes[objType].objects[obj].frames[f].keypoints;
+                        if (!$scope.hasAnnotation(keypoints)) {
+                            incompleteObjects[objType][obj].push(f);
+                        }
+                    }
+
+                }
+            }
+            console.log('incompleteObjects')
+            console.log(incompleteObjects)
+         });
+
         // Send message to toast
         var sendMessage = function(type, msg) {
             $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
