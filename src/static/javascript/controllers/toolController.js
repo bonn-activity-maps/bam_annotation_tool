@@ -1901,7 +1901,10 @@ angular.module('CVGTool')
                 $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
             for (let i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - $scope.interpolationRange); i--) {
-                if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
+                if (($scope.isPosetrack() && object.frames[i - $scope.frameFrom].keypoints.length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[0].length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[1].length > 0)
+                    || (!$scope.isPosetrack()  && object.frames[i - $scope.frameFrom].keypoints.length > 0)) {
                     frameFrom = i;
                     break;
                 }
