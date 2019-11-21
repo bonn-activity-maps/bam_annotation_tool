@@ -383,13 +383,13 @@
                                     <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn btn-info" ng-click="setPointCreationData($index, 0); switchSubTool('createPoint');">
                                                     <span>{{$index}}</span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint([$index],0); setPointCreationData($index, 0); switchSubTool('createPoint');">
+                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn btn-success" ng-click="removePoint([$index],-1); setPointCreationData($index, 0); switchSubTool('createPoint');">
                                                     <span>{{$index}}</span></button>
                                     </th>
 
                                     <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint([$index],0)"><span class="glyphicon glyphicon-trash"></button>
+                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint([$index],-1)"><span class="glyphicon glyphicon-trash"></button>
                                     </th>
                                 </tr>
                                 <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
