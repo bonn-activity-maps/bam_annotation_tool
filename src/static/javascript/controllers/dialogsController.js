@@ -472,4 +472,23 @@ angular.module('CVGTool')
             toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene, $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid, $scope.object.type, successFunction, errorFunction);
         }
     }
+])
+
+.controller('nextFrameRangeCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'objects',
+    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, objects) {
+        $scope.mode = 'normal';
+        $scope.msg = '';
+        $scope.objects = objects;
+        console.log($scope.objects)
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        // Function that continues to next frmae range
+        $scope.continue = function() {
+            // adminDatasetsSrvc.removeDataset(name, showSuccess, showError)
+        }
+    }
 ]);

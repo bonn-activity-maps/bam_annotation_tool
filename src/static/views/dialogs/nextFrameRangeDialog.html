@@ -1,0 +1,32 @@
+<md-dialog>
+    <div class="panel" ng-if="mode == 'normal'">
+        <md-dialog-content ng-if="mode == 'normal'">
+            <h2>Incomplete annotations</h2>
+
+<!--            <div style="overflow-y: auto; max-height: 400px;">-->
+            <div>
+                <table class="table table-bordered table-responsive text-center">
+                    <thead>
+                    <tr>
+                        <td class="col-md-2">Type</td>
+                        <td class="col-md-1">Objects<br></td>
+                        <td class="col-md-1">Frames</td>
+                    </tr>
+                    </thead>
+
+                    <tr ng-repeat="object in objects">
+                        <td>{{object.type}}</td>
+                        <td>{{object.object}}</td>
+                        <td>{{object.frames}}</td>
+                    </tr>
+                </table>
+            </div>
+            <p>Do you want to continue?</p>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+            <button ng-click="continue()" class="btn btn-primary">Continue</button>
+        </md-dialog-actions>
+    </div>
+
+</md-dialog>

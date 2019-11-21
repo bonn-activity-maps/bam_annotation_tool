@@ -1940,24 +1940,42 @@ angular.module('CVGTool')
         //  'type2': { ...}, ...
         // }
         $scope.$on('checkAnnotations', function(evt, data) {
-            var incompleteObjects = {};
-            console.log('objmanager.objectTypes: ', $scope.objectManager.objectTypes)
+            var incompleteObjects = [];
+
             for (objType in $scope.objectManager.objectTypes) {
-                incompleteObjects[objType] = {};
                 for (obj in $scope.objectManager.objectTypes[objType].objects) {
-                    incompleteObjects[objType][obj] = [];
+                    frames = [];
                     for (f in $scope.objectManager.objectTypes[objType].objects[obj].frames){
                         var keypoints = $scope.objectManager.objectTypes[objType].objects[obj].frames[f].keypoints;
                         if (!$scope.hasAnnotation(keypoints)) {
-                            incompleteObjects[objType][obj].push(f);
+                            frames.push(f)
                         }
                     }
-
+                    if (frames.length > 0){
+                        incompleteObjects.push({'type': objType, 'object': obj, 'frames': frames.toString()});
+                    }
                 }
             }
-            console.log('incompleteObjects')
-            console.log(incompleteObjects)
+            $scope.nextFrameRange(incompleteObjects);       // open dialog
+
+
          });
+
+        // Function that opens the dialog for missing annotations before next frame range
+        $scope.nextFrameRange = function(objects) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/nextFrameRangeDialog.html',
+                locals: {
+                    objects: objects
+                },
+                controller: 'nextFrameRangeCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    // $scope.getListOfDatasets();
+                    // $scope.getInfoOfVideos();
+                }
+            });
+        };
 
         // Send message to toast
         var sendMessage = function(type, msg) {
