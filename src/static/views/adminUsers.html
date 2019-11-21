@@ -9,7 +9,17 @@
                 <div class="panel-body">
                     <h2>Users</h2>
                     <hr/>
+
                     <div style="overflow-y: auto; max-height: 700px;">
+                        <form>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-addon"><i class="glyphicon glyphicon-search"></i></div>
+                                    <input type="text" class="form-control" placeholder="Search" ng-model="searchBy">
+                                </div>
+                            </div>
+                        </form>
+
                         <table class="table table-bordered table-responsive text-center">
                             <thead>
                                 <tr>
@@ -45,7 +55,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers  | orderBy:sortType:sortReverse">
+                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers  | orderBy:sortType:sortReverse | filter:searchBy">
                                     <td class="text-left">{{user.name}}</td>
                                     <td>{{user.role}}</td>
                                     <td>{{user.dataset.toString()}}</td>
