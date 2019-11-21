@@ -87,6 +87,8 @@ angular.module('CVGTool')
         };
 
         // Keypoints
+        $scope.keypointEditorCounter = 0;
+        $scope.currentKeypointIndex = 0;
         $scope.keypointEditorData = []
         $scope.pointCreationData = {
             labelIndex: null,
@@ -920,10 +922,17 @@ angular.module('CVGTool')
                 }
 
                 if ($scope.subTool.localeCompare('createPoint') == 0) {
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
-                    $scope.switchSubTool("");
-                    canvasObj.setRedraw();
+                    if (!$scope.cameraAlreadyAnnotated(canvasObj.activeCamera.filename)) {
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
+                        $scope.keypointEditorCounter++;
+                        $scope.setPointCreationData($scope.currentKeypointIndex);
+                        $scope.getEpilines();
+                        canvasObj.setRedraw();
+                    } else {
+                        // TODO: for some reason this is not working properly
+                        //sendMessage("warning", "Select a camera without a point placed");
+                    }    
                 }
 
                 if ($scope.subTool.localeCompare('createBox') == 0) {
@@ -1652,9 +1661,10 @@ angular.module('CVGTool')
         }
 
         // Function that fill the pointCreationData
-        $scope.setPointCreationData = function(index, pointID) {
+        $scope.setPointCreationData = function(index) {
             $scope.pointCreationData.labelIndex = index;
-            $scope.pointCreationData.pID = pointID;
+            $scope.pointCreationData.pID = $scope.keypointEditorCounter;
+            $scope.currentKeypointIndex = index;
         }
 
         // Function that resets the pointCreationData
@@ -1664,8 +1674,21 @@ angular.module('CVGTool')
                     pID: null,
                     cameraID: null
                 }
+
+                $scope.keypointEditorCounter = 0;
+                $scope.currentKeypointIndex = 0;
+        }
+
+        // Function that checks if the position of the point is corrent within the available cameras
+        $scope.cameraAlreadyAnnotated = function(camera) {
+            if ($scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras.includes(camera)) {
+                return true;
+            } else {
+                return false;
             }
-            // Resets all epilines
+        }
+
+        // Resets all epilines
         $scope.resetEpilines = function() {
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].resetEpiline(0)
@@ -1760,6 +1783,7 @@ angular.module('CVGTool')
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
             // Construct the variable to store the annotation
+            $scope.switchSubTool("");   // Reset the tool
             var deleting = false;
             var structureOfPoint = {
                 p1: [],
