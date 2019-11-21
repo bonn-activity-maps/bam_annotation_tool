@@ -474,12 +474,9 @@ angular.module('CVGTool')
     }
 ])
 
-.controller('nextFrameRangeCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'objects',
-    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, objects) {
-        $scope.mode = 'normal';
-        $scope.msg = '';
+.controller('nextFrameRangeCtrl', ['$scope', '$rootScope', '$mdDialog', 'objects', 'range',
+    function($scope, $rootScope, $mdDialog, objects, range) {
         $scope.objects = objects;
-        console.log($scope.objects)
 
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
@@ -488,7 +485,8 @@ angular.module('CVGTool')
 
         // Function that continues to next frmae range
         $scope.continue = function() {
-            // adminDatasetsSrvc.removeDataset(name, showSuccess, showError)
+            $rootScope.$broadcast('advanceFrames', {'range': range});
+            $mdDialog.hide();
         }
     }
 ]);

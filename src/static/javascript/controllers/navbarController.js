@@ -84,38 +84,65 @@ angular.module('CVGTool')
         };
 
         // Function to move the tool to the next range
-        $scope.goNextRange = function() {
+        $scope.requestNextRange = function() {
             if ($scope.sessionData.frameEnd == $scope.sessionData.maxFrame) return; // Check if it is possible to advance
 
+            if ($scope.isPosetrack()) {
+                $scope.goNextRange();
+            } else{                              // show table with missing annotations
+                $scope.checkAnnotations('next');
+            }
+        };
+
+        // Function to move the tool to the previous range
+        $scope.requestPreviousRange = function() {
+            if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // CHeck if it is possible to go backwards
+
+            if ($scope.isPosetrack()) {
+                $scope.goPreviousRange();
+            } else{                              // show table with missing annotations
+                $scope.checkAnnotations('previous');
+            }
+        };
+
+        // Send message to toolCtrl to check if all annotations are complete
+        $scope.checkAnnotations = function(range) {
+            $rootScope.$broadcast('checkAnnotations', {'range': range});
+        };
+
+        // Function to move the tool to the next range
+        $scope.goNextRange = function() {
             if ($scope.sessionData.frameEnd + $scope.sessionData.frameRange > $scope.sessionData.maxFrame) {
-                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
 
             } else {
-                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             }
         };
 
         // Function to move the tool to the previous range
         $scope.goPreviousRange = function() {
-            if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // CHeck if it is possible to go backwards
             // Check if we can go to the previous range
             if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < $scope.sessionData.minFrame) {
-                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             } else {
-                $scope.checkAnnotations();
                 $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
             }
         };
 
-        // Send message to toolCtrl to check if all annotations are complete
-        $scope.checkAnnotations = function() {
-            $rootScope.$broadcast('checkAnnotations', {'msg': 'blabla'});
-        };
+        // Functions that are executed when a message is received.
 
-        // Function that is executed when a message is received. Then, it updates the info about the sessionData
+        // Then, it updates the info about the sessionData
+        $scope.$on('advanceFrames', function(evt, data) {
+            if (data.range === 'next') {
+                $scope.goNextRange();
+            }
+            else if (data.range === 'previous'){
+                $scope.goPreviousRange();
+            }
+        });
+
+        // Then, it updates the info about the sessionData
         $scope.$on('sessionDataMsg', function(evt, data) {
             $scope.sessionData = navSrvc.getSessionData();
         });

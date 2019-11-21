@@ -1956,17 +1956,18 @@ angular.module('CVGTool')
                     }
                 }
             }
-            $scope.nextFrameRange(incompleteObjects);       // open dialog
+            $scope.nextFrameRange(incompleteObjects, data.range);       // open dialog
 
 
          });
 
         // Function that opens the dialog for missing annotations before next frame range
-        $scope.nextFrameRange = function(objects) {
+        $scope.nextFrameRange = function(objects, range) {
             $mdDialog.show({
                 templateUrl: '/static/views/dialogs/nextFrameRangeDialog.html',
                 locals: {
-                    objects: objects
+                    objects: objects,
+                    range: range
                 },
                 controller: 'nextFrameRangeCtrl',
                 escapeToClose: false,
