@@ -193,12 +193,6 @@ def updateVideosFrames():
     success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get initial and ending frame number of a video
-@app.route('/api/video/getFrameInfoOfVideo', methods=['GET'])
-def getFrameInfoOfVideo():
-    success, msg, status = frameService.getFrameInfoOfVideo(request.headers['dataset'], request.headers['video'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 # Get max frame of video
 @app.route('/api/video/getMaxFrame', methods=['GET'])
 def getMaxFrame():
@@ -266,17 +260,6 @@ def updateAnnotationPT():
                                                                 req_data['user'], req_data['object'], req_data['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-#
-# # Delete annotation
-# # TODO: do we need to filter in remove by validated flag?
-# @app.route('/api/annotation/removeAnnotation', methods=['POST'])
-# def removeAnnotation():
-#     req_data = request.get_json()
-#     success, msg, status = annotationService.removeAnnotation(req_data['dataset'], req_data['scene'], req_data['frame'],
-#                                                               req_data['user'])
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
 # Validate frames for given dataset, video and user
 # frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]
 # Each validated flag corresponds to an array of frames (the same position)
@@ -305,23 +288,14 @@ def interpolateAnnotation():
                                                          req_data['uidObject2'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-#####
 
 # Get annotation of one object in frame for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def getAnnotationFrameObject():
     success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
                                                                       request.headers['scene'],
-                                                                      int(request.headers['frame']), request.headers['user'],
-                                                                      int(request.headers['uidObject']))
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Get annotation of one object in frame for given frame, dataset, video and user
-@app.route('/api/annotation/getAnnotation/objectPT', methods=['GET'])
-def getAnnotationFrameObjectPT():
-    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
-                                                                      request.headers['scene'],
-                                                                      int(request.headers['frame']), request.headers['user'],
+                                                                      int(request.headers['startFrame']), int(request.headers['endFrame']),
+                                                                      request.headers['user'],
                                                                       int(request.headers['uidObject']), request.headers['objectType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -333,11 +307,16 @@ def getAnnotationFrameObjectPT():
 #     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# # Remove object in annotation for given frame, dataset, video and user
-# @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
-# def removeAnnotationFrameObject():
-#     success, msg, status = annotationService.removeAnnotationFrameObject(request.get_json())
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# Delete annotation for given frame, dataset, video and user and object id
+@app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
+def removeAnnotation():
+    req_data = request.get_json()
+    success, msg, status = annotationService.removeAnnotationFrameObject(req_data['dataset'], req_data['datasetType'],
+                                                                         req_data['scene'],
+                                                                         int(req_data['startFrame']), int(req_data['endFrame']),
+                                                                         req_data['user'],
+                                                                         int(req_data['uidObject']), req_data['objectType'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 #### OBJECT TYPE ####
@@ -562,6 +541,12 @@ def getFramePath():
 def removeFrame():
     req_data = request.get_json()
     success, msg, status = frameService.removeFrame(req_data['frame'], req_data['video'], req_data['dataset'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get initial and ending frame number of a video
+@app.route('/api/frame/getFrameInfoOfDataset', methods=['GET'])
+def getFramesInfoOfDatasetGroupByVideo():
+    success, msg, status = frameService.getFramesInfoOfDatasetGroupByVideo(request.headers['dataset'], request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

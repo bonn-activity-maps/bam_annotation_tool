@@ -202,10 +202,10 @@ class AnnotationService:
                 return True, {'maxUid': newUid}, 200
 
     # Get annotation of object in frame
-    def getAnnotationFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
-        result = annotationManager.getFrameObject(dataset, datasetType, scene, frame, user, obj, objectType)
+    def getAnnotationFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType):
+        result = annotationManager.getObjectInFrames(dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType)
         if result == 'Error':
-            return False, 'The object does not exist in frame ' + frame, 400
+            return False, 'The object does not exist in frames', 400
         else:
             return True, result, 200
 
@@ -231,13 +231,21 @@ class AnnotationService:
         return result
 
     # Remove annotation for an object for given frame, dataset, video and user
-    def removeAnnotationFrameObject(self, req):
-        result = annotationManager.removeFrameObject(req['dataset'], req['video'], req['frame'], req['user'],
-                                                     req['uidObject'])
+    def removeAnnotationFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType):
+        # PT: the uidObject change for each frame, iterate for all frames with the corresponding id
+        if datasetType == self.pt:
+            result = 'ok'
+            for f in range(startFrame, endFrame+1):
+                originalUid = self.generateNewOriginalUid(uidObject, scene, f)
+                r = annotationManager.removeFrameObject(dataset, datasetType, scene, f, f, user, originalUid, objectType)
+                if r == 'Error': result = 'Error'
+        else:
+            result = annotationManager.removeFrameObject(dataset, datasetType, scene, startFrame, endFrame, user, uidObject, objectType)
+
         if result == 'ok':
             return True, result, 200
         else:
-            return False, result, 500
+            return False, 'Error deleting annotation', 500
 
     # Interpolate all keypoints between 2 points
     def interpolate(self, numFrames, numKpts, kpDim, kps1, kps2):
@@ -264,6 +272,7 @@ class AnnotationService:
     # Interpolate and store the interpolated 3d points
     def interpolateAnnotation(self, dataset, datasetType, scene, user, startFrame, endFrame, uidObject, objectType,
                               uidObject2):
+        print("llego")
         # Search object in respective start and end frames
         obj1 = annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject, objectType) \
             if datasetType == self.aik \

@@ -118,13 +118,11 @@ class AnnotationManager:
 
     # Get annotation for object in frame, without mongo id
     # AIK: ignore user parameter
-    # PT: Filter by type too
-    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType=None):
+    def getFrameObject(self, dataset, datasetType, scene, frame, user, obj, objectType):
         try:
-            # Change aik method, use the same filter as in pt once objectType is added to /getannotation/objects api call
             if datasetType == self.aik:
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "frame": frame},
-                                                  {"objects": {"$elemMatch": {"uid": obj}}, '_id': 0})
+                                                  {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, '_id': 0})
             else:
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": "root", "frame": frame},
@@ -133,6 +131,25 @@ class AnnotationManager:
                 return 'No annotation'
             else:
                 return result['objects'][0]
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
+            return 'Error'
+
+    # Get annotations for object in frame range, without mongo id
+    # AIK: ignore user parameter
+    def getObjectInFrames(self, dataset, datasetType, scene, startFrame, endFrame, user, obj, objectType):
+        try:
+            if datasetType == self.aik:
+                result = self.collection.find({"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                                               "objects.uid": obj, "objects.type": objectType},
+                                                {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, "frame": 1,  '_id': 0}).sort("frame", 1)
+            else:
+                # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
+                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root", "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                                               "objects.uid": obj, "objects.type": objectType},
+                                                {"objects": {"$elemMatch": {"uid": obj, "type": objectType}}, "frame": 1, '_id': 0}).sort("frame", 1)
+
+            return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
             return 'Error'
@@ -208,7 +225,7 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotation has been removed
-    def removeAnnotation(self, dataset, scene, frame, user): #TODO PT remove
+    def removeAnnotation(self, dataset, scene, frame, user):
         try:
             result = self.collection.delete_one({"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)})
             if result.deleted_count == 1:
@@ -312,10 +329,10 @@ class AnnotationManager:
         keypoints = objects["keypoints"]
 
         if datasetType is not None and datasetType == self.aik:
-            query = {"dataset": dataset, "scene": scene, "frame": frame, "objects.uid": uidObj, "objects.type": type}
+            query = {"dataset": dataset, "scene": scene, "objects.uid": uidObj, "objects.type": type, "frame": frame}
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
-            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": frame, "objects.uid": uidObj, "objects.type": type}
+            query = {"dataset": dataset, "scene": scene, "user": "root", "objects.uid": uidObj, "objects.type": type, "frame": frame}
 
         arrayFilter = [{"elem.uid": {"$eq": uidObj}, "elem.type": {"$eq": type}}]     # Filter by object uid and type
 
@@ -338,14 +355,29 @@ class AnnotationManager:
             log.exception('Error updating object in annotation in db')
             return 'Error'
 
-    # Return 'ok' if the annotation for an object in a frame has been removed.
-    def removeFrameObject(self, dataset, video, frame, user, uidObject):
-        query = {"dataset": dataset, "video": video, "user": user, "frame": frame}
-        # Remove object where object.uid == uidObject
-        newValues = {"$pull": {"objects": {"uid": uidObject}}}
+    # Update an annotation and let the object empty in selected frames
+    # Return 'ok' if the annotation for an object in a frame has been updated.
+    # AIK: ignore user parameter
+    def removeFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObj, objectType):
+
+        if datasetType == self.aik:
+            query = {"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                     "objects.uid": int(uidObj), "objects.type": objectType}
+        else:
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+            #          "objects.uid": uidObj, "objects.type": objectType}         # User instead of root
+            query = {"dataset": dataset, "scene": scene, "user": "root", "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
+                     "objects.uid": int(uidObj), "objects.type": objectType}
+
+        # Filter each annotation and select only objects with uid and type
+        arrayFilter = [{"elem.uid": {"$eq": int(uidObj)}, "elem.type": {"$eq": objectType}}]
+
+        # Update object to empty list
+        newValues = {"$set": {"objects.$[elem].keypoints": []}}
+
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
-            if result.modified_count == 1:
+            result = self.collection.update_many(query, newValues, upsert=False, array_filters=arrayFilter)
+            if result.acknowledged == 1:
                 return 'ok'
             else:
                 return 'Error'

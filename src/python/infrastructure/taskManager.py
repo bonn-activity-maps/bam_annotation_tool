@@ -50,7 +50,7 @@ class TaskManager:
     # Return 'ok' if the task has been removed
     def removeTask(self, task, user, dataset):
         try:
-            result = self.collection.delete_one({"name": task, "assignedUser": user, "dataset": dataset})
+            result = self.collection.delete_one({"dataset": dataset, "assignedUser": user, "name": task})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -61,7 +61,7 @@ class TaskManager:
 
     # Return 'ok' if the task has been updated. if task doesn't exist, it isn't created
     def updateTask(self, task, user, dataset, scene, frameFrom, frameTo, description, pov, lastFrame, finished):
-        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
+        query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
         # Update all values
         newValues = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo,  "description": description,
                               "POV": pov, "finished": finished, "lastFrame": lastFrame}}
@@ -77,7 +77,7 @@ class TaskManager:
 
     # Return 'ok' if the finished flag has been updated. if task doesn't exist, it isn't created
     def updateFinished(self, task, user, dataset, scene, finished):
-        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
+        query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
         newValues = {"$set": {"finished": finished}}      # Update finished flag
         try:
             result = self.collection.update_one(query, newValues, upsert=False)
@@ -91,7 +91,7 @@ class TaskManager:
 
     # Return 'ok' if the lastFrame has been updated. if task doesn't exist, it isn't created
     def updateLastFrame(self, task, user, dataset, scene, lastFrame):
-        query = {"name": task, "assignedUser": user, "dataset": dataset, "scene": scene}      # Search by task name, assigned user, scene and dataset
+        query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
         newValues = {"$set": {"lastFrame": lastFrame}}    # Update lastFrame
         try:
             result = self.collection.update_one(query, newValues, upsert=False)

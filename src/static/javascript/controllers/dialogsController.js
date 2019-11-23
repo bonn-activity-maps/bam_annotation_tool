@@ -297,9 +297,9 @@ angular.module('CVGTool')
             for (i = 0; i < list.length; i++) {
                 if (!$scope.loadedCameras.includes(list[i].name.toString())) { // If the camera is loaded, dont show it again
                     // Add train/test/val type to posetrack
-                    if ($scope.isPosetrack()){
-                        $scope.videoType =  list[i].type
-                    } else{
+                    if ($scope.isPosetrack()) {
+                        $scope.videoType = list[i].type
+                    } else {
                         $scope.videoType = ''
                     }
 
@@ -323,7 +323,7 @@ angular.module('CVGTool')
 
         // Function to go back from the dialog once the frames have been retrieved from the server
         $scope.end = function() {
-            if ($scope.isPosetrack()){
+            if ($scope.isPosetrack()) {
                 $scope.videosSelected.videos = $scope.videosSelected.videos.split(' - ')[0]
             }
             $mdDialog.hide($scope.videosSelected);
@@ -387,4 +387,89 @@ angular.module('CVGTool')
     }
 ])
 
-;
+/*
+ * Controller of the dialog of loading
+ */
+// .controller('loadingDialogCtrl', ['$scope', '$mdDialog',
+//     function($scope, $mdDialog) {
+//         // // Event handler
+//         $scope.mdDialog = $mdDialog;
+//         $scope.$on('sendMsg', function(evt, data)  {
+//             if (data.type == "closeLoadingDialog") {
+//                 console.log("chapo")
+//                 $scope.mdDialog.cancel();
+//             }
+//         });
+//     }
+// ])
+
+/*
+ * Controller of the dialog of batch delete
+ */
+.controller('batchDeleteCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, minFrame, maxFrame, dataset, scene, username) {
+        $scope.object = object;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+
+        $scope.values = {
+            deleteFrom: minFrame,
+            deleteTo: minFrame + 1
+        }
+
+        $scope.minFrame = minFrame;
+        $scope.maxFrame = maxFrame;
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        }
+
+        $scope.checkSlider = function() {
+            // Check that values are between range
+            if ($scope.values.deleteFrom < $scope.minFrame) $scope.values.deleteFrom = $scope.minFrame;
+            if ($scope.values.deleteFrom > $scope.maxFrame) $scope.values.deleteFrom = $scope.maxFrame;
+            if ($scope.values.deleteTo < $scope.minFrame) $scope.values.deleteTo = $scope.minFrame;
+            if ($scope.values.deleteTo > $scope.maxFrame) $scope.values.deleteTo = $scope.maxFrame;
+        }
+
+        $scope.delete = function() {
+            $scope.mode = "check";
+        }
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        }
+        var successFunction = function() {
+            var successData = {
+                msg: "success",
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object
+            }
+            $mdDialog.hide(successData);
+        }
+
+        var errorFunction = function() {
+            var successData = {
+                msg: "error",
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object
+            }
+            $mdDialog.hide(successData)
+        }
+
+        $scope.confirm = function() {
+            $scope.checkSlider();
+            // Check and fix the order
+            if ($scope.values.deleteFrom > $scope.values.deleteTo) {
+                var aux = $scope.values.deleteFrom;
+                $scope.values.deleteFrom = $scope.values.deleteTo;
+                $scope.values.deleteTo = aux;
+            }
+            toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene, $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid, $scope.object.type, successFunction, errorFunction);
+        }
+    }
+]);

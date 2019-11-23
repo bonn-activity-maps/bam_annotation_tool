@@ -5,10 +5,10 @@
             <hr/> Don't forget to select a dataset from the selector in the navbar!
             <hr/>
             <div style="padding-top: 20px;" class="container">
-                <button ng-if="videos.length <= 0" class="btn btn-primary" ng-click="loadVideoTable()">Load video info</button>
+                <button ng-if="videos.length <= 0 && isPosetrack()" class="btn btn-primary" ng-click="loadVideoTable()">Load video info</button>
                 <!--                <button ng-if="videos.length > 0" class="btn btn-primary" ng-click="loadVideoTable()">Refresh video info</button>-->
             </div>
-            <div ng-if="videos.length > 0" style="padding-top: 20px;" class="container">
+            <div ng-if="videos.length > 0 && isPosetrack()" style="padding-top: 20px;" class="container">
                 <div style="overflow-y: auto; max-height: 400px;">
                     <table class="table table-bordered table-responsive text-center">
                         <thead>
@@ -25,11 +25,11 @@
                         </thead>
 
                         <tr ng-repeat="video in videos">
-                            <td>{{video.name}}</td>
+                            <td>{{video.video}}</td>
                             <td>{{video.type}}</td>
-                            <td>{{video.frameStart}}</td>
-                            <td>{{video.frameEnd}}</td>
-                            <td>{{video.frames}}</td>
+                            <td>{{video.minFrame}}</td>
+                            <td>{{video.maxFrame}}</td>
+                            <td>{{video.totalFrames}}</td>
                         </tr>
                     </table>
                 </div>

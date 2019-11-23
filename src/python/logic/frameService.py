@@ -1,11 +1,13 @@
 import logging
 
 from python.infrastructure.frameManager import FrameManager
+from python.infrastructure.videoManager import VideoManager
 
 # FrameService logger
 log = logging.getLogger('FrameService')
 
 frameManager = FrameManager()
+videoManager = VideoManager()
 
 
 class FrameService:
@@ -44,6 +46,21 @@ class FrameService:
                 return True, [result[0], result[-1]], 200
             else:
                 return False, 'Error: no frames for video', 400
+
+    # Return frames info of dataset group by video with video type
+    def getFramesInfoOfDatasetGroupByVideo(self, dataset, datasetType):
+        result = frameManager.getFramesInfoOfDatasetGroupByVideo(dataset)
+        if result == 'Error':
+            return False, 'Error searching frame', 400
+        else:
+            # Search video type in video db table
+            videos = []
+            for videoFrames in result:
+                video = videoManager.getVideo(dataset, datasetType, videoFrames['video'])
+                if video != 'Error':
+                    videoFrames['type'] = video['type']
+                    videos.append(videoFrames)
+            return True, videos, 200
 
     # Return camera parameters
     def getCameraParameters(self, frame, video, dataset):

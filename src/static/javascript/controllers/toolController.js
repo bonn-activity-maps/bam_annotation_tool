@@ -12,9 +12,9 @@ angular.module('CVGTool')
         $scope.numberOfFrames = $scope.frameTo - $scope.frameFrom;
         $scope.fromTaskHome = $stateParams.obj.fromTaskHome;
         $scope.frameJumpNumber = 1;
-        $scope.frameJumpNumberOptions = [{ id: 1, tag: "1" }, { id: 2, tag: "2" }, { id: 3, tag: "3" }, { id: 4, tag: "4" }, { id: 5, tag: "5" }, { id: 6, tag: "6" }, { id: 7, tag: "7" }, { id: 8, tag: "8" }, { id: 9, tag: "9" }, { id: 10, tag: "10" }, { id: 15, tag: "15" }];
+        $scope.frameJumpNumberOptions = [{ id: 1, tag: "1" }, { id: 2, tag: "2" }, { id: 3, tag: "3" }, { id: 4, tag: "4" }, { id: 5, tag: "5" }, { id: 6, tag: "6" }, { id: 7, tag: "7" }, { id: 8, tag: "8" }, { id: 9, tag: "9" }, { id: 10, tag: "10" }, { id: 15, tag: "15" }, { id: 20, tag: "20" }];
         $scope.activeDataset = navSrvc.getActiveDataset(); // Get the active dataset information
-        $scope.interpolationRange = 15;
+        $scope.interpolationRange = 20;
         /////////
         // END OF INITIALIZE STARTING VARIABLES
         /////////
@@ -30,7 +30,7 @@ angular.module('CVGTool')
         $scope.keyPointManagerTabMinimized = false; // Boolean to control if the keypoint edit panel is minimized
         $scope.keyPointEditorTabMinimized = false; // Boolean to control if the keypoint editor panel is minimized
         $scope.actionsEditorTab = false; // Boolean to control if the action editor panel is activated
-
+      
         // Mugshots
         $scope.selectedObjectMugshots = []; // Struct to store the mugshots of the selectedObject
 
@@ -52,6 +52,10 @@ angular.module('CVGTool')
                 showTicks: true
             }
         };
+
+        // Loading dialog
+        $scope.loading = false;
+        $scope.loadingCounter = 0;
 
         // Cameras
         $scope.loadedCameras = []; // Struct to store all loaded cameras placed in the left side of the screen
@@ -83,6 +87,8 @@ angular.module('CVGTool')
         };
 
         // Keypoints
+        $scope.keypointEditorCounter = 0;
+        $scope.currentKeypointIndex = 0;
         $scope.keypointEditorData = []
         $scope.pointCreationData = {
             labelIndex: null,
@@ -187,7 +193,12 @@ angular.module('CVGTool')
 
         // Function that generates a legit poseTrack UID for new objects
         $scope.generateNewOriginalUid = function(track_id, frame) {
-            let video = $scope.canvases[0].activeCamera.filename;
+            let video = "";
+            try{
+                video = $scope.canvases[0].activeCamera.filename;
+            } catch (e) {
+                video = $scope.loadedCameras[0].filename;
+            }
             frame = pad(frame, 4);
             track_id = pad(track_id, 2);
             return Number("1" + video + frame + track_id)
@@ -627,38 +638,55 @@ angular.module('CVGTool')
             return cams;
         };
 
-        var callbackRetrievingFrame = function(image, filename, frame) {
-            var imageData = image.slice(2, image.length - 1) // Process the image
-            var stringImage = "data:image/jpeg;base64," + imageData;
+        $scope.numberOfLoadedCameras = 0;
+        $scope.numberOfCamerasToLoad = 0;
 
-            // First search for the camera in the loadedCameras panel
-            for (var i = 0; i < $scope.loadedCameras.length; i++) {
-                if ($scope.loadedCameras[i].filename.localeCompare(filename) == 0) { // Find the camera
-                    $scope.loadedCameras[i].frames[frame - $scope.frameFrom] = {
-                        number: frame,
-                        image: stringImage,
-                    }
-                }
-            }
+        var callbackRetrievingFrames = function(response) {
+            for (var i = 0; i < response.length; i++) {
+                var video = response[i].filename;
+                var image = response[i].image;
+                var frame = response[i].frame;
 
-            // In case we couldn't find the camera in the loadedCameras panel, we seach for it in the canvases
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                if ($scope.canvases[i].hasActiveCamera()) {
-                    if ($scope.canvases[i].activeCamera.filename.localeCompare(filename) == 0) {
-                        $scope.canvases[i].activeCamera.frames[frame - $scope.frameFrom] = {
+                var imageData = image.slice(2, image.length - 1) // Process the image
+                var stringImage = "data:image/jpeg;base64," + imageData;
+
+                // First search for the camera in the loadedCameras panel
+                for (var j = 0; j < $scope.loadedCameras.length; j++) {
+                    if ($scope.loadedCameras[j].filename.localeCompare(video) == 0) { // Find the camera
+                        $scope.loadedCameras[j].frames[frame - $scope.frameFrom] = {
                             number: frame,
                             image: stringImage,
                         }
-                        $scope.canvases[i].createImage(frame - $scope.frameFrom);
+                    }
+                }
+
+                // In case we couldn't find the camera in the loadedCameras panel, we seach for it in the canvases
+                for (var j = 0; j < $scope.canvases.length; j++) {
+                    if ($scope.canvases[j].hasActiveCamera()) {
+                        if ($scope.canvases[j].activeCamera.filename.localeCompare(video) == 0) {
+                            $scope.canvases[j].activeCamera.frames[frame - $scope.frameFrom] = {
+                                number: frame,
+                                image: stringImage,
+                            }
+                            $scope.canvases[j].createImage(frame - $scope.frameFrom);
+                        }
                     }
                 }
             }
-
-
+            $scope.numberOfLoadedCameras++;
+            
             // After all frames have loaded, call retrieve objects in PT
-            if (frame.localeCompare($scope.frameTo.toString()) === 0 &&
-                $scope.isPosetrack()) {
+            if ($scope.isPosetrack()) {
                 $scope.retrieveObjectsPT();
+            } else { // If we are not in PT and we are finished, we can dismiss de dialog
+     
+                if ($scope.numberOfLoadedCameras >= $scope.numberOfCamerasToLoad) {
+                    // Set redraw to draw the selected object
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].setRedraw();
+                    }
+                    $scope.closeLoadingDialog();
+                }
             }
         };
 
@@ -676,6 +704,12 @@ angular.module('CVGTool')
                 if ($scope.isPosetrack()) {
                     successData = { videos: [successData.videos] }
                 }
+
+                // Set the variables to control the end
+                $scope.numberOfLoadedCameras = 0;
+                $scope.numberOfCamerasToLoad = successData.videos.length;
+
+                $scope.setLoadingDialog();
                 $scope.createCameras(successData);
                 $scope.fillCameras(successData);
             });
@@ -712,14 +746,9 @@ angular.module('CVGTool')
 
         // Function that fills the cameras as needed
         $scope.fillCameras = function(successData) {
-            for (var i = 0;
-                ($scope.frameFrom + i) <= $scope.frameTo; i++) {
-                for (var j = 0; j < successData.videos.length; j++) {
-                    toolSrvc.getFrame(successData.videos[j], $scope.frameFrom + i, $scope.activeDataset.name,
-                        $scope.activeDataset.type, callbackRetrievingFrame, sendMessage);
-                }
+            for (var i = 0; i < successData.videos.length; i++) {
+                toolSrvc.getFrames(successData.videos[i], $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name, $scope.activeDataset.type, callbackRetrievingFrames, sendMessage);
             }
-
         }
 
         // Function that opens the dialog in charge of moving one camera to one canvas
@@ -898,10 +927,17 @@ angular.module('CVGTool')
                 }
 
                 if ($scope.subTool.localeCompare('createPoint') == 0) {
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
-                    $scope.switchSubTool("");
-                    canvasObj.setRedraw();
+                    if (!$scope.cameraAlreadyAnnotated(canvasObj.activeCamera.filename)) {
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
+                        $scope.keypointEditorCounter++;
+                        $scope.setPointCreationData($scope.currentKeypointIndex);
+                        $scope.getEpilines();
+                        canvasObj.setRedraw();
+                    } else {
+                        // TODO: for some reason this is not working properly
+                        //sendMessage("warning", "Select a camera without a point placed");
+                    }    
                 }
 
                 if ($scope.subTool.localeCompare('createBox') == 0) {
@@ -1015,6 +1051,7 @@ angular.module('CVGTool')
                             }
                         } else {
                             if ($scope.objectManager.selectedObject == null) {
+                                if (angular.equals(this.objectsIn2D, {})) return; // Control to avoid errors while loading objects 
                                 var objects = null;
                                 // Select objects depending on the dataset
                                 if ($scope.isPosetrack()) {
@@ -1036,13 +1073,13 @@ angular.module('CVGTool')
                                         var keypoints = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints;
                                         if ($scope.hasAnnotation(keypoints)) {
                                             let colors = [
-                                                "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177" ,"#0d5ac1" ,
-                                                "#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
-                                                "#d2737d" ,"#c0a43c" ,"#f2510e" ,"#651be6" ,"#79806e" ,"#61da5e" ,"#cd2f00" ,
-                                                "#9348af" ,"#01ac53" ,"#c5a4fb" ,"#996635","#b11573" ,"#4bb473" ,"#75d89e" ,
-                                                "#2f3f94" ,"#2f7b99" ,"#da967d" ,"#34891f" ,"#b0d87b" ,"#ca4751" ,"#7e50a8" ,
-                                                "#c4d647" ,"#e0eeb8" ,"#11dec1" ,"#289812" ,"#566ca0" ,"#ffdbe1" ,"#2f1179" ,
-                                                "#935b6d" ,"#916988" ,"#513d98" ,"#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
+                                                "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177", "#0d5ac1",
+                                                "#f205e6", "#1c0365", "#14a9ad", "#4ca2f9", "#a4e43f", "#d298e2", "#6119d0",
+                                                "#d2737d", "#c0a43c", "#f2510e", "#651be6", "#79806e", "#61da5e", "#cd2f00",
+                                                "#9348af", "#01ac53", "#c5a4fb", "#996635", "#b11573", "#4bb473", "#75d89e",
+                                                "#2f3f94", "#2f7b99", "#da967d", "#34891f", "#b0d87b", "#ca4751", "#7e50a8",
+                                                "#c4d647", "#e0eeb8", "#11dec1", "#289812", "#566ca0", "#ffdbe1", "#2f1179",
+                                                "#935b6d", "#916988", "#513d98", "#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
                                                 "#250662", "#cb5bea", "#228916", "#ac3e1b", "#df514a", "#539397", "#880977",
                                                 "#f697c1", "#ba96ce", "#679c9d", "#c6c42c", "#5d2c52", "#48b41b", "#e1cf3b",
                                                 "#5be4f0", "#57c4d8", "#a4d17a", "#225bc8", "#be608b", "#96b00c", "#088baf",
@@ -1051,7 +1088,8 @@ angular.module('CVGTool')
                                                 "#fb21a3", "#51aed9", "#5bb32d", "#807fcb", "#21538e", "#89d534", "#d36647",
                                                 "#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
                                                 "#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
-                                                "#1bb699", "#6b2e5f", "#64820f", "#1c27c1", "#21538e", "#89d534", "#d36647"];
+                                                "#1bb699", "#6b2e5f", "#64820f", "#1c27c1", "#21538e", "#89d534", "#d36647"
+                                            ];
                                             var imageCoords1 = this.toImage(keypoints[0]);
                                             var imageCoords2 = this.toImage(keypoints[1]);
                                             var width = Math.abs(imageCoords2[0] - imageCoords1[0]);
@@ -1065,13 +1103,13 @@ angular.module('CVGTool')
                                     for (obj in objects) {
                                         if (objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length !== 0) {
                                             let colors = [
-                                                "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177" ,"#0d5ac1" ,
-                                                "#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
-                                                "#d2737d" ,"#c0a43c" ,"#f2510e" ,"#651be6" ,"#79806e" ,"#61da5e" ,"#cd2f00" ,
-                                                "#9348af" ,"#01ac53" ,"#c5a4fb" ,"#996635","#b11573" ,"#4bb473" ,"#75d89e" ,
-                                                "#2f3f94" ,"#2f7b99" ,"#da967d" ,"#34891f" ,"#b0d87b" ,"#ca4751" ,"#7e50a8" ,
-                                                "#c4d647" ,"#e0eeb8" ,"#11dec1" ,"#289812" ,"#566ca0" ,"#ffdbe1" ,"#2f1179" ,
-                                                "#935b6d" ,"#916988" ,"#513d98" ,"#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
+                                                "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177", "#0d5ac1",
+                                                "#f205e6", "#1c0365", "#14a9ad", "#4ca2f9", "#a4e43f", "#d298e2", "#6119d0",
+                                                "#d2737d", "#c0a43c", "#f2510e", "#651be6", "#79806e", "#61da5e", "#cd2f00",
+                                                "#9348af", "#01ac53", "#c5a4fb", "#996635", "#b11573", "#4bb473", "#75d89e",
+                                                "#2f3f94", "#2f7b99", "#da967d", "#34891f", "#b0d87b", "#ca4751", "#7e50a8",
+                                                "#c4d647", "#e0eeb8", "#11dec1", "#289812", "#566ca0", "#ffdbe1", "#2f1179",
+                                                "#935b6d", "#916988", "#513d98", "#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
                                                 "#250662", "#cb5bea", "#228916", "#ac3e1b", "#df514a", "#539397", "#880977",
                                                 "#f697c1", "#ba96ce", "#679c9d", "#c6c42c", "#5d2c52", "#48b41b", "#e1cf3b",
                                                 "#5be4f0", "#57c4d8", "#a4d17a", "#225bc8", "#be608b", "#96b00c", "#088baf",
@@ -1080,7 +1118,8 @@ angular.module('CVGTool')
                                                 "#fb21a3", "#51aed9", "#5bb32d", "#807fcb", "#21538e", "#89d534", "#d36647",
                                                 "#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
                                                 "#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
-                                                "#1bb699", "#6b2e5f", "#64820f", "#1c27c1", "#21538e", "#89d534", "#d36647"];
+                                                "#1bb699", "#6b2e5f", "#64820f", "#1c27c1", "#21538e", "#89d534", "#d36647"
+                                            ];
                                             for (let i = 0; i < objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints.length; i++) {
                                                 var coords = objects[obj].frames[$scope.slider.value - $scope.frameFrom].keypoints[i];
                                                 var imageCoords = this.toImage([coords[0], coords[1]]);
@@ -1600,32 +1639,37 @@ angular.module('CVGTool')
         }
 
         // Function to remove the point in the keypointEditor
-        $scope.removePoint = function(index, pointID) {
+        $scope.removePoint = function(indexes, pointID) {
             // If the pointID is -1, remove all
-            if (pointID == -1) {
-                for (var i = 0; i < $scope.keypointEditorData[index].points.length; i++) {
-                    $scope.keypointEditorData[index].points[i] = [];
-                    $scope.keypointEditorData[index].cameras[i] = "";
+            for (index in indexes) {
+                if (pointID == -1) {
+                    for (var i = 0; i < $scope.keypointEditorData[index].points.length; i++) {
+                        $scope.keypointEditorData[index].points[i] = [];
+                        $scope.keypointEditorData[index].cameras[i] = "";
+                    }
+    
+                    if ($scope.activeDataset.type.localeCompare("actionInKitchen") == 0) {
+                        $scope.keypointEditorData[index].point3D = [];
+                    }
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].setRedraw();
+                    }
+                    $scope.removePointUpdate();
+                } else {
+                    $scope.keypointEditorData[index].points[pointID] = [];
+                    $scope.keypointEditorData[index].cameras[pointID] = "";
+                    for (var i = 0; i < $scope.canvases.length; i++) {
+                        $scope.canvases[i].setRedraw();
+                    }
                 }
-
-                if ($scope.activeDataset.type.localeCompare("actionInKitchen") == 0) {
-                    $scope.keypointEditorData[index].point3D = [];
-                }
-            } else {
-                $scope.keypointEditorData[index].points[pointID] = [];
-                $scope.keypointEditorData[index].cameras[pointID] = "";
-            }
-
-
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                $scope.canvases[i].setRedraw();
             }
         }
 
         // Function that fill the pointCreationData
-        $scope.setPointCreationData = function(index, pointID) {
+        $scope.setPointCreationData = function(index) {
             $scope.pointCreationData.labelIndex = index;
-            $scope.pointCreationData.pID = pointID;
+            $scope.pointCreationData.pID = $scope.keypointEditorCounter;
+            $scope.currentKeypointIndex = index;
         }
 
         // Function that resets the pointCreationData
@@ -1635,8 +1679,21 @@ angular.module('CVGTool')
                     pID: null,
                     cameraID: null
                 }
+
+                $scope.keypointEditorCounter = 0;
+                $scope.currentKeypointIndex = 0;
+        }
+
+        // Function that checks if the position of the point is corrent within the available cameras
+        $scope.cameraAlreadyAnnotated = function(camera) {
+            if ($scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras.includes(camera)) {
+                return true;
+            } else {
+                return false;
             }
-            // Resets all epilines
+        }
+
+        // Resets all epilines
         $scope.resetEpilines = function() {
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].resetEpiline(0)
@@ -1683,9 +1740,13 @@ angular.module('CVGTool')
         }
 
         $scope.refreshProjectionOfCanvases = function() {
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                if ($scope.canvases[i].hasActiveCamera()) {
-                    if ($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
+            if ($scope.isPosetrack()) {
+                if ($scope.canvases[0].hasActiveCamera()) {
+                    $scope.canvases[0].updateObjects2D();
+                }
+            } else {
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if ($scope.canvases[i].hasActiveCamera()) {
                         $scope.canvases[i].projectObjects();
                     }
                 }
@@ -1693,14 +1754,20 @@ angular.module('CVGTool')
         };
 
         $scope.refreshProjectionOfCanvasesByUID = function(objectUid, objectType, frame) {
-            $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
+            if ($scope.objectManager.selectedObject !== null) {
+                // Refresh the selected object so the table of annotations updates
+                var selectedType = $scope.objectManager.selectedType.type;
+                var selectedUID = $scope.objectManager.selectedObject.uid;
 
-            // Refresh the selected object so the table of annotations updates
-            var selectedType = $scope.objectManager.selectedType.type;
-            var selectedUID = $scope.objectManager.selectedObject.uid;
+                $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
+                $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
+                $scope.openKeyPointEditor($scope.objectManager.objectTypes[objectType].objects[objectUid], $scope.slider.value);
+            }
+            
+            if ($scope.objectManager.selectedType !== null) {
+                $scope.objectManager.selectedType = $scope.objectManager.objectTypes[objectType];
+            }
 
-            $scope.objectManager.selectedType = $scope.objectManager.objectTypes[selectedType];
-            $scope.objectManager.selectedObject = $scope.objectManager.objectTypes[selectedType].objects[selectedUID];
             if (!$scope.isPosetrack()) {
                 for (var i = 0; i < $scope.canvases.length; i++) {
                     if ($scope.canvases[i].hasActiveCamera()) {
@@ -1721,6 +1788,7 @@ angular.module('CVGTool')
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
             // Construct the variable to store the annotation
+            $scope.switchSubTool("");   // Reset the tool
             var deleting = false;
             var structureOfPoint = {
                 p1: [],
@@ -1801,19 +1869,28 @@ angular.module('CVGTool')
         }
 
         // Callback function of updateAnnotationPT
-        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo) {
+        var updateAnnotationPTCallback = function(objectUid, objectType, frameTo, deleting) {
             sendMessage("success", "Annotation updated!");
-            $scope.interpolate(objectUid, objectType, frameTo, false); //TODO: check in the future
-            // $scope.retrieveAnnotationPT(objectUid, objectType, [frameTo]);
+            $scope.interpolate(objectUid, objectType, frameTo, deleting);        
         };
 
         // Function to save the Annotation for PT
         $scope.updateAnnotationPT = function() {
             // Update the object
             toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.canvases[0].activeCamera.filename,
-                $scope.slider.value, $scope.objectManager.selectedObject,
+                $scope.slider.value, $scope.objectManager.selectedObject, false,
                 $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
         };
+
+        $scope.removePointUpdate = function() {
+            if ($scope.isPosetrack()) {
+                toolSrvc.updateAnnotationPT(navSrvc.getUser().name, $scope.activeDataset, $scope.canvases[0].activeCamera.filename,
+                $scope.slider.value, $scope.objectManager.selectedObject, true,
+                $scope.keypointEditorData, updateAnnotationPTCallback, sendMessage);
+            } else {
+                $scope.updateAnnotation();
+            }
+        }
 
         // Function that creates a new object
         $scope.createNewObject = function() {
@@ -1825,9 +1902,8 @@ angular.module('CVGTool')
             if ($scope.isPosetrack()) {
                 $scope.retrieveAnnotationPT(objectUid, objectType, frames);
             } else {
-                $scope.retrieveAnnotation(objectUid, frames);
+                $scope.retrieveAnnotationAIK(objectUid, objectType, frames);
             }
-
         }
 
         // Function that interpolates (if possible) between the created point and the closest previous point
@@ -1849,18 +1925,22 @@ angular.module('CVGTool')
                 $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
             for (let i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - $scope.interpolationRange); i--) {
-                if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
+                if (($scope.isPosetrack() && object.frames[i - $scope.frameFrom].keypoints.length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[0].length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[1].length > 0)
+                    || (!$scope.isPosetrack()  && object.frames[i - $scope.frameFrom].keypoints.length > 0)) {
                     frameFrom = i;
                     break;
                 }
             }
-
+            
             // Interpolate if possible
             if (frameFrom != null) {
                 var frameArray = [];
                 for (let i = frameFrom; i <= frameTo; i++) {
                     frameArray.push(i);
                 }
+
                 if ($scope.isPosetrack()) {
                     toolSrvc.interpolate(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
                         $scope.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUid, frameArray, objectType,
@@ -1874,8 +1954,136 @@ angular.module('CVGTool')
 
         }
 
+        $scope.hasAnnotation = function(keypoints) {
+            for (var i = 0; i < keypoints.length; i++) {
+                if (keypoints[i].length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Send message to toast
+        var sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
+        };
+
+        $scope.checkWhereAreWeComingFrom = function() {
+            // Check if we come from task home or from the tool itself
+            if (!$scope.fromTaskHome) { // If we come from the tool
+                $scope.setLoadingDialog();
+                var camerasToLoad = { videos: [] };
+                var canvasCameras = $stateParams.obj.canvasCameras;
+                var originalRange = $stateParams.obj.originalRange;
+                // First create the array with all the camera names
+                for (var i = 0; i < $stateParams.obj.loadedCameras.length; i++) {
+                    if ($stateParams.obj.loadedCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        camerasToLoad.videos.push($stateParams.obj.loadedCameras[i]);
+                    }
+                }
+
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        camerasToLoad.videos.push(canvasCameras[i]);
+                    }
+                }
+
+                // Reset sessionData of the cameras
+                navSrvc.resetSessionData();
+
+                // Create the cameras
+                $scope.createCameras(camerasToLoad);
+
+                // Fill the ranges again
+                navSrvc.setFrameStart($scope.frameFrom);
+                navSrvc.setFrameEnd($scope.frameTo);
+                navSrvc.setFrameRange(originalRange);
+
+                // Place cameras in canvases if needed
+                for (var i = 0; i < $scope.canvases.length; i++) {
+                    if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
+                        for (var j = 0; j < $scope.loadedCameras.length; j++) {
+                            if (canvasCameras[i].localeCompare($scope.loadedCameras[j].filename) == 0) {
+                                $scope.switchVideo($scope.loadedCameras[j], i + 1); // + 1 needed because the function switch video already substracts 1
+                                break;
+                            }
+                        }
+                    }
+                }
+                $scope.numberOfLoadedCameras = 0;
+                $scope.numberOfCamerasToLoad = camerasToLoad.videos.length;
+
+                // Fill all cameras
+                $scope.fillCameras(camerasToLoad);
+            } else {
+                if ($scope.isPosetrack()) {
+                    $scope.addCamera();
+                }
+            }
+        }
+        
+
+        $scope.setLoadingDialog = function() {
+            $scope.loading = true;
+            $scope.loadingCounter++;
+        //     console.log($scope.loadingCounter)
+        //     $mdDialog.show({
+        //         templateUrl: '/static/views/dialogs/loadingDialog.html',
+        //         controller: 'loadingDialogCtrl',
+        //         escapeToClose: false,
+        //     })
+        }
+
+        $scope.closeLoadingDialog = function() {
+            $scope.loadingCounter--;
+            if ($scope.loadingCounter == 0) {
+                $scope.loading = false;
+            }
+            
+            // sendMessage("closeLoadingDialog", "");
+            // $scope.loadingModal.closeModal();
+            // $scope.loadingModal = null;
+        }
+
+
+        $scope.openBatchDelete = function(object) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/batchDeleteDialog.html',
+                controller: 'batchDeleteCtrl',
+                escapeToClose: false,
+                locals: {
+                    toolSrvc: toolSrvc,
+                    object: object,
+                    minFrame: $scope.frameFrom,
+                    maxFrame: $scope.frameTo,
+                    dataset: $scope.activeDataset,
+                    scene: $scope.activeDataset.name, // For PT this will be different
+                    username: navSrvc.getUser().name
+                }
+            }).then(function(data) { // When finished, update the frames
+                if (data.msg.localeCompare("success") == 0) {
+                    sendMessage("success", "Annotations deleted!")
+                    var frameArray = [];
+                    for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
+                        frameArray.push(i);
+                    }
+                    $scope.retrieveAnnotationAIK(data.object.uid, data.object.type, frameArray);
+                } else if (data.msg.localeCompare("error") == 0) {
+                    sendMessage("warning", "Something went wrong")
+                }
+            }) 
+        }
+
+        /////////
+        // END OF OTHER FUNCTIONS
+        /////////
+
+
+        /////////
+        // AIK WORKFLOW 
+        /////////
         // Callback function to fill the availableObjects array with the retrieved data
-        var callbackSuccessRetrieveAvailableObjectTypes = function(obj) {
+        var callbackSuccessRetrieveAvailableObjectTypesAIK = function(obj) {
             $scope.resetObjectManager();
             for (var i = 0; i < obj.length; i++) {
                 $scope.objectManager.objectTypes[obj[i].type] = {
@@ -1886,48 +2094,16 @@ angular.module('CVGTool')
                     objects: {}
                 }
             }
-            $scope.retrieveObjects();
+            $scope.retrieveObjectsAIK();
         }
 
         // Retrieve available objects and fill the array
-        $scope.retrieveAvailableObjectTypes = function() {
-            toolSrvc.retrieveAvailableObjectTypes($scope.activeDataset.type, callbackSuccessRetrieveAvailableObjectTypes, sendMessage);
+        $scope.retrieveAvailableObjectTypesAIK = function() {
+            toolSrvc.retrieveAvailableObjectTypes($scope.activeDataset.type, callbackSuccessRetrieveAvailableObjectTypesAIK, sendMessage);
         }
-
-
-        // Callback function for retrieving one object
-        var callbackRetrievingFrameObject = function(annotation, frame) {
-            if (angular.equals({}, annotation) || (typeof annotation === 'string' && annotation.localeCompare("No annotation") === 0)) return; // Check if we received something
-            if ($scope.isPosetrack()) {
-                $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
-                $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.track_id.toString()].frames[frame - $scope.frameFrom].original_uid = annotation.uid;
-                $scope.refreshProjectionOfCanvasesByUID(annotation.track_id, annotation.type, frame);
-            } else {
-                $scope.objectManager.objectTypes[annotation.type.toString()].objects[annotation.uid.toString()].frames[frame - $scope.frameFrom].keypoints = annotation.keypoints;
-                $scope.refreshProjectionOfCanvasesByUID(annotation.uid, annotation.type, frame);
-            }
-        }
-
-        // Function that returns the annotations defined by objectUid
-        $scope.retrieveAnnotation = function(objectUid, frameArray) {
-            for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, frameArray[i], callbackRetrievingFrameObject, sendMessage);
-            }
-        }
-
-        // Function that returns the annotations defined by objectUid
-        // Same but for PT
-        $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
-            for (var i = 0; i < frameArray.length; i++) {
-                toolSrvc.getAnnotationOfFrameByUIDAndType(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type,
-                    $scope.canvases[0].activeCamera.filename,
-                    $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), frameArray[i], objectType,
-                    callbackRetrievingFrameObject, sendMessage);
-            }
-        };
 
         // Callback function for retrieving the existing objects
-        var callbackRetrieveObjects = function(objects) {
+        var callbackRetrieveObjectsAIK = function(objects) {
             for (obj in objects) {
                 var object = objects[obj].object;
                 $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
@@ -1945,7 +2121,97 @@ angular.module('CVGTool')
                 }
             }
 
-            $scope.retrieveAnnotations();
+            $scope.retrieveAnnotationsAIK();
+        }
+
+        $scope.retrieveObjectsAIK = function() {
+            toolSrvc.retrieveObjects($scope.activeDataset, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjectsAIK, sendMessage);
+
+        };
+
+        // Callback function for retrieveAnnotations
+        var callbackGetAnnotationsByFrameRangeAIK = function(annotations) {
+            if (annotations.length == 0) { // Check if we received something
+                $scope.closeLoadingDialog();
+                return;
+            }; 
+            for (var j = 0; j < annotations.length; j++) {
+                var annotation = annotations[j];
+                for (var i = 0; i < annotation.objects.length; i++) {
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.frameFrom].keypoints =
+                        annotation.objects[i].keypoints;
+                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                        .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.frameFrom].frame = annotation.frame;
+
+                }
+            }
+            $scope.closeLoadingDialog();
+            $scope.refreshProjectionOfCanvases();
+        }
+
+        // Function that return the available objects
+        $scope.retrieveAnnotationsAIK = function() {
+            toolSrvc.getAnnotationsByFrameRange($scope.activeDataset.name, $scope.activeDataset.type, $scope.frameFrom, $scope.frameTo,
+                $scope.activeDataset.name, navSrvc.getUser().name, callbackGetAnnotationsByFrameRangeAIK, sendMessage);
+        };
+
+        // Callback function for retrieving one object
+        var callbackGetAnnotationsByFrameRangeAndUIDAIK = function(annotations) {
+            if (annotations.length <= 0) return;
+
+            for(var j= 0; j< annotations.length; j++) {
+                var frame = annotations[j].frame;
+                var objects = annotations[j].objects;
+                for (var i=0; i< objects.length; i++) {
+                    $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints = objects[i].keypoints;
+                    $scope.refreshProjectionOfCanvasesByUID(objects[i].uid, objects[i].type, frame);
+                }
+            }
+        }
+
+
+        // Function that returns the annotations defined by objectUid
+        $scope.retrieveAnnotationAIK = function(objectUid, objectType, frameArray) {
+            if (frameArray.length == 1) {   // If there is only one frame
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[0], frameArray[0], callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+            } else {
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.activeDataset.name, objectUid, objectType ,frameArray[0], frameArray[frameArray.length - 1],callbackGetAnnotationsByFrameRangeAndUIDAIK, sendMessage);
+            }
+        }
+
+        $scope.AIKWorkFlow = function() {
+            $scope.setLoadingDialog();
+            $scope.retrieveAvailableObjectTypesAIK(); // Lastly, take all objectTypes, objects and annotations in a chain of requests
+
+        }
+
+        /////////
+        // END OF AIK WORKFLOW 
+        /////////
+
+        /////////
+        // PT WORKFLOW 
+        /////////
+
+        var callbackSuccessRetrieveAvailableObjectTypesPT = function(obj) {
+            $scope.resetObjectManager();
+            for (var i = 0; i < obj.length; i++) {
+                $scope.objectManager.objectTypes[obj[i].type] = {
+                    type: obj[i].type,
+                    datasetType: obj[i].datasetType,
+                    numKeypoints: obj[i].numKeypoints,
+                    labels: obj[i].labels,
+                    objects: {}
+                }
+            }
+            $scope.closeLoadingDialog();
+            $scope.checkWhereAreWeComingFrom();
+        }
+
+        // Retrieve available objects and fill the array
+        $scope.retrieveAvailableObjectTypesPT = function() {
+            toolSrvc.retrieveAvailableObjectTypes($scope.activeDataset.type, callbackSuccessRetrieveAvailableObjectTypesPT, sendMessage);
         }
 
         // Callback function for retrieving the existing objects
@@ -1970,138 +2236,97 @@ angular.module('CVGTool')
                 let object = objects[obj].object;
                 if (object.frame >= $scope.frameFrom && object.frame <= $scope.frameTo) {
                     $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                        .frames[object.frame - $scope.frameFrom].original_uid = object.uid;
+                        .frames[object.frame - $scope.frameFrom].original_uid = $scope.generateNewOriginalUid(object.track_id, object.frame); // TODO change back is necessary to object.uid
                 }
             }
-            // console.log($scope.objectManager);
             $scope.retrieveAnnotationsPT();
         }
 
-        $scope.retrieveObjects = function() {
-            if ($scope.activeDataset.type.localeCompare("actionInKitchen") === 0) {
-                toolSrvc.retrieveObjects($scope.activeDataset, $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrieveObjects, sendMessage);
-            } // else it's posetrack and it is not done here!
-        };
-
         // Retrieve objects for posetrack
         $scope.retrieveObjectsPT = function() {
-            toolSrvc.retrieveObjects($scope.activeDataset, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT, sendMessage);
+            if ($scope.loadedCameras.length > 0) {
+                toolSrvc.retrieveObjects($scope.activeDataset, $scope.loadedCameras[0].filename, navSrvc.getUser().name, callbackRetrieveObjectsPT, sendMessage);
+            } else {
+                toolSrvc.retrieveObjects($scope.activeDataset, $scope.canvases[0].getActiveCamera().filename, navSrvc.getUser().name, callbackRetrieveObjectsPT, sendMessage);
+            }
+
         };
 
-        // TODO: Temporal function to retrieve objects, when tasks exist, this will only be called one before entering the tool
-        var callbackRetrievingFrameObjects = function(annotation) {
-            if (angular.equals({}, annotation)) return; // Check if we received something
+        // Callback function for retrieveAnnotations
+        var callbackGetAnnotationsByFrameRangePT = function(annotations) {
+            if (annotations.length == 0) {  // Check if we received something
+                $scope.closeLoadingDialog();
+                return;
+            }
 
-            var frame = annotation.frame; // Read the frame
-
-            for (var i = 0; i < annotation.objects.length; i++) {
-                // In any case, store in that frame the keypoints, the frame number and the actions
-                if ($scope.isPosetrack()) {
+            for (var j = 0; j < annotations.length; j++) {
+                var annotation = annotations[j];
+                for (var i = 0; i < annotation.objects.length; i++) {
+                    // In any case, store in that frame the keypoints, the frame number and the actions
                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].keypoints =
+                        .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.frameFrom].keypoints =
                         annotation.objects[i].keypoints;
                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].track_id.toString()].frames[frame - $scope.frameFrom].frame =
-                        frame;
-                } else {
-                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].keypoints =
-                        annotation.objects[i].keypoints;
-                    $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
-                        .objects[annotation.objects[i].uid.toString()].frames[frame - $scope.frameFrom].frame = frame;
+                        .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.frameFrom].frame =
+                        annotation.frame;
                 }
             }
-            // console.log("OBJECT MANAGER");
-            // console.log($scope.objectManager);
+            $scope.closeLoadingDialog();
             $scope.refreshProjectionOfCanvases();
         }
 
-        // Function that return the available objects
-        $scope.retrieveAnnotations = function() {
-            for (var i = 0; i < $scope.frameList.length; i++) {
-                toolSrvc.getAnnotationOfFrame($scope.activeDataset.name, $scope.activeDataset.type, $scope.frameList[i],
-                    $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects, sendMessage);
-            }
-
-        };
-
+        // Function that gets all annotations for the actual video and frame range
         $scope.retrieveAnnotationsPT = function() {
-            for (var i = 0; i < $scope.frameList.length; i++) {
-                toolSrvc.getAnnotationOfFrame($scope.loadedCameras[0].filename, $scope.activeDataset.type, $scope.frameList[i],
-                    $scope.activeDataset.name, navSrvc.getUser().name, callbackRetrievingFrameObjects);
+            if ($scope.loadedCameras.length > 0) {
+                toolSrvc.getAnnotationsByFrameRange($scope.loadedCameras[0].filename, $scope.activeDataset.type, $scope.frameFrom, $scope.frameTo,
+                    $scope.activeDataset.name, navSrvc.getUser().name, callbackGetAnnotationsByFrameRangePT);
+            } else {
+                toolSrvc.getAnnotationsByFrameRange($scope.canvases[0].getActiveCamera().filename, $scope.activeDataset.type, $scope.frameFrom, $scope.frameTo,
+                    $scope.activeDataset.name, navSrvc.getUser().name, callbackGetAnnotationsByFrameRangePT);
             }
         };
 
-        $scope.hasAnnotation = function(keypoints) {
-            for (var i = 0; i < keypoints.length; i++) {
-                if (keypoints[i].length > 0) {
-                    return true;
-                }
-            }
-            return false;
+        // Callback function for retrieving one object
+        var callbackGetAnnotationsByFrameRangeAndUIDPT = function(annotation) {
+            if (annotation.length <= 0) return; // Check if we received something
+            var frame = annotation[0].frame;
+            var objects = annotation[0].objects;
+            for (var i= 0; i< objects.length; i++) {
+                $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.frameFrom].keypoints = objects[i].keypoints;
+                $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.frameFrom].original_uid = objects[i].uid;
+                $scope.refreshProjectionOfCanvasesByUID(objects[i].track_id, objects[i].type, frame);
+            } 
         }
 
-        // Send message to toast
-        var sendMessage = function(type, msg) {
-            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
+        // Function that returns the annotations defined by objectUid
+        $scope.retrieveAnnotationPT = function(objectUid, objectType, frameArray) {
+            for (var i = 0; i < frameArray.length; i++) {
+                toolSrvc.getAnnotationOfFrameByUID(navSrvc.getUser().name, $scope.activeDataset.name, $scope.activeDataset.type, $scope.canvases[0].getActiveCamera().filename, $scope.generateNewOriginalUid(Math.abs(objectUid) % 100, frameArray[i]), objectType ,frameArray[i], frameArray[i], callbackGetAnnotationsByFrameRangeAndUIDPT, sendMessage);
+            }
+
         };
 
+        $scope.PTWorkFlow = function() {
+            $scope.setLoadingDialog();
+            $scope.retrieveAvailableObjectTypesPT(); // Lastly, take all objectTypes, objects and annotations in a chain of requests
+        }
+
         /////////
-        // END OF OTHER FUNCTIONS
+        // END OF PT WORKFLOW 
         /////////
 
         /////////
         // INTIALIZATION CALLS
         /////////
-        $scope.retrieveAvailableObjectTypes();
-        $scope.initializeCanvases();
-        $scope.getActivitiesList();
+        $scope.initializeCanvases(); // First, initialize canvases
 
-        // Check if we come from task home or from the tool itself
-        if (!$scope.fromTaskHome) { // If we come from the tool
-            var camerasToLoad = { videos: [] };
-            var canvasCameras = $stateParams.obj.canvasCameras;
-            var originalRange = $stateParams.obj.originalRange;
-            // First create the array with all the camera names
-            for (var i = 0; i < $stateParams.obj.loadedCameras.length; i++) {
-                if ($stateParams.obj.loadedCameras[i].localeCompare("") != 0) { // If there is a camera there
-                    camerasToLoad.videos.push($stateParams.obj.loadedCameras[i]);
-                }
-            }
-
-            for (var i = 0; i < $scope.canvases.length; i++) {
-                if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
-                    camerasToLoad.videos.push(canvasCameras[i]);
-                }
-            }
-
-            // Reset sessionData of the cameras
-            navSrvc.resetSessionData();
-
-            // Create the cameras
-            $scope.createCameras(camerasToLoad);
-
-            // Fill the ranges again
-            navSrvc.setFrameStart($scope.frameFrom);
-            navSrvc.setFrameEnd($scope.frameTo);
-            navSrvc.setFrameRange(originalRange);
-
-            // TODO:
-            // Place cameras in canvases if needed
-            // for (var i = 0; i < $scope.canvases.length; i++) {
-            //     if (canvasCameras[i].localeCompare("") != 0) { // If there is a camera there
-            //         for (var j = 0; j < $scope.loadedCameras.length; j++) {
-            //             if (canvasCameras[i].localeCompare($scope.loadedCameras[j].filename) == 0) {
-            //                 $scope.switchVideo($scope.loadedCameras[j], i + 1); // + 1 needed because the function switch video already substracts 1
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // }
-
-            // Fill all cameras
-            $scope.fillCameras(camerasToLoad);
+        if ($scope.isPosetrack()) {
+            $scope.PTWorkFlow();
+        } else {
+            $scope.checkWhereAreWeComingFrom();
+            $scope.AIKWorkFlow();
         }
+        
         /////////
         // END OF INITIALIZATION CALLS
         /////////
@@ -2123,10 +2348,24 @@ angular.module('CVGTool')
                 combo: 'space',
                 description: 'Play/Pause',
                 callback: function() { $scope.switchPlay() }
+            })
+            .add({
+                combo: 's',
+                description: 'Save annotation',
+                callback: function() { //check if the keypoint editor is open and then save
+                    if ($scope.keyPointEditorTab == true) {
+                        if ($scope.isPosetrack()) {
+                            $scope.updateAnnotationPT();
+                        } else {
+                            $scope.updateAnnotation();
+                        }
+                    }
+                }
             });
 
         /////////
         // END OF KEYBINDINGS 
         /////////
     }
+
 ]);

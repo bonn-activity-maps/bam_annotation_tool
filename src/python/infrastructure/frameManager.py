@@ -1,5 +1,6 @@
 from pymongo import MongoClient, errors
 import logging
+from bson.son import SON
 
 # FrameManager logger
 log = logging.getLogger('frameManager')
@@ -105,3 +106,17 @@ class FrameManager:
         except errors.PyMongoError as e:
             log.exception('Error finding frame in db')
             return 'Error'
+
+    # Return info of frames (max, min, total frames) for dataset group by video
+    def getFramesInfoOfDatasetGroupByVideo(self, dataset):
+        try:
+            result = self.collection.aggregate([{"$match": {"dataset": dataset}},
+                    {"$group": {"_id": {"scene": "$video"}, "minFrame": {"$min": "$number"}, "maxFrame": {"$max": "$number"}}},
+                    {"$project": {"_id": 0, "video": "$_id.scene", "minFrame": 1, "maxFrame": 1,
+                                  "totalFrames": {"$add": [{"$subtract": ["$maxFrame", "$minFrame"]}, 1]}}},
+                    {"$sort": SON([("video", 1)])}])
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding frames in db')
+            return 'Error'
+

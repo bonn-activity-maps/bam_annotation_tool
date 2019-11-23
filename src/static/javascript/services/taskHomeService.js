@@ -2,20 +2,16 @@ angular.module('CVGTool')
 
 .factory('taskHomeSrvc', function($state, $http, $httpParamSerializer) {
     return {
-        getFrameInfo: function (dataset, video, callbackSuccess, callbackError) {
+        getFrameInfo: function (dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/video/getFrameInfoOfVideo',
+                url: '/api/frame/getFrameInfoOfDataset',
                 headers: {
                     'dataset': dataset,
-                    'video': video
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
-                if (response.data.msg.length === 0) {
-                    callbackSuccess([], video)
-                } else {
-                    callbackSuccess(response.data.msg, video)
-                }
+                callbackSuccess(response.data.msg)
             }, function errorCallback(response) {
                 callbackError('danger', "Error while retrieving info from videos.")
             });

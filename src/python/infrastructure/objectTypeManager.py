@@ -50,7 +50,7 @@ class ObjectTypeManager:
     # Return 'ok' if the objectType has been removed
     def removeObjectType(self, type, datasetType):
         try:
-            result = self.collection.delete_one({"type": type, "datasetType": datasetType})
+            result = self.collection.delete_one({"datasetType": datasetType, "type": type})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -61,7 +61,7 @@ class ObjectTypeManager:
 
     # Return 'ok' if the objectType has been updated. if objectType doesn't exist, it isn't created
     def updateObjectType(self, type, datasetType, nkp, labels):
-        query = {"type": type, "datasetType": datasetType}                                         # Search by objectType type
+        query = {"datasetType": datasetType, "type": type}                                         # Search by objectType type
         newValues = {"$set": {"numKeypoints": nkp, "labels": labels}}    # Update values (numKeypoints and labels)
         try:
             result = self.collection.update_one(query, newValues, upsert=False)

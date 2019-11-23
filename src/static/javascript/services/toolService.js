@@ -40,14 +40,34 @@ angular.module('CVGTool')
             });
         },
 
-        // Gets the annotations of a frame, from a video, a dataset and a user
-        getAnnotationOfFrame: function(scene, datasetType, frame, dataset, user, callbackSuccess, callbackError) {
+        // Gets the image of a frame range, from a video and a dataset
+        getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/dataset/getFramesVideo',
+                headers: {
+                    'video': fileName,
+                    'startFrame': frameStart,
+                    'endFrame': frameEnd,
+                    'dataset': dataset,
+                    'datasetType': datasetType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            });
+        },
+
+        // Gets the annotations of a frame range, from a video, a dataset and a user
+        getAnnotationsByFrameRange: function(scene, datasetType, frameStart, frameEnd, dataset, user, callbackSuccess, callbackError) {
             $http({
                     method: 'GET',
-                    url: '/api/annotation/getAnnotation',
+                    url: '/api/annotation/getAnnotationsByFrameRange',
                     headers: {
                         'scene': scene,
-                        'frame': frame,
+                        'startFrame': frameStart,
+                        'endFrame': frameEnd,
                         'dataset': dataset,
                         'datasetType': datasetType,
                         'user': user
@@ -131,7 +151,7 @@ angular.module('CVGTool')
         },
 
         // Retrieves the object defined by objectUid
-        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, frame, callbackSuccess, callbackError) {
+        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, startFrame, endFrame, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: "/api/annotation/getAnnotation/object",
@@ -140,11 +160,13 @@ angular.module('CVGTool')
                     "datasetType": datasetType,
                     "user": user,
                     "scene": scene,
-                    "frame": frame,
+                    "objectType": objectType,
+                    "startFrame": startFrame,
+                    "endFrame": endFrame,
                     "uidObject": objectUid
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg, frame);
+                callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })
@@ -192,7 +214,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
+        updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotationPT',
@@ -210,7 +232,7 @@ angular.module('CVGTool')
                     'points': points
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame);
+                callbackSuccess(object.original_uid, object.type, frame, deleting);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })
@@ -238,7 +260,7 @@ angular.module('CVGTool')
         },
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
-                              uidObject2, callbackSuccess, callbackError) {
+            uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",
@@ -373,6 +395,50 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
             }, function errorCallback(response) {})
+        },
+
+        // Delete annotations
+        deleteAnnotation: function(dataset, datasetType, scene, frame ,username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': frame,
+                    'endFrame': frame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
+        },
+
+        // Batch delete annotations
+        batchDeleteAnnotations: function(dataset, datasetType, scene, startFrame, endFrame, username, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object',
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
         }
     }
 });
