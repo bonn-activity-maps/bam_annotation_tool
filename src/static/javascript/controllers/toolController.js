@@ -1603,11 +1603,11 @@ angular.module('CVGTool')
 
         // Callback for success in create Action
         $scope.createActionSuccess = function(data) {
-            console.log(data)
+            sendMessage("success", "Action created!");
         };
         // Callback for error in create Action
         $scope.createActionError = function(data) {
-            console.log(data)
+            sendMessage("danger", "Action creation went wrong!");
         };
 
         //                                          //
@@ -2319,6 +2319,7 @@ angular.module('CVGTool')
         // INTIALIZATION CALLS
         /////////
         $scope.initializeCanvases(); // First, initialize canvases
+        $scope.getActivitiesList(); // Get activities from the server
 
         if ($scope.isPosetrack()) {
             $scope.PTWorkFlow();
