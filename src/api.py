@@ -427,6 +427,12 @@ def updateFrameTask():
 
 #### ACTIONS ####
 
+# Create a new Activity
+@app.route("/api/action/createActivity", methods=['POST'])
+def createActivity():
+    success, msg, status = actionService.createActivity(request.get_json())
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Get activities list
 @app.route("/api/action/getActivities", methods=['GET'])
 def getActivities():

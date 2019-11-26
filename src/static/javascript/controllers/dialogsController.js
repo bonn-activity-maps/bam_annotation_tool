@@ -118,6 +118,44 @@ angular.module('CVGTool')
     }
 ])
 
+.controller('dialogActivitiesCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name', 'type',
+    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name, type) {
+        $scope.mode = 'normal';
+        $scope.msg = '';
+        $scope.newActivity = '';
+        $scope.activitiesList = [];
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        var updateActivitiesList = function(list) {
+            $scope.activitiesList = list["activities"];
+        };
+
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response;
+            adminDatasetsSrvc.getActivitiesList(name, updateActivitiesList);
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response;
+        };
+
+        // Function that generates the call to the server to remove the file
+        $scope.createActivity = function(activity) {
+            adminDatasetsSrvc.createActivity(name, activity, showSuccess, showError);
+        };
+
+        adminDatasetsSrvc.getActivitiesList(name, updateActivitiesList);
+    }
+])
+
 .controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name', 'type',
     function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name, type) {
         $scope.mode = 'normal';
