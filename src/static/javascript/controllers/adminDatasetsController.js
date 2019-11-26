@@ -111,6 +111,24 @@ angular.module('CVGTool')
             });
         };
 
+        // Function that opens the dialog that manages the activities
+        $scope.editActivities = function(dataset) {
+
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/activitiesDialog.html',
+                locals: {
+                    name: dataset.name,
+                    type: dataset.type
+                },
+                controller: 'dialogActivitiesCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        };
+
         // Function that opens the dialog that manages the zip files in the system available to import
         $scope.showZipFilesDialog = function(files) {
             $mdDialog.show({

@@ -26,6 +26,7 @@
                                         <td class="text-left">{{dataset.name}}</td>
                                         <td>{{dataset.type}}</td>
                                         <td>
+                                            <button ng-click="editActivities(dataset)" class="btn btn-success"><span class="glyphicon glyphicon-tags"></button>
                                             <button ng-click="exportDataset(dataset)" class="btn btn-primary"><span class="glyphicon glyphicon-download"></button>
                                             <button ng-click="removeDataset(dataset)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></button>
                                         </td>

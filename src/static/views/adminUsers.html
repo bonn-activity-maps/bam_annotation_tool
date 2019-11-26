@@ -22,53 +22,66 @@
 
                         <table class="table table-bordered table-responsive text-center">
                             <thead>
-                                <tr>
-                                    <th class="col-md-2">
-                                        <a ng-click="sortBy('name')">
-                                            Username
-                                            <span ng-show="sortType == 'name' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
-                                            <span ng-show="sortType == 'name' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
-                                        </a>
-                                    </th>
-                                    <th class="col-md-1">
-                                        <a ng-click="sortBy('role')">
-                                            Role
-                                            <span ng-show="sortType == 'role' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
-                                            <span ng-show="sortType == 'role' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
-                                        </a>
-                                    </th>
-                                    <th class="col-md-2">
-                                        <a ng-click="sortBy('dataset')">
-                                            Dataset
-                                            <span ng-show="sortType == 'dataset' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
-                                            <span ng-show="sortType == 'dataset' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
-                                        </a>
-                                    </th>
-                                    <th class="col-md-5">
-                                        <a ng-click="sortBy('email')">
-                                            E-mail
-                                            <span ng-show="sortType == 'email' && !sortReverse" class="glyphicon glyphicon-triangle-bottom"></span>
-                                            <span ng-show="sortType == 'email' && sortReverse" class="glyphicon glyphicon-triangle-top"></span>
-                                        </a>
-                                    </th>
-                                    <th class="col-md-2">Actions</th>
-                                </tr>
+                            <tr>
+                                <th class="col-md-2">
+                                    <a ng-click="sortBy('name')">
+                                        Username
+                                        <span ng-show="sortType == 'name' && !sortReverse"
+                                              class="glyphicon glyphicon-triangle-bottom"></span>
+                                        <span ng-show="sortType == 'name' && sortReverse"
+                                              class="glyphicon glyphicon-triangle-top"></span>
+                                    </a>
+                                </th>
+                                <th class="col-md-1">
+                                    <a ng-click="sortBy('role')">
+                                        Role
+                                        <span ng-show="sortType == 'role' && !sortReverse"
+                                              class="glyphicon glyphicon-triangle-bottom"></span>
+                                        <span ng-show="sortType == 'role' && sortReverse"
+                                              class="glyphicon glyphicon-triangle-top"></span>
+                                    </a>
+                                </th>
+                                <th class="col-md-2">
+                                    <a ng-click="sortBy('dataset')">
+                                        Dataset
+                                        <span ng-show="sortType == 'dataset' && !sortReverse"
+                                              class="glyphicon glyphicon-triangle-bottom"></span>
+                                        <span ng-show="sortType == 'dataset' && sortReverse"
+                                              class="glyphicon glyphicon-triangle-top"></span>
+                                    </a>
+                                </th>
+                                <th class="col-md-5">
+                                    <a ng-click="sortBy('email')">
+                                        E-mail
+                                        <span ng-show="sortType == 'email' && !sortReverse"
+                                              class="glyphicon glyphicon-triangle-bottom"></span>
+                                        <span ng-show="sortType == 'email' && sortReverse"
+                                              class="glyphicon glyphicon-triangle-top"></span>
+                                    </a>
+                                </th>
+                                <th class="col-md-2">Actions</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers  | orderBy:sortType:sortReverse | filter:searchBy">
-                                    <td class="text-left">{{user.name}}</td>
-                                    <td>{{user.role}}</td>
-                                    <td>{{user.dataset.toString()}}</td>
-                                    <td>{{user.email}}</td>
-                                    <td ng-if="user.role != 'root'">
-                                        <button ng-click="enableEdit(user)" class="btn btn-primary"><span class="glyphicon glyphicon-edit"></button><button ng-click="removeUser(user)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></button></td>
-                                </tr>
-                                <tr ng-if="listOfUsers.length == 0">
-                                    <td class="text-left">No users created for this dataset.</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                </tr>
+                            <tr ng-if="listOfUsers.length > 0"
+                                ng-repeat="user in listOfUsers  | orderBy:sortType:sortReverse | filter:searchBy">
+                                <td class="text-left">{{user.name}}</td>
+                                <td>{{user.role}}</td>
+                                <td>{{user.dataset.toString()}}</td>
+                                <td>{{user.email}}</td>
+                                <td ng-if="user.role != 'root'">
+                                    <button ng-click="enableEdit(user)" class="btn btn-primary"><span
+                                            class="glyphicon glyphicon-edit"></button>
+                                    <button ng-click="removeUser(user)" class="btn btn-danger"><span
+                                            class="glyphicon glyphicon-trash"></button>
+                                </td>
+                            </tr>
+                            <tr ng-if="listOfUsers.length == 0">
+                                <td class="text-left">No users created for this dataset.</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -88,44 +101,55 @@
                         </div>
                         <div class="form-group">
                             <label>Username</label>
-                            <input ng-click="hideError()" type="text" ng-model="editUser.username" class="form-control" required />
+                            <input ng-click="hideError()" type="text" ng-model="editUser.username" class="form-control"
+                                   required/>
                         </div>
                         <div class="form-group">
                             <label>Email</label>
-                            <input ng-click="hideError()" type="email" ng-model="editUser.email" class="form-control" required />
+                            <input ng-click="hideError()" type="email" ng-model="editUser.email" class="form-control"
+                                   required/>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Role</label>
                                     <select class="form-control" ng-model="editUser.role">
-                            <option  ng-repeat="r in availableRoles" >{{r.name}}</option>
-                       </select>
+                                        <option ng-repeat="r in availableRoles">{{r.name}}</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
-
                                 <div ng-if="user.role == 'admin'" class="form-group">
                                     <label>Dataset</label>
-                                    <input ng-click="hideError()" type="text" ng-model="editUser.dataset" class="form-control" disabled/>
+                                    <input ng-click="hideError()" type="text" ng-model="editUser.dataset"
+                                           class="form-control" disabled/>
                                 </div>
 
                                 <div ng-if="user.role == 'root'" class="form-group">
                                     <label>Dataset (hold shift or ctrl to select more than one)</label>
                                     <select multiple class="form-control" ng-model="editUser.dataset">
-                        <option  ng-repeat="d in listOfDatasets" >{{d.name}}</option>
-                      </select>
+                                        <option ng-repeat="d in listOfDatasets">{{d.name}}</option>
+                                    </select>
                                 </div>
 
                             </div>
                         </div>
                         <hr/>
                         <p style="text-align:center">
-                            <button ng-if="mode == 'creation'" type="submit" class="btn btn-primary theme-accent">Create</button>
-                            <button ng-if="mode == 'creation'" type="reset" class="btn btn-primary theme-accent">Reset</button>
-                            <button ng-if="mode == 'edit'" ng-click="updateUser()" class="btn btn-primary theme-accent">Update</button>
-                            <button ng-if="mode == 'edit'" ng-click="resetPassword()" class="btn btn-primary theme-accent">Reset Password</button>
-                            <button ng-if="mode == 'edit'" ng-click="cancelEdit()" class="btn btn-primary theme-accent">Cancel</button>
+                            <button ng-if="mode == 'creation'" type="submit" class="btn btn-primary theme-accent">
+                                Create
+                            </button>
+                            <button ng-if="mode == 'creation'" type="reset" class="btn btn-primary theme-accent">Reset
+                            </button>
+                            <button ng-if="mode == 'edit'" ng-click="updateUser()" class="btn btn-primary theme-accent">
+                                Update
+                            </button>
+                            <button ng-if="mode == 'edit'" ng-click="resetPassword()"
+                                    class="btn btn-primary theme-accent">Reset Password
+                            </button>
+                            <button ng-if="mode == 'edit'" ng-click="cancelEdit()" class="btn btn-primary theme-accent">
+                                Cancel
+                            </button>
 
                         </p>
                     </form>
@@ -136,7 +160,8 @@
             <div class="panel panel-default" style="height: 40%">
                 <div class="panel-body" style="height: 40%">
                     <h2>Upload Users file</h2>
-                    <hr/> In the future, maybe
+                    <hr/>
+                    In the future, maybe
                 </div>
             </div>
         </div>
