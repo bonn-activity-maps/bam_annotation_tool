@@ -81,9 +81,13 @@ angular.module('CVGTool')
         $scope.actionManager = {
             activitiesList: [], // List of possible actions
             actionList: [], // List of actions for the selected object in the selected frames
-            selectedType: null, // Selected type of activity to add
             selectedObject: null, // Selected object to edit
-            isActionSelected: false, // Set to True when selecting start/stop frames
+            actionCreationData: {
+                selectedType: null,
+                startFrame: $scope.frameFrom,
+                endFrame: $scope.frameTo
+            }
+
         };
 
         // Keypoints
@@ -1519,6 +1523,31 @@ angular.module('CVGTool')
         //              ACTION MANAGEMENT           //
         //                                          //
 
+        // Callback for success in create Action
+        var createActionSuccess = function(data) {
+            sendMessage("success", "Action created!");
+            $scope.actionManager.actionList.push({
+                name: $scope.actionManager.actionCreationData.selectedType,
+                objectUID: $scope.actionManager.selectedObject.uid,
+                startFrame: $scope.actionManager.actionCreationData.startFrame,
+                endFrame: $scope.actionManager.actionCreationData.endFrame,
+                dataset: $scope.activeDataset.name,
+                user: navSrvc.getUser().name
+            });
+
+            $scope.clearActionCreationData();
+        };
+
+        // Callback for error in create Action
+        var createActionError = function(data) {
+            sendMessage("danger", "Action creation went wrong!. (Maybe the action already exists in that range)");
+        }
+
+        $scope.clearActionCreationData = function() {
+            $scope.actionManager.actionCreationData.startFrame = $scope.frameFrom;
+            $scope.actionManager.actionCreationData.endFrame = $scope.frameTo;
+        }
+
         // Update activities list
         $scope.getActivitiesList = function() {
             toolSrvc.getActivitiesList($scope.activeDataset.type, function(activitiesList) {
@@ -1558,19 +1587,16 @@ angular.module('CVGTool')
             $scope.actionManager.selectedObject = null; // De-select the selected object when closing the panel
         };
 
-        // Create a new blank action
+        // Create a new action
         $scope.createNewAction = function() {
-            if ($scope.actionManager.selectedType == null) {
+            if ($scope.actionManager.actionCreationData.selectedType == null) {
                 sendMessage("warning", "Select an activity first.")
+            } else if ($scope.actionManager.actionCreationData.startFrame > $scope.actionManager.actionCreationData.endFrame || $scope.actionManager.actionCreationData.startFrame < $scope.frameFrom || $scope.actionManager.actionCreationData.endFrame > $scope.frameTo ) {
+                sendMessage("warning", "Check starting and ending frames.")
             } else {
-                $scope.actionManager.actionList.push({
-                    name: $scope.actionManager.selectedType,
-                    objectUID: $scope.actionManager.selectedObject.uid,
-                    startFrame: null,
-                    endFrame: null,
-                    dataset: $scope.activeDataset.name,
-                    user: navSrvc.getUser().name
-                })
+                toolSrvc.createAction(navSrvc.getUser().name, $scope.actionManager.actionCreationData.startFrame, $scope.actionManager.actionCreationData.endFrame, $scope.actionManager.actionCreationData.selectedType,
+                    $scope.actionManager.selectedObject.uid, $scope.activeDataset.name, createActionSuccess,
+                    createActionError);
             }
         };
 
@@ -1582,33 +1608,12 @@ angular.module('CVGTool')
             } else {
                 toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
                     function(response) {
+                        sendMessage("success", "Action deleted!");
                         $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
                     }, sendMessage)
             }
         };
 
-        // Function to select time frame for an action. Creates the new action in the backend when selecting the stop frame.
-        $scope.selectActionFrame = function(frame, action) {
-            if (!$scope.actionManager.isActionSelected) {
-                $scope.actionManager.isActionSelected = true;
-                action.startFrame = frame;
-            } else {
-                action.endFrame = frame;
-                toolSrvc.createAction(navSrvc.getUser().name, action.startFrame, frame, action.name,
-                    action.objectUID, $scope.activeDataset.name, $scope.createActionSuccess,
-                    $scope.createActionError);
-                $scope.actionManager.isActionSelected = false;
-            }
-        };
-
-        // Callback for success in create Action
-        $scope.createActionSuccess = function(data) {
-            sendMessage("success", "Action created!");
-        };
-        // Callback for error in create Action
-        $scope.createActionError = function(data) {
-            sendMessage("danger", "Action creation went wrong!");
-        };
 
         //                                          //
         //          END ACTION MANAGEMENT           //
@@ -2320,6 +2325,7 @@ angular.module('CVGTool')
         /////////
         $scope.initializeCanvases(); // First, initialize canvases
         $scope.getActivitiesList(); // Get activities from the server
+        $scope.getActionsList();
 
         if ($scope.isPosetrack()) {
             $scope.PTWorkFlow();
