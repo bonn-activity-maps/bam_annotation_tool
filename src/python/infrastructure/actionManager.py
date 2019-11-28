@@ -39,9 +39,14 @@ class ActionManager:
     # Return info of action if exists in DB. Ignore mongo id
     def getAction(self, dataset, objectUID, user, name, startFrame, endFrame):
         try:
-            result = self.collection.find_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+            # Ignore user parameter
+            result = self.collection.find_one({"dataset": dataset, "startFrame": int(startFrame),
                                                "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name},
                                               {"_id": 0})
+
+            # result = self.collection.find_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+            #                                    "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name},
+            #                                   {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -54,11 +59,18 @@ class ActionManager:
     def getActionsByUID(self, dataset, objectUID, user, startFrame, endFrame):
         try:
             # if objectUID and (NOT start >= end and NOT endDB<=start)
-            result = self.collection.find({"dataset": dataset, "user": user,
-                        "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-                                 {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
-                        "objectUID": int(objectUID)},
-                        {"_id": 0})
+            # ignore user parameter
+            result = self.collection.find({"dataset": dataset,
+                                           "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
+                                                    {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
+                                           "objectUID": int(objectUID)},
+                                          {"_id": 0})
+
+            # result = self.collection.find({"dataset": dataset, "user": user,
+            #             "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
+            #                      {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
+            #             "objectUID": int(objectUID)},
+            #             {"_id": 0})
 
             if result is None:
                 return 'Error'
@@ -71,9 +83,13 @@ class ActionManager:
     # Return info of action by object id and frame range
     def getActions(self, dataset, user, startFrame, endFrame):
         try:
-            result = self.collection.find({"dataset": dataset, "user": user, "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-                                                    {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
+            # Ignore user parameter
+            result = self.collection.find({"dataset": dataset, "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
+                                                                                      {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
                                           {"_id": 0})
+            # result = self.collection.find({"dataset": dataset, "user": user, "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
+            #                                         {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
+            #                               {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -100,6 +116,7 @@ class ActionManager:
         try:
             result = self.collection.insert_one({"dataset": dataset, "objectUID": objectUID, "user": user,"name": name, "startFrame": startFrame,
                                                  "endFrame": endFrame})
+
             if result.acknowledged:
                 return 'ok'
             else:
@@ -111,8 +128,12 @@ class ActionManager:
     # Remove the action specified with the attributes
     def removeAction(self, dataset, objectUID, user, name, startFrame, endFrame):
         try:
-            result = self.collection.delete_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+            # Ignore user parameter
+            result = self.collection.delete_one({"dataset": dataset, "startFrame": int(startFrame),
                                                  "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name})
+
+            # result = self.collection.delete_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
+            #                                      "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name})
             if result.deleted_count == 1:
                 return 'ok'
             else:
@@ -121,19 +142,25 @@ class ActionManager:
             log.exception('Error removing action in db')
             return 'Error'
 
-    # Update an action identified by old attributes with the new attributes
-    def updateAction(self, dataset, objectUID, user, oldName, oldStartFrame, oldEndFrame, newName, newStartFrame, newEndFrame):
-        query = {"dataset": dataset, "user": user, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
-                 "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
-        # Update all values
-        newValues = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
-        try:
-            result = self.collection.update_one(query, newValues, upsert=False)
-            if result.modified_count == 1:
-                return 'ok'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error updating action in db')
-            return 'Error'
+    # # Update an action identified by old attributes with the new attributes
+    # def updateAction(self, dataset, objectUID, user, oldName, oldStartFrame, oldEndFrame, newName, newStartFrame, newEndFrame):
+    #
+    #     # Ignore user param
+    #     query = {"dataset": dataset, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
+    #              "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
+    #
+    #
+    #     query = {"dataset": dataset, "user": user, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
+    #              "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
+    #     # Update all values
+    #     newValues = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
+    #     try:
+    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         if result.modified_count == 1:
+    #             return 'ok'
+    #         else:
+    #             return 'Error'
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error updating action in db')
+    #         return 'Error'
 
