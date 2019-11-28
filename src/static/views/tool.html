@@ -519,7 +519,7 @@
         </div>
 
         <!-- Actions editor panel AIK -->
-        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 500px; height: 550px;" ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
+        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 600px;" ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -536,26 +536,39 @@
             </div>
             <div class="panel-body">
                 <form class="form-horizontal">
-                    <div class="row" style="margin-left: 10px;"">
-                        <div class="col col-sm-8">
+                    <div class="form-group row">
+                        <div class="col-sm-2">
+                            <label for="uidAction">UID: </label>
+                        </div> 
+                        <div class="col-sm-10">
+                            <p>{{actionManager.selectedObject.uid}}</p>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="row" style="margin-left: 10px; margin-right: 10px;">
                             <div class="form-group">
                                     <label for="sel2">Select activity:</label>
                                     <select class="form-control" id="sel2" ng-model="actionManager.actionCreationData.selectedType">
                                         <option ng-repeat="name in actionManager.activitiesList">{{name}}</option>
                                     </select>
-                                    <label for="actionFrameFrom">From:</label>
-                                    <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
-                                    <label for="actionFrameTo">To:</label>
-                                    <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                                    <div style="margin-top: 10px;" class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label for="actionFrameFrom">From:</label>
+                                        </div>    
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                                    </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label for="actionFrameTo">To:</label>
+                                        </div>  
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                                        </div>
+                                    </div>
                                     <button type="submit" class="btn btn-primary" ng-click="createNewAction()">Add action</button>
                             </div>
-                                
-                        </div>
-                        <div class="col col-sm-4"> <div uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
-                            <div uib-slide ng-repeat="mugshot in selectedObjectMugshots" index="$index">
-                                <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
-                            </div>
-                        </div></div>
                     </div>
                 </form>
                 <hr/>
