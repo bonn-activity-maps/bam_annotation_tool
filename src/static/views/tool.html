@@ -228,7 +228,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr ng-repeat="object in objectManager.objectTypes['personAIK'].objects" ng-click="openActionsEditor(object)">
+                                    <tr ng-repeat="object in objectManager.objectTypes['personAIK'].objects" ng-click="openActionsEditor(object); getMugshots(object.uid);">
                                         <td>{{object.uid}}</td>
                                     </tr>
                                 </tbody>
@@ -519,7 +519,7 @@
         </div>
 
         <!-- Actions editor panel AIK -->
-        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 700px; height: 400px;" ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
+        <div id="ActionsEditorPanel" class="panel panel-default" style="position: absolute; width: 450px; height: 600px;" ng-show="actionsEditorTab==true && activeDataset.type == 'actionInKitchen'">
             <div class="panel-heading" ng-draggable='dragOptions'>
                 <div class="row">
                     <div class="col-sm-1">
@@ -536,25 +536,50 @@
             </div>
             <div class="panel-body">
                 <form class="form-horizontal">
-                    <div class="form-group">
-                        <label for="sel2">Select activity:</label>
-                        <select class="form-control" id="sel2" ng-model="actionManager.selectedType">
-                            <option ng-repeat="name in actionManager.activitiesList">{{name}}</option>
-                        </select>
-                        <!--                        <label class="control-label col-sm-2">Placeholder:</label>-->
-                        <!--                        <div class="col-sm-10">-->
-                        <!--                            <p class="form-control-static">placeholder</p>-->
-                        <!--                        </div>-->
+                    <div class="form-group row">
+                        <div class="col-sm-2">
+                            <label for="uidAction">UID: </label>
+                        </div> 
+                        <div class="col-sm-10">
+                            <p>{{actionManager.selectedObject.uid}}</p>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="row" style="margin-left: 10px; margin-right: 10px;">
+                            <div class="form-group">
+                                    <label for="sel2">Select activity:</label>
+                                    <select class="form-control" id="sel2" ng-model="actionManager.actionCreationData.selectedType">
+                                        <option ng-repeat="name in actionManager.activitiesList">{{name}}</option>
+                                    </select>
+                                    <div style="margin-top: 10px;" class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label for="actionFrameFrom">From:</label>
+                                        </div>    
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                                    </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label for="actionFrameTo">To:</label>
+                                        </div>  
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" ng-click="createNewAction()">Add action</button>
+                            </div>
                     </div>
                 </form>
                 <hr/>
-                <div class="container" style="overflow: auto; max-height: 200px; max-width: 500px;">
+                <div class="container" style="overflow: auto; max-height: 200px; max-width: 400px;">
                     <table class="table table-hover table-bordered">
                         <thead>
                             <tr>
                                 <th>Remove</th>
                                 <th>Action</th>
-                                <th ng-repeat="frame in frameList">{{frame}}</th>
+                                <th>From</th>
+                                <th>To</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -565,43 +590,9 @@
                                 </button>
                                 </td>
                                 <td>{{action.name}}</td>
-                                <th ng-repeat="f in frameList">
-                                    <!--                                When neither Start not End selected-->
-                                    <button class="btn btn-invisible" ng-click="selectActionFrame(f, action)" ng-if="(action.startFrame == null && action.endFrame == null)">
-                                    <span ng-if="actionManager.isActionSelected == false"
-                                          class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
-                                    <span ng-if="(actionManager.isActionSelected == true)"
-                                          class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
-                                </button>
-                                    <!--                                When Start selected but End not, all from Start green-->
-                                    <button class="btn btn-success" ng-click="selectActionFrame(f, action)" ng-if="(f >= action.startFrame && action.startFrame != null && action.endFrame == null)">
-                                    <span class="glyphicon glyphicon-play-circle" style="filter: invert(1);"></span>
-                                </button>
-                                    <!--                                When Start selected but End not, all before Start blue-->
-                                    <button class="btn btn-primary" ng-click="selectActionFrame(f, action)" ng-if="(f < action.startFrame && action.startFrame != null && action.endFrame == null)">
-                                    <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
-                                </button>
-                                    <!--                                When both selected, all not in between Start and End blue-->
-                                    <button class="btn btn-primary" ng-if="!(action.startFrame == null || action.endFrame == null)
-                                                                    && !(f >= action.startFrame && f <= action.endFrame)">
-                                    <span class="glyphicon glyphicon-minus" style="filter: invert(1);"></span>
-                                </button>
-                                    <!--                                When both selected, all in between Start and End green-->
-                                    <button class="btn btn-success" ng-if="!(action.startFrame == null || action.endFrame == null)
-                                                                    && (f >= action.startFrame && f <= action.endFrame)">
-                                    <span ng-if="(f >= action.startFrame && f < action.endFrame)"
-                                          class="glyphicon glyphicon-play-circle" style="filter: invert(1);"></span>
-                                    <span ng-if="action.endFrame == f" class="glyphicon glyphicon-play-circle"
-                                          style="filter: invert(1);"></span>
-                                </button>
+                                <th>{{action.startFrame}}</th>
+                                <th>{{action.endFrame}}</th>
                             </tr>
-                            <tr>
-                                <td>
-                                    <button class="btn btn-primary" ng-click="createNewAction()"><span
-                                        class="glyphicon glyphicon-plus"></span></button>
-                                </td>
-                            </tr>
-
                         </tbody>
                     </table>
                 </div>
