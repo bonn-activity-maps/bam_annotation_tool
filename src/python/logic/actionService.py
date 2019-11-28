@@ -10,6 +10,23 @@ actionManager = ActionManager()
 
 class ActionService:
 
+    # Return ok if activity created successfully
+    def createActivity(self, req):
+        dataset = req['dataset']
+        activity = {"name": req['activity']}
+
+        # Check if task exist for this user
+        activities = actionManager.getActivities(dataset)
+        if activity in activities:
+            return False, 'The activity already exists', 400
+        else:
+            # Create new activity
+            result = actionManager.createActivity(dataset, activity["name"])
+            if result == 'Error':
+                return False, 'Error creating activity', 400
+            else:
+                return True, 'Activity created successfully', 200
+
     # Return list of activities
     def getActivities(self, dataset):
         result = actionManager.getActivities(dataset)

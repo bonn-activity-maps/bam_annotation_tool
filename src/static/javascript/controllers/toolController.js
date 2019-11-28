@@ -81,12 +81,18 @@ angular.module('CVGTool')
         $scope.actionManager = {
             activitiesList: [], // List of possible actions
             actionList: [], // List of actions for the selected object in the selected frames
-            selectedType: null, // Selected type of activity to add
             selectedObject: null, // Selected object to edit
-            isActionSelected: false, // Set to True when selecting start/stop frames
+            actionCreationData: {
+                selectedType: null,
+                startFrame: $scope.frameFrom,
+                endFrame: $scope.frameTo
+            }
+
         };
 
         // Keypoints
+        $scope.keypointEditorCounter = 0;
+        $scope.currentKeypointIndex = 0;
         $scope.keypointEditorData = []
         $scope.pointCreationData = {
             labelIndex: null,
@@ -191,7 +197,12 @@ angular.module('CVGTool')
 
         // Function that generates a legit poseTrack UID for new objects
         $scope.generateNewOriginalUid = function(track_id, frame) {
-            let video = $scope.canvases[0].activeCamera.filename;
+            let video = "";
+            try{
+                video = $scope.canvases[0].activeCamera.filename;
+            } catch (e) {
+                video = $scope.loadedCameras[0].filename;
+            }
             frame = pad(frame, 4);
             track_id = pad(track_id, 2);
             return Number("1" + video + frame + track_id)
@@ -920,10 +931,17 @@ angular.module('CVGTool')
                 }
 
                 if ($scope.subTool.localeCompare('createPoint') == 0) {
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
-                    $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
-                    $scope.switchSubTool("");
-                    canvasObj.setRedraw();
+                    if (!$scope.cameraAlreadyAnnotated(canvasObj.activeCamera.filename)) {
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].points[$scope.pointCreationData.pID] = canvasObj.toCamera([mouse.x, mouse.y]); // Store the point with camera coordinates
+                        $scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras[$scope.pointCreationData.pID] = canvasObj.activeCamera.filename;
+                        $scope.keypointEditorCounter++;
+                        $scope.setPointCreationData($scope.currentKeypointIndex);
+                        $scope.getEpilines();
+                        canvasObj.setRedraw();
+                    } else {
+                        // TODO: for some reason this is not working properly
+                        //sendMessage("warning", "Select a camera without a point placed");
+                    }    
                 }
 
                 if ($scope.subTool.localeCompare('createBox') == 0) {
@@ -1505,6 +1523,31 @@ angular.module('CVGTool')
         //              ACTION MANAGEMENT           //
         //                                          //
 
+        // Callback for success in create Action
+        var createActionSuccess = function(data) {
+            sendMessage("success", "Action created!");
+            $scope.actionManager.actionList.push({
+                name: $scope.actionManager.actionCreationData.selectedType,
+                objectUID: $scope.actionManager.selectedObject.uid,
+                startFrame: $scope.actionManager.actionCreationData.startFrame,
+                endFrame: $scope.actionManager.actionCreationData.endFrame,
+                dataset: $scope.activeDataset.name,
+                user: navSrvc.getUser().name
+            });
+
+            $scope.clearActionCreationData();
+        };
+
+        // Callback for error in create Action
+        var createActionError = function(data) {
+            sendMessage("danger", "Action creation went wrong!. (Maybe the action already exists in that range)");
+        }
+
+        $scope.clearActionCreationData = function() {
+            $scope.actionManager.actionCreationData.startFrame = $scope.frameFrom;
+            $scope.actionManager.actionCreationData.endFrame = $scope.frameTo;
+        }
+
         // Update activities list
         $scope.getActivitiesList = function() {
             toolSrvc.getActivitiesList($scope.activeDataset.type, function(activitiesList) {
@@ -1544,19 +1587,16 @@ angular.module('CVGTool')
             $scope.actionManager.selectedObject = null; // De-select the selected object when closing the panel
         };
 
-        // Create a new blank action
+        // Create a new action
         $scope.createNewAction = function() {
-            if ($scope.actionManager.selectedType == null) {
+            if ($scope.actionManager.actionCreationData.selectedType == null) {
                 sendMessage("warning", "Select an activity first.")
+            } else if ($scope.actionManager.actionCreationData.startFrame > $scope.actionManager.actionCreationData.endFrame || $scope.actionManager.actionCreationData.startFrame < $scope.frameFrom || $scope.actionManager.actionCreationData.endFrame > $scope.frameTo ) {
+                sendMessage("warning", "Check starting and ending frames.")
             } else {
-                $scope.actionManager.actionList.push({
-                    name: $scope.actionManager.selectedType,
-                    objectUID: $scope.actionManager.selectedObject.uid,
-                    startFrame: null,
-                    endFrame: null,
-                    dataset: $scope.activeDataset.name,
-                    user: navSrvc.getUser().name
-                })
+                toolSrvc.createAction(navSrvc.getUser().name, $scope.actionManager.actionCreationData.startFrame, $scope.actionManager.actionCreationData.endFrame, $scope.actionManager.actionCreationData.selectedType,
+                    $scope.actionManager.selectedObject.uid, $scope.activeDataset.name, createActionSuccess,
+                    createActionError);
             }
         };
 
@@ -1568,33 +1608,12 @@ angular.module('CVGTool')
             } else {
                 toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
                     function(response) {
+                        sendMessage("success", "Action deleted!");
                         $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);
                     }, sendMessage)
             }
         };
 
-        // Function to select time frame for an action. Creates the new action in the backend when selecting the stop frame.
-        $scope.selectActionFrame = function(frame, action) {
-            if (!$scope.actionManager.isActionSelected) {
-                $scope.actionManager.isActionSelected = true;
-                action.startFrame = frame;
-            } else {
-                action.endFrame = frame;
-                toolSrvc.createAction(navSrvc.getUser().name, action.startFrame, frame, action.name,
-                    action.objectUID, $scope.activeDataset.name, $scope.createActionSuccess,
-                    $scope.createActionError);
-                $scope.actionManager.isActionSelected = false;
-            }
-        };
-
-        // Callback for success in create Action
-        $scope.createActionSuccess = function(data) {
-            console.log(data)
-        };
-        // Callback for error in create Action
-        $scope.createActionError = function(data) {
-            console.log(data)
-        };
 
         //                                          //
         //          END ACTION MANAGEMENT           //
@@ -1652,9 +1671,10 @@ angular.module('CVGTool')
         }
 
         // Function that fill the pointCreationData
-        $scope.setPointCreationData = function(index, pointID) {
+        $scope.setPointCreationData = function(index) {
             $scope.pointCreationData.labelIndex = index;
-            $scope.pointCreationData.pID = pointID;
+            $scope.pointCreationData.pID = $scope.keypointEditorCounter;
+            $scope.currentKeypointIndex = index;
         }
 
         // Function that resets the pointCreationData
@@ -1664,8 +1684,21 @@ angular.module('CVGTool')
                     pID: null,
                     cameraID: null
                 }
+
+                $scope.keypointEditorCounter = 0;
+                $scope.currentKeypointIndex = 0;
+        }
+
+        // Function that checks if the position of the point is corrent within the available cameras
+        $scope.cameraAlreadyAnnotated = function(camera) {
+            if ($scope.keypointEditorData[$scope.pointCreationData.labelIndex].cameras.includes(camera)) {
+                return true;
+            } else {
+                return false;
             }
-            // Resets all epilines
+        }
+
+        // Resets all epilines
         $scope.resetEpilines = function() {
             for (var i = 0; i < $scope.canvases.length; i++) {
                 $scope.canvases[i].resetEpiline(0)
@@ -1760,6 +1793,7 @@ angular.module('CVGTool')
         // Function that triangulates the 3D point given the 2D points
         $scope.updateAnnotation = function() {
             // Construct the variable to store the annotation
+            $scope.switchSubTool("");   // Reset the tool
             var deleting = false;
             var structureOfPoint = {
                 p1: [],
@@ -1896,7 +1930,10 @@ angular.module('CVGTool')
                 $scope.objectManager.objectTypes[objectType.toString()].objects[objectUid.toString()];
             var frameFrom = null;
             for (let i = frameTo - 1; i >= Math.max($scope.isPosetrack() ? 0 : 1, frameTo - $scope.interpolationRange); i--) {
-                if (object.frames[i - $scope.frameFrom].keypoints.length > 0) {
+                if (($scope.isPosetrack() && object.frames[i - $scope.frameFrom].keypoints.length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[0].length > 0 &&
+                    object.frames[i - $scope.frameFrom].keypoints[1].length > 0)
+                    || (!$scope.isPosetrack()  && object.frames[i - $scope.frameFrom].keypoints.length > 0)) {
                     frameFrom = i;
                     break;
                 }
@@ -2251,7 +2288,7 @@ angular.module('CVGTool')
                 let object = objects[obj].object;
                 if (object.frame >= $scope.frameFrom && object.frame <= $scope.frameTo) {
                     $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                        .frames[object.frame - $scope.frameFrom].original_uid = object.uid;
+                        .frames[object.frame - $scope.frameFrom].original_uid = $scope.generateNewOriginalUid(object.track_id, object.frame); // TODO change back is necessary to object.uid
                 }
             }
             $scope.retrieveAnnotationsPT();
@@ -2334,6 +2371,8 @@ angular.module('CVGTool')
         // INTIALIZATION CALLS
         /////////
         $scope.initializeCanvases(); // First, initialize canvases
+        $scope.getActivitiesList(); // Get activities from the server
+        $scope.getActionsList();
 
         if ($scope.isPosetrack()) {
             $scope.PTWorkFlow();

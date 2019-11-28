@@ -12,6 +12,18 @@ class ActionManager:
     collection = db.action
     collectionActivities = db.activities
 
+    # Return 'ok' if the action has been created
+    def createActivity(self, dataset, activity):
+        try:
+            result = self.collectionActivities.insert_one({"name": activity})
+            if result.acknowledged:
+                return 'Activity created'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error creating action in db')
+            return 'Error'
+
     # Return the list of possible human activities stored in the db
     def getActivities(self, dataset):
         try:

@@ -115,6 +115,39 @@ angular.module('CVGTool')
                 }, function errorCallback(response) {
                     callbackError(response.data.msg);
                 })
-            }
+            },
+
+            // Get list of possible Actions
+            getActivitiesList: function(dataset, callbackSuccess) {
+                $http({
+                    method: 'GET',
+                    url: '/api/action/getActivities',
+                    headers: {
+                        dataset: dataset
+                    }
+                }).then(function successCallback(response) {
+                        callbackSuccess(response.data.msg);
+                    },
+                    function errorCallback(response) {
+                        console.log("Error loading activities")
+                    })
+            },
+
+            // Get list of possible Actions
+            createActivity: function(dataset, activity, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/action/createActivity',
+                    data: {
+                        dataset: dataset,
+                        activity: activity
+                    }
+                }).then(function successCallback(response) {
+                        callbackSuccess(response.data.msg)
+                    },
+                    function errorCallback(response) {
+                        callbackError(response.data.msg);
+                    })
+            },
         }
     });
