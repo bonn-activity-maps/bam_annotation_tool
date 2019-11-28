@@ -510,4 +510,21 @@ angular.module('CVGTool')
             toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene, $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid, $scope.object.type, successFunction, errorFunction);
         }
     }
+])
+
+.controller('nextFrameRangeCtrl', ['$scope', '$rootScope', '$mdDialog', 'objects', 'range',
+    function($scope, $rootScope, $mdDialog, objects, range) {
+        $scope.objects = objects;
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        // Function that continues to next frmae range
+        $scope.continue = function() {
+            $rootScope.$broadcast('advanceFrames', {'range': range});
+            $mdDialog.hide();
+        }
+    }
 ]);
