@@ -52,6 +52,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="alert alert-warning" role="alert" ng-show="slider.range > 100">
+                    A range bigger than 100 frames is only recommended for annotating actions! If you are going to annotate points, keep in mind that bigger ranges may lead to a decrease in the perfomance of the Tool. A range of 100 frames is big enough for annotating points.
+                </div>
             </div>
 
             <button ng-click="goToTool()">Tool</button>
