@@ -1968,6 +1968,53 @@ angular.module('CVGTool')
             return false;
         }
 
+        // Function that is executed when checkAnnotations msg is received.
+        // Check if all annotations are complete
+        // Structure: incompleteObjects:
+        // {'type1': {
+        //     'obj1': ['frame1', 'frame2', ...],
+        //     'objX': [...] },
+        //  'type2': { ...}, ...
+        // }
+        $scope.$on('checkAnnotations', function(evt, data) {
+            var incompleteObjects = [];
+
+            for (objType in $scope.objectManager.objectTypes) {
+                for (obj in $scope.objectManager.objectTypes[objType].objects) {
+                    frames = [];
+                    for (f in $scope.objectManager.objectTypes[objType].objects[obj].frames){
+                        var keypoints = $scope.objectManager.objectTypes[objType].objects[obj].frames[f].keypoints;
+                        if (!$scope.hasAnnotation(keypoints)) {
+                            frames.push(f)
+                        }
+                    }
+                    if (frames.length > 0){
+                        incompleteObjects.push({'type': objType, 'object': obj, 'frames': frames.toString()});
+                    }
+                }
+            }
+            $scope.nextFrameRange(incompleteObjects, data.range);       // open dialog
+
+
+         });
+
+        // Function that opens the dialog for missing annotations before next frame range
+        $scope.nextFrameRange = function(objects, range) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/nextFrameRangeDialog.html',
+                locals: {
+                    objects: objects,
+                    range: range
+                },
+                controller: 'nextFrameRangeCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    // $scope.getListOfDatasets();
+                    // $scope.getInfoOfVideos();
+                }
+            });
+        };
+
         // Send message to toast
         var sendMessage = function(type, msg) {
             $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });

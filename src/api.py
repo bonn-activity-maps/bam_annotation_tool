@@ -307,7 +307,7 @@ def getAnnotationFrameObject():
 #     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Delete annotation for given frame, dataset, video and user and object id
+# Delete annotation for given frames, dataset, video and user and object id
 @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
 def removeAnnotation():
     req_data = request.get_json()
