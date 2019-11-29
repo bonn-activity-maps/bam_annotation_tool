@@ -11,7 +11,7 @@ angular.module('CVGTool')
             range: 1,
             options: {
                 floor: 0,
-                ceil: 100,
+                ceil: 500,
                 step: 1,
                 showSelectionBar: true
             }
