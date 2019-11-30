@@ -1982,13 +1982,17 @@ angular.module('CVGTool')
             for (objType in $scope.objectManager.objectTypes) {
                 for (obj in $scope.objectManager.objectTypes[objType].objects) {
                     frames = [];
+                    isAnnotated = false;
                     for (f in $scope.objectManager.objectTypes[objType].objects[obj].frames){
                         var keypoints = $scope.objectManager.objectTypes[objType].objects[obj].frames[f].keypoints;
                         if (!$scope.hasAnnotation(keypoints)) {
-                            frames.push(f)
+                            frames.push(f);
+                        }
+                        else{
+                            isAnnotated = true;
                         }
                     }
-                    if (frames.length > 0){
+                    if (frames.length > 0 && isAnnotated){
                         incompleteObjects.push({'type': objType, 'object': obj, 'frames': frames.toString()});
                     }
                 }
