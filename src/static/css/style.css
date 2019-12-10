@@ -1,3 +1,17 @@
+.navbar-fixed-left {
+    width: 50px;
+    position: fixed;
+    border-radius: 0;
+    height: 90%;
+    text-align: center;
+}
+
+.navbar-fixed-left .navbar-nav > li {
+    float: none;  /* Cancel default li float: left */
+    width: 50px;
+    text-align: center;
+}
+
 .zui-table {
     /* border: none; */
     border-right: solid 1px #DDEFEF;

@@ -1,0 +1,59 @@
+<div ng-controller="toastCtrl">
+</div>
+
+<div style="height: 98%;">
+    <div class="row" style="height: 90%;">
+        <!-- Tools Begin -->
+        <!-- <div class="navbar navbar-inverse navbar-fixed-left">
+                <ul class="nav navbar-nav">
+                    <li><a><span class="glyphicon glyphicon-hdd"></span></a></li>
+                    <li><a><span class="glyphicon glyphicon-hdd"></span></a></li>
+                    <li><a><span class="glyphicon glyphicon-hdd"></span></a></li>
+                </ul>
+        </div> -->
+        <!-- Tools End -->
+        <div class="col-md-1" style="margin-left: -1.5%;  height: 99%;">
+            <div class="col-md-8" style="height: 100%;">
+                <div class="panel" style="height: 100%; text-align: center;">
+                    <p>aa</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <!-- TIMELINE BEGIN -->
+    <div class="row" style="height: 10%">
+        <div class="panel">
+            <div class="panel-body">
+                <div class="col-md-1">
+                    <p>Step size:</p>
+                    <div class="row">
+                        <select class="form-control" id="selFrames" ng-change="test" ng-model="timeline.frameJumpNumber" ng-options="option.id as option.tag for option in timeline.frameJumpNumberOptions" convert-to-number>                     
+                            </select>
+                    </div>  
+                </div>
+                <div class="col-md-11">
+                    <div class="row">
+                        <div class="col-md-2" style="text-align: center; padding-top: 20px;">
+                            <button ng-click="timeline.previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
+                                    class="glyphicon glyphicon-chevron-left"></span></button>
+                            <button ng-if="!timeline.isPlaying" ng-click="timeline.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                                    class="glyphicon glyphicon-play"></button>
+                            <button ng-if="timeline.isPlaying" ng-click="timeline.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                                    class="glyphicon glyphicon-pause"></button>
+                            <button ng-click="timeline.nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
+                                    class="glyphicon glyphicon-chevron-right"></span></button>
+                        </div>
+                        <div class="col-md-10">
+                            <rzslider rz-slider-model="timeline.slider.value" rz-slider-options="timeline.slider.options"></rzslider>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- TIMELINE END -->
+    <!-- CAMERAS BEGIN-->
+
+    <!-- CAMERAS END-->
+</div>

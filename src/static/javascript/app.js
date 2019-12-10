@@ -5,7 +5,7 @@ angular.module('CVGTool', ['ui.router', 'thatisuday.dropzone', 'ngMaterial', 'ng
 
         .state('tool', {
         url: "/tool",
-        templateUrl: "static/views/tool.html",
+        templateUrl: "static/views/toolv2.html",
         controller: "toolCtrl",
         params: {
             obj: null
