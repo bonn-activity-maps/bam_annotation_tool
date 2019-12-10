@@ -472,6 +472,13 @@ def removeAction():
     success, msg, status = actionService.removeAction(request.get_json())
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Merge actions with same start and end frames
+@app.route('/api/action/mergeActions', methods=['POST'])
+def mergeActions():
+    success, msg, status = actionService.mergeActions()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 

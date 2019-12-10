@@ -98,11 +98,40 @@ class ActionManager:
             log.exception('Error finding action in db')
             return 'Error'
 
+    # Return info of action if exists in DB. Ignore mongo id
+    # Look for startFrame or startFrame+1
+    def getActionByStartFrame(self, dataset, objectUID, name, startFrame):
+        try:
+            result = self.collection.find_one({"dataset": dataset, "$or": [{"startFrame": startFrame }, {"startFrame": startFrame+1}],
+                                               "objectUID": objectUID, "name": name},
+                                              {"_id": 0})
+            if result is None:
+                return 'Error'
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding action in db')
+            return 'Error'
+
     # Return info of action by dataset
     def getActionsByDataset(self, dataset):
         try:
+            result = self.collection.find({"dataset": dataset}).sort([("objectUID", 1), ("name", 1), ("startFrame", 1)])
+            if result is None:
+                return 'Error'
+            else:
+                return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding action in db')
+            return 'Error'
+
+    # Return info of action by dataset
+    def getActionsByDatasetExport(self, dataset):
+        try:
             result = self.collection.aggregate([{"$match": {"dataset": dataset}},
-                      {"$project": {"_id": 0, "pid": "$objectUID", "label": "$name", "start_frame": "$startFrame", "end_frame": "$endFrame"}}])
+                      {"$project": {"_id": 0, "pid": "$objectUID", "label": "$name", "start_frame": "$startFrame", "end_frame": "$endFrame"}},
+                      # {"$sort": {"pid":1, "label":1}}
+                                                ])
             if result is None:
                 return 'Error'
             else:
@@ -123,6 +152,21 @@ class ActionManager:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error creating action in db')
+            return 'Error'
+
+    # Return 'ok' if the action has been updated.
+    # If action doesn't exist, it isn't created
+    def updateActionByStartFrame(self, dataset, objectUID, name, startFrame, endFrame):
+        query = {"dataset": dataset, "startFrame": startFrame, "objectUID": objectUID, "name": name}                                         # Search by objectType type
+        newValues = {"$set": {"endFrame": endFrame}}    # Update endFrame
+        try:
+            result = self.collection.update_one(query, newValues, upsert=False)
+            if result.modified_count == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating object type in db')
             return 'Error'
 
     # Remove the action specified with the attributes

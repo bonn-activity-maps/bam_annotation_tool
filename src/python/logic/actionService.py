@@ -1,11 +1,13 @@
 import logging
 
 from python.infrastructure.actionManager import ActionManager
+from python.infrastructure.datasetManager import DatasetManager
 
 # UserService logger
 log = logging.getLogger('actionService')
 
 actionManager = ActionManager()
+datasetManager = DatasetManager()
 
 
 class ActionService:
@@ -94,3 +96,34 @@ class ActionService:
             return False, 'Error deleting action', 400
         else:
             return True, result, 200
+
+    # Merge all possible actions with same start and end frames
+    def mergeActions(self):
+        datasets = datasetManager.getDatasets()
+        for d in datasets:
+            actions = actionManager.getActionsByDataset(d['name'])
+
+            # Check all actions of all datasets
+            if actions != 'Error':
+                for a in actions:
+
+                    # Take into account actions divided in more than 1 range -> update until no more nested actions found
+                    nested = True
+                    while nested:
+
+                        # Search if there is an action with startFrame = endFrame of actual action (or endFrame+1) = overlapping actions
+                        actionResult = actionManager.getActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['endFrame'])
+
+                        if actionResult != 'Error':
+                            # Update action with greater endFrame
+                            result = actionManager.updateActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['startFrame'], actionResult['endFrame'])
+                            if result == 'ok':
+                                a['endFrame'] = actionResult['endFrame']  # Update endFrame in actual action
+                                # Remove action included in new range
+                                result = actionManager.removeAction(actionResult['dataset'], actionResult['objectUID'], actionResult['user'], actionResult['name'], actionResult['startFrame'], actionResult['endFrame'])
+                                if result == 'Error': nested = False
+                            else:
+                                nested = False      # End loop if error occurs
+                        else:   # There are no nested actions
+                            nested = False
+        return True, 'ok', 200
