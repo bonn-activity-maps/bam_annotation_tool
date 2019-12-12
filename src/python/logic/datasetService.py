@@ -840,7 +840,7 @@ class DatasetService:
     # Export annotation for AIK datasets to a file for given dataset
     def exportDatasetAIK(self, dataset):
         dbObjects = annotationManager.getObjectsByDataset(dataset)
-        actions = actionManager.getActionsByDataset(dataset)
+        actions = actionManager.getActionsByDatasetExport(dataset)
 
         if dbObjects == 'Error' or actions == 'Error':
             return False, 'Error getting annotations for the dataset', 400
