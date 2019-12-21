@@ -10,6 +10,8 @@ from python.logic.aikService import AIKService
 from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
 
+from python.objects.user import User
+
 app = Flask(__name__)
 
 datasetService = DatasetService()
@@ -32,59 +34,61 @@ def redirect():
 
 # User login
 @app.route("/api/user/login", methods=['GET'])
-def userLogin():
-    success, msg, status = userService.userLogin(request.headers['username'], request.headers['password'])
+def user_login():
+    success, msg, status = userService.user_login(request.headers['username'], request.headers['password'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get user info
 @app.route("/api/user/getUser", methods=['GET'])
-def getUser():
-    success, msg, status = userService.getUser(request.headers['username'])
+def get_user():
+    success, msg, status = userService.get_user(request.headers['username'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get info of all users
 @app.route("/api/user/getUsers", methods=['GET'])
-def getUsers():
-    success, msg, status = userService.getUsers()
+def get_users():
+    success, msg, status = userService.get_users()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get info users by dataset
 @app.route("/api/user/getUsersByDataset", methods=['GET'])
-def getUsersByDataset():
-    success, msg, status = userService.getUsersByDataset(request.headers['dataset'], request.headers['role'])
+def get_users_by_dataset():
+    success, msg, status = userService.get_users_by_dataset(request.headers['dataset'], request.headers['role'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Create new user
 @app.route('/api/user/createUser', methods=['POST'])
-def createUser():
-    success, msg, status = userService.createUser(request.get_json())
+def create_user():
+    user = User.from_json(request.get_json())
+    success, msg, status = userService.create_user(user)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Remove existing user
 @app.route('/api/user/removeUser', methods=['POST'])
-def removeUser():
+def remove_user():
     req_data = request.get_json()
-    success, msg, status = userService.removeUser(req_data['name'])
+    success, msg, status = userService.remove_user(req_data['name'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Update existing user
 @app.route('/api/user/updateUser', methods=['POST'])
-def updateUser():
-    success, msg, status = userService.updateUser(request.get_json())
+def update_user():
+    user = User.from_json(request.get_json())
+    success, msg, status = userService.update_user(user)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Update existing user
 @app.route('/api/user/updateUserPassword', methods=['POST'])
-def updateUserPassword():
+def update_user_password():
     req_data = request.get_json()
-    success, msg, status = userService.updateUserPassword(req_data['username'], req_data['password'])
+    success, msg, status = userService.update_user_password(req_data['username'], req_data['password'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
