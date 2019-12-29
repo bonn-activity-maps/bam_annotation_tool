@@ -103,9 +103,9 @@ class UserService:
     # Deactivated temporarily due to switch to Master annotation. Left here for possible switch back.
     def duplicate_annotations(self, datasets, user):
         # for dataset in datasets:
-        #     data = datasetManager.getDataset(dataset)
+        #     data = datasetManager.get_dataset(dataset)
         #     if data['type'] == 'poseTrack':     # In the future, probably for aik too
-        #         videos = videoManager.getVideos(dataset)
+        #         videos = videoManager.get_videos(dataset)
         #         for video in videos:
         #             annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], user, None)
         #             if not annotations:  # Else already exist

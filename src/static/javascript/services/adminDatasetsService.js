@@ -6,7 +6,7 @@ angular.module('CVGTool')
             getInfoOfVideos: function (callbackSuccess, activeDataset, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/dataset/getVideos',
+                    url: '/api/video/getVideos',
                     headers: {
                         'dataset': activeDataset
                     }
@@ -26,7 +26,7 @@ angular.module('CVGTool')
                     method: 'POST',
                     url: '/api/dataset/readData',
                     data: {
-                        'dataset': dataset,
+                        'name': dataset,
                         'type': type
                     }
                 }).then(function successCallback(response) {

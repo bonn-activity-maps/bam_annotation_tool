@@ -126,9 +126,9 @@ class ActionManager:
             return 'Error'
 
     # Return info of action by dataset
-    def getActionsByDatasetExport(self, dataset):
+    def get_actions_by_dataset_export(self, dataset):
         try:
-            result = self.collection.aggregate([{"$match": {"dataset": dataset}},
+            result = self.collection.aggregate([{"$match": {"dataset": dataset.name}},
                       {"$project": {"_id": 0, "pid": "$objectUID", "label": "$name", "start_frame": "$startFrame", "end_frame": "$endFrame"}},
                       # {"$sort": {"pid":1, "label":1}}
                                                 ])

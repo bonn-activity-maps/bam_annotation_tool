@@ -2,42 +2,42 @@ from pymongo import MongoClient, errors
 import logging
 import os
 
+from python.objects.dataset import Dataset
+
 # DatasetManager logger
 log = logging.getLogger('datasetManager')
-
 
 class DatasetManager:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
     collection = db.dataset
 
-    # Return info dataset if exist in DB. Ignore mongo id
-    def getDataset(self, dataset):
+    # Return dataset if exist in DB. Ignore mongo id
+    def get_dataset(self, dataset):
         try:
-            result = self.collection.find_one({"name": dataset}, {"_id": 0})
+            result = self.collection.find_one({"name": dataset.name}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
-                return result
+                return Dataset.from_json(result)
         except errors.PyMongoError as e:
             log.exception('Error finding dataset in db')
             return 'Error'
 
-    # Return list with info of all datasets. Empty list if there are no datasets
+    # Return list with all datasets. Empty list if there are no datasets
     # Ignore mongo id
-    def getDatasets(self):
+    def get_datasets(self):
         try:
             result = self.collection.find({}, {"_id": 0})
-            return list(result)
+            return [Dataset.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding datasets in db')
             return 'Error'
 
     # Return 'ok' if the dataset has been created
-    def createDataset(self, dataset, type, kpDim):
+    def create_dataset(self, dataset):
         try:
-            filename, filextension = os.path.splitext(dataset)
-            result = self.collection.insert_one({"name": filename, "type": type, "keypointDim": kpDim})
+            result = self.collection.insert_one({"name": dataset.name, "type": dataset.type, "keypointDim": dataset.keypoint_dim})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -47,9 +47,9 @@ class DatasetManager:
             return 'Error'
 
     # Return 'ok' if the dataset has been removed
-    def removeDataset(self, dataset):
+    def remove_dataset(self, dataset):
         try:
-            result = self.collection.delete_one({"name": dataset})
+            result = self.collection.delete_one({"name": dataset.name})
             if result.deleted_count == 1:
                 return 'ok'
             else:

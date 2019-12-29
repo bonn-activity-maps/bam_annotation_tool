@@ -100,10 +100,10 @@ class AnnotationManager:
             return 'Error'
 
     # Get all annotations for the dataset order by frame
-    def getObjectsByDataset(self, dataset):
+    def get_objects_by_dataset(self, dataset):
         try:
             # result = self.collection.find({"dataset": dataset, "scene": dataset, "objects.type": "person"})
-            result = self.collection.find({"dataset": dataset, "scene": dataset}, {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
+            result = self.collection.find({"dataset": dataset.name, "scene": dataset.name}, {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
 
             # result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": "person"}},
             #                          {"$group": {"_id": { "frame": "$frame"},
@@ -172,7 +172,7 @@ class AnnotationManager:
             return 'Error'
 
     # # Get all annotations except of people for the dataset.
-    # def getObjectsByDataset(self, dataset):
+    # def get_objects_by_dataset(self, dataset):
     #     try:
     #         result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": {"$not": {"$regex": "/person/"}}}},
     #                                 {"$group": {"_id": { "frame": "$frame"},
@@ -237,9 +237,9 @@ class AnnotationManager:
             return 'Error'
 
     # Return 'ok' if the annotations of dataset has been removed
-    def removeAnnotationsByDataset(self, dataset):
+    def remove_annotations_by_dataset(self, dataset):
         try:
-            result = self.collection.delete_many({"dataset": dataset})
+            result = self.collection.delete_many({"dataset": dataset.name})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -358,7 +358,7 @@ class AnnotationManager:
     # Update an annotation and let the object empty in selected frames
     # Return 'ok' if the annotation for an object in a frame has been updated.
     # AIK: ignore user parameter
-    def removeFrameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObj, objectType):
+    def remove_frameObject(self, dataset, datasetType, scene, startFrame, endFrame, user, uidObj, objectType):
 
         if datasetType == self.aik:
             query = {"dataset": dataset, "scene": scene, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},

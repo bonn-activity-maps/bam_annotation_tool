@@ -1431,7 +1431,7 @@ angular.module('CVGTool')
                         // Go through all frames of that object
                         for (var i = 0; i < object.frames.length; i++) {
                             if (object.frames[i].keypoints.length != 0) {
-                                toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints[0], object.frames[i].frame, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection, sendMessage);
+                                toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints[0], object.frames[i].frame, this.activeCamera.filename, $scope.activeDataset.name, $scope.activeDataset.type, this.canvasNumber, callbackProjection, sendMessage);
                             }
                         }
                     }
@@ -1448,7 +1448,7 @@ angular.module('CVGTool')
                 var object = this.objectsIn2D[objectType.toString()].objects[objectUid.toString()];
 
                 if (object.frames[frameToProject - $scope.frameFrom].keypoints.length !== 0) {
-                    toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, this.canvasNumber, callbackProjection, sendMessage);
+                    toolSrvc.projectToCamera(object.uid, object.type, object.frames[frameToProject - $scope.frameFrom].keypoints[0], frameToProject, this.activeCamera.filename, $scope.activeDataset.name, $scope.activeDataset.type, this.canvasNumber, callbackProjection, sendMessage);
                 } else {
                     this.setRedraw();
                 }
@@ -1736,7 +1736,7 @@ angular.module('CVGTool')
                         // Get epilines for that camera
                         for (var j = 0; j < $scope.keypointEditorData[labelIndex].points.length; j++) {
                             if ($scope.keypointEditorData[labelIndex].points[j].length != 0) {
-                                toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.keypointEditorData[labelIndex].points[j], $scope.keypointEditorData[labelIndex].cameras[j], $scope.canvases[i].getActiveCamera().filename, j, $scope.canvases[i].canvasNumber, j, callbackGetEpiline, sendMessage);
+                                toolSrvc.getEpiline($scope.slider.value, $scope.activeDataset.name, $scope.activeDataset.type, $scope.keypointEditorData[labelIndex].points[j], $scope.keypointEditorData[labelIndex].cameras[j], $scope.canvases[i].getActiveCamera().filename, j, $scope.canvases[i].canvasNumber, j, callbackGetEpiline, sendMessage);
                             }
                         }
                     }

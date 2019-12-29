@@ -1,7 +1,8 @@
 from flask import Flask, make_response, request
-import json
+import json, os
 
 from python.logic.datasetService import DatasetService
+from python.logic.videoService import VideoService
 from python.logic.annotationService import AnnotationService
 from python.logic.objectTypeService import ObjectTypeService
 from python.logic.userService import UserService
@@ -11,10 +12,15 @@ from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
 
 from python.objects.user import User
+from python.objects.dataset import Dataset
+from python.objects.video import Video
+from python.objects.frame import Frame
+from python.objects.object_type import Object_type
 
 app = Flask(__name__)
 
 datasetService = DatasetService()
+videoService = VideoService()
 annotationService = AnnotationService()
 objectTypeService = ObjectTypeService()
 userService = UserService()
@@ -96,59 +102,57 @@ def update_user_password():
 
 # Get dataset info
 @app.route("/api/dataset/getDataset", methods=['GET'])
-def getDataset():
-    success, msg, status = datasetService.getDataset(request.headers['name'])
+def get_dataset():
+    dataset = Dataset(request.headers['name'])
+    success, msg, status = datasetService.get_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get info of all datasets
 @app.route("/api/dataset/getDatasets", methods=['GET'])
-def getDatasets():
-    success, msg, status = datasetService.getDatasets()
+def get_datasets():
+    success, msg, status = datasetService.get_datasets()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Create new dataset
 @app.route('/api/dataset/createDataset', methods=['POST'])
-def createDataset():
-    success, msg, status = datasetService.createDataset(request.get_json())
+def create_dataset():
+    dataset = Dataset.from_json(request.get_json())
+    success, msg, status = datasetService.create_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Remove existing dataset
 @app.route('/api/dataset/removeDataset', methods=['POST'])
-def removeDataset():
-    req_data = request.get_json()
-    success, msg, status = datasetService.removeDataset(req_data['name'])
-
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Upload chunked zip file
-@app.route('/api/dataset/uploadZip', methods=['POST'])
-def uploadZip():
-    success, msg, status = datasetService.storeZip(request)
+def remove_dataset():
+    dataset = Dataset.from_json(request.get_json())
+    success, msg, status = datasetService.remove_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get list of zip files in file system
 @app.route('/api/dataset/getZipFiles', methods=['GET'])
-def getZipFiles():
-    success, msg, status = datasetService.getZipFiles()
+def get_zip_files():
+    success, msg, status = datasetService.get_zip_files()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Load a zip file already in the file system
+# parameter: req_data['name'] = name+extension
 @app.route('/api/dataset/loadZip', methods=['POST'])
-def loadZip():
+def load_zip():
     req_data = request.get_json()
-    success, msg, status = datasetService.loadZip(req_data['name'], req_data['type'])
+    dataset_name, _ = os.path.splitext(req_data['name'])
+    dataset = Dataset(dataset_name, req_data['type'], req_data['name'])
+    success, msg, status = datasetService.process_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Export annotation to a file for given dataset
 @app.route('/api/dataset/exportDataset', methods=['GET'])
-def exportDataset():
-    success, msg, status = datasetService.exportDataset(request.headers['dataset'], request.headers['datasetType'])
+def export_dataset():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = datasetService.export_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -156,60 +160,52 @@ def exportDataset():
 
 # Read data from stored zip
 @app.route('/api/dataset/readData', methods=['POST'])
-def readData():
-    req_data = request.get_json()
-    success, msg, status = datasetService.addInfo(req_data['dataset'], req_data['type'])
+def read_data():
+    dataset = Dataset.from_json(request.get_json())
+    success, msg, status = datasetService.add_info(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get info of video
-@app.route('/api/dataset/getVideo', methods=['GET'])
-def getVideo():
-    success, msg, status = datasetService.getVideo(request.headers['dataset'], request.headers['datasetType'],
-                                                   request.headers['video'])
+@app.route('/api/video/getVideo', methods=['GET'])
+def get_video():
+    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = videoService.get_video(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get list of videos and length
-@app.route('/api/dataset/getVideos', methods=['GET'])
-def getVideos():
-    success, msg, status = datasetService.getVideos(request.headers['dataset'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# DELETE WHEN NEW FRAMESVIDEO IS WORKING
-# Get frame from video
-@app.route('/api/dataset/getFrameVideo', methods=['GET'])
-def getVideoFrame():
-    success, msg, status = datasetService.getVideoFrame(request.headers['fileName'], request.headers['frame'],
-                                                        request.headers['dataset'], request.headers['type'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Get a range of frames from video
-@app.route('/api/dataset/getFramesVideo', methods=['GET'])
-def getVideoFrames():
-    success, msg, status = datasetService.getVideoFrames(request.headers['dataset'], request.headers['datasetType'],
-                                                         request.headers['video'], int(request.headers['startFrame']),
-                                                         int(request.headers['endFrame']))
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Update existing video
-@app.route('/api/dataset/updateVideosFrames', methods=['POST'])
-def updateVideosFrames():
-    success, msg, status = datasetService.updateVideosFrames(request.headers['dataset'])
+@app.route('/api/video/getVideos', methods=['GET'])
+def get_videos():
+    dataset = Dataset(request.headers['dataset'])
+    success, msg, status = videoService.get_videos(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get max frame of video
 @app.route('/api/video/getMaxFrame', methods=['GET'])
-def getMaxFrame():
-    success, msg, status = datasetService.getMaxFrame(request.headers['dataset'], request.headers['datasetType'],
-                                                      request.headers['video'])
+def get_max_frame():
+    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = videoService.get_max_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get min frame of video
 @app.route('/api/video/getMinFrame', methods=['GET'])
-def getMinFrame():
-    success, msg, status = datasetService.getMinFrame(request.headers['dataset'], request.headers['datasetType'],
-                                                      request.headers['video'])
+def get_min_frame():
+    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = videoService.get_min_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get a range of frames from video
+@app.route('/api/video/getFramesVideo', methods=['GET'])
+def get_video_frames():
+    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = videoService.get_video_frames(video, int(request.headers['startFrame']), int(request.headers['endFrame']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+# # Update existing video
+# @app.route('/api/video/updateVideosFrames', methods=['POST'])
+# def update_videos_frames():
+#     success, msg, status = videoService.update_videos_frames(request.headers['dataset'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 #### ANNOTATION ####
@@ -285,7 +281,8 @@ def createNewUidObject():
 def interpolateAnnotation():
     req_data = request.get_json()
     # uid, startFrame y endFrame
-    success, msg, status = annotationService.interpolateAnnotation(req_data['dataset'], req_data['datasetType'],
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = annotationService.interpolateAnnotation(dataset,
                                                          req_data['scene'], req_data['user'],
                                                          req_data['startFrame'], req_data['endFrame'],
                                                          req_data['uidObject'], req_data['objectType'],
@@ -327,41 +324,41 @@ def removeAnnotation():
 
 # Get object type info
 @app.route('/api/objectType/getObjectType', methods=['GET'])
-def getObjectType():
-    success, msg, status = objectTypeService.getObjectType(request.headers['type'], request.headers['datasetType'])
+def get_object_type():
+    object_type = Object_type(request.headers['type'], request.headers['datasetType'])
+    success, msg, status = objectTypeService.get_object_type(object_type)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get all object types
 @app.route('/api/objectType/getObjectTypes', methods=['GET'])
-def getObjectTypes():
-    success, msg, status = objectTypeService.getObjectTypes(request.headers['datasetType'])
+def get_object_types():
+    success, msg, status = objectTypeService.get_object_types(request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Create new object type
 @app.route('/api/objectType/createObjectType', methods=['POST'])
-def createObjectType():
-    req_data = request.get_json()
-    success, msg, status = objectTypeService.createObjectType(req_data['type'], req_data['datasetType'],
-                                                              req_data['numKeypoints'], req_data['labels'])
+def create_object_type():
+    object_type = Object_type.from_json(request.get_json())
+    success, msg, status = objectTypeService.create_object_type(object_type)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Update existing object type
 @app.route('/api/objectType/updateObjectType', methods=['POST'])
-def updateObjectType():
-    req_data = request.get_json()
-    success, msg, status = objectTypeService.updateObjectType(req_data['type'], req_data['datasetType'],
-                                                              req_data['numKeypoints'], req_data['labels'])
+def update_object_type():
+    object_type = Object_type.from_json(request.get_json())
+    success, msg, status = objectTypeService.update_object_type(object_type)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Delete object
 @app.route('/api/objectType/removeObjectType', methods=['POST'])
-def removeObjectType():
+def remove_object_type():
     req_data = request.get_json()
-    success, msg, status = objectTypeService.removeObjectType(req_data['type'], req_data['datasetType'])
+    object_type = Object_type(req_data['type'], req_data['datasetType'])
+    success, msg, status = objectTypeService.remove_object_type(object_type)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -487,44 +484,24 @@ def mergeActions():
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
 @app.route('/api/aik/projectToCamera', methods=['GET'])
-def projectToCamera():
-    pointsArray = request.headers['points']
-    frame = request.headers['frame']
-    cameraName = request.headers['cameraName']
-    dataset = request.headers['dataset']
-
-    # Convert the points json to Python list
-    pointsArray = json.loads(pointsArray)
-    
-    # Get camera parameters for the frame, camera and dataset
-    _, cameraParams, _ = frameService.getCameraParameters(int(frame), int(cameraName), dataset)
-
-    # Proyect the points into the camera
-    points2D = aikService.project3DPointsToCamera(pointsArray, cameraParams)
-    
-    return json.dumps({'success': True, 'msg': points2D}), 200, {'ContentType': 'application/json'}
+def project_to_camera():
+    frame = Frame(request.headers['frame'], request.headers['cameraName'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = aikService.project_to_camera(frame, request.headers['points'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
-def computeEpiline():
-    point = request.headers['point']
-    frame = request.headers['frame']
-    dataset = request.headers['dataset']
-    cam1Name = request.headers['cam1']
-    cam2Name = request.headers['cam2']
-    
-    point = json.loads(point)
-
-    _, cam1Params, _ = frameService.getCameraParameters(frame, cam1Name, dataset)
-    _, cam2Params, _ = frameService.getCameraParameters(frame, cam2Name, dataset)
-    el1, el2 = aikService.computeEpiline(point, cam1Params, cam2Params)
-    
+def compute_epiline():
+    frame1 = Frame(request.headers['frame'], request.headers['cam1'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    frame2 = Frame(request.headers['frame'], request.headers['cam2'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    el1, el2 = aikService.compute_epiline(request.headers['point'], frame1, frame2)
     return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
 
 # Return 6 mugshot of person uid from different cameras
+#TODO revisar revisar
 @app.route('/api/aik/getMugshot', methods=['GET'])
-def getMugshot():
-    success, msg, status = aikService.getMugshot(request.headers['dataset'], request.headers['datasetType'], request.headers['scene'],
+def get_mugshot():
+    success, msg, status = aikService.get_mugshot(request.headers['dataset'], request.headers['datasetType'], request.headers['scene'],
                                                 request.headers['user'], int(request.headers['uid']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -532,47 +509,42 @@ def getMugshot():
 
 # Get frame
 @app.route("/api/frame/getFrame", methods=['GET'])
-def getFrame():
-    success, msg, status = frameService.getFrame(request.headers['frame'], request.headers['video'],
-                                                 request.headers['dataset'])
+def get_frame():
+    frame = Frame(request.headers['frame'], request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = frameService.get_frame(frame)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get info of all frames
 @app.route("/api/frame/getFrames", methods=['GET'])
-def getFrames():
-    success, msg, status = frameService.getFrames(request.headers['video'], request.headers['dataset'])
+def get_frames():
+    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    success, msg, status = frameService.get_frames(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Create new frame for specific user
-@app.route('/api/frame/getFramePath', methods=['GET'])
-def getFramePath():
-    success, msg, status = frameService.getFramePath(request.headers['frame'], request.headers['video'],
-                                                     request.headers['dataset'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Remove existing frame for specific user
 @app.route('/api/frame/removeFrame', methods=['POST'])
-def removeFrame():
+def remove_frame():
     req_data = request.get_json()
-    success, msg, status = frameService.removeFrame(req_data['frame'], req_data['video'], req_data['dataset'])
+    frame = Frame(req_data['frame'], req_data['video'], req_data['dataset'], dataset_type=req_data['datasetType'])
+    success, msg, status = frameService.remove_frame(frame)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get initial and ending frame number of a video
 @app.route('/api/frame/getFrameInfoOfDataset', methods=['GET'])
-def getFramesInfoOfDatasetGroupByVideo():
-    success, msg, status = frameService.getFramesInfoOfDatasetGroupByVideo(request.headers['dataset'], request.headers['datasetType'])
+def get_frames_info_of_dataset_group_by_video():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = frameService.get_frames_info_of_dataset_group_by_video(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
 # Remove and insert new frames for one video and dataset
 @app.route('/api/dataset/insertFramesError', methods=['POST'])
-def insertFrames():
+def insert_frames():
     req_data = request.get_json()
-    success, msg, status = datasetService.insertFrames(req_data['dataset'], int(req_data['video']))
+    dataset = Dataset(req_data['dataset'], 'actionInKitchen')
+    success, msg, status = datasetService.insertFrames(dataset, int(req_data['video']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

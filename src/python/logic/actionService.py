@@ -99,7 +99,7 @@ class ActionService:
 
     # Merge all possible actions with same start and end frames
     def mergeActions(self):
-        datasets = datasetManager.getDatasets()
+        datasets = datasetManager.get_datasets()
         for d in datasets:
             actions = actionManager.getActionsByDataset(d['name'])
 

@@ -7,7 +7,7 @@ angular.module('CVGTool')
         getInfoOfVideos: function(callbackSuccess, dataset) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getVideos',
+                url: '/api/video/getVideos',
                 headers: {
                     'dataset': dataset
                 }
@@ -44,7 +44,7 @@ angular.module('CVGTool')
         getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getFramesVideo',
+                url: '/api/video/getFramesVideo',
                 headers: {
                     'video': fileName,
                     'startFrame': frameStart,
@@ -114,7 +114,7 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, frame, cameraName, dataset, canvasNumber, callbackSuccess, callbackError) {
+        projectToCamera: function(uid, type, points, frame, cameraName, dataset, datasetType, canvasNumber, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/aik/projectToCamera',
@@ -122,7 +122,8 @@ angular.module('CVGTool')
                     'points': JSON.stringify(points),
                     'frame': frame,
                     'cameraName': cameraName,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(canvasNumber, uid, type, frame, response.data.msg)
@@ -132,7 +133,7 @@ angular.module('CVGTool')
         },
 
         // Get Epipolar line
-        getEpiline: function(frame, dataset, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
+        getEpiline: function(frame, dataset, datasetType, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/aik/computeEpiline',
@@ -141,7 +142,8 @@ angular.module('CVGTool')
                     'frame': frame,
                     'cam1': camera1,
                     'cam2': camera2,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, camera1Index, camera2Index, pointNumber);
