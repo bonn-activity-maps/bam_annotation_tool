@@ -9,6 +9,7 @@ from python.infrastructure.frameManager import FrameManager
 
 from python.objects.frame import Frame
 from python.objects.video import Video
+from python.objects.dataset import Dataset
 
 frameService = FrameService()
 videoManager = VideoManager()
@@ -73,9 +74,10 @@ class VideoService:
     # Return the corresponding range of frames in video
     def get_video_frames(self, video, start_frame, end_frame):
         imgs = []
+        dataset = Dataset(video.dataset, video.dataset_type)
         for frame in range(start_frame, end_frame + 1):
             # Get path of frame
-            f = Frame(frame, video.name, video.dataset, dataset_type=video.dataset_type)
+            f = Frame(frame, video.name, dataset)
             f = frameManager.get_frame(f)
             # Read file as binary, encode to base64 and remove newlines
             if os.path.isfile(f.path):

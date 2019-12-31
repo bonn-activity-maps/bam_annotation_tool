@@ -3,8 +3,10 @@ import os
 class Dataset:
 
     STORAGE_DIR = '/usr/storage/'  # Path to store the datasets
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
 
-    def __init__(self, name, type=None, file_name=None):
+    def __init__(self, name, type=None, keypoint_dim=0, file_name=None):
         """
         :param name: str
         :param type: str        {actionInKitchen, poseTrack}
@@ -15,12 +17,12 @@ class Dataset:
         self.name = name
         self.type = type
         self.dir = os.path.join(self.STORAGE_DIR, name)
-        if type == 'actionInKitchen':
+        if keypoint_dim == 0 and type == 'actionInKitchen':
             self.keypoint_dim = 3
-        elif type == 'poseTrack':
+        elif keypoint_dim == 0 and type == 'poseTrack':
             self.keypoint_dim = 2
         else:
-            self.keypoint_dim = 0
+            self.keypoint_dim = keypoint_dim
         self.file_name = file_name
 
     def to_json(self):
@@ -34,7 +36,8 @@ class Dataset:
     def from_json(obj):
         name = obj['name']
         type = obj['type'] if 'type' in obj else None
-        return Dataset(name, type)
+        keypoint_dim = obj['keypointDim'] if 'keypointDim' in obj else 0
+        return Dataset(name, type=type, keypoint_dim=keypoint_dim)
 
     def to_string(self):
         return "(name: {0}, type: {1}, keypoint_dim: {2})".format(self.name, self.type, self.keypoint_dim)

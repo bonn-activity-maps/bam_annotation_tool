@@ -1,6 +1,9 @@
 from pymongo import MongoClient, errors
 import logging
 
+from python.objects.action import Action
+from python.objects.activity import Activity
+
 # TaskManager logger
 log = logging.getLogger('actionManager')
 
@@ -10,90 +13,51 @@ class ActionManager:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
     collection = db.action
-    collectionActivities = db.activities
-
-    # Return 'ok' if the action has been created
-    def createActivity(self, dataset, activity):
-        try:
-            result = self.collectionActivities.insert_one({"name": activity})
-            if result.acknowledged:
-                return 'Activity created'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error creating action in db')
-            return 'Error'
-
-    # Return the list of possible human activities stored in the db
-    def getActivities(self, dataset):
-        try:
-            result = self.collectionActivities.find({}, {"_id": 0}).sort("name")
-            if result is None:
-                return 'Error'
-            else:
-                return list(result)
-        except errors.PyMongoError as e:
-            log.exception('Error finding task in db')
-            return 'Error'
 
     # Return info of action if exists in DB. Ignore mongo id
-    def getAction(self, dataset, objectUID, user, name, startFrame, endFrame):
+    def get_action(self, action):
         try:
             # Ignore user parameter
-            result = self.collection.find_one({"dataset": dataset, "startFrame": int(startFrame),
-                                               "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name},
+            result = self.collection.find_one({"dataset": action.dataset.name, "startFrame": action.start_frame,
+                                               "endFrame": action.end_frame, "objectUID": action.object_uid, "name": action.name},
                                               {"_id": 0})
-
-            # result = self.collection.find_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
-            #                                    "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name},
-            #                                   {"_id": 0})
             if result is None:
                 return 'Error'
             else:
-                return result
+                return Action.from_json(result)
         except errors.PyMongoError as e:
             log.exception('Error finding action in db')
             return 'Error'
 
     # Return info of action by object id and frame range
-    def getActionsByUID(self, dataset, objectUID, user, startFrame, endFrame):
+    def get_actions_by_UID(self, dataset, object_uid, user, start_frame, end_frame):
         try:
             # if objectUID and (NOT start >= end and NOT endDB<=start)
             # ignore user parameter
-            result = self.collection.find({"dataset": dataset,
-                                           "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-                                                    {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
-                                           "objectUID": int(objectUID)},
+            result = self.collection.find({"dataset": dataset.name,
+                                           "$and": [{"startFrame": {"$not": {"$gt": int(end_frame)}}},
+                                                    {"endFrame": {"$not": {"$lt": int(start_frame)}}}],
+                                           "objectUID": int(object_uid)},
                                           {"_id": 0})
-
-            # result = self.collection.find({"dataset": dataset, "user": user,
-            #             "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-            #                      {"endFrame": {"$not": {"$lt": int(startFrame)}}}],
-            #             "objectUID": int(objectUID)},
-            #             {"_id": 0})
-
             if result is None:
                 return 'Error'
             else:
-                return list(result)
+                return [Action.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding action in db')
             return 'Error'
 
     # Return info of action by object id and frame range
-    def getActions(self, dataset, user, startFrame, endFrame):
+    def get_actions(self, dataset, user, start_frame, end_frame):
         try:
             # Ignore user parameter
-            result = self.collection.find({"dataset": dataset, "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-                                                                                      {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
+            result = self.collection.find({"dataset": dataset.name, "$and": [{"startFrame": {"$not": {"$gt": int(end_frame)}}},
+                                                                                      {"endFrame": {"$not": {"$lt": int(start_frame)}}}]},
                                           {"_id": 0})
-            # result = self.collection.find({"dataset": dataset, "user": user, "$and": [{"startFrame": {"$not": {"$gt": int(endFrame)}}},
-            #                                         {"endFrame": {"$not": {"$lt": int(startFrame)}}}]},
-            #                               {"_id": 0})
             if result is None:
                 return 'Error'
             else:
-                return list(result)
+                return [Action.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding action in db')
             return 'Error'
@@ -141,11 +105,11 @@ class ActionManager:
             return 'Error'
 
     # Return 'ok' if the action has been created
-    def createAction(self, dataset, objectUID, user, name, startFrame, endFrame):
+    def create_action(self, action):
         try:
-            result = self.collection.insert_one({"dataset": dataset, "objectUID": objectUID, "user": user,"name": name, "startFrame": startFrame,
-                                                 "endFrame": endFrame})
-
+            result = self.collection.insert_one({"dataset": action.dataset.name, "objectUID": action.object_uid,
+                                                 "user": action.user, "name": action.name,
+                                                 "startFrame": action.start_frame, "endFrame": action.end_frame})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -170,14 +134,11 @@ class ActionManager:
             return 'Error'
 
     # Remove the action specified with the attributes
-    def removeAction(self, dataset, objectUID, user, name, startFrame, endFrame):
+    def remove_action(self, action):
         try:
             # Ignore user parameter
-            result = self.collection.delete_one({"dataset": dataset, "startFrame": int(startFrame),
-                                                 "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name})
-
-            # result = self.collection.delete_one({"dataset": dataset, "user": user, "startFrame": int(startFrame),
-            #                                      "endFrame": int(endFrame), "objectUID": int(objectUID), "name": name})
+            result = self.collection.delete_one({"dataset": action.dataset.name, "startFrame": action.start_frame,
+                                                 "endFrame": action.end_frame, "objectUID": action.object_uid, "name": action.name})
             if result.deleted_count == 1:
                 return 'ok'
             else:

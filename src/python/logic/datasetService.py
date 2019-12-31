@@ -265,7 +265,7 @@ class DatasetService:
                 log.exception("Error reading person")
 
             # Update annotation with the resulting objects
-            result = annotationService.updateAnnotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
+            result = annotationService.update_annotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
             if result == 'error':
                 return False
@@ -388,7 +388,7 @@ class DatasetService:
                 del(frames[i]["has_ignore_regions"])
             final_annotation["images"] = frames
             # Process annotation data
-            _, annotations_db, _ = annotationService.getAnnotations(dataset, self.pt, videos[j]["name"], "root")
+            _, annotations_db, _ = annotationService.get_annotations(dataset, self.pt, videos[j]["name"], "root")
             annotations_file = list()
             for i in range(0, len(annotations_db)):
                 objects = annotations_db[i]["objects"]

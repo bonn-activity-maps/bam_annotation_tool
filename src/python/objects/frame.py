@@ -1,11 +1,9 @@
+from python.objects.dataset import Dataset
 
 class Frame:
 
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
-
     def __init__(self, number, video, dataset, path=None, camera_parameters=None, has_ignore_regions=None,
-                 has_no_densepose=None, is_labeled=None, nframes=None, frame_id=None, id=None, dataset_type=None):
+                 has_no_densepose=None, is_labeled=None, nframes=None, frame_id=None, id=None):
         """
         :param number: int
         :param video: str
@@ -21,7 +19,7 @@ class Frame:
         """
         self.number = int(number)
         self.dataset = dataset
-        if dataset_type == self.aik:
+        if dataset.type == dataset.aik:
             self.video = int(video)
         else:
             self.video = video
@@ -39,11 +37,11 @@ class Frame:
         obj = {
             'number': self.number,
             'video': self.video,
-            'dataset': self.dataset,
+            'dataset': self.dataset.name,
             'path': self.path,
         }
         # Add optional parameters if they exist
-        if self.camera_parameters is not None: obj['camera_parameters'] = self.camera_parameters
+        if self.camera_parameters is not None: obj['cameraParameters'] = self.camera_parameters
         if self.has_ignore_regions is not None: obj['has_ignore_regions'] = self.has_ignore_regions
         if self.has_no_densepose is not None: obj['has_no_densepose'] = self.has_no_densepose
         if self.is_labeled is not None: obj['is_labeled'] = self.is_labeled
@@ -55,7 +53,7 @@ class Frame:
     def from_json(obj):
         number = obj['number']
         video = obj['video']
-        dataset = obj['dataset']
+        dataset = Dataset(obj['dataset'], obj['datasetType']) if 'datasetType' in obj else Dataset(obj['dataset'])
         path = obj['path'] #if 'path' in obj else 0
         camera_parameters = obj['cameraParameters'] if 'cameraParameters' in obj else None
         has_ignore_regions = obj['has_ignore_regions'] if 'has_ignore_regions' in obj else None
@@ -70,6 +68,6 @@ class Frame:
     def to_string(self):
         return "(number: {0}, video: {1}, dataset: {2}, path: {3}, camera_parameters: {4}, has_ignore_regions: {5}," \
                "has_no_densepose: {6}, is_labeled: {7}, nframes: {8}, frame_id: {9}, id: {10})".\
-            format(self.number, self.video, self.dataset, self.path, self.camera_parameters, self.has_ignore_regions,
+            format(self.number, self.video, self.dataset.to_json(), self.path, self.camera_parameters, self.has_ignore_regions,
                    self.has_no_densepose, self.is_labeled, self.nframes, self.frame_id, self.id)
 

@@ -44,11 +44,11 @@ class TaskService:
             else:
                 # Duplicate existing root annotations for all frames to user (copy the keypoints given in the dataset)
                 for frame in range(frameFrom, frameTo+1):
-                    annotation = annotationManager.getAnnotation(dataset, scene, frame, 'root')
+                    annotation = annotationManager.get_annotation(dataset, scene, frame, 'root')
 
                     # Copy existing annotation only if there exist one for root user with objects
                     if annotation:
-                        result = annotationManager.updateAnnotation(dataset, scene, frame, user, annotation['objects'])
+                        result = annotationManager.update_annotation(dataset, scene, frame, user, annotation['objects'])
                         # TODO: handle errors
                 return True, 'ok', 200
                 # return True, {'name': name}, 200

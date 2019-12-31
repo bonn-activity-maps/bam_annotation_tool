@@ -107,11 +107,11 @@ class UserService:
         #     if data['type'] == 'poseTrack':     # In the future, probably for aik too
         #         videos = videoManager.get_videos(dataset)
         #         for video in videos:
-        #             annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], user, None)
+        #             annotations = annotationManager.get_annotations(dataset, data['type'], video['name'], user, None)
         #             if not annotations:  # Else already exist
-        #                 annotations = annotationManager.getAnnotations(dataset, data['type'], video['name'], 'root', None)
+        #                 annotations = annotationManager.get_annotations(dataset, data['type'], video['name'], 'root', None)
         #                 for annotation in annotations:
-        #                     result = annotationManager.updateAnnotation(dataset, video['name'], annotation['frame'],
+        #                     result = annotationManager.update_annotation(dataset, video['name'], annotation['frame'],
         #                                                                 user, annotation['objects'])
         #                     if result == 'Error':
         #                         return False

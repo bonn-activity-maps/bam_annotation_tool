@@ -16,7 +16,7 @@ class FrameManager:
     # Return info of frame by video and dataset if exist in DB. Ignore mongo id
     def get_frame(self, frame):
         try:
-            result = self.collection.find_one({"dataset": frame.dataset, "video": frame.video, "number": frame.number}, {"_id": 0})
+            result = self.collection.find_one({"dataset": frame.dataset.name, "video": frame.video, "number": frame.number}, {"_id": 0})
             if result is None:
                 return 'Error'
             else:
@@ -62,7 +62,7 @@ class FrameManager:
     # Return 'ok' if the frame has been removed
     def remove_frame(self, frame):
         try:
-            result = self.collection.delete_one({"dataset": frame.dataset, "video": frame.video, "number": frame.number})
+            result = self.collection.delete_one({"dataset": frame.dataset.name, "video": frame.video, "number": frame.number})
             if result.deleted_count == 1:
                 return 'ok'
             else:

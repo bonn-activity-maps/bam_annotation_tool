@@ -10,12 +10,18 @@ from python.logic.taskService import TaskService
 from python.logic.aikService import AIKService
 from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
+from python.logic.activity_service import ActivityService
 
 from python.objects.user import User
 from python.objects.dataset import Dataset
 from python.objects.video import Video
 from python.objects.frame import Frame
 from python.objects.object_type import Object_type
+from python.objects.annotation import Annotation
+from python.objects.object import Object
+from python.objects.action import Action
+from python.objects.activity import Activity
+
 
 app = Flask(__name__)
 
@@ -28,7 +34,7 @@ taskService = TaskService()
 aikService = AIKService()
 frameService = FrameService()
 actionService = ActionService()
-
+activity_service = ActivityService()
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
@@ -144,7 +150,7 @@ def get_zip_files():
 def load_zip():
     req_data = request.get_json()
     dataset_name, _ = os.path.splitext(req_data['name'])
-    dataset = Dataset(dataset_name, req_data['type'], req_data['name'])
+    dataset = Dataset(dataset_name, req_data['type'], file_name=req_data['name'])
     success, msg, status = datasetService.process_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -212,43 +218,46 @@ def get_video_frames():
 
 # Get annotation info for given frame, dataset, scene and user
 @app.route('/api/annotation/getAnnotation', methods=['GET'])
-def getAnnotation():
-    success, msg, status = annotationService.getAnnotation(request.headers['dataset'], request.headers["datasetType"],
-                                                           request.headers['scene'],
-                                                           request.headers['frame'], request.headers['user'])
+def get_annotation():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    annotation = Annotation(dataset, request.headers['scene'], request.headers['frame'], request.headers['user'])
+    success, msg, status = annotationService.get_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation info for given frame range, dataset, scene and user
 @app.route('/api/annotation/getAnnotationsByFrameRange', methods=['GET'])
-def getAnnotationsByFrameRange():
-    success, msg, status = annotationService.getAnnotationsByFrameRange(request.headers['dataset'],
-                                                                        request.headers["datasetType"], request.headers['scene'],
-                                                                        int(request.headers['startFrame']), int(request.headers['endFrame']),
-                                                                        request.headers['user'])
+def get_annotations_by_frame_range():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    start_annotation = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'])
+    end_annotation = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'])
+    success, msg, status = annotationService.get_annotations_by_frame_range(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
-def getAnnotations():
-    success, msg, status = annotationService.getAnnotations(request.headers['dataset'], request.headers["datasetType"],
-                                                            request.headers['scene'], request.headers['user'])
+def get_annotations():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    annotation = Annotation(dataset, request.headers['scene'], user=request.headers['user'])
+    success, msg, status = annotationService.get_annotations(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get all annotated objects for dataset, scene and user
 @app.route('/api/annotation/getObjects', methods=['GET'])
-def getAnnotatedObjects():
-    success, msg, status = annotationService.getAnnotatedObjects(request.headers['dataset'], request.headers["datasetType"],
-                                                                 request.headers['scene'], request.headers['user'])
+def get_annotated_objects():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    annotation = Annotation(dataset, request.headers['scene'], user=request.headers['user'])
+    success, msg, status = annotationService.get_annotated_objects(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update existing annotation for given frame, dataset, video and user
 @app.route('/api/annotation/updateAnnotation', methods=['POST'])
-def updateAnnotation():
+def update_annotation():
     req_data = request.get_json()
-    success, msg, status = annotationService.updateAnnotation(req_data['dataset'], req_data['datasetType'],
-                                                              req_data['scene'], req_data['frame'],
-                                                              req_data['user'], req_data['objects'])
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object.from_json(req_data['objects'], req_data['datasetType'])
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], object)
+    success, msg, status = annotationService.update_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update existing annotation for given frame, dataset, video and user
@@ -270,53 +279,53 @@ def updateAnnotationPT():
 
 # Create and return new uid for an object in annotations for a dataset to avoid duplicated uid objects
 @app.route('/api/annotation/createNewUidObject', methods=['POST'])
-def createNewUidObject():
+def create_new_uid_object():
     req_data = request.get_json()
-    success, msg, status = annotationService.createNewUidObject(req_data['dataset'], req_data['datasetType'], req_data['scene'],
-                                                                req_data['frame'], req_data['user'], req_data['type'])
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'])
+    success, msg, status = annotationService.create_new_uid_object(annotation, req_data['type'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Interpolate between 2 points and store the interpolated 3d points
 @app.route('/api/annotation/interpolate', methods=['POST'])
-def interpolateAnnotation():
+def interpolate_annotation():
     req_data = request.get_json()
-    # uid, startFrame y endFrame
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    success, msg, status = annotationService.interpolateAnnotation(dataset,
-                                                         req_data['scene'], req_data['user'],
-                                                         req_data['startFrame'], req_data['endFrame'],
-                                                         req_data['uidObject'], req_data['objectType'],
-                                                         req_data['uidObject2'])
+    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], object1)
+    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], object1)
+    success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Get annotation of one object in frame for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
-def getAnnotationFrameObject():
-    success, msg, status = annotationService.getAnnotationFrameObject(request.headers['dataset'], request.headers["datasetType"],
-                                                                      request.headers['scene'],
-                                                                      int(request.headers['startFrame']), int(request.headers['endFrame']),
-                                                                      request.headers['user'],
-                                                                      int(request.headers['uidObject']), request.headers['objectType'])
+def get_annotation_frame_object():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type= request.headers['datasetType'])
+    annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], object)
+    annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], object)
+    success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
 # @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])
-# def updateAnnotationFrameObject():
-#     success, msg, status = annotationService.updateAnnotationFrameObject(request.get_json())
+# def update_annotation_frame_object():
+#     success, msg, status = annotationService.update_annotation_frame_object(request.get_json())
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Delete annotation for given frames, dataset, video and user and object id
 @app.route('/api/annotation/removeAnnotation/object', methods=['POST'])
-def removeAnnotation():
+def remove_annotation():
     req_data = request.get_json()
-    success, msg, status = annotationService.removeAnnotationFrameObject(req_data['dataset'], req_data['datasetType'],
-                                                                         req_data['scene'],
-                                                                         int(req_data['startFrame']), int(req_data['endFrame']),
-                                                                         req_data['user'],
-                                                                         int(req_data['uidObject']), req_data['objectType'])
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], object)
+    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], object)
+    success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -364,113 +373,136 @@ def remove_object_type():
 
 #### TASKS ####
 
-# Get task for specific user
-@app.route("/api/task/getTask", methods=['GET'])
-def getTask():
-    success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'],
-                                               request.headers['dataset'])
+# # Get task for specific user
+# @app.route("/api/task/getTask", methods=['GET'])
+# def getTask():
+#     success, msg, status = taskService.getTask(request.headers['name'], request.headers['user'],
+#                                                request.headers['dataset'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Get info of all tasks for specific user
+# @app.route("/api/task/getTasks", methods=['GET'])
+# def getTasks():
+#     success, msg, status = taskService.getTasks(request.headers['user'], request.headers['dataset'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Create new task for specific user
+# @app.route('/api/task/createTask', methods=['POST'])
+# def createTask():
+#     req_data = request.get_json()
+#     success, msg, status = taskService.createTask(req_data['name'], req_data['user'], req_data['dataset'],
+#                                                   req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
+#                                                   req_data['description'], req_data['POV'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Remove existing task for specific user
+# @app.route('/api/task/removeTask', methods=['POST'])
+# def removeTask():
+#     req_data = request.get_json()
+#     success, msg, status = taskService.removeTask(req_data['name'], req_data['user'], req_data['dataset'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Update existing task for specific user
+# @app.route('/api/task/updateTask', methods=['POST'])
+# def updateTask():
+#     req_data = request.get_json()
+#     success, msg, status = taskService.updateTask(req_data['name'], req_data['user'], req_data['dataset'],
+#                                                   req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
+#                                                   req_data['description'], req_data['lastFrame'], req_data['POV'],
+#                                                   req_data['finished'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Update and finish existing task
+# @app.route('/api/task/finishTask', methods=['POST'])
+# def finishTask():
+#     req_data = request.get_json()
+#     success, msg, status = taskService.finishTask(req_data['name'], req_data['user'], req_data['dataset'],
+#                                                   req_data['scene'], req_data['finished'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+#
+#
+# # Update last modified frame in task
+# @app.route('/api/task/updateFrameTask', methods=['POST'])
+# def updateFrameTask():
+#     req_data = request.get_json()
+#     success, msg, status = taskService.updateFrameTask(req_data['name'], req_data['user'], req_data['dataset'],
+#                                                        req_data['scene'], req_data['lastFrame'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### ACTIVITIES ####
+
+# Get activities list
+@app.route("/api/activity/getActivities", methods=['GET'])
+def get_activities():
+    # dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = activity_service.get_activities()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
-# Get info of all tasks for specific user
-@app.route("/api/task/getTasks", methods=['GET'])
-def getTasks():
-    success, msg, status = taskService.getTasks(request.headers['user'], request.headers['dataset'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Create new task for specific user
-@app.route('/api/task/createTask', methods=['POST'])
-def createTask():
+# Create a new Activity
+@app.route("/api/activity/createActivity", methods=['POST'])
+def create_activity():
     req_data = request.get_json()
-    success, msg, status = taskService.createTask(req_data['name'], req_data['user'], req_data['dataset'],
-                                                  req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
-                                                  req_data['description'], req_data['POV'])
+    activity = Activity(req_data['activity'])
+    success, msg, status = activity_service.create_activity(activity)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
-# Remove existing task for specific user
-@app.route('/api/task/removeTask', methods=['POST'])
-def removeTask():
+# Remove existing activity
+@app.route("/api/activity/removeActivity", methods=['POST'])
+def remove_activity():
     req_data = request.get_json()
-    success, msg, status = taskService.removeTask(req_data['name'], req_data['user'], req_data['dataset'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Update existing task for specific user
-@app.route('/api/task/updateTask', methods=['POST'])
-def updateTask():
-    req_data = request.get_json()
-    success, msg, status = taskService.updateTask(req_data['name'], req_data['user'], req_data['dataset'],
-                                                  req_data['scene'], req_data['frameFrom'], req_data['frameTo'],
-                                                  req_data['description'], req_data['lastFrame'], req_data['POV'],
-                                                  req_data['finished'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Update and finish existing task
-@app.route('/api/task/finishTask', methods=['POST'])
-def finishTask():
-    req_data = request.get_json()
-    success, msg, status = taskService.finishTask(req_data['name'], req_data['user'], req_data['dataset'],
-                                                  req_data['scene'], req_data['finished'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-
-# Update last modified frame in task
-@app.route('/api/task/updateFrameTask', methods=['POST'])
-def updateFrameTask():
-    req_data = request.get_json()
-    success, msg, status = taskService.updateFrameTask(req_data['name'], req_data['user'], req_data['dataset'],
-                                                       req_data['scene'], req_data['lastFrame'])
+    activity = Activity(req_data['activity'])
+    success, msg, status = activity_service.remove_activity(activity)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
 #### ACTIONS ####
 
-# Create a new Activity
-@app.route("/api/action/createActivity", methods=['POST'])
-def createActivity():
-    success, msg, status = actionService.createActivity(request.get_json())
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Get activities list
-@app.route("/api/action/getActivities", methods=['GET'])
-def getActivities():
-    success, msg, status = actionService.getActivities(request.headers['dataset'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Get actions for specific object, user and frame range
-@app.route("/api/action/getActionsByUID", methods=['GET'])
-def getActionsByUID():
-    success, msg, status = actionService.getActionsByUID(request.headers['dataset'], request.headers['objectUID'], request.headers['user'],
-                                                         request.headers['startFrame'], request.headers['endFrame'])
+# Get action for specific user and frame range
+@app.route("/api/action/getAction", methods=['GET'])
+def get_action():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    action = Action(request.headers['name'], dataset, request.headers['objectUID'], request.headers['user'],
+                    request.headers['startFrame'], request.headers['endFrame'])
+    success, msg, status = actionService.get_action(action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get actions for specific user and frame range
 @app.route("/api/action/getActions", methods=['GET'])
-def getActions():
-    success, msg, status = actionService.getActions(request.headers['dataset'], request.headers['user'], request.headers['startFrame'], request.headers['endFrame'])
+def get_actions():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = actionService.get_actions(dataset, request.headers['user'], request.headers['startFrame'], request.headers['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# Get action for specific user and frame range
-@app.route("/api/action/getAction", methods=['GET'])
-def getAction():
-    success, msg, status = actionService.getAction(request.headers['dataset'], request.headers['objectUID'],
-                                                   request.headers['user'], request.headers['name'],
-                                                   request.headers['startFrame'], request.headers['endFrame'])
+# Get actions for specific object, user and frame range
+@app.route("/api/action/getActionsByUID", methods=['GET'])
+def get_actions_by_UID():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = actionService.get_actions_by_UID(dataset, request.headers['objectUID'], request.headers['user'],
+                                                         request.headers['startFrame'], request.headers['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Create new action for specific user
 @app.route('/api/action/createAction', methods=['POST'])
-def createAction():
-    success, msg, status = actionService.createAction(request.get_json())
+def create_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    action = Action(req_data['name'], dataset, req_data['objectUID'], req_data['user'], req_data['startFrame'], req_data['endFrame'])
+    success, msg, status = actionService.create_action(action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Remove an action
 @app.route('/api/action/removeAction', methods=['POST'])
-def removeAction():
-    success, msg, status = actionService.removeAction(request.get_json())
+def remove_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    action = Action(req_data['name'], dataset, req_data['objectUID'], req_data['user'], req_data['startFrame'], req_data['endFrame'])
+    success, msg, status = actionService.remove_action(action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Merge actions with same start and end frames
@@ -480,12 +512,12 @@ def mergeActions():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
 @app.route('/api/aik/projectToCamera', methods=['GET'])
 def project_to_camera():
-    frame = Frame(request.headers['frame'], request.headers['cameraName'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    frame = Frame(request.headers['frame'], request.headers['cameraName'], dataset)
     success, msg, status = aikService.project_to_camera(frame, request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -510,7 +542,8 @@ def get_mugshot():
 # Get frame
 @app.route("/api/frame/getFrame", methods=['GET'])
 def get_frame():
-    frame = Frame(request.headers['frame'], request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    frame = Frame(request.headers['frame'], request.headers['video'], dataset)
     success, msg, status = frameService.get_frame(frame)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -518,6 +551,8 @@ def get_frame():
 # Get info of all frames
 @app.route("/api/frame/getFrames", methods=['GET'])
 def get_frames():
+    #TODO change dataset
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
     success, msg, status = frameService.get_frames(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
@@ -526,7 +561,8 @@ def get_frames():
 @app.route('/api/frame/removeFrame', methods=['POST'])
 def remove_frame():
     req_data = request.get_json()
-    frame = Frame(req_data['frame'], req_data['video'], req_data['dataset'], dataset_type=req_data['datasetType'])
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    frame = Frame(req_data['frame'], req_data['video'], dataset)
     success, msg, status = frameService.remove_frame(frame)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 

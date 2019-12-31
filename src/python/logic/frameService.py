@@ -114,7 +114,7 @@ class FrameService:
                 frame_path = os.path.join(dataset.dir, path[i])
 
                 # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                f = Frame(frame, i, dataset.name, frame_path, json.loads(cam.to_json()), dataset_type=dataset.type)
+                f = Frame(frame, i, dataset, frame_path, json.loads(cam.to_json()))
                 result = frameManager.create_frame(f)
 
                 if result == 'Error': return False
@@ -133,7 +133,7 @@ class FrameService:
                     frame_path = os.path.join(dataset.dir, path[i])
 
                     # Create dictionary with frame, video, dataset, path and camera parameters and store it in db
-                    frame = Frame(frame, i, dataset.name, frame_path, json.loads(cam.to_json()))
+                    frame = Frame(frame, i, dataset, frame_path, json.loads(cam.to_json()))
                     result = frameManager.create_frame(frame)
 
                     if result == 'Error': return False

@@ -289,7 +289,7 @@ angular.module('CVGTool')
         getActivitiesList: function(dataset, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/action/getActivities',
+                url: '/api/activity/getActivities',
                 headers: {
                     dataset: dataset
                 }
