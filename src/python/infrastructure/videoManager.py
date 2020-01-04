@@ -19,7 +19,7 @@ class VideoManager:
     # Return video if exist in DB. Ignore mongo id
     def get_video(self, video):
         try:
-            result = self.collection.find_one({"dataset": video.dataset, "name": video.name}, {"_id": 0})
+            result = self.collection.find_one({"dataset": video.dataset.name, "name": video.name}, {"_id": 0})
 
             if result is None:
                 return 'Error'
@@ -45,7 +45,7 @@ class VideoManager:
     # Return 'ok' if the video has been created
     def create_video(self, video):
         try:
-            result = self.collection.insert_one({"dataset": video.dataset, "name": video.name, "frames": video.frames, "path": video.path, "type": video.type})
+            result = self.collection.insert_one({"dataset": video.dataset.name, "name": video.name, "frames": video.frames, "path": video.path, "type": video.type})
             if result.acknowledged:
                 return 'ok'
             else:
@@ -81,31 +81,31 @@ class VideoManager:
     #         log.exception('Error updating video in db')
     #         return 'Error'
 
-    # Return 'ok' if the video has been removed
-    def removeVideo(self, video, dataset):
-        try:
-            result = self.collection.delete_one({"dataset": dataset, "name": video})
-            if result.deleted_count == 1:
-                return 'ok'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error removing video in db')
-            return 'Error'
+    # # Return 'ok' if the video has been removed
+    # def removeVideo(self, video, dataset):
+    #     try:
+    #         result = self.collection.delete_one({"dataset": dataset, "name": video})
+    #         if result.deleted_count == 1:
+    #             return 'ok'
+    #         else:
+    #             return 'Error'
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error removing video in db')
+    #         return 'Error'
 
-    # Return 'ok' if the video has been updated.
-    def updateVideoFrames(self, video, frames, dataset):
-        query = {"dataset": dataset, "name": video}  # Search by video name and dataset
-        newValues = {"$set": {"frames": frames}}  # Update frames
-        try:
-            result = self.collection.update_one(query, newValues, upsert=False)
-            if result.modified_count == 1:
-                return 'ok'
-            else:
-                return 'Error'
-        except errors.PyMongoError as e:
-            log.exception('Error updating video in db')
-            return 'Error'
+    # # Return 'ok' if the video has been updated.
+    # def updateVideoFrames(self, video, frames, dataset):
+    #     query = {"dataset": dataset, "name": video}  # Search by video name and dataset
+    #     newValues = {"$set": {"frames": frames}}  # Update frames
+    #     try:
+    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         if result.modified_count == 1:
+    #             return 'ok'
+    #         else:
+    #             return 'Error'
+    #     except errors.PyMongoError as e:
+    #         log.exception('Error updating video in db')
+    #         return 'Error'
 
     # Remove all videos associated to dataset
     # Return 'ok' if the videos have been removed

@@ -1558,7 +1558,7 @@ angular.module('CVGTool')
         // Fetch all actions from database
         $scope.getActionsList = function() {
             $scope.actionManager.actionList = [];
-            toolSrvc.getActions(navSrvc.getUser().name, $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name,
+            toolSrvc.getActions(navSrvc.getUser().name, $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name, $scope.activeDataset.type,
                 function(actionList) {
                     $scope.actionManager.actionList = actionList;
                 }, sendMessage)
@@ -1568,7 +1568,7 @@ angular.module('CVGTool')
         $scope.getActionsListByUID = function(objectUID) {
             $scope.actionManager.actionList = [];
             toolSrvc.getActionsByUID(navSrvc.getUser().name, objectUID,
-                $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name,
+                $scope.frameFrom, $scope.frameTo, $scope.activeDataset.name, $scope.activeDataset.type,
                 function(actionList) {
                     $scope.actionManager.actionList = actionList;
                 }, sendMessage)
@@ -1595,7 +1595,7 @@ angular.module('CVGTool')
                 sendMessage("warning", "Check starting and ending frames.")
             } else {
                 toolSrvc.createAction(navSrvc.getUser().name, $scope.actionManager.actionCreationData.startFrame, $scope.actionManager.actionCreationData.endFrame, $scope.actionManager.actionCreationData.selectedType,
-                    $scope.actionManager.selectedObject.uid, $scope.activeDataset.name, createActionSuccess,
+                    $scope.actionManager.selectedObject.uid, $scope.activeDataset.name, $scope.activeDataset.type, createActionSuccess,
                     createActionError);
             }
         };
@@ -1606,7 +1606,7 @@ angular.module('CVGTool')
                 $scope.actionManager.actionList.pop();
                 $scope.actionManager.isActionSelected = false;
             } else {
-                toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset,
+                toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset, $scope.activeDataset.type,
                     function(response) {
                         sendMessage("success", "Action deleted!");
                         $scope.getActionsListByUID($scope.actionManager.selectedObject.uid);

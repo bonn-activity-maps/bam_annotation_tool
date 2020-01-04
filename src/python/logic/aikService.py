@@ -151,7 +151,7 @@ class AIKService:
         return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
-    def get_mugshot(self, dataset, dataset_type, scene, user, personUid):
+    def get_mugshot(self, dataset, scene, user, personUid):
         # Get 10 annotation of the object uid
         result = annotationManager.getAnnotationsByObject(dataset, dataset_type, scene, user, personUid)
         images = []     # Final cropped images
@@ -159,10 +159,10 @@ class AIKService:
         for r in result:
             if 'objects' in r and r['objects'][0]['keypoints'] != []:
 
-                if dataset_type == self.pt:
+                if dataset.type == dataset.pt:
                     points = r['objects'][0]['keypoints']
 
-                    f = Frame(r['frame'], scene, dataset, dataset_type=dataset_type)
+                    f = Frame(r['frame'], scene, dataset)
                     frame_result = frameManager.get_frame(f)
                     if frame_result != 'Error':
 
@@ -178,7 +178,7 @@ class AIKService:
                     # Check annotations in all 12 cameras
                     for camera in range(12):
                         # Check camera parameters and frame path
-                        f = Frame(r['frame'], camera, dataset, dataset_type=dataset_type)
+                        f = Frame(r['frame'], camera, dataset)
                         frame_result = frameManager.get_frame(f)
 
                         if frame_result != 'Error':

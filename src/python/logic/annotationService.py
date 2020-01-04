@@ -90,7 +90,6 @@ class AnnotationService:
                 f = Frame(annotation.frame, kp["cam1"], annotation.dataset)
                 frame1 = frameManager.get_frame(f)
                 keypoints_triangulate.append(kp["p1"])
-                print(frame1.to_json())
                 camera_params_triangulate.append(frame1.camera_parameters)
 
             if kp["cam2"] != "":

@@ -74,10 +74,9 @@ class VideoService:
     # Return the corresponding range of frames in video
     def get_video_frames(self, video, start_frame, end_frame):
         imgs = []
-        dataset = Dataset(video.dataset, video.dataset_type)
         for frame in range(start_frame, end_frame + 1):
             # Get path of frame
-            f = Frame(frame, video.name, dataset)
+            f = Frame(frame, video.name, video.dataset)
             f = frameManager.get_frame(f)
             # Read file as binary, encode to base64 and remove newlines
             if os.path.isfile(f.path):
@@ -104,14 +103,14 @@ class VideoService:
     # Add videos to database from videos directory
     # Return true if all videos have been updated, False ow
     def add_videos_AIK(self, dataset, dir):
-        listDir = os.listdir(dir)
-        for f in listDir:
+        list_dir = os.listdir(dir)
+        for f in list_dir:
             # Get id of camera and save it instead of name
             camera = int(f.split("camera")[1])
 
             video_dir = os.path.join(dir, f)
             if os.path.isdir(video_dir):
-                video = Video(camera, dataset.name, video_dir, self.get_frames_video(video_dir), dataset.type)
+                video = Video(camera, dataset, video_dir, self.get_frames_video(video_dir))
                 result = videoManager.create_video(video)
                 if result == 'Error':
                     return False
@@ -129,7 +128,7 @@ class VideoService:
                 for f in list_dir:
                     save_path = os.path.join(images_dir, f)
                     if os.path.isdir(save_path):
-                        video = Video(f.split('_')[0], dataset.name, save_path, self.get_frames_video(save_path), type)
+                        video = Video(f.split('_')[0], dataset, save_path, self.get_frames_video(save_path))
                         result = videoManager.create_video(video)
                         if result == 'Error':
                             return result

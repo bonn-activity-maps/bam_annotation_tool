@@ -302,13 +302,14 @@ angular.module('CVGTool')
         },
 
         // Create a new action
-        createAction: function(user, startFrame, endFrame, activity, object, dataset, callbackSuccess, callbackError) {
+        createAction: function(user, startFrame, endFrame, activity, object, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/action/createAction',
                 data: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'name': activity,
                     'objectUID': object,
                     'startFrame': startFrame,
@@ -323,13 +324,14 @@ angular.module('CVGTool')
         },
 
         // Fetch the list of all Actions in the frame
-        getActions: function(user, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        getActions: function(user, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/action/getActions',
                 headers: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'startFrame': startFrame,
                     'endFrame': endFrame
                 }
@@ -342,13 +344,14 @@ angular.module('CVGTool')
         },
 
         // Fetch the list of all Actions of an Object in the frame
-        getActionsByUID: function(user, objectUID, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        getActionsByUID: function(user, objectUID, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/action/getActionsByUID',
                 headers: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'objectUID': objectUID,
                     'startFrame': startFrame,
                     'endFrame': endFrame
@@ -362,7 +365,7 @@ angular.module('CVGTool')
         },
 
         // Remove an action
-        removeAction: function(name, user, objectUID, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        removeAction: function(name, user, objectUID, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/action/removeAction',
@@ -370,6 +373,7 @@ angular.module('CVGTool')
                     'name': name,
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'objectUID': objectUID,
                     'startFrame': startFrame,
                     'endFrame': endFrame

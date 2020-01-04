@@ -41,7 +41,7 @@ class FrameManager:
     # Ignore mongo id
     def get_frames(self, video):
         try:
-            result = self.collection.find({"dataset": video.dataset, "video": video.name}, {"_id": 0})
+            result = self.collection.find({"dataset": video.dataset.name, "video": video.name}, {"_id": 0})
             return [Frame.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding frames in db')

@@ -62,7 +62,7 @@ class FrameService:
             # Search video type in video db table
             videos = []
             for videoFrames in result:
-                video = Video(videoFrames['video'], dataset.name, dataset_type=dataset.type)
+                video = Video(videoFrames['video'], dataset)
                 video = videoManager.get_video(video)
                 if video != 'Error':
                     videoFrames['type'] = video.type

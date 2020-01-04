@@ -7,7 +7,7 @@ class Frame:
         """
         :param number: int
         :param video: str
-        :param dataset: str
+        :param dataset: Dataset
         :param path: str
         :param camera_parameters: str    {k: , rvec: , tvec: , w: , h: }
         :param has_ignore_regions: bool

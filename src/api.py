@@ -174,7 +174,8 @@ def read_data():
 # Get info of video
 @app.route('/api/video/getVideo', methods=['GET'])
 def get_video():
-    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    video = Video(request.headers['video'], dataset)
     success, msg, status = videoService.get_video(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -188,21 +189,24 @@ def get_videos():
 # Get max frame of video
 @app.route('/api/video/getMaxFrame', methods=['GET'])
 def get_max_frame():
-    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    video = Video(request.headers['video'], dataset)
     success, msg, status = videoService.get_max_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get min frame of video
 @app.route('/api/video/getMinFrame', methods=['GET'])
 def get_min_frame():
-    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    video = Video(request.headers['video'], dataset)
     success, msg, status = videoService.get_min_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get a range of frames from video
 @app.route('/api/video/getFramesVideo', methods=['GET'])
 def get_video_frames():
-    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    video = Video(request.headers['video'], dataset)
     success, msg, status = videoService.get_video_frames(video, int(request.headers['startFrame']), int(request.headers['endFrame']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -524,8 +528,9 @@ def project_to_camera():
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 def compute_epiline():
-    frame1 = Frame(request.headers['frame'], request.headers['cam1'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
-    frame2 = Frame(request.headers['frame'], request.headers['cam2'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    frame1 = Frame(request.headers['frame'], request.headers['cam1'], dataset)
+    frame2 = Frame(request.headers['frame'], request.headers['cam2'], dataset)
     el1, el2 = aikService.compute_epiline(request.headers['point'], frame1, frame2)
     return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
 
@@ -533,7 +538,8 @@ def compute_epiline():
 #TODO revisar revisar
 @app.route('/api/aik/getMugshot', methods=['GET'])
 def get_mugshot():
-    success, msg, status = aikService.get_mugshot(request.headers['dataset'], request.headers['datasetType'], request.headers['scene'],
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = aikService.get_mugshot(dataset, request.headers['scene'],
                                                 request.headers['user'], int(request.headers['uid']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -553,7 +559,7 @@ def get_frame():
 def get_frames():
     #TODO change dataset
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    video = Video(request.headers['video'], request.headers['dataset'], dataset_type=request.headers['datasetType'])
+    video = Video(request.headers['video'], dataset)
     success, msg, status = frameService.get_frames(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
