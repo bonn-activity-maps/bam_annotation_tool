@@ -65,9 +65,9 @@ class ObjectTypeManager:
         update_values = object_type.to_json()
         del update_values['datasetType']
         del update_values['type']
-        newValues = {"$set": update_values}    # Update all values
+        new_values = {"$set": update_values}    # Update all values
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:

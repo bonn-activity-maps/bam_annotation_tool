@@ -511,8 +511,8 @@ def remove_action():
 
 # Merge actions with same start and end frames
 @app.route('/api/action/mergeActions', methods=['POST'])
-def mergeActions():
-    success, msg, status = actionService.mergeActions()
+def merge_actions():
+    success, msg, status = actionService.merge_actions()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

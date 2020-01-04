@@ -84,9 +84,9 @@ class UserManager:
     def update_user(self, user):
         query = {"name": user.name}  # Search by user name
         # Update values (name, assignedTo, role, email)
-        newValues = {"$set": {"assignedTo": user.assigned_to, "role": user.role, "email": user.email}}
+        new_values = {"$set": {"assignedTo": user.assigned_to, "role": user.role, "email": user.email}}
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:
@@ -99,9 +99,9 @@ class UserManager:
     def update_user_password(self, user, pwd):
         query = {"name": user}  # Search by user name
         # Update password
-        newValues = {"$set": {"password": pwd}}
+        new_values = {"$set": {"password": pwd}}
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:

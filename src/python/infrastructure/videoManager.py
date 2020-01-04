@@ -57,9 +57,9 @@ class VideoManager:
     # # Return 'ok' if the video has been updated.
     # def updateVideoFrames(self, video, frames, dataset):
     #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
-    #     newValues = {"$set": {"frames": frames}}  # Update frames
+    #     new_values = {"$set": {"frames": frames}}  # Update frames
     #     try:
-    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, new_values, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:
@@ -70,9 +70,9 @@ class VideoManager:
     #
     # def updateVideoName(self, video, newName, dataset):
     #     query = {"name": video, "dataset": dataset}  # Search by video name and dataset
-    #     newValues = {"$set": {"name": newName}}  # Update name
+    #     new_values = {"$set": {"name": newName}}  # Update name
     #     try:
-    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, new_values, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:
@@ -96,9 +96,9 @@ class VideoManager:
     # # Return 'ok' if the video has been updated.
     # def updateVideoFrames(self, video, frames, dataset):
     #     query = {"dataset": dataset, "name": video}  # Search by video name and dataset
-    #     newValues = {"$set": {"frames": frames}}  # Update frames
+    #     new_values = {"$set": {"frames": frames}}  # Update frames
     #     try:
-    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, new_values, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:

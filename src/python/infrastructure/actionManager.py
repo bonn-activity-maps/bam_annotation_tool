@@ -64,27 +64,27 @@ class ActionManager:
 
     # Return info of action if exists in DB. Ignore mongo id
     # Look for startFrame or startFrame+1
-    def getActionByStartFrame(self, dataset, objectUID, name, startFrame):
+    def get_action_by_start_frame(self, action):
         try:
-            result = self.collection.find_one({"dataset": dataset, "$or": [{"startFrame": startFrame }, {"startFrame": startFrame+1}],
-                                               "objectUID": objectUID, "name": name},
+            result = self.collection.find_one({"dataset": action.dataset.name, "$or": [{"startFrame": action.end_frame }, {"startFrame": action.end_frame+1}],
+                                               "objectUID": action.object_uid, "name": action.name},
                                               {"_id": 0})
             if result is None:
                 return 'Error'
             else:
-                return result
+                return Action.from_json(result)
         except errors.PyMongoError as e:
             log.exception('Error finding action in db')
             return 'Error'
 
     # Return info of action by dataset
-    def getActionsByDataset(self, dataset):
+    def get_actions_by_dataset(self, dataset):
         try:
-            result = self.collection.find({"dataset": dataset}).sort([("objectUID", 1), ("name", 1), ("startFrame", 1)])
+            result = self.collection.find({"dataset": dataset.name}).sort([("objectUID", 1), ("name", 1), ("startFrame", 1)])
             if result is None:
                 return 'Error'
             else:
-                return list(result)
+                return [Action.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding action in db')
             return 'Error'
@@ -120,11 +120,11 @@ class ActionManager:
 
     # Return 'ok' if the action has been updated.
     # If action doesn't exist, it isn't created
-    def updateActionByStartFrame(self, dataset, objectUID, name, startFrame, endFrame):
-        query = {"dataset": dataset, "startFrame": startFrame, "objectUID": objectUID, "name": name}                                         # Search by objectType type
-        newValues = {"$set": {"endFrame": endFrame}}    # Update endFrame
+    def update_action_by_start_frame(self,action):
+        query = {"dataset": action.dataset.name, "startFrame": action.start_frame, "objectUID": action.object_uid, "name": action.name}                                         # Search by objectType type
+        new_values = {"$set": {"endFrame": action.end_frame}}    # Update endFrame
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:
@@ -158,9 +158,9 @@ class ActionManager:
     #     query = {"dataset": dataset, "user": user, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
     #              "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
     #     # Update all values
-    #     newValues = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
+    #     new_values = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
     #     try:
-    #         result = self.collection.update_one(query, newValues, upsert=False)
+    #         result = self.collection.update_one(query, new_values, upsert=False)
     #         if result.modified_count == 1:
     #             return 'ok'
     #         else:

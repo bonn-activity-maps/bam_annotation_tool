@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.datasetManager import DatasetManager
@@ -60,10 +61,10 @@ class ActionService:
             return True, result, 200
 
     # Merge all possible actions with same start and end frames
-    def mergeActions(self):
+    def merge_actions(self):
         datasets = datasetManager.get_datasets()
         for d in datasets:
-            actions = actionManager.getActionsByDataset(d['name'])
+            actions = actionManager.get_actions_by_dataset(d)
 
             # Check all actions of all datasets
             if actions != 'Error':
@@ -74,15 +75,18 @@ class ActionService:
                     while nested:
 
                         # Search if there is an action with startFrame = endFrame of actual action (or endFrame+1) = overlapping actions
-                        actionResult = actionManager.getActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['endFrame'])
+                        action_result = actionManager.get_action_by_start_frame(a)
 
-                        if actionResult != 'Error':
+                        if action_result != 'Error':
                             # Update action with greater endFrame
-                            result = actionManager.updateActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['startFrame'], actionResult['endFrame'])
+                            new_action = copy.copy(a)
+                            new_action.end_frame = action_result.end_frame
+
+                            result = actionManager.update_action_by_start_frame(new_action)
                             if result == 'ok':
-                                a['endFrame'] = actionResult['endFrame']  # Update endFrame in actual action
+                                a.end_frame = action_result.end_frame  # Update endFrame in actual action
                                 # Remove action included in new range
-                                result = actionManager.remove_action(actionResult['dataset'], actionResult['objectUID'], actionResult['user'], actionResult['name'], actionResult['startFrame'], actionResult['endFrame'])
+                                result = actionManager.remove_action(action_result)
                                 if result == 'Error': nested = False
                             else:
                                 nested = False      # End loop if error occurs

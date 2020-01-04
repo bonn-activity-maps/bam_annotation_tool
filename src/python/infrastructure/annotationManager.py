@@ -198,10 +198,10 @@ class AnnotationManager:
     def update_annotation(self, dataset, scene, frame, user, objects, val='unchecked'):
         query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
-        newValues = {"$set": {"objects": objects, "validated": val}}
+        new_values = {"$set": {"objects": objects, "validated": val}}
 
         try:
-            result = self.collection.update_one(query, newValues, upsert=True)
+            result = self.collection.update_one(query, new_values, upsert=True)
             # ok if object has been modified or new annotation has been created
             if result.modified_count == 1 or result.acknowledged:
                 return 'ok'
@@ -219,10 +219,10 @@ class AnnotationManager:
         # query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # User instead of Root
         query = {"dataset": dataset, "scene": scene, "user": "root", "frame": int(frame)}   # Search by dataset, scene, frame, user
         # Update all objects of the frame and validated flag.
-        newValues = {"$set": {"objects": objects, "validated": val}}
+        new_values = {"$set": {"objects": objects, "validated": val}}
 
         try:
-            result = self.collection.update_one(query, newValues, upsert=True)
+            result = self.collection.update_one(query, new_values, upsert=True)
             # ok if object has been modified or new annotation has been created
             if result.modified_count == 1 or result.acknowledged:
                 return 'ok'
@@ -260,9 +260,9 @@ class AnnotationManager:
     # def updateValidation(self, dataset, scene, frames, user, val):  #TODO PT validation
     #     query = {"dataset": dataset, "scene": scene, "user": user, "frame": {"$in": frames}}   # Search by dataset, video, user, and all frames in array
     #     # Update validated flag
-    #     newValues = {"$set": {"validated": val}}
+    #     new_values = {"$set": {"validated": val}}
     #     try:
-    #         result = self.collection.update_many(query, newValues, upsert=False)
+    #         result = self.collection.update_many(query, new_values, upsert=False)
     #         if result.modified_count == len(frames):
     #             return 'ok'
     #         else:
@@ -297,7 +297,7 @@ class AnnotationManager:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame} # User instead of root
             query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "frame": annotation.frame}
 
-        newValues = {"$push": {"objects": annotation.objects.to_json()}}
+        new_values = {"$push": {"objects": annotation.objects.to_json()}}
         # TODO: check if labels are added when they exist
         # Add object (uid, type, kps) and labels only if it's in objects
         # if annotation.dataset_type is not None and annotation.dataset_type == self.pt:
@@ -305,17 +305,17 @@ class AnnotationManager:
         #     track_id = objects["track_id"] if "track_id" in objects else abs(uidObj) % 100
         #     if "labels" in objects:
         #         labels = objects["labels"]
-        #         newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels,
+        #         new_values = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints, "labels": labels,
         #                                            "category_id": category_id, "track_id": track_id}}}
         #     else:
-        #         newValues = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints,
+        #         new_values = {"$push": {"objects": {"uid": uidObj, "type": type, "keypoints": keypoints,
         #                                            "category_id": category_id, "track_id": track_id}}}
         #
         # else:
-        #     newValues = {"$push": {"objects": annotation.objects.to_json()}}
+        #     new_values = {"$push": {"objects": annotation.objects.to_json()}}
 
         try:
-            result = self.collection.update_one(query, newValues, upsert=True)
+            result = self.collection.update_one(query, new_values, upsert=True)
             # ok if object has been modified
             if result.modified_count == 1 or result.acknowledged:
                 return 'ok'
@@ -340,12 +340,12 @@ class AnnotationManager:
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if annotation.objects.labels is not None:
-            newValues = {"$set": {"objects.$[elem].keypoints": annotation.objects.keypoints, "objects.$[elem].labels": annotation.objects.labels}}
+            new_values = {"$set": {"objects.$[elem].keypoints": annotation.objects.keypoints, "objects.$[elem].labels": annotation.objects.labels}}
         else:
-            newValues = {"$set": {"objects.$[elem].keypoints": annotation.objects.keypoints}}
+            new_values = {"$set": {"objects.$[elem].keypoints": annotation.objects.keypoints}}
 
         try:
-            result = self.collection.update_one(query, newValues, upsert=False, array_filters=arrayFilter)
+            result = self.collection.update_one(query, new_values, upsert=False, array_filters=arrayFilter)
 
             # ok if no error (it doesn't matter if the keypoints have not been modified)
             if result.acknowledged == 1:
@@ -376,10 +376,10 @@ class AnnotationManager:
         arrayFilter = [{"elem.uid": {"$eq": start_annotation.objects.uid}, "elem.type": {"$eq": start_annotation.objects.type}}]
 
         # Update object to empty list
-        newValues = {"$set": {"objects.$[elem].keypoints": []}}
+        new_values = {"$set": {"objects.$[elem].keypoints": []}}
 
         try:
-            result = self.collection.update_many(query, newValues, upsert=False, array_filters=arrayFilter)
+            result = self.collection.update_many(query, new_values, upsert=False, array_filters=arrayFilter)
             if result.acknowledged == 1:
                 return 'ok'
             else:
