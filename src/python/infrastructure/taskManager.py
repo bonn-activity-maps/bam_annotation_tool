@@ -63,10 +63,10 @@ class TaskManager:
     def updateTask(self, task, user, dataset, scene, frameFrom, frameTo, description, pov, lastFrame, finished):
         query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
         # Update all values
-        newValues = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo,  "description": description,
+        new_values = {"$set": {"frameFrom": frameFrom, "frameTo": frameTo,  "description": description,
                               "POV": pov, "finished": finished, "lastFrame": lastFrame}}
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:
@@ -78,9 +78,9 @@ class TaskManager:
     # Return 'ok' if the finished flag has been updated. if task doesn't exist, it isn't created
     def updateFinished(self, task, user, dataset, scene, finished):
         query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
-        newValues = {"$set": {"finished": finished}}      # Update finished flag
+        new_values = {"$set": {"finished": finished}}      # Update finished flag
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.modified_count == 1:
                 return 'ok'
             else:
@@ -92,9 +92,9 @@ class TaskManager:
     # Return 'ok' if the lastFrame has been updated. if task doesn't exist, it isn't created
     def updateLastFrame(self, task, user, dataset, scene, lastFrame):
         query = {"dataset": dataset, "assignedUser": user, "name": task, "scene": scene}      # Search by task name, assigned user, scene and dataset
-        newValues = {"$set": {"lastFrame": lastFrame}}    # Update lastFrame
+        new_values = {"$set": {"lastFrame": lastFrame}}    # Update lastFrame
         try:
-            result = self.collection.update_one(query, newValues, upsert=False)
+            result = self.collection.update_one(query, new_values, upsert=False)
             if result.acknowledged:
                 return 'ok'
             else:
