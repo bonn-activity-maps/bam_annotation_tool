@@ -22,10 +22,10 @@ class Video:
 
     def to_json(self):
         obj = {
-            'name': self.name,
             'dataset': self.dataset.name,
-            'path': self.path,
+            'name': self.name,
             'frames': self.frames,
+            'path': self.path,
             'type': self.type
         }
         return obj

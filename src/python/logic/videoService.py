@@ -42,7 +42,7 @@ class VideoService:
     # Return max frame of video
     # PT: total #frames is not the last frame
     def get_max_frame(self, video):
-        if video.dataset_type == self.pt:
+        if video.dataset.type == self.pt:
             result, frames = frameService.get_frame_info_of_video(video)
             if not result:
                 return False, 'Error getting max frame', 400
@@ -60,7 +60,7 @@ class VideoService:
     # Return min frame of video
     # PT: change the 1st frame for each video
     def get_min_frame(self, video):
-        if video.dataset_type == self.pt:
+        if video.dataset.type == self.pt:
             result, frames = frameService.get_frame_info_of_video(video)
 
             if not result:
@@ -110,7 +110,7 @@ class VideoService:
 
             video_dir = os.path.join(dir, f)
             if os.path.isdir(video_dir):
-                video = Video(camera, dataset, video_dir, self.get_frames_video(video_dir))
+                video = Video(camera, dataset, video_dir, self.get_frames_video(video_dir), dataset.aik)
                 result = videoManager.create_video(video)
                 if result == 'Error':
                     return False
@@ -128,7 +128,7 @@ class VideoService:
                 for f in list_dir:
                     save_path = os.path.join(images_dir, f)
                     if os.path.isdir(save_path):
-                        video = Video(f.split('_')[0], dataset, save_path, self.get_frames_video(save_path))
+                        video = Video(f.split('_')[0], dataset, save_path, self.get_frames_video(save_path), type)
                         result = videoManager.create_video(video)
                         if result == 'Error':
                             return result

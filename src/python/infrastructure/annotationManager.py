@@ -163,9 +163,9 @@ class AnnotationManager:
             return 'Error'
 
     # Get annotations for object in different frames, without mongo id
-    def getAnnotationsByObject(self, dataset, datasetType, scene, user, obj):
+    def get_annnotations_by_object(self, dataset, scene, user, obj):
         try:
-            if datasetType == self.aik:
+            if dataset.type == dataset.aik:
                 result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
                                               {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
             else:

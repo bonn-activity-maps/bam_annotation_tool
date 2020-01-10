@@ -151,9 +151,9 @@ class AIKService:
         return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
-    def get_mugshot(self, dataset, scene, user, personUid):
+    def get_mugshot(self, dataset, scene, user, person_uid):
         # Get 10 annotation of the object uid
-        result = annotationManager.getAnnotationsByObject(dataset, dataset_type, scene, user, personUid)
+        result = annotationManager.get_annnotations_by_object(dataset, scene, user, person_uid)
         images = []     # Final cropped images
 
         for r in result:

@@ -57,7 +57,7 @@ class UserManager:
             return 'Error'
 
     # Return info user if exist in DB. Ignore mongo id and pwd
-    def getEmail(self, email):
+    def get_user_by_email(self, email):
         try:
             result = self.collection.find_one({"email": email}, {"_id": 0, "password": 0})
             if result == None:

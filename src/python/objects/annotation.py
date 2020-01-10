@@ -41,7 +41,6 @@ class Annotation:
         frame = obj['frame']
         dataset = Dataset(obj['dataset'])
         user = obj['user'] if 'user' in obj else None
-        print(obj['objects'][0])
         objects = Object.from_json(obj['objects'][0], dataset_type) if 'objects' in obj else None
         validated = obj['validated'] if 'validated' in obj else None
 

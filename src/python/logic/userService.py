@@ -80,7 +80,7 @@ class UserService:
         # Check if users or email exist
         if userManager.get_user(user.name) != 'Error':
             return False, 'The username already exists', 400
-        elif userManager.getEmail(user.email) != 'Error':
+        elif userManager.get_user_by_email(user.email) != 'Error':
             return False, 'The email already exists', 400
         else:
             # Create random password of length 12

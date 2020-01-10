@@ -2,7 +2,6 @@ from pymongo import MongoClient, errors
 import logging
 
 from python.objects.video import Video
-from python.objects.dataset import Dataset
 
 # VideoManager logger
 log = logging.getLogger('videoManager')
@@ -12,9 +11,6 @@ class VideoManager:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
     collection = db.video
-
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
 
     # Return video if exist in DB. Ignore mongo id
     def get_video(self, video):
@@ -45,7 +41,7 @@ class VideoManager:
     # Return 'ok' if the video has been created
     def create_video(self, video):
         try:
-            result = self.collection.insert_one({"dataset": video.dataset.name, "name": video.name, "frames": video.frames, "path": video.path, "type": video.type})
+            result = self.collection.insert_one(video.to_json())
             if result.acknowledged:
                 return 'ok'
             else:

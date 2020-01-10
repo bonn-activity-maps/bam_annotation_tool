@@ -17,9 +17,9 @@ class Dataset:
         self.name = name
         self.type = type
         self.dir = os.path.join(self.STORAGE_DIR, name)
-        if keypoint_dim == 0 and type == 'actionInKitchen':
+        if keypoint_dim == 0 and type == self.aik:
             self.keypoint_dim = 3
-        elif keypoint_dim == 0 and type == 'poseTrack':
+        elif keypoint_dim == 0 and type == self.pt:
             self.keypoint_dim = 2
         else:
             self.keypoint_dim = keypoint_dim
