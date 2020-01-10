@@ -70,6 +70,7 @@ class AnnotationService:
     # Get all annotated objects for dataset, scene and user
     def get_annotated_objects(self, annotation):
         result = annotationManager.get_annotated_objects(annotation)
+        print(result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -151,22 +152,21 @@ class AnnotationService:
                 return False, 'Error updating annotation', 400
             else:
                 return True, result, 200
-        # elif annotation.dataset_type == self.pt:
-        #     for object in objects:
-        #         result = self.update_annotation_frame_object(dataset, scene, frame, user, object, datasetType)
-        #         if result == 'Error':
-        #             return False, 'Error updating annotation', 400
+        elif annotation.dataset.type == self.pt:
+            result = self.update_annotation_frame_object(annotation)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
         return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been updated
     # Same as above but for PoseTrack
-    def updateAnnotationPT(self, dataset, datasetType, scene, frame, user, object, points):
-        keypoints = []
-        for point in points:
-            keypoints.append(point["points"][0])
-        object["keypoints"] = keypoints
-        object["category_id"] = 1
-        result = self.update_annotation_frame_object(dataset, scene, frame, user, object, datasetType)
+    def update_annotation_PT(self, annotation):
+        # keypoints = []
+        # for point in points:
+        #     keypoints.append(point["points"][0])
+        # object["keypoints"] = keypoints
+        # object["category_id"] = 1
+        result = self.update_annotation_frame_object(annotation)
         if result == 'Error':
             return False, 'Error updating annotation', 400
         return True, 'Ok', 200
@@ -225,13 +225,13 @@ class AnnotationService:
     def update_annotation_frame_object(self, annotation):
         # Check if exists object in frame
         found = annotationManager.get_frame_object(annotation)
-
+        print(found)
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':  # Add new existing object in frame
             result = annotationManager.create_frame_object(annotation)
         else:  # Update object in frame
-            if annotation.dataset.type == 'poseTrack' and found['type'] != annotation.object.type:
+            if annotation.dataset.type == 'poseTrack' and found.type != annotation.object.type:
                 result = annotationManager.create_frame_object(annotation)
             else:
                 result = annotationManager.update_frame_object(annotation)

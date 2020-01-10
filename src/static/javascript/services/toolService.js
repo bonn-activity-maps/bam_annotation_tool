@@ -206,7 +206,7 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'objects': objects
+                    'object': objects
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(objects.uid, objects.type, frame, deleting);
@@ -219,7 +219,7 @@ angular.module('CVGTool')
         updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
-                url: '/api/annotation/updateAnnotationPT',
+                url: '/api/annotation/updateAnnotation',
                 data: {
                     'user': user,
                     'dataset': dataset.name,
@@ -229,9 +229,11 @@ angular.module('CVGTool')
                     'object': {
                         uid: object.original_uid,
                         type: object.type,
-                        track_id: object.uid
-                    },
-                    'points': points
+                        track_id: object.uid,
+                        points: points
+                    }
+                    // ,
+                    // 'points': points
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(object.original_uid, object.type, frame, deleting);

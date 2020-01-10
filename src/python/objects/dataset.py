@@ -42,3 +42,8 @@ class Dataset:
     def to_string(self):
         return "(name: {0}, type: {1}, keypoint_dim: {2})".format(self.name, self.type, self.keypoint_dim)
 
+    def is_pt(self):
+        return self.pt == self.type
+
+    def is_aik(self):
+        return self.aik == self.type

@@ -42,7 +42,7 @@ class VideoService:
     # Return max frame of video
     # PT: total #frames is not the last frame
     def get_max_frame(self, video):
-        if video.dataset.type == self.pt:
+        if video.dataset.is_pt():
             result, frames = frameService.get_frame_info_of_video(video)
             if not result:
                 return False, 'Error getting max frame', 400
@@ -60,7 +60,7 @@ class VideoService:
     # Return min frame of video
     # PT: change the 1st frame for each video
     def get_min_frame(self, video):
-        if video.dataset.type == self.pt:
+        if video.dataset.is_pt():
             result, frames = frameService.get_frame_info_of_video(video)
 
             if not result:

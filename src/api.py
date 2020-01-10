@@ -259,19 +259,22 @@ def get_annotated_objects():
 def update_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object = Object.from_json(req_data['objects'], req_data['datasetType'])
+    object = Object.from_json(req_data['object'], req_data['datasetType'])
     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], object)
     success, msg, status = annotationService.update_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 # Update existing annotation for given frame, dataset, video and user
-@app.route('/api/annotation/updateAnnotationPT', methods=['POST'])
-def updateAnnotationPT():
-    req_data = request.get_json()
-    success, msg, status = annotationService.updateAnnotationPT(req_data['dataset'], req_data['datasetType'],
-                                                                req_data['scene'], req_data['frame'],
-                                                                req_data['user'], req_data['object'], req_data['points'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# @app.route('/api/annotation/updateAnnotationPT', methods=['POST'])
+# def update_annotation_PT():
+#     req_data = request.get_json()
+#     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+#     object = Object.from_json(req_data['object'], req_data['datasetType'])
+#     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], object)
+#     success, msg, status = annotationService.update_annotation_PT(annotation)
+#
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Validate frames for given dataset, video and user
 # frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]
