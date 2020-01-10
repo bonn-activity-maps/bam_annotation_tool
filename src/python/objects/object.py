@@ -23,7 +23,7 @@ class Object:
 
         if dataset_type == self.pt:
             self.category_id = int(category_id)
-            self.track_id = int(track_id) if track_id is not None else abs(uid) % 100
+            self.track_id = int(track_id) if track_id is not None else abs(int(uid)) % 100
             self.original_id = int(original_id) if original_id is not None else None
 
     def to_json(self):
@@ -44,13 +44,17 @@ class Object:
 
     def from_json(obj, dataset_type):
         uid = obj['uid']
-        keypoints = obj['keypoints']
+        keypoints = obj['keypoints'] if 'keypoints' in obj else []
         type = obj['type']
         dataset_type = dataset_type
         labels = obj['labels'] if 'labels' in obj else None
 
         if dataset_type == 'poseTrack':
-            category_id = obj['category_id']
+            if not keypoints:
+                points = obj['points']
+                for point in points:
+                    keypoints.append(point["points"][0])
+            category_id = obj['category_id'] if 'category_id' in obj else 1
             track_id = obj['track_id']
             original_id = obj['original_id'] if 'original_id' in obj else None
         else:
@@ -64,3 +68,8 @@ class Object:
         return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3}, category_id: {4}, track_id: {5}, original_id: {6})".\
             format(self.uid, self.type, self.keypoints, self.labels, self.category_id, self.track_id, self.original_id)
 
+    def is_pt(self):
+        return self.pt == self.type
+
+    def is_aik(self):
+        return self.aik == self.type

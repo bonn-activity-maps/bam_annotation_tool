@@ -145,7 +145,7 @@ class AnnotationManager:
     #TODO: revisar
     def get_object_in_frames(self, start_annotation, end_annotation):
         try:
-            if start_annotation.dataset.type == start_annotation.dataset.aik:
+            if start_annotation.dataset.is_aik():
                 result = self.collection.find({"dataset": start_annotation.dataset.name, "scene": start_annotation.scene, "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
                                                "objects.uid": start_annotation.objects.uid, "objects.type": start_annotation.objects.type},
                                                 {"objects": {"$elemMatch": {"uid": start_annotation.objects.uid, "type": start_annotation.objects.type}}, "dataset": 1, "scene": 1, "frame": 1,  '_id': 0}).sort("frame", 1)
@@ -155,7 +155,7 @@ class AnnotationManager:
                                                "objects.uid": start_annotation.objects.uid, "objects.type": start_annotation.objects.type},
                                                 {"objects": {"$elemMatch": {"uid": start_annotation.objects.uid, "type": start_annotation.objects.type}}, "dataset": 1, "scene": 1, "frame": 1, '_id': 0}).sort("frame", 1)
 
-            # print(list(result))
+            print(list(result))
             # return [Annotation.from_json(r, start_annotation.dataset.type) for r in list(result)]
             return list(result)
         except errors.PyMongoError as e:
