@@ -260,7 +260,7 @@ def update_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     object = Object.from_json(req_data['object'], req_data['datasetType'])
-    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], object)
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
     success, msg, status = annotationService.update_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -300,8 +300,8 @@ def interpolate_annotation():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
     object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'])
-    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], object1)
-    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], object1)
+    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object1])
+    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
     success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -311,8 +311,8 @@ def interpolate_annotation():
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type= request.headers['datasetType'])
-    annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], object)
-    annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], object)
+    annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], [object])
+    annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], [object])
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
@@ -330,8 +330,8 @@ def remove_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
-    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], object)
-    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], object)
+    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
+    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object])
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 

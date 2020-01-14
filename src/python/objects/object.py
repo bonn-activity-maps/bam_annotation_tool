@@ -26,6 +26,9 @@ class Object:
             self.track_id = int(track_id) if track_id is not None else abs(int(uid)) % 100
             self.original_id = int(original_id) if original_id is not None else None
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'uid': self.uid,

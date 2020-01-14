@@ -1,6 +1,7 @@
 from python.objects.object import Object
 from python.objects.dataset import Dataset
 
+
 class Annotation:
 
     aik = 'actionInKitchen'
@@ -9,7 +10,6 @@ class Annotation:
     def __init__(self, dataset, scene, frame=None, user=None, objects=[], validated=None):
         """
         :param dataset: Dataset
-        :param dataset_type: str    {actionInKitchen, poseTrack}
         :param scene: str
         :param frame: int
         :param user: str
@@ -22,6 +22,9 @@ class Annotation:
         self.user = user
         self.objects = objects
         self.validated = validated
+
+    def __repr__(self):
+        return self.to_string()
 
     def to_json(self):
         obj = {
@@ -39,15 +42,21 @@ class Annotation:
     def from_json(obj, dataset_type):
         scene = obj['scene']
         frame = obj['frame']
-        dataset = Dataset(obj['dataset'])
+        dataset = Dataset(obj['dataset'], dataset_type)
         user = obj['user'] if 'user' in obj else None
-        print(obj['objects'][0])
+        # print(obj['objects'][0])
         objects = Object.from_json(obj['objects'][0], dataset_type) if 'objects' in obj else None
         validated = obj['validated'] if 'validated' in obj else None
 
-        return Annotation(scene, frame, dataset, user, objects, validated)
+        return Annotation(dataset, scene, frame, user, objects, validated)
 
     def to_string(self):
+        objects = ""
+        i = 0
+        for obj in self.objects:
+            objects += ", " if i > 0 else ""
+            objects += obj.to_string()
+            i += 1
         return "(scene: {0}, dataset: {1}, frame: {2}, user: {3}, objects: {4}, validated: {5})".\
-            format(self.scene, self.dataset, self.frame, self.user, self.objects, self.validated)
+            format(self.scene, self.dataset.to_string(), self.frame, self.user, objects, self.validated)
 
