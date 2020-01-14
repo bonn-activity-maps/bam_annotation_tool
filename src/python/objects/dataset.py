@@ -25,6 +25,9 @@ class Dataset:
             self.keypoint_dim = keypoint_dim
         self.file_name = file_name
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'name': self.name,
