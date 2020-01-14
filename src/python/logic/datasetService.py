@@ -536,7 +536,6 @@ class DatasetService:
                 print("Empty video")
         return 'ok'
 
-    # TODO: check and add changes for actions and objects
     # Export annotation for AIK datasets to a file for given dataset
     def export_dataset_AIK(self, dataset):
         db_objects = annotationManager.get_objects_by_dataset(dataset)
@@ -556,39 +555,39 @@ class DatasetService:
         return 'ok'
 
     # Build correct annotation using recover data from database
-    def build_annotation_AIK(self, dbObjects, actions):
+    def build_annotation_AIK(self, db_objects, actions):
         persons = []
         objects = []
 
-        for annotation in dbObjects:    # Each annotation
-            framePersons = []
-            frameObjects = []
+        for annotation in db_objects:    # Each annotation
+            frame_persons = []
+            frame_objects = []
             for obj in annotation['objects']:     # Each object in annotation
                 if obj['type'] == 'personAIK':
                     p = {"pid": obj['uid'],
                          "location": obj['keypoints']}
-                    framePersons.append(p)
+                    frame_persons.append(p)
                 else:
                     o = {"labels": obj['labels'],
                          "location": obj['keypoints'],
                          "oid": obj['uid']}
-                    frameObjects.append(o)
+                    frame_objects.append(o)
 
             # Build persons and objects jsons and add to list
-            personsJson = {"frame": annotation['frame'],
-                           "persons": framePersons}
-            objectsJson = {"frame": annotation['frame'],
-                           "objects": frameObjects}
-            persons.append(personsJson)
-            objects.append(objectsJson)
+            persons_json = {"frame": annotation['frame'],
+                           "persons": frame_persons}
+            objects_json = {"frame": annotation['frame'],
+                           "objects": frame_objects}
+            persons.append(persons_json)
+            objects.append(objects_json)
 
         # Build final annotation
-        finalAnnotation = {
+        final_annotation = {
             "persons": persons,
             "objects": objects,
             "actions": actions
         }
-        return finalAnnotation
+        return final_annotation
 
     ###########################################################################
     ####                           DATABASE                                ####

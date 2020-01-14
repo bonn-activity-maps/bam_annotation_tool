@@ -105,6 +105,7 @@ class AnnotationManager:
             return 'Error'
 
     # Get all annotations for the dataset order by frame
+    # Return json for export
     def get_objects_by_dataset(self, dataset):
         try:
             # result = self.collection.find({"dataset": dataset, "scene": dataset, "objects.type": "person"})
@@ -164,17 +165,18 @@ class AnnotationManager:
             return 'Error'
 
     # Get annotations for object in different frames, without mongo id
-    def get_annnotations_by_object(self, dataset, scene, user, obj):
+    def get_annnotations_by_object(self, dataset, scene, user, uid):
         try:
             if dataset.type == dataset.aik:
-                result = self.collection.find({"dataset": dataset, "scene": scene, "objects.uid": obj},
-                                              {"objects": {"$elemMatch": {"uid": obj}}, "frame": 1, '_id': 0}).limit(2)
+                result = self.collection.find({"dataset": dataset.name, "scene": scene, "objects.uid": uid},
+                                              {"objects": {"$elemMatch": {"uid": uid}}, "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(2)
             else:
                 # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, # User instead of root
-                result = self.collection.find({"dataset": dataset, "scene": scene, "user": "root",
-                                               "objects.track_id": obj, "objects.type": "bbox_head"},
-                                        {"objects": {"$elemMatch": {"track_id": obj, "type": "bbox_head"}},
-                                         "frame": 1, '_id': 0}).limit(10)
+                result = self.collection.find({"dataset": dataset.name, "scene": scene, "user": "root",
+                                               "objects.track_id": uid, "objects.type": "bbox_head"},
+                                        {"objects": {"$elemMatch": {"track_id": uid, "type": "bbox_head"}},
+                                         "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(10)
+
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
@@ -339,7 +341,7 @@ class AnnotationManager:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
             query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
 
-        arrayFilter = [{"elem.uid": {"$eq": annotation.objects[0].uid}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
+        array_filter = [{"elem.uid": {"$eq": annotation.objects[0].uid}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if annotation.objects[0].labels is not None:
@@ -348,7 +350,7 @@ class AnnotationManager:
             new_values = {"$set": {"objects.$[elem].keypoints": annotation.objects[0].keypoints}}
 
         try:
-            result = self.collection.update_one(query, new_values, upsert=False, array_filters=arrayFilter)
+            result = self.collection.update_one(query, new_values, upsert=False, array_filters=array_filter)
 
             # ok if no error (it doesn't matter if the keypoints have not been modified)
             if result.acknowledged == 1:

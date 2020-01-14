@@ -89,7 +89,7 @@ class ActionManager:
             log.exception('Error finding action in db')
             return 'Error'
 
-    # Return info of action by dataset
+    # Return info of action by dataset in json for export
     def get_actions_by_dataset_export(self, dataset):
         try:
             result = self.collection.aggregate([{"$match": {"dataset": dataset.name}},
