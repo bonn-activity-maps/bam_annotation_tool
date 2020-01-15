@@ -20,9 +20,6 @@ log = logging.getLogger('videoService')
 
 class VideoService:
 
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
-
     # Return info of video
     def get_video(self, video):
         result = videoManager.get_video(video)

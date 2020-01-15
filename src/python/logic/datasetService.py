@@ -34,8 +34,6 @@ ptService = PTService()
 
 class DatasetService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the videos
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
 
     # Convert bytes to MB, GB, etc
     def convert_bytes(self, num):
@@ -56,17 +54,17 @@ class DatasetService:
         zip.extractall(dataset.STORAGE_DIR)
 
         # Check integrity depending on the dataset type
-        if dataset.type == self.pt:
+        if dataset.is_pt():
             # integrity = self.check_integrity_PT(dataset.dir)
             integrity = True
-        elif dataset.type == self.aik:
+        elif dataset.is_aik():
             integrity = self.check_integrity_AIK(dataset.dir)
         else:
             integrity = False
 
         # Remove zip file
         #TODO enable it again once pt fixed
-        if dataset.type == self.aik:
+        if dataset.is_aik():
             os.remove(dataset.STORAGE_DIR + dataset.file_name)
 
         if integrity:
@@ -105,9 +103,9 @@ class DatasetService:
 
     # Return the result of storing info wrt different types of datasets
     def add_info(self, dataset):
-        if dataset.type == self.aik:
+        if dataset.is_aik():
             result = self.add_info_AIK(dataset)
-        elif dataset.type == self.pt:
+        elif dataset.is_pt():
             result = self.add_info_PT(dataset)
         else:
             result = False, 'Incorrect dataset type', 500
@@ -187,7 +185,7 @@ class DatasetService:
         annotations = ptService.safely_read_dictionary(annotation, "annotations")
 
         try:
-            resultCategories = self.add_categories_PT(categories) if categories is not None else True
+            resultCategories = self.add_categories_PT(dataset, categories) if categories is not None else True
         except:
             log.exception("Error while processing Categories")
             resultCategories = True
@@ -265,13 +263,13 @@ class DatasetService:
                 log.exception("Error reading person")
 
             # Update annotation with the resulting objects
-            result = annotationService.update_annotation(dataset, self.pt, og_frame["video"], og_frame["number"], "root",
+            result = annotationService.update_annotation(dataset, dataset.pt, og_frame["video"], og_frame["number"], "root",
                                                         og_objects)
             if result == 'error':
                 return False
         return True
 
-    def add_categories_PT(self, categories):
+    def add_categories_PT(self, dataset, categories):
         # Categories
         for cat in categories:
             type = ptService.safely_read_dictionary(cat, "name")
@@ -279,27 +277,27 @@ class DatasetService:
             supercategory = ptService.safely_read_dictionary(cat, "supercategory")
             id = ptService.safely_read_dictionary(cat, "id")
             skeleton = ptService.safely_read_dictionary(cat, "skeleton")
-            object_type = Object_type(type, self.pt, labels=labels, supercategory=supercategory, id=id, skeleton=skeleton)
+            object_type = Object_type(type, dataset.pt, labels=labels, supercategory=supercategory, id=id, skeleton=skeleton)
             result = objectTypeService.create_object_type(object_type)
             if result == 'error':
                 return False
 
         # Ignore Regions
-        object_type = Object_type("ignore_region", self.pt, is_polygon=True)
+        object_type = Object_type("ignore_region", dataset.pt, is_polygon=True)
         result = objectTypeService.create_object_type(object_type)
         if result == 'error':
             return False
 
         # Bbox
         labels = ["Top Left", "Bottom Right"]
-        object_type = Object_type("bbox", self.pt, labels=labels, is_polygon=False)
+        object_type = Object_type("bbox", dataset.pt, labels=labels, is_polygon=False)
         result = objectTypeService.create_object_type(object_type)
         if result == 'error':
             return False
 
         # Bbox head
         labels = ["Top Left", "Bottom Right"]
-        object_type = Object_type("bbox_head", self.pt, labels=labels, is_polygon=False)
+        object_type = Object_type("bbox_head", dataset.pt, labels=labels, is_polygon=False)
         result = objectTypeService.create_object_type(object_type)
         if result == 'error':
             return False
@@ -357,9 +355,9 @@ class DatasetService:
 
     # Export annotation to a file for given dataset depending on dataset type
     def export_dataset(self, dataset):
-        if dataset.type == self.aik:
+        if dataset.is_aik():
             result = self.export_dataset_AIK(dataset)
-        elif dataset.type == self.pt:
+        elif dataset.is_pt():
             result = self.export_dataset_PT(dataset)
         else:
             result = 'Incorrect dataset type'
@@ -388,7 +386,7 @@ class DatasetService:
                 del(frames[i]["has_ignore_regions"])
             final_annotation["images"] = frames
             # Process annotation data
-            _, annotations_db, _ = annotationService.get_annotations(dataset, self.pt, videos[j]["name"], "root")
+            _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j]["name"], "root")
             annotations_file = list()
             for i in range(0, len(annotations_db)):
                 objects = annotations_db[i]["objects"]

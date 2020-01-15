@@ -21,9 +21,6 @@ frameManager = FrameManager()
 
 class AIKService:
 
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
-
     # Method to read a dictionary key that may not exist.
     def safely_read_dictionary(self, dict, key):
         try:
@@ -38,7 +35,7 @@ class AIKService:
         # Get camera parameters for the frame, camera and dataset
         frame = frameManager.get_frame(frame)
 
-        # Proyect and return the points into the camera
+        # Project and return the points into the camera
         return True, self.project_3D_points_to_camera(points_array, frame.camera_parameters), 200
 
 
@@ -159,7 +156,7 @@ class AIKService:
         for r in result:
             if 'objects' in r and r['objects'][0]['keypoints'] != []:
 
-                if dataset.type == dataset.pt:
+                if dataset.is_pt():
                     points = r['objects'][0]['keypoints']
 
                     f = Frame(r.frame, scene, dataset)

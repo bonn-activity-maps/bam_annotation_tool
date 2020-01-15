@@ -142,7 +142,7 @@ class AnnotationService:
     def update_annotation(self, annotation):
 
         # Triangulate points from 2D points to 3D if dataset is AIK
-        if annotation.dataset.type == self.aik:
+        if annotation.dataset.is_aik():
             objects, error_flag = self.update_annotation_AIK(annotation)
 
             if error_flag:
@@ -154,7 +154,7 @@ class AnnotationService:
                 return False, 'Error updating annotation', 400
             else:
                 return True, result, 200
-        elif annotation.dataset.type == self.pt:
+        elif annotation.dataset.is_pt():
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
@@ -228,13 +228,12 @@ class AnnotationService:
     def update_annotation_frame_object(self, annotation):
         # Check if exists object in frame
         found = annotationManager.get_frame_object(annotation)
-        # print(found)
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':  # Add new existing object in frame
             result = annotationManager.create_frame_object(annotation)
         else:  # Update object in frame
-            if annotation.dataset.type == 'poseTrack' and found.type != annotation.objects[0].type:
+            if annotation.dataset.is_pt() and found.type != annotation.objects[0].type:
                 result = annotationManager.create_frame_object(annotation)
             else:
                 result = annotationManager.update_frame_object(annotation)
@@ -245,7 +244,7 @@ class AnnotationService:
     # Always a single object in "objects" so always objects[0] !!
     def remove_annotation_frame_object(self, start_annotation, end_annotation):
         # PT: the uidObject change for each frame, iterate for all frames with the corresponding id
-        if start_annotation.dataset.type == start_annotation.dataset.pt:
+        if start_annotation.dataset.is_pt():
             result = 'ok'
             start_frame = start_annotation.frame
             end_frame = end_annotation.frame+1
