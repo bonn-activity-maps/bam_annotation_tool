@@ -4,9 +4,6 @@ from python.objects.dataset import Dataset
 
 class Annotation:
 
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
-
     def __init__(self, dataset, scene, frame=None, user=None, objects=[], validated=None):
         """
         :param dataset: Dataset

@@ -33,6 +33,9 @@ class Frame:
         self.frame_id = int(frame_id) if frame_id is not None else None
         self.id = int(id) if id is not None else None
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'number': self.number,

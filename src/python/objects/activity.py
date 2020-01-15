@@ -7,6 +7,9 @@ class Activity:
         """
         self.name = name
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'name': self.name,

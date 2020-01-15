@@ -16,6 +16,8 @@ from python.logic.objectTypeService import ObjectTypeService
 from python.logic.ptService import PTService
 
 from python.objects.object_type import Object_type
+from python.objects.object import Object
+from python.objects.annotation import Annotation
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
@@ -140,7 +142,7 @@ class DatasetService:
     def add_info_PT(self, dataset):
         # Store info in DB
         result_videos = videoService.add_videos_PT(dataset)
-        result_annotations = self.readAnnotationsPT(dataset)
+        result_annotations = self.read_annotations_PT(dataset)
         if result_videos == 'Error' or result_annotations == 'Error':
             return False, 'Error saving videos in database', 400
         else:
@@ -148,10 +150,8 @@ class DatasetService:
 
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if it encounters some problem
-    def readAnnotationsPT(self, dataset):
-        # print("annotationsPT")
-        # type = 'personPT'  # Type of objects
-        finalResult = True
+    def read_annotations_PT(self, dataset):
+        final_result = True
         types = ["test", "train", "val"]
         for type in types:
             try:
@@ -160,21 +160,21 @@ class DatasetService:
                 for file in listdir:
                     filename, filextension = os.path.splitext(file)
                     if filextension == '.json':
-                        tempResult = self.processAnnotationFilePT(dataset.name, file, dirpath)
-                    finalResult = finalResult   # and tempResult # TODO check in the future
+                        tempResult = self.process_annotation_file_PT(dataset, file, dirpath)
+                    final_result = final_result   # and tempResult # TODO check in the future
             except FileNotFoundError:
                 # TODO Check if this is still the case in the future...
                 log.exception("Folder called " + str(type) + " not found")
-        return 'ok' if finalResult else 'Error'
+        return 'ok' if final_result else 'Error'
 
     # Process one file entirely from JSON to our DB, including images, categories and anotations info.
-    def processAnnotationFilePT(self, dataset, file, dir):
+    def process_annotation_file_PT(self, dataset, file, dir):
         print("Processing annotation file ", file, " from ", dir)
         # Read data from file
-        fileRoute = os.path.join(dir, file)
+        file_route = os.path.join(dir, file)
         try:
-            with open(fileRoute) as jsonFile:
-                annotation = json.load(jsonFile)
+            with open(file_route) as json_file:
+                annotation = json.load(json_file)
         except OSError:
             log.exception('Could not read from file')
             return False
@@ -185,24 +185,24 @@ class DatasetService:
         annotations = ptService.safely_read_dictionary(annotation, "annotations")
 
         try:
-            resultCategories = self.add_categories_PT(dataset, categories) if categories is not None else True
+            result_categories = self.add_categories_PT(dataset, categories) if categories is not None else True
         except:
             log.exception("Error while processing Categories")
-            resultCategories = True
+            result_categories = True
         try:
-            resultFrames = frameService.add_frames_PT(dataset, frames) if frames is not None else True
+            result_frames = frameService.add_frames_PT(dataset, frames) if frames is not None else True
         except:
             log.exception("Error while processing Frames")
-            resultFrames = True
+            result_frames = True
         try:
-            resultAnnotations = self.addAnnotationsPT(dataset, annotations) if annotations is not None else True
+            result_annotations = self.add_annotations_PT(dataset, annotations) if annotations is not None else True
         except:
             log.exception("Error while processing Annotations")
-            resultAnnotations = True
+            result_annotations = True
 
-        return resultFrames and resultAnnotations and resultCategories
+        return result_frames and result_annotations and result_categories
 
-    def addAnnotationsPT(self, dataset, annotations):
+    def add_annotations_PT(self, dataset, annotations):
 
         for annotation in annotations:
             image_id = ptService.safely_read_dictionary(annotation, "image_id")
@@ -218,14 +218,16 @@ class DatasetService:
                 bbox_head_keypoints = [[bbox_head[0], bbox_head[1]],
                                   [bbox_head[2], bbox_head[3]]]
                 # Create object for bbox_head and add it to the objects list
-                object_bbox_head = {
-                    "uid": id,
-                    "type": "bbox_head",
-                    "keypoints": ptService.transform_to_XYXY(bbox_head_keypoints),
-                    "validate": "unchecked",
-                    "track_id": track_id,
-                    "category_id": category_id
-                }
+                object_bbox_head = Object(id, "bbox_head", ptService.transform_to_XYXY(bbox_head_keypoints),
+                                          dataset.type, category_id=category_id, track_id=track_id)
+                # object_bbox_head = {
+                #     "uid": id,
+                #     "type": "bbox_head",
+                #     "keypoints": ptService.transform_to_XYXY(bbox_head_keypoints),
+                #     "validate": "unchecked",
+                #     "track_id": track_id,
+                #     "category_id": category_id
+                # }
                 og_objects.append(object_bbox_head)     # Append new object
             except:
                 log.exception("Error reading bbox_head")
@@ -233,15 +235,18 @@ class DatasetService:
                 bbox = ptService.safely_read_dictionary(annotation, "bbox")
                 bbox_keypoints = [[bbox[0], bbox[1]],
                                   [bbox[2], bbox[3]]]
-                object_bbox = {
-                    "uid": id,
-                    "type": "bbox",
-                    "keypoints": ptService.transform_to_XYXY(bbox_keypoints),
-                    "validate": "unchecked",
-                    "track_id": track_id,
-                    "category_id": category_id
-                }
+                object_bbox = Object(id, "bbox", ptService.transform_to_XYXY(bbox_keypoints), dataset.type,
+                                     category_id=category_id, track_id=track_id)
+                # object_bbox = {
+                #     "uid": id,
+                #     "type": "bbox",
+                #     "keypoints": ptService.transform_to_XYXY(bbox_keypoints),
+                #     "validate": "unchecked",
+                #     "track_id": track_id,
+                #     "category_id": category_id
+                # }
                 og_objects.append(object_bbox)          # Append new object
+                print(og_objects)
             except:
                 log.exception("Error reading bbox")
             keypoints = ptService.safely_read_dictionary(annotation, "keypoints")
@@ -250,21 +255,24 @@ class DatasetService:
             try:
                 for i in range(0, len(keypoints), 3):
                     person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
-                object_person = {
-                    "uid": id,
-                    "type": "person",
-                    "keypoints": person_keypoints,
-                    "validate": "unchecked",
-                    "track_id": track_id,
-                    "category_id": category_id
-                }
+                object_person = Object(id, "person", person_keypoints, dataset.type, category_id=category_id, track_id=track_id)
+                # object_person = {
+                #     "uid": id,
+                #     "type": "person",
+                #     "keypoints": person_keypoints,
+                #     "validate": "unchecked",
+                #     "track_id": track_id,
+                #     "category_id": category_id
+                # }
                 og_objects.append(object_person)        # Append new object
             except:
                 log.exception("Error reading person")
 
             # Update annotation with the resulting objects
-            result = annotationService.update_annotation(dataset, dataset.pt, og_frame["video"], og_frame["number"], "root",
-                                                        og_objects)
+            annotation = Annotation(dataset, og_frame.video, og_frame.number, "root", og_objects)
+            result = annotationService.update_annotation(annotation)
+            # result = annotationService.update_annotation(dataset, dataset.pt, og_frame["video"], og_frame["number"], "root",
+            #                                             og_objects)
             if result == 'error':
                 return False
         return True
@@ -277,13 +285,13 @@ class DatasetService:
             supercategory = ptService.safely_read_dictionary(cat, "supercategory")
             id = ptService.safely_read_dictionary(cat, "id")
             skeleton = ptService.safely_read_dictionary(cat, "skeleton")
-            object_type = Object_type(type, dataset.pt, labels=labels, supercategory=supercategory, id=id, skeleton=skeleton)
+            object_type = Object_type(type, dataset.type, labels=labels, supercategory=supercategory, id=id, skeleton=skeleton)
             result = objectTypeService.create_object_type(object_type)
             if result == 'error':
                 return False
 
         # Ignore Regions
-        object_type = Object_type("ignore_region", dataset.pt, is_polygon=True)
+        object_type = Object_type("ignore_region", dataset.type, is_polygon=True)
         result = objectTypeService.create_object_type(object_type)
         if result == 'error':
             return False

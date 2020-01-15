@@ -15,6 +15,9 @@ class User:
         self.role = role
         self.email = email
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'name': self.name,

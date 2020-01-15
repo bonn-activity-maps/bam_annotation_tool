@@ -141,22 +141,22 @@ class FrameService:
 
     # TODO: change!!!
     def add_frames_PT(self, dataset, frames):
-        initFrameNumber = int(os.path.splitext(os.path.split(frames[0]["file_name"])[-1])[0])
-        nFrames = ptService.safely_read_dictionary(frames[0], "nframes")
+        init_frame_number = int(os.path.splitext(os.path.split(frames[0]["file_name"])[-1])[0])
+        n_frames = ptService.safely_read_dictionary(frames[0], "nframes")
         index = 0
         frame = {}
-        for frameNumber in range(0, nFrames):     # For every frame in VIDEO (not JSON FILE)
-            frameObjectNumber = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
-            # print("NFRAMES: ", nFrames, " FRAMENUMBER: ", frameNumber + initFrameNumber, " FRAMEOBJECTNUMBER: ", int(frameObjectNumber))
-            if (frameNumber + initFrameNumber) == int(frameObjectNumber):   # If there is data to add
+        for frame_number in range(0, n_frames):     # For every frame in VIDEO (not JSON FILE)
+            frame_object_number = os.path.splitext(os.path.split(frames[index]["file_name"])[-1])[0]
+            # print("n_frames: ", n_frames, " frame_number: ", frame_number + init_frame_number, " frame_object_number: ", int(frame_object_number))
+            if (frame_number + init_frame_number) == int(frame_object_number):   # If there is data to add
                 index += 1                              # Advance index
-                frame = dict(frames[frameNumber])       # Reformat object to insert into db
-                # frame["image_id"] = ptService.safely_read_dictionary(frame, "frame_id")
-                frame["number"] = frameNumber + initFrameNumber
-                frame["dataset"] = dataset
+                frame = dict(frames[frame_number])       # Reformat object to insert into db
+                frame["number"] = frame_number + init_frame_number
+                frame["dataset"] = dataset.name
                 frame["video"] = ptService.safely_read_dictionary(frame, "vid_id")
                 ptService.safely_delete_dictionary_key(frame, "vid_id")
-                frame["path"] = os.path.join(dataset.STORAGE_DIR, dataset + "/" +
+                ptService.safely_delete_dictionary_key(frame, "vid_id")
+                frame["path"] = os.path.join(dataset.STORAGE_DIR, dataset.name + "/" +
                                              ptService.safely_read_dictionary(frame, "file_name"))
                 ptService.safely_delete_dictionary_key(frame, "file_name")
                 frame["has_ignore_regions"] = False if ptService.safely_read_dictionary(frame, "ignore_regions_x") is None \
@@ -165,14 +165,15 @@ class FrameService:
                 ptService.safely_delete_dictionary_key(frame, "ignore_regions_y")
             else:       # If no data, initialize empty
                 frame = dict()
-                frame["number"] = frameNumber + initFrameNumber
-                frame["dataset"] = dataset
+                frame["number"] = frame_number + init_frame_number
+                frame["dataset"] = dataset.name
                 frame["video"] = ptService.safely_read_dictionary(frames[0], "vid_id")
-                dirpath = os.path.join(dataset.STORAGE_DIR, dataset + "/" + os.path.split(frames[index]["file_name"])[-2])
-                frame["path"] = os.path.join(dirpath, str(frameNumber).zfill(6) + ".jpg")
+                dirpath = os.path.join(dataset.STORAGE_DIR, dataset.name + "/" + os.path.split(frames[index]["file_name"])[-2])
+                frame["path"] = os.path.join(dirpath, str(frame_number).zfill(6) + ".jpg")
                 frame["has_ignore_regions"] = False
+
             f = Frame.from_json(frame)
-            result = frameManager.createFrame(f)
+            result = frameManager.create_frame(f)
             if result == 'error':
                 return False
         return True

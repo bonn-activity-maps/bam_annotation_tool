@@ -31,6 +31,9 @@ class Object_type:
             self.skeleton = skeleton
             self.is_polygon = is_polygon
 
+    def __repr__(self):
+        return self.to_string()
+
     def to_json(self):
         obj = {
             'type': self.type,

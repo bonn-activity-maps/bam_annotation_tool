@@ -18,6 +18,8 @@ class Action:
         self.start_frame = int(start_frame) if start_frame is not None else None
         self.end_frame = int(end_frame) if end_frame is not None else None
 
+    def __repr__(self):
+        return self.to_string()
 
     def to_json(self):
         obj = {

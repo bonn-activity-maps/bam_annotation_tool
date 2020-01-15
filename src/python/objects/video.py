@@ -19,6 +19,8 @@ class Video:
         self.frames = int(frames)
         self.type = type
 
+    def __repr__(self):
+        return self.to_string()
 
     def to_json(self):
         obj = {

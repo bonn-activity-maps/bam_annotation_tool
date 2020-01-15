@@ -379,13 +379,13 @@ class AnnotationManager:
                      "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type}
 
         # Filter each annotation and select only objects with uid and type
-        arrayFilter = [{"elem.uid": {"$eq": start_annotation.objects[0].uid}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
+        array_filter = [{"elem.uid": {"$eq": start_annotation.objects[0].uid}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
 
         # Update object to empty list
         new_values = {"$set": {"objects.$[elem].keypoints": []}}
 
         try:
-            result = self.collection.update_many(query, new_values, upsert=False, array_filters=arrayFilter)
+            result = self.collection.update_many(query, new_values, upsert=False, array_filters=array_filter)
             if result.acknowledged == 1:
                 return 'ok'
             else:

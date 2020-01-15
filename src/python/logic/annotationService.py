@@ -27,8 +27,6 @@ aikService = AIKService()
 
 class AnnotationService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the annotations
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
 
     def pad(self, num, size):
         s = str(num)
