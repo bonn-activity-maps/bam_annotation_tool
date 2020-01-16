@@ -114,7 +114,7 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, frame, cameraName, dataset, canvasNumber, callbackSuccess, callbackError) {
+        projectToCamera: function(uid, type, points, frame, cameraName, dataset, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/aik/projectToCamera',
@@ -125,7 +125,7 @@ angular.module('CVGTool')
                     'dataset': dataset
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(canvasNumber, uid, type, frame, response.data.msg)
+                callbackSuccess(uid, type, frame, response.data.msg)
             }, function errorCallback(response) {
                 callbackError('danger', response.data.msg);
             })
@@ -194,7 +194,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server to triangulate and create the new 3D point
-        updateAnnotation: function(user, dataset, scene, frame, objects, deleting, callbackSuccess, callbackError) {
+        updateAnnotation: function(user, dataset, scene, frame, objects, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
@@ -204,20 +204,21 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'objects': objects
+                    'objects': objects  // TODO: change objects for object
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(objects.uid, objects.type, frame, deleting);
+                callbackSuccess(objects.uid, objects.type, frame);
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
         },
 
+        // MERGE THIS INTO THE UPDATEANNOTATION RESPECTING PT STRUCTURE
         // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
+        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
-                url: '/api/annotation/updateAnnotationPT',
+                url: '/api/annotation/updateAnnotation',
                 data: {
                     'user': user,
                     'dataset': dataset.name,
@@ -227,12 +228,12 @@ angular.module('CVGTool')
                     'object': {
                         uid: object.original_uid,
                         type: object.type,
-                        track_id: object.uid
-                    },
-                    'points': points
+                        track_id: object.uid,
+                        points: points
+                    }
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame, deleting);
+                callbackSuccess(object.original_uid, object.type, frame);
             }, function errorCallback(response) {
                 callbackError('danger', response);
             })

@@ -126,7 +126,6 @@ class AnnotationService:
 
     # Return 'ok' if the annotation has been updated
     def updateAnnotation(self, dataset, datasetType, scene, frame, user, objects):
-
         # Triangulate points from 2D points to 3D if dataset is AIK
         if datasetType == self.aik:
             objects, errorFlag = self.updateAnnotationAIK(dataset, frame, objects)
