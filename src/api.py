@@ -1,4 +1,4 @@
-from flask import Flask, make_response, request
+from flask import Flask, make_response, request, send_file
 import json, os
 
 from python.logic.datasetService import DatasetService
@@ -201,6 +201,14 @@ def get_min_frame():
     video = Video(request.headers['video'], dataset)
     success, msg, status = videoService.get_min_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get a frame from video
+@app.route('/api/video/getFrameVideo', methods=['GET'])
+def get_video_frame():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    frame = Frame(request.headers['frame'], request.headers['video'], dataset)
+    success, msg, status = videoService.get_video_frame(frame)
+    return send_file(msg)
 
 # Get a range of frames from video
 @app.route('/api/video/getFramesVideo', methods=['GET'])

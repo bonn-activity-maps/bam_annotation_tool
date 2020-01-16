@@ -1,6 +1,8 @@
 import os
 import base64
 import logging
+from flask import url_for
+
 
 
 from python.logic.frameService import FrameService
@@ -69,12 +71,18 @@ class VideoService:
             return True, {"frames": 1}, 200
 
     # Return the corresponding range of frames in video
+    def get_video_frame(self, f):
+        frame = frameManager.get_frame(f)
+        return True, frame.path, 200
+
+    # Return the corresponding range of frames in video
     def get_video_frames(self, video, start_frame, end_frame):
         imgs = []
         for frame in range(start_frame, end_frame + 1):
             # Get path of frame
             f = Frame(frame, video.name, video.dataset)
             f = frameManager.get_frame(f)
+            # frame_url = url_for("get_frames", filename=f.path)
             # Read file as binary, encode to base64 and remove newlines
             if os.path.isfile(f.path):
                 with open(f.path, "rb") as image_file:

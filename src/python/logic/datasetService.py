@@ -246,7 +246,6 @@ class DatasetService:
                 #     "category_id": category_id
                 # }
                 og_objects.append(object_bbox)          # Append new object
-                print(og_objects)
             except:
                 log.exception("Error reading bbox")
             keypoints = ptService.safely_read_dictionary(annotation, "keypoints")

@@ -19,7 +19,7 @@ class Frame:
         """
         self.number = int(number)
         self.dataset = dataset
-        if dataset.type == dataset.aik:
+        if dataset.is_aik():
             self.video = int(video)
         else:
             self.video = video
