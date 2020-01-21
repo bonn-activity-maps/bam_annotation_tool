@@ -29,12 +29,15 @@ class Annotation:
             'dataset': self.dataset.name,
             'frame': self.frame,
             'user': self.user,
-            'objects': self.objects.to_json()
+            'objects': self.objects_to_json()
         }
         # Add optional parameters if they exist
         if self.validated is not None: obj['validated'] = self.validated
 
         return obj
+
+    def objects_to_json(self):
+        return [o.to_json() for o in self.objects]
 
     def from_json(obj, dataset_type):
         scene = obj['scene']

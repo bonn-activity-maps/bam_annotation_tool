@@ -138,7 +138,6 @@ class AnnotationService:
 
     # Return 'ok' if the annotation has been updated
     def update_annotation(self, annotation):
-
         # Triangulate points from 2D points to 3D if dataset is AIK
         if annotation.dataset.is_aik():
             objects, error_flag = self.update_annotation_AIK(annotation)
@@ -160,16 +159,16 @@ class AnnotationService:
 
     # Return 'ok' if the annotation has been updated
     # Same as above but for PoseTrack
-    def update_annotation_PT(self, annotation):
-        # keypoints = []
-        # for point in points:
-        #     keypoints.append(point["points"][0])
-        # object["keypoints"] = keypoints
-        # object["category_id"] = 1
-        result = self.update_annotation_frame_object(annotation)
-        if result == 'Error':
-            return False, 'Error updating annotation', 400
-        return True, 'Ok', 200
+    # def update_annotation_PT(self, annotation):
+    #     # keypoints = []
+    #     # for point in points:
+    #     #     keypoints.append(point["points"][0])
+    #     # object["keypoints"] = keypoints
+    #     # object["category_id"] = 1
+    #     result = self.update_annotation_frame_object(annotation)
+    #     if result == 'Error':
+    #         return False, 'Error updating annotation', 400
+    #     return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed
     def remove_annotation(self, annotation):

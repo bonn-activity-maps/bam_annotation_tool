@@ -161,15 +161,15 @@ def export_dataset():
     success, msg, status = datasetService.export_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
-#### VIDEO ####
-
 # Read data from stored zip
 @app.route('/api/dataset/readData', methods=['POST'])
 def read_data():
     dataset = Dataset.from_json(request.get_json())
     success, msg, status = datasetService.add_info(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### VIDEO ####
 
 # Get info of video
 @app.route('/api/video/getVideo', methods=['GET'])

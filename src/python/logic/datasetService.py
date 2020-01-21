@@ -1,4 +1,4 @@
-import os, subprocess, json, shutil
+import os, json, shutil
 import logging
 from werkzeug.utils import secure_filename
 import zipfile
@@ -160,8 +160,8 @@ class DatasetService:
                 for file in listdir:
                     filename, filextension = os.path.splitext(file)
                     if filextension == '.json':
-                        tempResult = self.process_annotation_file_PT(dataset, file, dirpath)
-                    final_result = final_result   # and tempResult # TODO check in the future
+                        temp_result = self.process_annotation_file_PT(dataset, file, dirpath)
+                    final_result = final_result   # and temp_result # TODO check in the future
             except FileNotFoundError:
                 # TODO Check if this is still the case in the future...
                 log.exception("Folder called " + str(type) + " not found")
@@ -203,7 +203,6 @@ class DatasetService:
         return result_frames and result_annotations and result_categories
 
     def add_annotations_PT(self, dataset, annotations):
-
         for annotation in annotations:
             image_id = ptService.safely_read_dictionary(annotation, "image_id")
             # Read invariable data
@@ -220,14 +219,6 @@ class DatasetService:
                 # Create object for bbox_head and add it to the objects list
                 object_bbox_head = Object(id, "bbox_head", ptService.transform_to_XYXY(bbox_head_keypoints),
                                           dataset.type, category_id=category_id, track_id=track_id)
-                # object_bbox_head = {
-                #     "uid": id,
-                #     "type": "bbox_head",
-                #     "keypoints": ptService.transform_to_XYXY(bbox_head_keypoints),
-                #     "validate": "unchecked",
-                #     "track_id": track_id,
-                #     "category_id": category_id
-                # }
                 og_objects.append(object_bbox_head)     # Append new object
             except:
                 log.exception("Error reading bbox_head")
@@ -237,14 +228,6 @@ class DatasetService:
                                   [bbox[2], bbox[3]]]
                 object_bbox = Object(id, "bbox", ptService.transform_to_XYXY(bbox_keypoints), dataset.type,
                                      category_id=category_id, track_id=track_id)
-                # object_bbox = {
-                #     "uid": id,
-                #     "type": "bbox",
-                #     "keypoints": ptService.transform_to_XYXY(bbox_keypoints),
-                #     "validate": "unchecked",
-                #     "track_id": track_id,
-                #     "category_id": category_id
-                # }
                 og_objects.append(object_bbox)          # Append new object
             except:
                 log.exception("Error reading bbox")
@@ -255,23 +238,13 @@ class DatasetService:
                 for i in range(0, len(keypoints), 3):
                     person_keypoints.append([keypoints[i], keypoints[i+1], keypoints[i+2]])
                 object_person = Object(id, "person", person_keypoints, dataset.type, category_id=category_id, track_id=track_id)
-                # object_person = {
-                #     "uid": id,
-                #     "type": "person",
-                #     "keypoints": person_keypoints,
-                #     "validate": "unchecked",
-                #     "track_id": track_id,
-                #     "category_id": category_id
-                # }
                 og_objects.append(object_person)        # Append new object
             except:
                 log.exception("Error reading person")
 
             # Update annotation with the resulting objects
             annotation = Annotation(dataset, og_frame.video, og_frame.number, "root", og_objects)
-            result = annotationService.update_annotation(annotation)
-            # result = annotationService.update_annotation(dataset, dataset.pt, og_frame["video"], og_frame["number"], "root",
-            #                                             og_objects)
+            result = annotationManager.update_annotation_insert_objects(annotation)
             if result == 'error':
                 return False
         return True

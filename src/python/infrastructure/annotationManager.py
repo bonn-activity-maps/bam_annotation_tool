@@ -195,45 +195,29 @@ class AnnotationManager:
     #         log.exception('Error finding annotation in db')
     #         return 'Error'
 
+    # Add new objects to the annotation. It is created if it doesn't exist
     # Return 'ok' if the annotation has been updated.
-    # The annotation is created if it doesn't exist and return 'ok
-    # Validated flag is set to unchecked if is not received in params
-    def update_annotation(self, dataset, scene, frame, user, objects, val='unchecked'):
-        query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # Search by dataset, scene, frame, user
-        # Update all objects of the frame and validated flag.
-        new_values = {"$set": {"objects": objects, "validated": val}}
+    def update_annotation_insert_objects(self, annotation):
+        if annotation.dataset.is_aik():
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "frame": annotation.frame}
+        else:
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame} # User instead of root
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root",
+                     "frame": annotation.frame}
+
+        # Add all objects in the array from
+        new_values = {"$push": {"objects": {"$each": annotation.objects_to_json()}}}
 
         try:
             result = self.collection.update_one(query, new_values, upsert=True)
             # ok if object has been modified or new annotation has been created
-            if result.modified_count == 1 or result.acknowledged:
+            if result.modified_count == 1:
                 return 'ok'
             else:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error updating annotation in db')
             return 'Error'
-
-    # Return 'ok' if the annotation has been updated.
-    # The annotation is created if it doesn't exist and return 'ok
-    # Validated flag is set to unchecked if is not received in params
-    # Basically same as above but for PoseTrack
-    # def updateAnnotationPT(self, dataset, scene, frame, user, objects, val='unchecked'):
-    #     # query = {"dataset": dataset, "scene": scene, "user": user, "frame": int(frame)}   # User instead of Root
-    #     query = {"dataset": dataset, "scene": scene, "user": "root", "frame": int(frame)}   # Search by dataset, scene, frame, user
-    #     # Update all objects of the frame and validated flag.
-    #     new_values = {"$set": {"objects": objects, "validated": val}}
-    #
-    #     try:
-    #         result = self.collection.update_one(query, new_values, upsert=True)
-    #         # ok if object has been modified or new annotation has been created
-    #         if result.modified_count == 1 or result.acknowledged:
-    #             return 'ok'
-    #         else:
-    #             return 'Error'
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error updating annotation in db')
-    #         return 'Error'
 
     # Return 'ok' if the annotation has been removed
     def remove_annotation(self, annotation):
