@@ -546,12 +546,11 @@ def compute_epiline():
     return json.dumps({'success': True, 'msg': {'el1': el1, 'el2': el2}}), 200, {'ContentType': 'application/json'}
 
 # Return 6 mugshot of person uid from different cameras
-#TODO revisar revisar
 @app.route('/api/aik/getMugshot', methods=['GET'])
 def get_mugshot():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = aikService.get_mugshot(dataset, request.headers['scene'],
-                                                request.headers['user'], int(request.headers['uid']))
+    success, msg, status = aikService.get_mugshot(dataset, request.headers['scene'], request.headers['user'],
+                                                  int(request.headers['uid']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #### FRAME ####

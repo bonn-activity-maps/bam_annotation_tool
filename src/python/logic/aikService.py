@@ -159,7 +159,7 @@ class AIKService:
                 if dataset.is_pt():
                     points = r['objects'][0]['keypoints']
 
-                    f = Frame(r.frame, scene, dataset)
+                    f = Frame(r['frame'], scene, dataset)
                     frame_result = frameManager.get_frame(f)
                     if frame_result != 'Error':
 
@@ -175,7 +175,7 @@ class AIKService:
                     # Check annotations in all 12 cameras
                     for camera in range(12):
                         # Check camera parameters and frame path
-                        f = Frame(r.frame, camera, dataset)
+                        f = Frame(r['frame'], camera, dataset)
                         frame_result = frameManager.get_frame(f)
 
                         if frame_result != 'Error':

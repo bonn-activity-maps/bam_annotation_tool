@@ -73,7 +73,6 @@ class AnnotationManager:
 
     # Get objects with uid and type for given dataset, scene and user.
     # AIK: ignore user parameter
-    # TODO: check query
     def get_annotated_objects(self, annotation):
         try:
             # If posetrack, return track_id too
@@ -99,7 +98,6 @@ class AnnotationManager:
                 return {}
             else:
                 return list(result)
-                # return [Object.from_json(r, annotation.dataset.type) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error retrieving annotated objects in db')
             return 'Error'
@@ -145,7 +143,6 @@ class AnnotationManager:
     # Get annotations for object in frame range, without mongo id
     # Always only one object in "objects" so use objects[0] !!
     # AIK: ignore user parameter
-    #TODO: revisar
     def get_object_in_frames(self, start_annotation, end_annotation):
         try:
             if start_annotation.dataset.is_aik():
