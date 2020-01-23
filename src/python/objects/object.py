@@ -63,7 +63,7 @@ class Object:
         else:
             category_id = None
             track_id = None
-            original_id =  None
+            original_id = None
 
         return Object(uid, type, keypoints, dataset_type, labels, category_id, track_id, original_id)
 
