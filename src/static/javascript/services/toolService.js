@@ -207,35 +207,35 @@ angular.module('CVGTool')
                     'objects': objects  // TODO: change objects for object
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(objects.uid, objects.type, frame);
+                if (dataset.type.localeCompare("poseTrack") !== 0) {
+                    callbackSuccess(objects.uid, objects.type, frame);
+                } else {
+                    callbackSuccess(objects.uid, objects.type, frame);
+                }
+                
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
         },
 
-        // MERGE THIS INTO THE UPDATEANNOTATION RESPECTING PT STRUCTURE
-        // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, points, callbackSuccess, callbackError) {
+        // Remove this by mergin updateAnnotation as one, and making the segmentation in backend
+        updateAnnotationPT: function(user, dataset, scene, frame, objects, points, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
-                url: '/api/annotation/updateAnnotation',
+                url: '/api/annotation/updateAnnotationPT',
                 data: {
                     'user': user,
                     'dataset': dataset.name,
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'object': {
-                        uid: object.original_uid,
-                        type: object.type,
-                        track_id: object.uid,
-                        points: points
-                    }
+                    'object': objects,  
+                    'points': points
                 }
-            }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame);
+            }).then(function successCallback(response) {     
+                callbackSuccess(objects.track_id, objects.type, frame);           
             }, function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response)
             })
         },
 
@@ -260,7 +260,7 @@ angular.module('CVGTool')
                 }
         },
 
-        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
+        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
             uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
@@ -277,7 +277,7 @@ angular.module('CVGTool')
                     'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess(uidObject, frameArray, objectType);
+                    callbackSuccess(uidObject, objectType, startFrame, endFrame);
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);

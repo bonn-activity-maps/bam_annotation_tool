@@ -29,7 +29,7 @@
                         </select> -->
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
-        <div class="panel panel-tool">
+        <div id="TimelinePanel" class="panel panel-tool">
             <div class="panel-body">
                 <div class="col-md-1">
                     <p>Step size:</p>
@@ -79,7 +79,7 @@
 </div>
 
 <!-- CAMERAS PANEL (hidden panel) -->
-<div id="CamerasPanel" class="panel panel-cameras" ng-if="!toolParameters.isPosetrack">
+<div id="CamerasPanel" class="panel panel-cameras" ng-show="!toolParameters.isPosetrack">
     <button class="btn btn-expand-cameras" ng-click="camerasManager.toggleCamerasPanel();">
         <div class="row">
             <span class="glyphicon glyphicon-film" style="color: white; transform: rotate(90deg);"></span>
@@ -205,10 +205,12 @@
                                     class="glyphicon glyphicon-transfer"></span></button></th>
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
-                                    <button class="btn btn-success" ng-if="f.annotationExists" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-info" ng-if="!f.annotationExists" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                        class="glyphicon glyphicon-pushpin"></span></button>
                                 </th>
                             </tr>
                             <tr>
@@ -249,24 +251,36 @@
     </div>
     <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
-            <form class="form-horizontal">
-                <div class="form-group input-group-sm">
-                    <label class="control-label col-sm-4">Object type:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+            <div class="col col-md-8">
+                <form class="form-horizontal">
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Object type:</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Frame:</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-static">{{timelineManager.slider.value}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">UID:</label>
+                        <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                    </div>
+                </form>
+            </div>
+            <div class="col col-md-4">
+                <div ng-if="toolParameters.isPosetrack" uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
+                    <div uib-slide ng-repeat="mugshot in mugshotsManager.mugshots" index="$index">
+                        <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
                     </div>
                 </div>
-                <div class="form-group input-group-sm">
-                    <label class="control-label col-sm-4">Frame:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-static">{{timelineManager.slider.value}}</p>
-                    </div>
+                <div ng-if="!toolParameters.isPosetrack">
+                    Mugshots are disabled for Action In Kitchen.
                 </div>
-                <div class="form-group input-group-sm">
-                    <label class="control-label col-sm-4">UID:</label>
-                    <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
-                </div>
-            </form>
+            </div>
         </div>
         <hr>
 
@@ -280,13 +294,13 @@
                         <th>Remove</th>
                     </tr>
                 </thead>
-                <tbody ng-if="keypointEditor.keypointEditorData.points[0].creationType.localeCompare('points') === 0">
-                    <tr ng-repeat="ps in keypointEditor.keypointEditorData.points">
-                        <td><span ng-if="ps.originalPoint.length === 0" class="label label-primary">{{ps.label}}</span>
-                            <span ng-if="ps.originalPoint.length !== 0" class="label label-success">{{ps.label}}</span></td>
+                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('point') === 0">
+                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
                         <th>  
-                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && ps.originalPoint.length === 0" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && ps.originalPoint.length !== 0" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
                             <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
 
                         </th>
@@ -296,17 +310,20 @@
                         </th>
                     </tr>
                 </tbody>
-                <tbody ng-if="keypointEditor.keypointEditorData[0].creationType.localeCompare('box') === 0">
-                    <tr>
-                        <td><span ng-if="keypointEditor.keypointEditorData.points[0].points[0] === null" class="label label-primary">Box</span>
-                            <span ng-if="keypointEditor.keypointEditorData.points[0].points[0] !== null" class="label label-success">Box</span></td>
-                        <th>
-                            <button class="btn btn-primary" ng-if="keypointEditor.keypointEditorData.points[0].points[0] === null" ng-click=""><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="keypointEditor.keypointEditorData.points[0].points[0] !== null" ng-click=""><span class="glyphicon glyphicon-edit"></span></button>
+                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('box') === 0">
+                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] !== null" class="label label-success">{{tag}}</span></td>
+                        <th>  
+                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('boxCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
+
                         </th>
+                        <th>-</th>
                         <th>
-                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataBox()"><span class="glyphicon glyphicon-trash"></button>
-                        </th>   
+                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index);"><span class="glyphicon glyphicon-trash"></button>
+                        </th>
                     </tr>
                 </tbody>
             </table>

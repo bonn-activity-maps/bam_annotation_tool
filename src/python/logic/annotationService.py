@@ -151,7 +151,7 @@ class AnnotationService:
     def updateAnnotationPT(self, dataset, datasetType, scene, frame, user, object, points):
         keypoints = []
         for point in points:
-            keypoints.append(point["points"][0])
+            keypoints.append(point)
         object["keypoints"] = keypoints
         object["category_id"] = 1
         result = self.updateAnnotationFrameObject(dataset, scene, frame, user, object, datasetType)
