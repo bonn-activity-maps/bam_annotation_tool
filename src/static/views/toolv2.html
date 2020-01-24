@@ -205,11 +205,11 @@
                                     class="glyphicon glyphicon-transfer"></span></button></th>
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
-                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
                                         class="glyphicon glyphicon-pushpin"></span></button>
                                 </th>
                             </tr>
