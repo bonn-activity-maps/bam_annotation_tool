@@ -2245,12 +2245,14 @@ angular.module('CVGTool')
                 // Create Epiline object
                 _this.epilinesManager[number] = new Epiline(_this.toImage(el1), _this.toImage(el2), color);
                 _this.setRedraw();
+
             }
 
             // Reset Epiline
             _this.resetEpiline = function(number) {
                 delete _this.epilinesManager[number];
                 _this.epilinesManager[number] = null;
+
             }
 
             // Reset epilines
@@ -2407,6 +2409,7 @@ angular.module('CVGTool')
                     labels: [],
                     objects: {}
                 };
+
             }
 
             // Puts the active camera in the array of cameras
@@ -2504,9 +2507,10 @@ angular.module('CVGTool')
                         var status = $scope.objectManager.annotationsState(object.uid, object.type, object.frames[f].frame);
                         if (status === 0 || status === -1) {
                             frames.push(object.frames[f].frame);
+
                         }
                     }
-                    if (frames.length > 0){
+                    if (frames.length > 0 && isAnnotated){
                         incompleteObjects.push({'type': objType, 'object': obj, 'frames': frames.toString()});
                     }
                 }

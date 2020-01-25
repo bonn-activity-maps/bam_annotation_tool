@@ -11,6 +11,8 @@ import numpy.linalg as la
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.frameManager import FrameManager
 
+from python.objects.frame import Frame
+
 # aikService logger
 log = logging.getLogger('aikService')
 
@@ -19,53 +21,67 @@ frameManager = FrameManager()
 
 class AIKService:
 
-    aik = 'actionInKitchen'
-    pt = 'poseTrack'
-
     # Method to read a dictionary key that may not exist.
-    def safelyReadDictionary(self, dict, key):
+    def safely_read_dictionary(self, dict, key):
         try:
             return dict[key]
         except KeyError:
             return None
 
+    def project_to_camera(self, frame, points_array):
+        # Convert the points json to Python list
+        points_array = json.loads(points_array)
+
+        # Get camera parameters for the frame, camera and dataset
+        frame = frameManager.get_frame(frame)
+
+        # Project and return the points into the camera
+        return True, self.project_3D_points_to_camera(points_array, frame.camera_parameters), 200
+
+
     # Auxiliar function that creates a "AIK camera obejct" from the given camera parameters
-    def createCamera(self, cameraParams):
-        return Camera(cameraParams['K'], cameraParams['rvec'], cameraParams['tvec'], cameraParams['dist_coef'], cameraParams['w'], cameraParams['h'])
+    def create_camera(self, camera_params):
+        return Camera(camera_params['K'], camera_params['rvec'], camera_params['tvec'], camera_params['dist_coef'], camera_params['w'], camera_params['h'])
     
     # Project 3D points into a camera given the camera parameters
-    def project3DPointsToCamera(self, points3D, cameraParams):
+    def project_3D_points_to_camera(self, points_3D, camera_params):
         # Create the camera given camera parameters
-        camera = self.createCamera(cameraParams)
+        camera = self.create_camera(camera_params)
         
         # Project all the points in the camera
-        points2D = camera.project_points(points3D)
+        points_2D = camera.project_points(points_3D)
         
         # Return the projected points as a list
-        return points2D.tolist()
+        return points_2D.tolist()
     
     # Triangulates the 3D point from two 2D points and their respective cameras
-    def triangulate2DPoints(self, points, camParams):
+    def triangulate_2D_points(self, points, cam_params):
         # Create the cameras
         cameras = []
-        for c in camParams:
-            cameras.append(self.createCamera(c))
+        for c in cam_params:
+            cameras.append(self.create_camera(c))
 
         # Triangulate
-        point3D = gm.triangulate_multiple(points, cameras)
-        return point3D
+        point_3D = gm.triangulate_multiple(points, cameras)
+        return point_3D
 
     # Compute the epiline of a point in a camera in another camera
-    def computeEpiline(self, point2D, cameraParams1, cameraParams2):
+    def compute_epiline(self, point_2D, frame1, frame2):
+        point_2D = json.loads(point_2D)
+
+        # Get camera parameters of frames
+        frame1 = frameManager.get_frame(frame1)
+        frame2 = frameManager.get_frame(frame2)
+
         # Create the two cameras
-        camera1 = self.createCamera(cameraParams1)
-        camera2 = self.createCamera(cameraParams2)
+        camera1 = self.create_camera(frame1.camera_parameters)
+        camera2 = self.create_camera(frame2.camera_parameters)
 
         # ax + by + c = 0 ==> y = (-c -ax)/b
         y = lambda x, a, b, c: (-c - a * x)/b
 
         # Calculate epiline
-        epiline = gm.compute_epiline(point2D, camera1, camera2)
+        epiline = gm.compute_epiline(point_2D, camera1, camera2)
         
         # Calculate two points of the epiline
         x0 = 0
@@ -78,7 +94,7 @@ class AIKService:
         return [x0,y0] , [x1,y1]
 
     # Create box for 3 3d points
-    def createBox(self, a, b, c):
+    def create_box(self, a, b, c):
         """
         :param a: (x, y, z) top-left point
         :param b: (x, y, z) top-right point
@@ -132,49 +148,48 @@ class AIKService:
         return str(base64.b64encode(imdata.tostring())).replace("\n", "")
 
     # Return 6 mugshot of person uid from different cameras
-    def getMugshot(self, dataset, datasetType, scene, user, personUid):
+    def get_mugshot(self, dataset, scene, user, person_uid):
         # Get 10 annotation of the object uid
-        result = annotationManager.getAnnotationsByObject(dataset, datasetType, scene, user, personUid)
+        result = annotationManager.get_annnotations_by_object(dataset, scene, user, person_uid)
         images = []     # Final cropped images
 
         for r in result:
             if 'objects' in r and r['objects'][0]['keypoints'] != []:
 
-                if datasetType == self.pt:
+                if dataset.is_pt():
                     points = r['objects'][0]['keypoints']
 
-                    frameResult = frameManager.getFrame(r['frame'], scene, dataset)
-                    if frameResult != 'Error':
-                        path = frameResult['path']
+                    f = Frame(r['frame'], scene, dataset)
+                    frame_result = frameManager.get_frame(f)
+                    if frame_result != 'Error':
 
                         kpX, kpY = points[0]
                         kpX2, kpY2 = points[1]
 
-                        img = cv2.imread(path)
-                        cropImg = img[kpY:kpY2, kpX:kpX2]
-                        images.append({"image": self.img2binary(cropImg)})
+                        img = cv2.imread(frame_result.path)
+                        crop_img = img[kpY:kpY2, kpX:kpX2]
+                        images.append({"image": self.img2binary(crop_img)})
                 else:
                     kps3d = r['objects'][0]['keypoints'][0]     # Nose 3d point
 
                     # Check annotations in all 12 cameras
                     for camera in range(12):
                         # Check camera parameters and frame path
-                        frameResult = frameManager.getFrame(r['frame'], camera, dataset)
-                        if frameResult != 'Error':
-                            cameraParams = frameResult['cameraParameters']
-                            path = frameResult['path']
+                        f = Frame(r['frame'], camera, dataset)
+                        frame_result = frameManager.get_frame(f)
 
+                        if frame_result != 'Error':
                             # Obtain 2d keypoints for corresponding camera
-                            kps2d = self.project3DPointsToCamera(kps3d, cameraParams)[0]
+                            kps2d = self.project_3D_points_to_camera(kps3d, frame_result.camera_parameters)[0]
                             kpX, kpY = int(kps2d[0]), int(kps2d[1])
 
                             # Read img, make mugshot 200px and add to final images
-                            img = cv2.imread(path)
+                            img = cv2.imread(frame_result.path)
                             if kpX >= 0 and kpX <= img.shape[1] and kpY >=0 and kpY <= img.shape[0]:
                                 kpY_min, kpY_max = max(kpY-100, 0), min(kpY+100, img.shape[0])
                                 kpX_min, kpX_max = max(kpX-100, 0), min(kpX+100, img.shape[1])
-                                cropImg = img[kpY_min:kpY_max, kpX_min:kpX_max]
-                                images.append({"image": self.img2binary(cropImg)})
+                                crop_img = img[kpY_min:kpY_max, kpX_min:kpX_max]
+                                images.append({"image": self.img2binary(crop_img)})
 
         return True, images, 200
 

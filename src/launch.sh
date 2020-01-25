@@ -30,6 +30,7 @@ fi
 if [ "$1" = "-h" ]; then
   show_help
 elif [ "$1" = "-bweb" ]; then
+  sudo npm install --prefix static/
   sudo docker-compose build web
 elif [ "$1" = "-lweb" ]; then
   sudo docker-compose up web
@@ -40,9 +41,11 @@ elif [ "$1" = "-rdb" ]; then
 elif [ "$1" = "-fdb" ]; then
   mongo 172.18.0.2:27017/cvg db/initialize.js
   elif [ "$1" = "-aweb" ]; then
+  sudo npm install --prefix static/
   sudo docker-compose build web
   sudo docker-compose up web
 elif [ "$1" = "-daweb" ]; then
+  sudo npm install --prefix static/
   sudo docker-compose build web
   sudo docker-compose up -d web
 elif [ "$1" = "-saweb" ]; then

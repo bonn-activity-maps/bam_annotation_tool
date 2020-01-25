@@ -11,47 +11,45 @@ objectTypeManager = ObjectTypeManager()
 class ObjectTypeService:
 
     # Return object info
-    def getObjectType(self, type, datasetType):
-        result = objectTypeManager.getObjectType(type, datasetType)
+    def get_object_type(self, object_type):
+        result = objectTypeManager.get_object_type(object_type)
         if result == 'Error':
             return False, 'Incorrect object type', 400
         else:
-            return True, result, 200
+            return True, result.to_json(), 200
 
     # Return objects info
-    def getObjectTypes(self, datasetType):
-        result = objectTypeManager.getObjectTypes(datasetType)
+    def get_object_types(self, dataset_type):
+        result = objectTypeManager.get_object_types(dataset_type)
         if result == 'Error':
             return False, 'Error searching object types', 400
         else:
-            return True, result, 200
+            return True, [r.to_json() for r in result], 200
 
      # Return 'ok' if the object has been created
-    def createObjectType(self, type, datasetType, nkp, labels, supercategory=None, id=None, skeleton=None,
-                         is_polygon=False):
+    def create_object_type(self, object_type):
         # Check if object exist
-        if objectTypeManager.getObjectType(type, datasetType) != 'Error':
+        if objectTypeManager.get_object_type(object_type) != 'Error':
             return False, 'The object type already exists', 400
         else:
             # Create object
-            result = objectTypeManager.createObjectType(type, datasetType, nkp, labels, supercategory=supercategory,
-                                                        id=id, skeleton=skeleton, is_polygon=False)
+            result = objectTypeManager.create_object_type(object_type)
             if result == 'Error':
                 return False, 'Error creating object type', 400
             else:
-                return True, {'type': type}, 200
+                return True, {'type': object_type.type}, 200
 
     # Return 'ok' if the object has been removed
-    def removeObjectType(self, type, datasetType):
-        result = objectTypeManager.removeObjectType(type, datasetType)
+    def remove_object_type(self, object_type):
+        result = objectTypeManager.remove_object_type(object_type)
         if result == 'Error':
             return False, 'Error deleting object type', 400
         else:
             return True, result, 200
 
     # Return 'ok' if the object has been updated
-    def updateObjectType(self, type, datasetType, nkp, labels):
-        result = objectTypeManager.updateObjectType(type, datasetType, nkp, labels)
+    def update_object_type(self, object_type):
+        result = objectTypeManager.update_object_type(object_type)
         if result == 'Error':
             return False, 'Error updating object type', 400
         else:

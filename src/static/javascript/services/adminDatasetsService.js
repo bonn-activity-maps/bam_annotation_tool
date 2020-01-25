@@ -6,7 +6,7 @@ angular.module('CVGTool')
             getInfoOfVideos: function (callbackSuccess, activeDataset, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/dataset/getVideos',
+                    url: '/api/video/getVideos',
                     headers: {
                         'dataset': activeDataset
                     }
@@ -26,7 +26,7 @@ angular.module('CVGTool')
                     method: 'POST',
                     url: '/api/dataset/readData',
                     data: {
-                        'dataset': dataset,
+                        'name': dataset,
                         'type': type
                     }
                 }).then(function successCallback(response) {
@@ -121,7 +121,7 @@ angular.module('CVGTool')
             getActivitiesList: function(dataset, callbackSuccess) {
                 $http({
                     method: 'GET',
-                    url: '/api/action/getActivities',
+                    url: '/api/activity/getActivities',
                     headers: {
                         dataset: dataset
                     }
@@ -137,7 +137,7 @@ angular.module('CVGTool')
             createActivity: function(dataset, activity, callbackSuccess, callbackError) {
                 $http({
                     method: 'POST',
-                    url: '/api/action/createActivity',
+                    url: '/api/activity/createActivity',
                     data: {
                         dataset: dataset,
                         activity: activity
