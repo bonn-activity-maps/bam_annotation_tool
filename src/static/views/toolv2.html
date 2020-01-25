@@ -1,0 +1,445 @@
+<div ng-controller="toastCtrl">
+</div>
+
+<div style="height: 100%;">
+    <div class="row" style="height: 90%; width: 94%; margin-left: 4%; margin-right: 2%">
+        <div class="panel panel-canvases" style="height: 100%;">
+            <!-- Canvases -->
+            <div id="canvas-container" class="panel-body-canvases" style="height: 100%;">
+                <div class="row" style="height: 50%;">
+                    <div class="col-md-6" style="height: 100%; padding-right: 0">
+                        <canvas id="canvas1" class="playable-canvas" style="border:1px solid #FF2D26;"></canvas>
+                    </div>
+                    <div class="col-md-6" style="height: 100%; padding-left: 0" >
+                        <canvas id="canvas2" class="playable-canvas" style="border:1px solid #5673E8;"></canvas> 
+                    </div>
+                </div>
+                <div class="row" style="height: 50%; ">
+                    <div class="col-md-6" style="height: 100%; padding-right: 0">
+                        <canvas id="canvas3" class="playable-canvas" style="border:1px solid #A66BFF;"></canvas>
+                    </div>
+                    <div class="col-md-6" style="height: 100%; padding-left: 0">
+                        <canvas id="canvas4" class="playable-canvas" style="border:1px solid #51FF2D;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                        <!-- <select class="form-control" id="selObjType" ng-change="objectManager.changeSelectedType()" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
+                        </select> -->
+    <!-- TIMELINE BEGIN -->
+    <div class="row" style="height: 10%">
+        <div id="TimelinePanel" class="panel panel-tool">
+            <div class="panel-body">
+                <div class="col-md-1">
+                    <p>Step size:</p>
+                    <div class="row">
+                        <select class="form-control" id="selFrames" ng-change="test" ng-model="timelineManager.frameJumpNumber" ng-options="option.id as option.tag for option in timelineManager.frameJumpNumberOptions" convert-to-number>                     
+                            </select>
+                    </div>  
+                </div>
+                <div class="col-md-11">
+                    <div class="row">
+                        <div class="col-md-2" style="text-align: center; padding-top: 20px;">
+                            <button ng-click="timelineManager.previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
+                                    class="glyphicon glyphicon-chevron-left"></span></button>
+                            <button ng-if="!timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                                    class="glyphicon glyphicon-play"></button>
+                            <button ng-if="timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                                    class="glyphicon glyphicon-pause"></button>
+                            <button ng-click="timelineManager.nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
+                                    class="glyphicon glyphicon-chevron-right"></span></button>
+                        </div>
+                        <div class="col-md-10">
+                            <rzslider rz-slider-model="timelineManager.slider.value" rz-slider-options="timelineManager.slider.options"></rzslider>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- TIMELINE END -->
+    
+    <!-- LOADING PANEL -->
+    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
+        <div class="row">
+            <div class="col col-md-4"></div>
+            <div class="col col-md-4">
+                <div class="panel">
+                    <div class="panel-body">
+                        <img src="/static/resources/loading.gif" />
+                        <h2>Loading content</h2>
+                        <p>Please wait</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col col-md-4"></div>
+        </div>   
+    </div>  
+</div>
+
+<!-- CAMERAS PANEL (hidden panel) -->
+<div id="CamerasPanel" class="panel panel-cameras" ng-show="!toolParameters.isPosetrack">
+    <button class="btn btn-expand-cameras" ng-click="camerasManager.toggleCamerasPanel();">
+        <div class="row">
+            <span class="glyphicon glyphicon-film" style="color: white; transform: rotate(90deg);"></span>
+        </div>
+    </button>
+    <div class="panel-body text-center " style="height: 80%; max-height: 80%; overflow-y: auto;">
+        <div ng-repeat="video in camerasManager.loadedCameras">
+            <div class="btn-group dropleft">
+                <button class="btn btn-invisible dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="thumbnail">
+                        <img class="img" style="width: 100%; height: width/1.5;" src="{{video.frames[timelineManager.slider.value - toolParameters.frameFrom].image}}" />
+                        <div class="caption">
+                            <p>{{video.filename}}</p>
+                        </div>
+                    </div>
+                </button>
+                <div id="MoveVideoToCameraDropdown" class="dropdown-menu text-center">
+                    <li class="dropdown-header">Selected the canvas to move the video</li>
+                    <li class="divider"></li> 
+                    <li class="text-center">
+                        <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 1)"><bold>1</bold></button>
+                        <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 2)"><bold>2</bold></button>
+                    </li>
+                    <li class="text-center">
+                        <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 3)"><bold>3</bold></button>
+                        <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 4)"><bold>4</bold></button>
+                    </li>
+                </div>
+            </div>
+        </div>
+        <button ng-click="camerasManager.addCamera()" class="btn btn-default" style="width: 100%; height: width/1.5;"><span
+                class="glyphicon glyphicon-plus" style="width: 100%; height: width/1.5;"></span></button>
+    </div>
+</div>
+
+<!-- TOOLS PANEL ("floating panel) -->
+<div id="ToolPanel" class="panel panel-tools text-center">
+    <!-- Selector de object type -->
+    <div class="btn-group dropright">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span
+            class="glyphicon glyphicon-tower"></span>
+        </button>
+        <div id="ObjectTypeDropdown" class="dropdown-menu text-center">
+          <!-- Dropdown menu links -->
+          <li class="dropdown-header">Selected type</li>
+          <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
+          <li class="divider"></li> 
+          <li class="dropdown-header">Object types</li>
+          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type.type}}</button></li>
+        </div>
+    </div>
+    <hr class="tool-panel-hr">
+    <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span
+            class="glyphicon glyphicon-th-large"></span>
+        </button>
+        <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">Selected number of canvases:</li>
+            <li class="divider"></li> 
+            <li class="text-center">
+                <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(2)"><bold>2</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(3)"><bold>3</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(4)"><bold>4</bold></button>
+            </li>
+        </div>
+    </div>
+    <hr class="tool panel-hr">
+    <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
+    <button class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
+    
+</div>
+
+<!-- KEYPOINT EDITOR FLOATING PANEL -->
+<div id="KeypointEditor" class="panel panel-floating"  style="width: 800px;" ng-show="keypointEditor.active">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Keypoint Editor
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!keypointEditor.minimized" class="btn-invisible btn-xs" ng-click="keypointEditor.minimizeMaximize()"><span
+                    class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="keypointEditor.minimized" class="btn-invisible btn-xs" ng-click="keypointEditor.minimizeMaximize()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="keypointEditor.toggleActive()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.minimized">
+        <div ng-if="objectManager.selectedType.type === undefined">
+            <p>
+                Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
+            </p>  
+        </div>
+        <div ng-if="objectManager.selectedType.type !== undefined">
+            <div class="checkbox">
+                <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate">Auto-interpolate when saving</label>
+            </div>
+            <hr>
+            <div class="zui-wrapper" >
+                <div class="zui-scroller">
+                    <table class="zui-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="zui-sticky-col">Objects</th>
+                                <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
+                            </tr>
+    
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="object in objectManager.selectedType.objects">
+                                <th><button class="btn btn-danger" ng-click="objectManager.openBatchDelete(object)"><span
+                                    class="glyphicon glyphicon-transfer"></span></button></th>
+                                <td class="zui-sticky-col">{{object.uid}} </td>
+                                <th ng-repeat="f in object.frames">
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                                    class="glyphicon glyphicon-pushpin"></span></button>
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                                    class="glyphicon glyphicon-pushpin"></span></button>
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                        class="glyphicon glyphicon-pushpin"></span></button>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td class="zui-sticky-col">
+                                    <button class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
+                                                    class="glyphicon glyphicon-plus"></span></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KEYPOINT EDITOR OBJECT EDITOR -->
+<div id="KeypointEditorEditor" class="panel panel-floating"  style="width: 450px;" ng-show="keypointEditor.editorActive">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Keypoint Object Editor
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!keypointEditor.editorMinimized" class="btn-invisible btn-xs" ng-click="keypointEditor.minimizeMaximizeEditor()"><span
+                    class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="keypointEditor.editorMinimized" class="btn-invisible btn-xs" ng-click="keypointEditor.minimizeMaximizeEditor()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="keypointEditor.closeEditor()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.editorMinimized">
+        <div class="row">
+            <div class="col col-md-8">
+                <form class="form-horizontal">
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Object type:</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-static">{{objectManager.selectedObject.type}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Frame:</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-static">{{timelineManager.slider.value}}</p>
+                        </div>
+                    </div>
+                    <div class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">UID:</label>
+                        <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                    </div>
+                </form>
+            </div>
+            <div class="col col-md-4">
+                <div ng-if="toolParameters.isPosetrack" uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
+                    <div uib-slide ng-repeat="mugshot in mugshotsManager.mugshots" index="$index">
+                        <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
+                    </div>
+                </div>
+                <div ng-if="!toolParameters.isPosetrack">
+                    Mugshots are disabled for Action In Kitchen.
+                </div>
+            </div>
+        </div>
+        <hr>
+
+        <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
+            <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Points</th>
+                        <th>Visibility</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('point') === 0">
+                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
+                        <th>  
+                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
+
+                        </th>
+                        <th>-</th>
+                        <th>
+                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>
+                        </th>
+                    </tr>
+                </tbody>
+                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('box') === 0">
+                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] !== null" class="label label-success">{{tag}}</span></td>
+                        <th>  
+                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('boxCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
+
+                        </th>
+                        <th>-</th>
+                        <th>
+                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index);"><span class="glyphicon glyphicon-trash"></button>
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col col-md-4">
+                <button class="btn-success" ng-click="commonManager.updateAnnotation();" data-toggle="tooltip" data-placement="top" title="S">Save</button>
+            </div>
+            <div class="col col-md-4"></div>
+            <div class="col col-md-4">
+                <button class="btn-primary" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
+            </div>
+            <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- ACTIONS EDITOR FLOATING PANEL -->
+<div id="ActionsEditor" class="panel panel-floating"  style="width: 450px;" ng-show="actionsEditor.active">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Actions Editor
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!actionsEditor.minimized" class="btn-invisible btn-xs" ng-click="actionsEditor.minimizeMaximize()"><span
+                    class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="actionsEditor.minimized" class="btn-invisible btn-xs" ng-click="actionsEditor.minimizeMaximize()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="actionsEditor.toggleActive()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" style="height: 500px;" ng-show="!actionsEditor.minimized">
+        <div ng-show="objectManager.selectedType.type === undefined">
+            <p>
+                Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
+            </p>  
+        </div>
+        <div ng-show="objectManager.selectedType.type !== undefined">
+            <h4>Select object:</h4>
+            <div class="row">
+                <select class="form-control" id="selObject" ng-change="actionManager.getActionsListByUID()" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
+                </select>
+            </div> 
+            <hr>
+            <div ng-show="actionManager.selectedObject === null">
+                <p>Select an object from the selector <span class="glyphicon glyphicon-arrow-up"></span></p>
+            </div>
+            <div ng-show="actionManager.selectedObject !== null">
+                <div class="btn-group dropright" style="padding-bottom: 2px; padding-top: 2px;">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="glyphicon glyphicon-plus"></span> Add action
+                    </button>
+                    <div id="ActionCreationDropdown" class="dropdown-menu text-center">
+                        <li class="dropdown-header">Actions:</li>
+                        <li>
+                            <select class="form-control" id="selAction" ng-model="actionManager.actionCreationData.selectedType" ng-options="activity for activity in actionManager.activitiesList">
+                            </select>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Frame from:</li>
+                        <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Frame to:</li>
+                        <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                        <li class="divider"></li>
+                        <li>
+                            <button class="btn btn-sm btn-primary" ng-click="actionManager.createNewAction()">Add</button>
+                        </li>
+
+                    </div>
+                </div>
+                <div class="container" style="overflow: auto; max-height: 325px; max-width: 400px;">
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Remove</th>
+                                <th>Action</th>
+                                <th>From</th>
+                                <th>To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-if="actionManager.actionsList.length != 0" ng-repeat="action in actionManager.actionsList">
+                                <td>
+                                    <button class="btn-danger" ng-click="actionManager.removeAction(action)">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </button>
+                                </td>
+                                <td>{{action.name}}</td>
+                                <th>{{action.startFrame}}</th>
+                                <th>{{action.endFrame}}</th>
+                            </tr>
+                            <tr ng-if="actionManager.actionsList.length == 0">
+                                <td>No actions created</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+
+
+<!-- ALL THE OTHER WINDOWS -->
+
+
+
