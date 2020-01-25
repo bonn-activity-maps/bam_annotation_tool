@@ -776,26 +776,6 @@ angular.module('CVGTool')
                     }
                 }) 
             }
-
-            // Calls for the interpolation (if possible)
-            _this.interpolate = function(objectUID, objectType, frameTo) {
-                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
-
-                var frameFrom = null;
-
-                // Find the frame to interpolate to
-                for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
-                    if (_this.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
-                        frameFrom = i;
-                        break;
-                    }
-                }
-
-                if (frameFrom === null) return; // Nothing found to interpolate to
-
-                // Call for the interpolation
-                $scope.commonManager.interpolate(objectUID, objectType, frameFrom, frameTo);
-            }
         }
 
 
@@ -1022,17 +1002,30 @@ angular.module('CVGTool')
             } 
 
             // Interpolate in AIK
-            _this.interpolate = function (objectUID, objectType, frameFrom, frameTo) {
+            _this.interpolate = function (objectUID, objectType, frameTo) {
                 var callbackSuccess = function(objectUID, objectType, frameFrom, frameTo) {
                     var frameArray = [];
                     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
+
+                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+
+                var frameFrom = null;
+
+                // Find the frame to interpolate to
+                for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
+                    if ($scope.objectManager.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
+                        frameFrom = i;
+                        break;
+                    }
+                }
+
+                if (frameFrom === null) return; // Nothing found to interpolate to
+
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
-            // function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
-            //     uidObject2, callbackSuccess, callbackError)
             // Updates the annotation being edited
             _this.updateAnnotation = function() {
                 var callbackSuccess = function(uid, type, frame) {
@@ -1042,7 +1035,7 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
                     if ($scope.keypointEditor.autoInterpolate) {
-                        $scope.objectManager.interpolate(uid, type, frame);
+                        _this.interpolate(uid, type, frame);
                     }
                 }
                 var pointStructure = {
@@ -1296,13 +1289,27 @@ angular.module('CVGTool')
             }
 
             // Interpolate
-            _this.interpolate = function (objectUID, objectType, frameFrom, frameTo) {
+            _this.interpolate = function (objectUID, objectType, frameTo) {
                 var callbackSuccess = function(objectUID, objectType, frameFrom, frameTo) {
                     var frameArray = [];
                     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+
+                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+
+                var frameFrom = null;
+                // Find the frame to interpolate to
+                for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
+                    if ($scope.objectManager.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
+                        frameFrom = i;
+                        break;
+                    }
+                }
+
+                if (frameFrom === null) return; // Nothing found to interpolate to
+
+                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
             
 
@@ -1314,7 +1321,7 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame])
 
                     if ($scope.keypointEditor.autoInterpolate) {
-                        $scope.objectManager.interpolate(uid, type, frame);
+                        _this.interpolate(uid, type, frame);
                     }
                 }
 
@@ -1523,7 +1530,7 @@ angular.module('CVGTool')
             }
 
             _this.callInterpolate = function() {
-                $scope.objectManager.interpolate($scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, $scope.timelineManager.slider.value);
+                $scope.commonManager.interpolate($scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, $scope.timelineManager.slider.value)
             }
 
             // Closes the panel to edit keypoints
@@ -2158,7 +2165,6 @@ angular.module('CVGTool')
                     }
                     _this.setRedraw();
                 }
-
             }
 
             // Generates the image of the given frame

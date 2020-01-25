@@ -276,7 +276,10 @@ class AnnotationService:
             if datasetType == self.aik \
             else annotationManager.getFrameObject(dataset, datasetType, scene, startFrame, user, uidObject2, objectType)
         obj2 = annotationManager.getFrameObject(dataset, datasetType, scene, endFrame, user, uidObject, objectType)
-
+        print(uidObject, " ", uidObject2)
+        print(dataset, " ", datasetType, " ", scene, " ", startFrame, " ", endFrame)
+        print(obj1)
+        print(obj2)
         type = obj1['type']
         kps1 = obj1['keypoints']
         kps2 = obj2['keypoints']
