@@ -79,74 +79,112 @@ class AnnotationService:
     def obtain_3d_points_AIK(self, annotation):
         keypoints2d = annotation.objects[0].keypoints
         keypoints3d = []  # New 3d kps
+
         # Triangulate all keypoints of object
         for kp in keypoints2d:
             # Keypoints and camera parameters to triangulate
             keypoints_triangulate = []
             camera_params_triangulate = []
 
-            # Add existing points to triangulate (max 4 points)
-            if kp["cam1"] != "":
-                f = Frame(annotation.frame, kp["cam1"], annotation.dataset)
-                frame1 = frameManager.get_frame(f)
-                keypoints_triangulate.append(kp["p1"])
-                camera_params_triangulate.append(frame1.camera_parameters)
-
-            if kp["cam2"] != "":
-                f = Frame(annotation.frame, kp["cam2"], annotation.dataset)
-                frame2 = frameManager.get_frame(f)
-                keypoints_triangulate.append(kp["p2"])
-                camera_params_triangulate.append(frame2.camera_parameters)
-
-            if kp["cam3"] != "":
-                f = Frame(annotation.frame, kp["cam3"], annotation.dataset)
-                frame3 = frameManager.get_frame(f)
-                keypoints_triangulate.append(kp["p3"])
-                camera_params_triangulate.append(frame3.camera_parameters)
-
-            if kp["cam4"] != "":
-                f = Frame(annotation.frame, kp["cam4"], annotation.dataset)
-                frame4 = frameManager.get_frame(f)
-                keypoints_triangulate.append(kp["p4"])
-                camera_params_triangulate.append(frame4.camera_parameters)
+            points = kp["points"]
+            cameras = kp["cameras"]
+            # Add existing points to triangulate
+            for i, p in enumerate(points):
+                if points[i]:       # only if it's not empty
+                    f = Frame(annotation.frame, cameras[i], annotation.dataset)
+                    frame = frameManager.get_frame(f)
+                    keypoints_triangulate.append(p)
+                    camera_params_triangulate.append(frame.camera_parameters)
 
             if len(keypoints_triangulate) == 0:  # If 0 points, let the keypoint empty
                 keypoints_triangulate.append([])
                 camera_params_triangulate.append([])
-            elif len(keypoints_triangulate) < 2:  # Error if only 1 points
+                keypoints3d.append([])
+            elif len(keypoints_triangulate) < 2:  # Error if only 1 point
                 return annotation.objects, True
             else:  # Triangulate using all available points
                 point3d = aikService.triangulate_2D_points(keypoints_triangulate, camera_params_triangulate)
                 keypoints3d.append(point3d.tolist())  # Store 3d point
 
         # Modify original objects which contains info of object with calculated 3d keypoints
-        annotation.objects[0].keypoints = keypoints3d
-        return annotation.objects, False
+        # annotation.objects[0].keypoints = keypoints3d
+        # return annotation.objects, False
+        return keypoints3d, False
+
+    # # Triangulate points from 2D points to 3D
+    # # Always a single object in "objects" so always objects[0] !!
+    # def obtain_3d_points_AIK(self, annotation):
+    #     keypoints2d = annotation.objects[0].keypoints
+    #     keypoints3d = []  # New 3d kps
+    #     # Triangulate all keypoints of object
+    #     for kp in keypoints2d:
+    #         # Keypoints and camera parameters to triangulate
+    #         keypoints_triangulate = []
+    #         camera_params_triangulate = []
+    #
+    #         # Add existing points to triangulate (max 4 points)
+    #         if kp["cam1"] != "":
+    #             f = Frame(annotation.frame, kp["cam1"], annotation.dataset)
+    #             frame1 = frameManager.get_frame(f)
+    #             keypoints_triangulate.append(kp["p1"])
+    #             camera_params_triangulate.append(frame1.camera_parameters)
+    #
+    #         if kp["cam2"] != "":
+    #             f = Frame(annotation.frame, kp["cam2"], annotation.dataset)
+    #             frame2 = frameManager.get_frame(f)
+    #             keypoints_triangulate.append(kp["p2"])
+    #             camera_params_triangulate.append(frame2.camera_parameters)
+    #
+    #         if kp["cam3"] != "":
+    #             f = Frame(annotation.frame, kp["cam3"], annotation.dataset)
+    #             frame3 = frameManager.get_frame(f)
+    #             keypoints_triangulate.append(kp["p3"])
+    #             camera_params_triangulate.append(frame3.camera_parameters)
+    #
+    #         if kp["cam4"] != "":
+    #             f = Frame(annotation.frame, kp["cam4"], annotation.dataset)
+    #             frame4 = frameManager.get_frame(f)
+    #             keypoints_triangulate.append(kp["p4"])
+    #             camera_params_triangulate.append(frame4.camera_parameters)
+    #
+    #         if len(keypoints_triangulate) == 0:  # If 0 points, let the keypoint empty
+    #             keypoints_triangulate.append([])
+    #             camera_params_triangulate.append([])
+    #         elif len(keypoints_triangulate) < 2:  # Error if only 1 points
+    #             return annotation.objects, True
+    #         else:  # Triangulate using all available points
+    #             point3d = aikService.triangulate_2D_points(keypoints_triangulate, camera_params_triangulate)
+    #             keypoints3d.append(point3d.tolist())  # Store 3d point
+    #
+    #     # Modify original objects which contains info of object with calculated 3d keypoints
+    #     annotation.objects[0].keypoints = keypoints3d
+    #     return annotation.objects, False
 
     # Return the object with the 3d points for AIK datasets
     # Always a single object in "objects" so always objects[0] !!
     def update_annotation_AIK(self, annotation):
 
         # Triangulate points from 2D points to 3D if dataset is AIK
-        objects, error_flag = self.obtain_3d_points_AIK(annotation)
+        keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
 
         # If the object is not a person -> we have to calculate 8 points for the box of object
         if annotation.objects[0].type != 'personAIK' and not error_flag:
-            kp1, kp2, kp3 = np.asarray(annotation.objects[0].keypoints)
-            annotation.objects[0].keypoints = aikService.create_box(kp1, kp2, kp3).tolist()
-        return objects, error_flag
+            kp1, kp2, kp3 = np.asarray(keypoints_3d)
+            keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
+        return keypoints_3d, error_flag
 
     # Return 'ok' if the annotation has been updated
 
     def update_annotation(self, annotation):
         # Triangulate points from 2D points to 3D if dataset is AIK
         if annotation.dataset.is_aik():
-            objects, error_flag = self.update_annotation_AIK(annotation)
+            keypoints_3d, error_flag = self.update_annotation_AIK(annotation)
 
             if error_flag:
                 return False, 'Error incorrect keypoints', 400
 
-            # Update only one object in the annotation for concrete frame
+            annotation.objects[0].keypoints = keypoints_3d
+            # Update only one object (all keypoints) in the annotation for concrete frame
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
