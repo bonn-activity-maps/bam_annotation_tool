@@ -56,7 +56,7 @@ class AnnotationManager:
             log.exception('Error finding annotation in db')
             return 'Error'
 
-    # Get all annotations for given dataset, scene, user and val. Not return mongo id
+    # Get all annotations for given dataset, scene, user and val. Don't return mongo id
     # AIK: ignore user parameter
     def get_annotations(self, annotation):
         try:

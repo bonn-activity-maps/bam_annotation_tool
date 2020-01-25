@@ -174,6 +174,7 @@ class AnnotationService:
         return keypoints_3d, error_flag
 
     # Return 'ok' if the annotation has been updated
+
     def update_annotation(self, annotation):
         # Triangulate points from 2D points to 3D if dataset is AIK
         if annotation.dataset.is_aik():
@@ -197,6 +198,7 @@ class AnnotationService:
 
     # Return 'ok' if the annotation has been updated
     # Same as above but for PoseTrack
+
     # def update_annotation_PT(self, annotation):
     #     # keypoints = []
     #     # for point in points:
@@ -332,6 +334,7 @@ class AnnotationService:
         type = obj1.type
         kps1 = obj1.keypoints
         kps2 = obj2.keypoints
+
 
         num_frames = end_annotation.frame - start_annotation.frame + 1
         num_kpts = len(kps1)

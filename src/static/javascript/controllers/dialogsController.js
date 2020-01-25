@@ -218,30 +218,6 @@ angular.module('CVGTool')
 
 }])
 
-
-/*
- * Controller of the dialog of the "remove stored video as administrator" action
- */
-.controller('dialogCameraSelectorCtrl', ['$scope', '$mdDialog', 'video', 'canvases', function($scope, $mdDialog, video, canvases) {
-    $scope.variables = {
-        video: video,
-        canvases: canvases
-    };
-
-    // Function to cancel all actions and close the dialog
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-
-    $scope.switchTo = function(number) {
-        $scope.data = {
-            video: $scope.variables.video,
-            number: number
-        };
-        $mdDialog.hide($scope.data);
-    }
-}])
-
 /*
  * Controller of the dialog of show password
  */
