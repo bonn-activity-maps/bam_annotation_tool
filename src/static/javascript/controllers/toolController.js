@@ -1287,7 +1287,7 @@ angular.module('CVGTool')
 
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
-                var callbackSuccess = function(objectUID, objectType, frameFrom, frameTo) {
+                var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
                     var frameArray = [];
                     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
@@ -1306,7 +1306,7 @@ angular.module('CVGTool')
 
                 if (frameFrom === null) return; // Nothing found to interpolate to
 
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
             
 
@@ -1327,12 +1327,11 @@ angular.module('CVGTool')
                     uid: $scope.objectManager.selectedObject.original_uid,
                     type: $scope.objectManager.selectedObject.type,
                     track_id: $scope.objectManager.selectedObject.uid,
-                    points: []
+                    keypoints: []
                 }
 
-                
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
-                objects.points = shape.cameraPoints;
+                objects.keypoints = shape.cameraPoints;
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
@@ -1571,13 +1570,13 @@ angular.module('CVGTool')
                         if (_this.keypointEditorData.shapes[i].points[_this.keypointEditorData.indexBeingEdited] !== null) {
                             var point = _this.keypointEditorData.shapes[i].cameraPoints[_this.keypointEditorData.indexBeingEdited];
                             var cameraName = $scope.canvasesManager.canvases[i].activeCamera.filename;
-                        }
-    
-                         // For each camera
-                         for (var j = 0; j < $scope.canvasesManager.canvases.length; j++) {
-                            if ($scope.canvasesManager.canvases[j].hasActiveCamera() && $scope.canvasesManager.canvases[j].activeCamera.filename.localeCompare(cameraName) !== 0) {
-                                var cameraToProject = $scope.canvasesManager.canvases[j].activeCamera.filename;
-                                toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, point, cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
+
+                             // For each camera
+                            for (var j = 0; j < $scope.canvasesManager.canvases.length; j++) {
+                                if ($scope.canvasesManager.canvases[j].hasActiveCamera() && $scope.canvasesManager.canvases[j].activeCamera.filename.localeCompare(cameraName) !== 0) {
+                                    var cameraToProject = $scope.canvasesManager.canvases[j].activeCamera.filename;
+                                    toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, point, cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
+                                }
                             }
                         }
                     }
@@ -2316,7 +2315,7 @@ angular.module('CVGTool')
             // Creates/updates the object into the object structure
             _this.update2DObject = function(uid, type, frame, points) {
                 var newObject = null;
-                
+                // TODO: ALGO DE AQUI NO CHUTA PARA PT
                 var imgPoints = [];                
                 // Project if points exist
                 if (points.length != 0) {
@@ -2396,6 +2395,8 @@ angular.module('CVGTool')
                             frame: i + $scope.toolParameters.frameFrom,
                             shape: null
                         })
+
+                        _this.update2DObject(objects[obj].uid, objects[obj].type, i + $scope.toolParameters.frameFrom, []);
                     }
                 }                
             }
@@ -2428,10 +2429,6 @@ angular.module('CVGTool')
                 return _this.activeCamera;
             }
         }
-
-        
-
-
 
         // Managers
         $scope.toolParameters = new ToolParametersManager($stateParams);
@@ -2552,12 +2549,8 @@ angular.module('CVGTool')
                 combo: 's',
                 description: 'Save annotation',
                 callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keyPointEditorTab == true) {
-                        if ($scope.toolParameters.isPosetrack) {
-                            $scope.updateAnnotationPT();
-                        } else {
-                            $scope.updateAnnotation();
-                        }
+                    if ($scope.keypointEditor.editorActive === true) {
+                        $scope.commonManager.updateAnnotation();
                     }
                 }
             });

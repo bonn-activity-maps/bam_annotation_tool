@@ -308,12 +308,14 @@ class AnnotationService:
         # Interpolate for all keypoints in all frames in between
         for i in range(num_kpts):
             interpolated_kps = []
-
-            # Interpolate each coordinate of keypoint
-            for j in range(kp_dim):
-                interpolated_coords = np.linspace(kps1[i][j], kps2[i][j], num=num_frames)
-                interpolated_kps.append(interpolated_coords)
-
+            if kps1[i] and kps2[i]: # If one of the two points is empty -> Not interpolate
+                # Interpolate each coordinate of keypoint
+                for j in range(kp_dim):
+                    interpolated_coords = np.linspace(kps1[i][j], kps2[i][j], num=num_frames)
+                    interpolated_kps.append(interpolated_coords)
+            else:
+                interpolated_kps.append([])
+                
             interpolated_kps = np.asarray(interpolated_kps)
 
             # Build interpolated keypoints for each frame
@@ -330,7 +332,7 @@ class AnnotationService:
             start_annotation.objects = [object2]
         obj1 = annotationManager.get_frame_object(start_annotation)
         obj2 = annotationManager.get_frame_object(end_annotation)
-
+        
         type = obj1.type
         kps1 = obj1.keypoints
         kps2 = obj2.keypoints

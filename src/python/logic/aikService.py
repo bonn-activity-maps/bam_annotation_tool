@@ -47,7 +47,8 @@ class AIKService:
     def project_3D_points_to_camera(self, points_3D, camera_params):
         # Create the camera given camera parameters
         camera = self.create_camera(camera_params)
-        
+        if len(points_3D) == 1 and len(points_3D[0]) == 0:
+            return [[]]
         # Project all the points in the camera
         points_2D = camera.project_points(points_3D)
         

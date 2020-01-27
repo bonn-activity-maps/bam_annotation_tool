@@ -206,38 +206,16 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'object': objects  // TODO: change objects for object
+                    'object': objects  
 
                 }
             }).then(function successCallback(response) {
                 if (dataset.type.localeCompare("poseTrack") !== 0) {
                     callbackSuccess(objects.uid, objects.type, frame);
                 } else {
-                    callbackSuccess(objects.uid, objects.type, frame);
+                    callbackSuccess(objects.track_id, objects.type, frame);
                 }
                 
-            }, function errorCallback(response) {
-                callbackError('danger', response)
-            })
-        },
-
-        // Remove this by mergin updateAnnotation as one, and making the segmentation in backend
-        updateAnnotationPT: function(user, dataset, scene, frame, objects, points, callbackSuccess, callbackError) {
-            $http({
-                method: 'POST',
-                url: '/api/annotation/updateAnnotation',
-                data: {
-                    'user': user,
-                    'dataset': dataset.name,
-                    'datasetType': dataset.type,
-                    'scene': scene,
-                    'frame': frame,
-                    'object': objects,  
-                    'points': points
-
-                }
-            }).then(function successCallback(response) {     
-                callbackSuccess(objects.track_id, objects.type, frame);           
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
