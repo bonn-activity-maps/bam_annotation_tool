@@ -211,10 +211,10 @@ def get_min_frame():
 #     return send_file(msg)
 
 # Get a frame from video
-@app.route('/usr/storage/<filename>', methods=['GET'])
+@app.route('/usr/storage/aik_behnke/videos/camera00/<filename>', methods=['GET'])
 def get_video_frame(filename):
     print(filename)
-    return send_file('/usr/storage/', filename)
+    return send_file('/usr/storage/aik_behnke/videos/camera00/' + filename)
 
 # Get a range of frames from video
 @app.route('/api/video/getFramesVideo', methods=['GET'])
