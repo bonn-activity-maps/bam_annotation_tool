@@ -90,7 +90,7 @@
             <div class="btn-group dropleft">
                 <button class="btn btn-invisible dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <div class="thumbnail">
-                        <img class="img" style="width: 100%; height: width/1.5;" src="{{video.frames[timelineManager.slider.value - toolParameters.frameFrom].image}}" />
+                        <img class="img" style="width: 100%; height: width/1.5;" src=" url_for('', filename={{video.frames[timelineManager.slider.value - toolParameters.frameFrom].image}})" />
                         <div class="caption">
                             <p>{{video.filename}}</p>
                         </div>

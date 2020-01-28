@@ -75,19 +75,17 @@ class VideoService:
         frame = frameManager.get_frame(f)
         return True, frame.path, 200
 
-    # Return the corresponding range of frames in video
+    # Return the corresponding urls of frames in video
     def get_video_frames(self, video, start_frame, end_frame):
         imgs = []
         for frame in range(start_frame, end_frame + 1):
-            # Get path of frame
+            # Get frame
             f = Frame(frame, video.name, video.dataset)
             f = frameManager.get_frame(f)
-            # frame_url = url_for("get_frames", filename=f.path)
-            # Read file as binary, encode to base64 and remove newlines
-            if os.path.isfile(f.path):
-                with open(f.path, "rb") as image_file:
-                    encoded_image = base64.b64encode(image_file.read())
-                    imgs.append({'image': str(encoded_image).replace("\n", ""), 'filename': video.name, 'frame': f.number})
+            # print(f.path)
+            # frame_url = url_for("get_frame", filename=f.path)
+            # print(frame_url)
+            imgs.append({'frame': f.number, 'video': f.video, 'image': f.path})
         return True, imgs, 200
 
     # Return 'ok' if the video has been created
