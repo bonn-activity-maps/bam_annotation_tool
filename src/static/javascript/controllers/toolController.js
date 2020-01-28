@@ -112,8 +112,9 @@ angular.module('CVGTool')
             *            arrayOfFrames: []
             *                  image: image
             */
-           _this.numberOfLoadedCameras = 0;
+
            _this.numberOfCamerasToLoad = 0;
+           _this.numberOfLoadedCameras = 0;
 
             // FUNCTIONS //
             // Opens and closes the cameras panel
@@ -148,8 +149,8 @@ angular.module('CVGTool')
                     }
 
                     // Set the variables to control the end
-                    _this.numberOfLoadedCameras = 0;
                     _this.numberOfCamerasToLoad = successData.videos.length;
+                    _this.numberOfLoadedCameras = 0;
 
                     $scope.loadingScreenManager.setLoadingScreen();
                     _this.createCameras(successData);
@@ -186,23 +187,24 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.utoa = function(data) {
+                return btoa(unescape(encodeURIComponent(data)));
+            }
+
             // Fills the cameras as needed
             _this.fillCameras = function(cameraNames) {
                 var callback = function(response) {
                     for (var i = 0; i < response.length; i++) {
-                        var video = response[i].filename;
+                        var video = response[i].video;
                         var image = response[i].image;
                         var frame = response[i].frame;
-
-                        var imageData = image.slice(2, image.length - 1) // Process the image
-                        var stringImage = "data:image/jpeg;base64," + imageData;
-
+                        
                         // First search for the camera in the loadedCameras panel
                         for (var j = 0; j < _this.loadedCameras.length; j++) {
                             if (_this.loadedCameras[j].filename.localeCompare(video) === 0) { // Find the camera
                                 _this.loadedCameras[j].frames[frame - $scope.toolParameters.frameFrom] = {
                                     number: frame,
-                                    image: stringImage,
+                                    image: image,
                                 }
                             }
                         }
@@ -213,19 +215,21 @@ angular.module('CVGTool')
                                 if ($scope.canvasesManager.canvases[j].activeCamera.filename.localeCompare(video) === 0) {
                                     $scope.canvasesManager.canvases[j].activeCamera.frames[frame - $scope.toolParameters.frameFrom] = {
                                         number: frame,
-                                        image: stringImage,
+                                        image: image,
                                     }
                                     $scope.canvasesManager.canvases[j].createImage(frame - $scope.toolParameters.frameFrom);
                                 }
                             }
                         }
                     }
+
                     _this.numberOfLoadedCameras++;
                     
                     // After all frames have loaded, call retrieve objects in PT
                     if ($scope.toolParameters.isPosetrack) {
                         $scope.canvasesManager.moveToCanvas(_this.loadedCameras[0], 1);
                         $scope.commonManager.retrieveObjects();
+                                              
                     } else { // If we are not in PT and we are finished, we can dismiss de dialog
                         if (_this.numberOfLoadedCameras >= _this.numberOfCamerasToLoad) {
                             // Set redraw to draw the selected object
@@ -1088,49 +1092,6 @@ angular.module('CVGTool')
                     }
                 }
             }
-
-            // // TODO: remove this when the top TODO is removed
-            // _this.convertTemporal = function(objects) {
-            //     var pointStructure = {
-            //         p1: [],
-            //         cam1: "",
-            //         p2: [],
-            //         cam2: "",
-            //         p3: [],
-            //         cam3: "",
-            //         p4: [],
-            //         cam4: ""
-            //     }
-
-            //     var convertedObjects = {
-            //         uid: $scope.objectManager.selectedObject.uid,
-            //         type: $scope.objectManager.selectedObject.type,
-            //         keypoints: []
-            //     }
-
-            //     // Append as many keypoints structures as labels the object has
-            //     for (var i = 0; i < $scope.keypointEditor.keypointEditorData.realLabels.length; i++) {
-            //         convertedObjects.keypoints.push(pointStructure);
-            //     }
-
-            //     // Convert
-            //     for (var i = 0; i < objects.keypoints.length; i++) {
-            //         var points = objects.keypoints[i].points;
-            //         var cameras = objects.keypoints[i].cameras;
-
-            //         convertedObjects.keypoints[i].p1 = points[0];
-            //         convertedObjects.keypoints[i].p2 = points[1];
-            //         convertedObjects.keypoints[i].p3 = points[2];
-            //         convertedObjects.keypoints[i].p4 = points[3];
-
-            //         convertedObjects.keypoints[i].cam1 = cameras[0];
-            //         convertedObjects.keypoints[i].cam2 = cameras[1];
-            //         convertedObjects.keypoints[i].cam3 = cameras[2];
-            //         convertedObjects.keypoints[i].cam4 = cameras[3];
-            //     }
-            //     return convertedObjects;
-            // }
-
         }
 
         function PTManager() {
@@ -1264,8 +1225,6 @@ angular.module('CVGTool')
                                     .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
                             } 
                         }
-                        
-
                         $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objects[i].track_id, objects[i].type, frame);
                     } 
                 }

@@ -26,15 +26,33 @@ angular.module('CVGTool')
         getFrame: function(fileName, frame, dataset, type, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getFrameVideo',
+                url: '/api/video/getFrameVideo',
                 headers: {
-                    'fileName': fileName,
+                    'video': fileName,
                     'frame': frame,
                     'dataset': dataset,
-                    'type': type
+                    'datasetType': type
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
+                callbackSuccess(response.data, fileName, frame);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            });
+        },
+
+        // Gets the image of a frame, from a video and a dataset
+        getFrame2: function(fileName, frame, dataset, type, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/video/getFramesVideo',
+                headers: {
+                    'video': fileName,
+                    'frame': frame,
+                    'dataset': dataset,
+                    'datasetType': type
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data, fileName, frame);
             }, function errorCallback(response) {
                 callbackError('danger', response.data.msg)
             });

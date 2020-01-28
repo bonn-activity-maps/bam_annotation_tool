@@ -208,7 +208,8 @@ def get_video_frame():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     frame = Frame(request.headers['frame'], request.headers['video'], dataset)
     success, msg, status = videoService.get_video_frame(frame)
-    return send_file(msg)
+    return send_file(msg, mimetype="image/png")
+    # return send_file(msg)
 
 # Get a range of frames from video
 @app.route('/api/video/getFramesVideo', methods=['GET'])
