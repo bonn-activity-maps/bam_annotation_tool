@@ -202,19 +202,10 @@ def get_min_frame():
     success, msg, status = videoService.get_min_frame(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# # Get a frame from video
-# @app.route('/api/video/getFrameVideo', methods=['GET'])
-# def get_video_frame():
-#     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-#     frame = Frame(request.headers['frame'], request.headers['video'], dataset)
-#     success, msg, status = videoService.get_video_frame(frame)
-#     return send_file(msg)
-
 # Get a frame from video
-@app.route('/usr/storage/aik_behnke/videos/camera00/<filename>', methods=['GET'])
+@app.route('/usr/storage/<path:filename>', methods=['GET'])
 def get_video_frame(filename):
-    print(filename)
-    return send_file('/usr/storage/aik_behnke/videos/camera00/' + filename)
+    return send_file('/usr/storage/'+filename)
 
 # Get a range of frames from video
 @app.route('/api/video/getFramesVideo', methods=['GET'])
