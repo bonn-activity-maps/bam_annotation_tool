@@ -1412,6 +1412,8 @@ angular.module('CVGTool')
             _this.editorMinimized = false;
 
             _this.autoInterpolate = true;
+            _this.showGuideLines = true;
+            _this.showLabels = true;
 
             _this.keypointEditorData = {};
 
@@ -1671,6 +1673,19 @@ angular.module('CVGTool')
                 }  
             }
 
+            // Updates the camera coordinates of the points
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                if (index == -1) {
+                    _this.cameraPoints[0][0] += dxCamera;
+                    _this.cameraPoints[0][1] += dyCamera;
+                    _this.cameraPoints[1][0] += dxCamera;
+                    _this.cameraPoints[1][1] += dyCamera;
+                } else {
+                    _this.cameraPoints[index][0] += dxCamera;
+                    _this.cameraPoints[index][1] += dyCamera;
+                }
+            }
+
             _this.removePoint = function(index) {
                 _this.points = [null, null];
                 _this.cameraPoints = [[],[]];
@@ -1726,6 +1741,11 @@ angular.module('CVGTool')
             _this.move = function(dx,dy) {
                 if (_this.points[0] === null) return;
                 _this.points[0].move(dx,dy); 
+            }
+
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                _this.cameraPoints[index][0] += dxCamera;
+                _this.cameraPoints[index][1] += dyCamera;
             }
 
             _this.removePoint = function(index) {
@@ -1981,10 +2001,17 @@ angular.module('CVGTool')
                 if (_this.draggingObject) {
                     var dx = _this.mouse.pos.x - _this.mouse.dragPos.x;
                     var dy = _this.mouse.pos.y - _this.mouse.dragPos.y;
+                    var cameraMouse = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);
+                    var cameraDrag = _this.toCamera([_this.mouse.dragPos.x, _this.mouse.dragPos.y])
                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].move(dx, dy, _this.pointDragIndex);
-                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[_this.pointDragIndex] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);
+                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].updateCameraPoints(cameraMouse[0] - cameraDrag[0], cameraMouse[1] - cameraDrag[1], _this.pointDragIndex);
+                    // $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[_this.pointDragIndex] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);
                     _this.mouse.dragPos.x = _this.mouse.pos.x;
                     _this.mouse.dragPos.y = _this.mouse.pos.y;
+                    _this.setRedraw();
+                }
+
+                if ($scope.toolsManager.subTool.localeCompare("pointCreation") === 0 || $scope.toolsManager.subTool.localeCompare("boxCreation") === 0) {
                     _this.setRedraw();
                 }
 
@@ -2065,6 +2092,9 @@ angular.module('CVGTool')
 
                         } else if ($scope.objectManager.selectedObject !== null) { // If there is one object selected, draw only its points
                             if ($scope.toolsManager.subTool.localeCompare("pointCreation") == 0) {
+                                // If active, draw guide lines
+                                if ($scope.keypointEditor.showGuideLines) _this.drawGuideLines(ctx);
+                                
                                 // Draw epilines
                                 _this.drawEpilines(ctx);
                                 // Draw just the tag being edited
@@ -2072,12 +2102,20 @@ angular.module('CVGTool')
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "blue", _this.canvasNumber);
                                 }
                             } else if ($scope.toolsManager.subTool.localeCompare("boxCreation") == 0) {
+                                // If active, draw guide lines
+                                if ($scope.keypointEditor.showGuideLines) _this.drawGuideLines(ctx);
+
                                 if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[0] !== null) {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "blue");
                                 }
 
                             } else {
-                                $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
+                                if ($scope.keypointEditor.showLabels) {
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
+                                } else {
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
+                                }
+                                
                             }
                         }
                         
@@ -2176,21 +2214,21 @@ angular.module('CVGTool')
             }
 
             // Draws guide lines to aid in the creation of bounding boxes
-            _this.drawGuideLines = function(context, centerX, centerY, color) {
+            _this.drawGuideLines = function(context) {
                 context.save();
-                context.setLineDash([5, 3]);
+                context.setLineDash([5, 5]);
                 // Draw horizontal line
                 context.beginPath();
-                context.strokeStyle = color;
-                context.moveTo(centerX, centerY);
-                context.lineTo(centerX + 1000, centerY);
+                context.strokeStyle = "red";
+                context.moveTo(_this.mouse.pos.x - 1000, _this.mouse.pos.y);
+                context.lineTo(_this.mouse.pos.x + 1000, _this.mouse.pos.y);
                 context.stroke();
                 context.closePath();
                 // Draw vertical line
                 context.beginPath();
-                context.strokeStyle = color;
-                context.moveTo(centerX, centerY);
-                context.lineTo(centerX, centerY + 1000);
+                context.strokeStyle = "red";
+                context.moveTo(_this.mouse.pos.x, _this.mouse.pos.y - 1000);
+                context.lineTo(_this.mouse.pos.x, _this.mouse.pos.y + 1000);
                 context.stroke();
                 context.closePath();
                 context.restore();

@@ -185,7 +185,10 @@
         </div>
         <div ng-if="objectManager.selectedType.type !== undefined">
             <div class="checkbox">
-                <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate">Auto-interpolate when saving</label>
+                <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate"> Auto-interpolate when saving</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showGuideLines"> Show guide-lines when creating points/boxes</label>
             </div>
             <hr>
             <div class="zui-wrapper" >
@@ -283,7 +286,10 @@
             </div>
         </div>
         <hr>
-
+        <div class="checkbox">
+            <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+        </div>
+        <hr>
         <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
             <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
                 <thead>
