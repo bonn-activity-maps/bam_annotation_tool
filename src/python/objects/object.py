@@ -54,9 +54,9 @@ class Object:
 
         if dataset_type == 'poseTrack':
             if not keypoints:
-                points = obj['points']
+                points = obj['keypoints']
                 for point in points:
-                    keypoints.append(point["points"][0])
+                    keypoints.append(point["keypoints"][0])
             category_id = obj['category_id'] if 'category_id' in obj else 1
             track_id = obj['track_id']
             original_id = obj['original_id'] if 'original_id' in obj else None
@@ -68,8 +68,7 @@ class Object:
         return Object(uid, type, keypoints, dataset_type, labels, category_id, track_id, original_id)
 
     def to_string(self):
-        return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3}, category_id: {4}, track_id: {5}, original_id: {6})".\
-            format(self.uid, self.type, self.keypoints, self.labels, self.category_id, self.track_id, self.original_id)
+        return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3})".format(self.uid, self.type, self.keypoints, self.labels) #, self.category_id, self.track_id, self.original_id)
 
     def is_pt(self):
         return self.pt == self.type

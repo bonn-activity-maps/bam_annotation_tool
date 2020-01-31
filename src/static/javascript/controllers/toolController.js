@@ -556,6 +556,14 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.atLeastOneCameraPlaced = function() {
+                for (var i = 0; i < _this.numberOfCanvases; i++) {
+                    if (_this.canvases[i].hasActiveCamera()) return true;
+                }
+
+                return false;
+            }
+
             // Changes the number of canvases two show in the tool
             _this.switchNumberOfCanvases = function(newNumber) {
                 if (_this.numberOfCanvases == newNumber) return; // If no change, exit
@@ -655,7 +663,7 @@ angular.module('CVGTool')
 
             _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frame) {
                 $scope.objectManager.selectedType = $scope.objectManager.objectTypes[objectType.toString()];
-                $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
+                if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
                 
                 if (!$scope.toolParameters.isPosetrack) {
                     for (var i = 0; i < $scope.canvasesManager.canvases.length; i++) {
@@ -748,38 +756,7 @@ angular.module('CVGTool')
                 if (count == 0) return 0;      // No annotation
                 if (count == max) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
-            }
-
-            // Opens the dialog for batch-deleting points
-            _this.openBatchDelete = function(object) {
-                $mdDialog.show({
-                    templateUrl: '/static/views/dialogs/batchDeleteDialog.html',
-                    controller: 'batchDeleteCtrl',
-                    escapeToClose: false,
-                    locals: {
-                        toolSrvc: toolSrvc,
-                        object: object,
-                        minFrame: $scope.toolParameters.frameFrom,
-                        maxFrame: $scope.toolParameters.frameTo,
-                        dataset: $scope.toolParameters.activeDataset,
-                        scene: $scope.toolParameters.activeDataset.name, // For PT _this will be different
-                        username: $scope.toolParameters.user.name
-                    }
-                }).then(function(data) { // When finished, update the frames
-                    if (data.msg.localeCompare("success") == 0) {
-                        $scope.messagesManager.sendMessage("success", "Annotations deleted!")
-                        var frameArray = [];
-                        for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
-                            frameArray.push(i);
-                        }
-
-                        $scope.commonManager.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
-                        
-                    } else if (data.msg.localeCompare("error") == 0) {
-                        $scope.messagesManager.sendMessage("warning", "Something went wrong")
-                    }
-                }) 
-            }
+            }  
         }
 
 
@@ -901,13 +878,15 @@ angular.module('CVGTool')
             _this.retrieveObjects = function() {
                 var callback = function(objects) {
                     if (objects.length <= 0) return;
-                    var existsInit = [];
-                    for (var j = 0; j < $scope.objectManager.objectTypes[objects[0].object.type.toString()].labels.length; j++) {
-                        existsInit.push(false);
-                    }
-
+                    
                     for (obj in objects) {
                         var object = objects[obj].object;
+
+                        var existsInit = [];
+                        for (var j = 0; j < $scope.objectManager.objectTypes[object.type.toString()].labels.length; j++) {
+                            existsInit.push(false);
+                        }
+                        
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
                             uid: object.uid,
                             type: object.type,
@@ -974,7 +953,7 @@ angular.module('CVGTool')
                         var frame = annotations[j].frame;
                         var objects = annotations[j].objects;
                         for (var i=0; i< objects.length; i++) {
-                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].uid.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
+                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].uid.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints.slice();
                             
                             for (var k = 0; k < objects[i].keypoints.length; k++) {
                                 if (objects[i].keypoints[k] != 0) {
@@ -1042,6 +1021,7 @@ angular.module('CVGTool')
                         _this.interpolate(uid, type, frame);
                     }
                 }
+
                 var pointStructure = {
                     points: [[],[],[],[]],
                     cameras: ["", "", "", ""]
@@ -1060,15 +1040,16 @@ angular.module('CVGTool')
 
                 // For each canvas and for each label, fill the data
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.shapes.length; i++) {
-                    if ($scope.keypointEditor.keypointEditorData.shapes[i] === null) break;
-                    var points = $scope.keypointEditor.keypointEditorData.shapes[i].points;;
-                    var cameraPoints = $scope.keypointEditor.keypointEditorData.shapes[i].cameraPoints;
-                    var count = 0;
+                    if ($scope.keypointEditor.keypointEditorData.shapes[i] !== null){
+                        var points = $scope.keypointEditor.keypointEditorData.shapes[i].points;;
+                        var cameraPoints = $scope.keypointEditor.keypointEditorData.shapes[i].cameraPoints;
+                        var count = 0;
 
-                    for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
-                        if (points[j] !== null) {
-                            objects.keypoints[j].points[i] = cameraPoints[j];
-                            objects.keypoints[j].cameras[i] = $scope.canvasesManager.canvases[i].activeCamera.filename;
+                        for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
+                            if (points[j] !== null) {
+                                objects.keypoints[j].points[i] = cameraPoints[j];
+                                objects.keypoints[j].cameras[i] = $scope.canvasesManager.canvases[i].activeCamera.filename;
+                            }
                         }
                     }
                 }
@@ -1082,7 +1063,6 @@ angular.module('CVGTool')
                             count++;
                         }
                     }
-
                     if (count < 2 && count != 0) {
                         $scope.messagesManager.sendMessage("warning", "The label '" + $scope.keypointEditor.keypointEditorData.realLabels[i] + "' needs to have 0 or at least 2 points placed.");
                         return;
@@ -1091,6 +1071,37 @@ angular.module('CVGTool')
                         toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
                     }
                 }
+            }
+
+            // Opens the dialog for batch-deleting points
+            _this.openBatchDelete = function(object) {
+                $mdDialog.show({
+                    templateUrl: '/static/views/dialogs/batchDeleteDialog.html',
+                    controller: 'batchDeleteCtrl',
+                    escapeToClose: false,
+                    locals: {
+                        toolSrvc: toolSrvc,
+                        object: object,
+                        minFrame: $scope.toolParameters.frameFrom,
+                        maxFrame: $scope.toolParameters.frameTo,
+                        dataset: $scope.toolParameters.activeDataset,
+                        scene: $scope.toolParameters.activeDataset.name, 
+                        username: $scope.toolParameters.user.name
+                    }
+                }).then(function(data) { // When finished, update the frames
+                    if (data.msg.localeCompare("success") == 0) {
+                        $scope.messagesManager.sendMessage("success", "Annotations deleted!")
+                        var frameArray = [];
+                        for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
+                            frameArray.push(i);
+                        }
+
+                        $scope.commonManager.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
+                        
+                    } else if (data.msg.localeCompare("error") == 0) {
+                        $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                    }
+                }) 
             }
         }
 
@@ -1109,6 +1120,11 @@ angular.module('CVGTool')
                 var callback = function(obj) {
                     $scope.objectManager.resetObjectManager();
                     for (var i = 0; i < obj.length; i++) {
+                        // Fix the labels if the type is person
+                        if (obj[i].type.localeCompare("person") == 0) {
+                            obj[i].labels = _this.fixPersonLabels(obj[i].labels);
+                        }
+
                         $scope.objectManager.objectTypes[obj[i].type] = {
                             type: obj[i].type,
                             datasetType: obj[i].datasetType,
@@ -1117,29 +1133,83 @@ angular.module('CVGTool')
                             objects: {}
                         }
                     }
+
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
 
                 toolSrvc.retrieveAvailableObjectTypes($scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage);
             }
 
+            // Function that removes the two ear labels from posetrack person
+            _this.fixPersonLabels = function(labels){
+                if (labels.length == 15) return labels.slice();
+                // Remove index 3 and 4
+                var returnLabels = labels.slice();
+                returnLabels.splice(3,2);
+                return returnLabels;
+            }
+
+            // Function that restores the two ear labels from posetrack person
+            _this.restorePersonLabels = function(labels) {
+                // Insert the two labels in their correct position
+                var returnLabels = labels.slice();
+                returnLabels.splice(3,0, "left_ear", "right_ear");
+                return returnLabels;
+            }
+
+            // Function that removes the two ear keypoints from posetrack person
+            _this.fixPersonKeypoints = function(keypoints) {
+                if (keypoints.length == 15) return keypoints.slice();
+                // First remove the points from the ears
+                var returnKeypoints = keypoints.slice();
+                returnKeypoints.splice(3,2);
+
+                var finalReturnKeypoints = [];
+
+                for (var i = 0; i < returnKeypoints.length; i++) {
+                    if (returnKeypoints[i].length == 0) {
+                        finalReturnKeypoints.push([]);
+                    } else if (returnKeypoints[i].length == 2) {
+                        finalReturnKeypoints.push(returnKeypoints[i]);
+                    } else if (returnKeypoints[i].length == 3) {
+                        if (returnKeypoints[i][2] == 1) {
+                            finalReturnKeypoints.push([returnKeypoints[i][0], returnKeypoints[i][1]])
+                        } else {
+                            finalReturnKeypoints.push([]);
+                        }
+                    }
+                }
+
+                // Check third coordinates to remove them
+                return finalReturnKeypoints;
+            }
+
+            // Function that restores the two person labels from posetrack person
+            _this.restorePersonKeypoints = function(keypoints) {
+                var returnKeypoints = keypoints.slice();
+                returnKeypoints.splice(3,0, [], []);
+                return returnKeypoints;
+            }
+
             // Retrieve objects
             _this.retrieveObjects = function() {
                 var callback = function(objects) {
                     if (objects.length <= 0) return;
-                    var existsInit = [];
-                    for (var j = 0; j < $scope.objectManager.objectTypes[objects[0].object.type.toString()].labels.length; j++) {
-                        existsInit.push(false);
-                    }
-
+                    
                     for (let obj in objects) {
                         let object = objects[obj].object;
+                        
+                        var existsInit = [];
+                        for (var j = 0; j < $scope.objectManager.objectTypes[object.type.toString()].labels.length; j++) {
+                            existsInit.push(false);
+                        }
+
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
                             uid: object.track_id,
                             type: object.type,
                             frames: []
                         };
-        
+    
                         // Fill the frames array with an empty array for each frame
                         for (var j = 0; j <= $scope.toolParameters.numberOfFrames; j++) {
                             $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()].frames.push({
@@ -1148,8 +1218,6 @@ angular.module('CVGTool')
                                 keypoints: []
                             })
                         }
-
-                        
                     }
                     for (let obj in objects) {
                         let object = objects[obj].object;
@@ -1179,6 +1247,10 @@ angular.module('CVGTool')
                     for (var j = 0; j < annotations.length; j++) {
                         var annotation = annotations[j];
                         for (var i = 0; i < annotation.objects.length; i++) {
+                            // If the object is of type "person", fix the keypoint structure to ignore ears
+                            if (annotation.objects[i].type.toString().localeCompare("person") == 0) {
+                                annotation.objects[i].keypoints = _this.fixPersonKeypoints(annotation.objects[i].keypoints);
+                            }
                             // In any case, store in that frame the keypoints, the frame number and the actions
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                 .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
@@ -1186,7 +1258,7 @@ angular.module('CVGTool')
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                 .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].frame =
                                 annotation.frame;
-
+                            
                             for (var k = 0; k < annotation.objects[i].keypoints.length; k++) {
                                 if (annotation.objects[i].keypoints[k].length != 0) {
                                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
@@ -1216,6 +1288,11 @@ angular.module('CVGTool')
                     var frame = annotation[0].frame;
                     var objects = annotation[0].objects;
                     for (var i= 0; i< objects.length; i++) {
+                        // If the object is of type "person", fix the keypoint structure to ignore ears
+                        if (objects[i].type.toString().localeCompare("person") == 0) {
+                            objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
+                        }
+    
                         $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
                         $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
                         
@@ -1290,7 +1367,11 @@ angular.module('CVGTool')
                 }
 
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
+                if (objects.type.localeCompare("person") == 0) {
+                    objects.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
+                }
                 objects.keypoints = shape.cameraPoints;
+
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
@@ -1311,6 +1392,37 @@ angular.module('CVGTool')
                 frame = pad(frame, 4);
                 track_id = pad(track_id, 2);
                 return Number("1" + video + frame + track_id)
+            }
+
+            // Opens the dialog for batch-deleting points
+            _this.openBatchDelete = function(object) {
+                $mdDialog.show({
+                    templateUrl: '/static/views/dialogs/batchDeleteDialog.html',
+                    controller: 'batchDeleteCtrl',
+                    escapeToClose: false,
+                    locals: {
+                        toolSrvc: toolSrvc,
+                        object: object,
+                        minFrame: $scope.toolParameters.frameFrom,
+                        maxFrame: $scope.toolParameters.frameTo,
+                        dataset: $scope.toolParameters.activeDataset,
+                        scene: $scope.canvasesManager.canvases[0].activeCamera.filename, 
+                        username: $scope.toolParameters.user.name
+                    }
+                }).then(function(data) { // When finished, update the frames
+                    if (data.msg.localeCompare("success") == 0) {
+                        $scope.messagesManager.sendMessage("success", "Annotations deleted!")
+                        var frameArray = [];
+                        for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
+                            frameArray.push(i);
+                        }
+
+                        $scope.commonManager.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
+                        
+                    } else if (data.msg.localeCompare("error") == 0) {
+                        $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                    }
+                }) 
             }
         }
 
@@ -1360,7 +1472,7 @@ angular.module('CVGTool')
                         var imageData = mugshots[i].image.slice(2, mugshots[i].image.length - 1); // Process the image
                         var stringImage = "data:image/jpeg;base64," + imageData;
     
-                        $scope.mugshots.push({ 'image': stringImage });
+                        _this.mugshots.push({ 'image': stringImage });
                     }
                 }      
 
@@ -1422,8 +1534,7 @@ angular.module('CVGTool')
                 _this.editorActive = true;
                 $scope.objectManager.selectedObject = object;
                 $scope.timelineManager.slider.value = frame;
-                if ($scope.toolsManager.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
-
+                if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
 
                 _this.keypointEditorData = {
                     searchUID: null,
@@ -1465,11 +1576,11 @@ angular.module('CVGTool')
 
             _this.setIndexBeingEdited = function(index) {
                 // If there was an index being edited and its not saved we remove whatever we created
-                if (_this.keypointEditorData.indexBeingEdited !== null) {
-                    _this.removeEditorDataPoint(_this.keypointEditorData.indexBeingEdited)
+                // if (_this.keypointEditorData.indexBeingEdited !== null) {
+                //     _this.removeEditorDataPoint(_this.keypointEditorData.indexBeingEdited)
                     
-                    if (!$scope.toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
-                }
+                //     if (!$scope.toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
+                // }
                 _this.keypointEditorData.indexBeingEdited = index;
             }
 
@@ -1566,10 +1677,132 @@ angular.module('CVGTool')
             }
         }
 
-        function BBox (uid, projectedPoints, cameraPoints) {
+        function Person (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
-            _this.labels = ["Box"];
+            _this.labels = labels; 
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+
+            // CONSTRUCT
+            if (projectedPoints.length !== 0) {
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
+            }
+
+            _this.draw = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            // Draws all the edges
+            _this.drawEdges = function(context, color) {
+                _this.drawEdge(context, color, _this.points[0], _this.points[1]);   // Nose -> Neck
+                _this.drawEdge(context, color, _this.points[0], _this.points[2]);   // Nose -> Head
+                _this.drawEdge(context, color, _this.points[1], _this.points[3]);   // Neck -> Left Shoulder
+                _this.drawEdge(context, color, _this.points[1], _this.points[4]);   // Neck -> Right Shoulder
+                _this.drawEdge(context, color, _this.points[3], _this.points[5]);   // Left Shoulder -> Left Elbow
+                _this.drawEdge(context, color, _this.points[5], _this.points[7]);   // Left Elbow - > Left Wrist
+                _this.drawEdge(context, color, _this.points[4], _this.points[6]);   // Right Shoulder -> Right Elbow
+                _this.drawEdge(context, color, _this.points[6], _this.points[8]);   // Right Elbow -> Right Wirst
+                _this.drawEdge(context, color, _this.points[3], _this.points[9]);   // Left Shoulder -> Left Hip
+                _this.drawEdge(context, color, _this.points[4], _this.points[10]);  // Right Shoulder -> Right Hip
+                _this.drawEdge(context, color, _this.points[9], _this.points[11]);  // Left Hip -> Left Knee
+                _this.drawEdge(context, color, _this.points[11], _this.points[13]); // Left Knee -> Left Ankle
+                _this.drawEdge(context, color, _this.points[10], _this.points[12]); // Right Hip -> Right Knee
+                _this.drawEdge(context, color, _this.points[12], _this.points[14]); // Right Knee -> Right Ankle
+            }
+
+            // Draw an edge between two points
+            _this.drawEdge = function(context, color, point1, point2) {
+                if (point1 == null || point2 == null) return;
+
+                context.beginPath();
+                context.moveTo(point1.center[0], point1.center[1]);
+                context.lineTo(point2.center[0], point2.center[1]);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
+            }
+
+            _this.drawWithUID = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.drawWithLabel = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.isInside = function(x,y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            _this.move = function(dx, dy, index) {
+                if (_this.points[index] == null) return;
+                _this.points[index].move(dx,dy);
+            }
+
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                _this.cameraPoints[index][0] += dxCamera;
+                _this.cameraPoints[index][1] += dyCamera;
+            }
+
+            _this.removePoint = function(index) {
+                _this.points[index] = null;
+                _this.cameraPoints[index] = [];
+            }
+
+            _this.getPointIndex = function(x, y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+
+        function BBox (uid, projectedPoints, cameraPoints, labels) {
+            var _this = this;
+
+            _this.labels = labels;
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
@@ -1580,8 +1813,6 @@ angular.module('CVGTool')
                     if (projectedPoints[i].length !== 0) {
                         _this.points.push(new Point(projectedPoints[i]));
                     } else _this.points.push(null);
-                    
-                    
                 }
                 _this.cameraPoints = cameraPoints;
             } else {
@@ -1699,13 +1930,13 @@ angular.module('CVGTool')
             }
         }
 
-        function PersonAIK(uid, projectedPoints, cameraPoints) {
+        function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
-            _this.labels = ["Nose"];
+            _this.labels = labels;
 
             // CONSTRUCTOR
             if (projectedPoints.length !== 0) {
@@ -1738,9 +1969,9 @@ angular.module('CVGTool')
                 return _this.points[0].isInside(x,y);
             }
 
-            _this.move = function(dx,dy) {
-                if (_this.points[0] === null) return;
-                _this.points[0].move(dx,dy); 
+            _this.move = function(dx,dy, index) {
+                if (_this.points[index] === null) return;
+                _this.points[index].move(dx,dy); 
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -2097,10 +2328,17 @@ angular.module('CVGTool')
                                 
                                 // Draw epilines
                                 _this.drawEpilines(ctx);
-                                // Draw just the tag being edited
-                                if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] !== null) {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "blue", _this.canvasNumber);
+
+                                if ($scope.keypointEditor.showLabels) {
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
+                                } else {
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
                                 }
+                                
+                                // // Draw just the tag being edited  
+                                // if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] !== null) {
+                                //     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "blue", _this.canvasNumber);
+                                // }
                             } else if ($scope.toolsManager.subTool.localeCompare("boxCreation") == 0) {
                                 // If active, draw guide lines
                                 if ($scope.keypointEditor.showGuideLines) _this.drawGuideLines(ctx);
@@ -2312,25 +2550,32 @@ angular.module('CVGTool')
             // Creates/updates the object into the object structure
             _this.update2DObject = function(uid, type, frame, points) {
                 var newObject = null;
-                // TODO: ALGO DE AQUI NO CHUTA PARA PT
+                
                 var imgPoints = [];                
                 // Project if points exist
                 if (points.length != 0) {
                     for (var i = 0; i < points.length; i++) {
-                        if (points[i].length > 0) imgPoints.push(_this.toImage(points[i]));
+                        if (points[i].length > 0) {
+                            imgPoints.push(_this.toImage(points[i]));
+                        } else {
+                            imgPoints.push([]);
+                        }
                     }
                 }
+                var labels = $scope.objectManager.objectTypes[type.toString()].labels.slice();
 
                 if (type.localeCompare("personAIK") == 0) {
-                    newObject = new PersonAIK(uid, imgPoints, points);         
+                    newObject = new PersonAIK(uid, imgPoints, points, labels);         
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {
-                    newObject = new BBox(uid, imgPoints, points);
+                    newObject = new BBox(uid, imgPoints, points, labels);
+                } else if (type.localeCompare("person") == 0) {
+                    newObject = new Person(uid, imgPoints, points, labels);
                 } else {
                     // Whatever other shapes we may have, polygon, skeleton, etc
                 }
-                
-                
+                      
                 // Update
+                delete _this.objects2D.objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].shape; 
                 _this.objects2D.objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].shape = newObject;
                 delete newObject;
                 

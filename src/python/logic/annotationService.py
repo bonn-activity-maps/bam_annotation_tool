@@ -285,8 +285,9 @@ class AnnotationService:
             result = 'ok'
             start_frame = start_annotation.frame
             end_frame = end_annotation.frame+1
+            track_id = start_annotation.objects[0].uid
             for f in range(start_frame, end_frame):
-                start_annotation.objects[0].uid = self.generate_new_original_uid(start_annotation.frame, start_annotation.scene, f)
+                start_annotation.objects[0].uid = self.generate_new_original_uid(track_id, start_annotation.scene, f)
                 # modify only 1 frame
                 start_annotation.frame = f
                 end_annotation.frame = f
@@ -302,27 +303,29 @@ class AnnotationService:
 
     # Interpolate all keypoints between 2 points
     def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
-        # Structure to store all keypoints ordered by frame (row: frame, column:kpt)
-        final_kpts = np.zeros((num_frames, num_kpts, 3)) if kp_dim == 3 else np.zeros((num_frames, num_kpts, 2))
-
         # Interpolate for all keypoints in all frames in between
-        for i in range(num_kpts):
-            interpolated_kps = []
-            if kps1[i] and kps2[i]: # If one of the two points is empty -> Not interpolate
-                # Interpolate each coordinate of keypoint
-                for j in range(kp_dim):
-                    interpolated_coords = np.linspace(kps1[i][j], kps2[i][j], num=num_frames)
-                    interpolated_kps.append(interpolated_coords)
+        interpolated_kps = []
+        for i in range(num_kpts):           
+            if len(kps1[i]) != 0 and len(kps2[i]) != 0: # If one of the two points is empty -> Not interpolate
+                interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames).tolist()
+                interpolated_kps.append(interpolated_coords)
             else:
-                interpolated_kps.append([])
+                empty = []
+                for i in range(num_frames):
+                    empty.append([])
+                interpolated_kps.append(empty)
+
+        final_kps = []    
+        for i in range(num_frames):
+            frame = []
+            for j in range(num_kpts):
+                if not interpolated_kps[j][i]:
+                    frame.append([])
+                else:
+                    frame.append(interpolated_kps[j][i])
+            final_kps.append(frame)
                 
-            interpolated_kps = np.asarray(interpolated_kps)
-
-            # Build interpolated keypoints for each frame
-            for k in range(len(interpolated_kps[0])):
-                final_kpts[k, i] = interpolated_kps[:, k]
-
-        return final_kpts
+        return final_kps
 
     # Interpolate and store the interpolated 3d points
     # Always a single object in "objects" so always objects[0] !!
@@ -344,15 +347,15 @@ class AnnotationService:
 
         # Final keypoints
         final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2)
-
+        
         # Store interpolated keypoints for frames in between (avoid start and end frame)
-        for i in range(1, final_kpts.shape[0] - 1):
+        for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():
                 new_uid = self.generate_new_original_uid(abs(start_annotation.objects[0].uid) % 100, start_annotation.scene, start_annotation.frame + i)
-                obj = Object(new_uid, type, final_kpts[i].tolist(), dataset_type=dataset.type, track_id=new_uid % 100)
+                obj = Object(new_uid, type, final_kpts[i], dataset_type=dataset.type, track_id=new_uid % 100)
                 annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i, start_annotation.user, [obj])
             else:
-                obj = Object(start_annotation.objects[0].uid, type, final_kpts[i].tolist(), dataset_type=dataset.type)
+                obj = Object(start_annotation.objects[0].uid, type, final_kpts[i], dataset_type=dataset.type)
                 annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i, start_annotation.user, [obj])
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':

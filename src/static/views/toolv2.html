@@ -183,7 +183,12 @@
                 Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
             </p>  
         </div>
-        <div ng-if="objectManager.selectedType.type !== undefined">
+        <div ng-if="!canvasesManager.atLeastOneCameraPlaced()">
+            <p>
+                Place at least one camera in the canvases. Expand the camera panel by clicking on the <span class="glyphicon glyphicon-film"></span> symbol at the right.
+            </p>  
+        </div>
+        <div ng-if="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
             <div class="checkbox">
                 <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate"> Auto-interpolate when saving</label>
             </div>
@@ -204,7 +209,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="object in objectManager.selectedType.objects">
-                                <th><button class="btn btn-danger" ng-click="objectManager.openBatchDelete(object)"><span
+                                <th><button class="btn btn-danger" ng-click="commonManager.openBatchDelete(object)"><span
                                     class="glyphicon glyphicon-transfer"></span></button></th>
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
@@ -252,7 +257,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.editorMinimized">
+    <div class="panel-body" style="height: 525px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
             <div class="col col-md-8">
                 <form class="form-horizontal">
@@ -305,9 +310,9 @@
                         <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
                             <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
                         <th>  
-                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
 
                         </th>
                         <th>-</th>
@@ -378,7 +383,12 @@
                 Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
             </p>  
         </div>
-        <div ng-show="objectManager.selectedType.type !== undefined">
+        <div ng-if="!canvasesManager.atLeastOneCameraPlaced()">
+            <p>
+                Place at least one camera in the canvases. Expand the camera panel by clicking on the <span class="glyphicon glyphicon-film"></span> symbol at the right.
+            </p>  
+        </div>
+        <div ng-show="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
             <h4>Select object:</h4>
             <div class="row">
                 <select class="form-control" id="selObject" ng-change="actionManager.getActionsListByUID()" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
