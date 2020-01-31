@@ -151,7 +151,7 @@
     </div>
     <hr class="tool panel-hr">
     <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
-    <button class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
+    <button ng-if="!toolParameters.isPosetrack" class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
     
 </div>
 
@@ -276,6 +276,10 @@
                     <div class="form-group input-group-sm">
                         <label class="control-label col-sm-4">UID:</label>
                         <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                    </div>
+                    <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Original UID:</label>
+                        <p class="form-control-static">{{objectManager.selectedObject.original_uid}}</p>
                     </div>
                 </form>
             </div>

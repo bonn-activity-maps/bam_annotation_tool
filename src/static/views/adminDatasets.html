@@ -18,6 +18,7 @@
                                         <th class="col-md-3">Name</th>
                                         <th class="col-md-3">Type</th>
                                         <th class="col-md-3">Actions</th>
+                                        <th class="col-md-3">Delete</th>
                                         <th class="col-md-3">Select</th>
                                     </tr>
                                 </thead>
@@ -26,9 +27,11 @@
                                         <td class="text-left">{{dataset.name}}</td>
                                         <td>{{dataset.type}}</td>
                                         <td>
-                                            <button ng-click="editActivities(dataset)" class="btn btn-success"><span class="glyphicon glyphicon-tags"></button>
-                                            <button ng-click="exportDataset(dataset)" class="btn btn-primary"><span class="glyphicon glyphicon-download"></button>
-                                            <button ng-click="removeDataset(dataset)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></button>
+                                            <button ng-click="editActivities(dataset)" class="btn btn-success"><span class="glyphicon glyphicon-tags"></span></button>
+                                            <button ng-click="exportDataset(dataset)" class="btn btn-primary"><span class="glyphicon glyphicon-download"></span></button>
+                                        </td>
+                                        <td>
+                                            <button disabled ng-click="removeDataset(dataset)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span></button>
                                         </td>
                                         <td ng-if="selectedDataset.name != dataset.name">
                                             <button ng-click="selectDataset(dataset)" class="btn btn-primary"><span
@@ -41,6 +44,7 @@
                                     </tr>
                                     <tr ng-if="listOfDatasets.length == 0">
                                         <td class="text-left">No datasets</td>
+                                        <td>-</td>
                                         <td>-</td>
                                         <td>-</td>
                                         <td>-</td>

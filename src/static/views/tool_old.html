@@ -377,6 +377,7 @@
                                     <th>Id</th>
                                     <th>Points</th>
                                     <th>Remove</th>
+                                    <th>Occluded</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -391,7 +392,7 @@
 
                                     <th>
                                         <button ng-if="keypointEditorData[$index].points[0].length <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
-                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint([$index],-1)"><span class="glyphicon glyphicon-trash"></button>
+                                        <button ng-if="keypointEditorData[$index].points[0].length > 0" class="btn-sm btn-danger" ng-click="removePoint([$index],-1)"><span class="glyphicon glyphicon-trash"></span></button>
                                     </th>
                                 </tr>
                                 <tr ng-if="objectManager.selectedObject.type.localeCompare('bbox') == 0 || objectManager.selectedObject.type.localeCompare('bbox_head') == 0">
@@ -405,6 +406,11 @@
                                     <th>
                                         <button ng-if="keypointEditorData[0].points[0].length <= 0 && keypointEditorData[1].points[0] <= 0" class="btn-sm btn-default" disabled><span class="glyphicon glyphicon-trash"></span></button>
                                         <button ng-if="keypointEditorData[0].points[0].length > 0 || keypointEditorData[1].points[0] > 0" class="btn-sm btn-danger" ng-click="removePoint([0,1],-1);"><span class="glyphicon glyphicon-trash"></button>
+                                    </th>
+
+                                    <th>
+                                        <button ng-if="!keypointEditorData[0].occluded" class="btn-sm btn-primary" ng-click="setOcclusion(true)"><span class="glyphicon glyphicon-eye-open"></span></button>
+                                        <button ng-if="keypointEditorData[0].occluded" class="btn-sm btn-danger" ng-click="setOcclusion(false)"><span class="glyphicon glyphicon-eye-close"></span></button>
                                     </th>
                                 </tr>
                             </tbody>
