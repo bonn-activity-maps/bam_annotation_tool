@@ -111,6 +111,47 @@ angular.module('CVGTool')
             });
         };
 
+        // // Function that opens the dialog that manages the upload annotations to a existing dataset functionality
+        // $scope.uploadAnnotations = function(files) {
+        //     $mdDialog.show({
+        //         templateUrl: '/static/views/dialogs/showZipFilesDialog.html',
+        //         locals: {
+        //             files: files
+        //         },
+        //         controller: 'dialogUploadAnnotationsCtrl',
+        //         escapeToClose: false,
+        //         onRemoving: function (event, removePromise) {
+        //             $scope.getListOfDatasets();
+        //             $scope.getInfoOfVideos();
+        //         }
+        //     }).then(function (successData) {
+        //         if (successData.success) {
+        //             $scope.readData(successData.filename.split(".zip")[0], successData.type)
+        //         }
+        //     });
+        // };
+
+        // Function that opens the dialog that manages the upload annotation
+        $scope.showFoldersDialog = function(dataset, files) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/showZipFilesDialog.html',
+                locals: {
+                    dataset: dataset,
+                    files: files
+                },
+                controller: 'dialogShowFoldersCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        };
+
+        $scope.getAnnotationFolders = function(dataset) {
+            adminDatasetsSrvc.getAnnotationFolders(dataset, $scope.showFoldersDialog, sendMessage)
+        };
+
         // Function that opens the dialog that manages the activities
         $scope.editActivities = function(dataset) {
 

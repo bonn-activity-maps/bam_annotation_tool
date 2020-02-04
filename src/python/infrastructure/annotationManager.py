@@ -196,7 +196,7 @@ class AnnotationManager:
     # Return 'ok' if the annotation has been updated.
     def update_annotation_insert_objects(self, annotation):
         if annotation.dataset.is_aik():
-            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "frame": annotation.frame}
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "frame": annotation.frame, "user": "root"}
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame} # User instead of root
             query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root",

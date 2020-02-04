@@ -68,10 +68,15 @@ class Object:
         return Object(uid, type, keypoints, dataset_type, labels, category_id, track_id, original_id)
 
     def to_string(self):
-        return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3})".format(self.uid, self.type, self.keypoints, self.labels) #, self.category_id, self.track_id, self.original_id)
+        if self.is_aik():
+            return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3})". \
+                format(self.uid, self.type, self.keypoints, self.labels)
+        else:
+            return "(uid: {0}, type: {1}, keypoints: {2}, labels: {3}, category_id: {4}, track_id: {5}, original_id: {6})".\
+                    format(self.uid, self.type, self.keypoints, self.labels, self.category_id, self.track_id, self.original_id)
 
     def is_pt(self):
-        return self.pt == self.type
+        return self.pt == self.dataset_type
 
     def is_aik(self):
-        return self.aik == self.type
+        return self.aik == self.dataset_type
