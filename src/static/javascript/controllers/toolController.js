@@ -972,7 +972,7 @@ angular.module('CVGTool')
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
-                
+
                 $scope.loadingScreenManager.setLoadingScreen();
                 // Reset that object exist counter to false
                 var existsInit = [];
