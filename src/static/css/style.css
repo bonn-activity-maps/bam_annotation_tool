@@ -1,3 +1,17 @@
+.navbar-fixed-left {
+    width: 50px;
+    position: fixed;
+    border-radius: 0;
+    height: 90%;
+    text-align: center;
+}
+
+.navbar-fixed-left .navbar-nav > li {
+    float: none;  /* Cancel default li float: left */
+    width: 50px;
+    text-align: center;
+}
+
 .zui-table {
     /* border: none; */
     border-right: solid 1px #DDEFEF;
@@ -27,7 +41,7 @@
 .zui-wrapper {
     position: relative;
     min-height: 300px;
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -49,8 +63,6 @@
     width: 120px;
 }
 
-
-
 .panel-loading {
     position: absolute; 
     width: 110%; 
@@ -60,6 +72,14 @@
     text-align: center;
 }
 
+.panel-login {
+    position: absolute; 
+    left: 40%; 
+    top: 40%; 
+    width: 20%; 
+    height: 40%;
+}
+
 .animate-show-hide.ng-hide {
     opacity: 0;
 }
@@ -67,6 +87,32 @@
 .animate-show-hide.ng-hide-add,
 .animate-show-hide.ng-hide-remove {
 transition: all linear 0.2s;
+}
+
+.bg-image {
+    background-image: url("/static/resources/background_gif.gif");
+    filter: blur(12px);
+    -webkit-filter: blur(12px);
+
+    position: absolute;
+    height: 100%;
+    width: 100%;
+
+    top: 0;
+    left: 0;
+    
+    /* background-position-y: -10;
+    background-position-x: -10; */
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.bg-text {
+    position: absolute;
+    left: 39%;
+    top: 20%;
+    color: white;
+    font-weight: bold;
 }
 
 .body {
@@ -81,12 +127,42 @@ transition: all linear 0.2s;
 }
 
 .panel {
-    /* box-shadow: 5px 5px 5px 5px 5px grey; */
     border-radius: 0 !important;
     margin-left: 4px !important;
     margin-right: 4px !important;
     margin-top: 4px !important;
     margin-bottom: 4px !important;
+}
+
+.panel-tool {
+    border-radius: 0 !important;
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+}
+
+.panel-canvases {
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+.padding-1{
+    padding-right:1;
+    padding-left:1;
+}
+
+
+.panel-body-canvases {
+    background-color: white;
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
 }
 
 .panel-heading {
@@ -100,17 +176,81 @@ transition: all linear 0.2s;
     padding-left: 0;
 }
 
-.panel-tool {
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-bottom: 4px;
+.btn-expand-cameras {
+    background-color: rgb(34, 34, 34) !important;
+    border-radius: 0 0 90px 90px !important;
+    transform: rotate(90deg) !important;
+    position: relative !important; 
+    width: 100px !important;
+    top: 47%; 
+    left: -68px;  
+}
+
+.panel-cameras {
+    border-color: black;
+    border-width: 1px;
+    border-radius: 0 !important;
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+    position: absolute; 
+    width: 20%; 
+    height: 85%; 
+    top: 6%;
+    left: 100%; 
+}
+
+.panel-cameras-visible {
+    box-shadow: 2px 10px 20px grey;
+    transform: translate3d(-100%,0,0); 
+}
+
+.panel-tools {
+    border-color: black;
+    background-color:  rgb(34, 34, 34) !important;
+    border-width: 1px;
+    border-radius: 0px;
+    position: absolute;
+    top: 7%;
+    left: 0.5%;
+    height: 83%;
+    width: 2.5%;
+}
+
+.panel-floating {
+    box-shadow: 2px 10px 20px grey;
+    position: absolute;
+    top: 50%;
+    left: 50%; 
+}
+
+.btn-tool {
+    color: rgb(255, 255, 255) !important;
+    background-color: rgb(34, 34, 34) !important;
+    border-radius: 0px;
     width: 100%;
+    transition-duration: 0.1s;
+}
+
+.btn-tool:hover {
+    background-color: rgb(76, 80, 89) !important;
 }
 
 .btn-invisible {
     background-color: transparent !important;
     border-color: transparent !important;
     color: rgb(255, 255, 255) !important;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.tool-panel-hr {
+    background-color: white;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .btn-circle {

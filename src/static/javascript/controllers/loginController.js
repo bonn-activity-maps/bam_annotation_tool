@@ -36,10 +36,10 @@ angular.module('CVGTool')
         var successRedirect = function (user) {
             navSrvc.setUser(user);
             if (user.role.localeCompare('user') === 0) { // NOT assign dataset automatically, select in task page
-                // adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
+                // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
                 $state.go('taskHome');
             } else {
-                // adminDatasetsSrvc.getDataset(user.assignedTo[0], setActiveDataset);
+                // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
                 $state.go('adminStatistics');
             }
         };

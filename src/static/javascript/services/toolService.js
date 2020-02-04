@@ -7,7 +7,7 @@ angular.module('CVGTool')
         getInfoOfVideos: function(callbackSuccess, dataset) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getVideos',
+                url: '/api/video/getVideos',
                 headers: {
                     'dataset': dataset
                 }
@@ -26,15 +26,33 @@ angular.module('CVGTool')
         getFrame: function(fileName, frame, dataset, type, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getFrameVideo',
+                url: '/api/video/getFrameVideo',
                 headers: {
-                    'fileName': fileName,
+                    'video': fileName,
                     'frame': frame,
                     'dataset': dataset,
-                    'type': type
+                    'datasetType': type
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg.image, response.data.msg.filename, response.data.msg.frame);
+                callbackSuccess(response.data, fileName, frame);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            });
+        },
+
+        // Gets the image of a frame, from a video and a dataset
+        getFrame2: function(fileName, frame, dataset, type, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/video/getFramesVideo',
+                headers: {
+                    'video': fileName,
+                    'frame': frame,
+                    'dataset': dataset,
+                    'datasetType': type
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data, fileName, frame);
             }, function errorCallback(response) {
                 callbackError('danger', response.data.msg)
             });
@@ -44,7 +62,7 @@ angular.module('CVGTool')
         getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getFramesVideo',
+                url: '/api/video/getFramesVideo',
                 headers: {
                     'video': fileName,
                     'startFrame': frameStart,
@@ -114,7 +132,7 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, frame, cameraName, dataset, canvasNumber, callbackSuccess, callbackError) {
+        projectToCamera: function(uid, type, points, frame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/aik/projectToCamera',
@@ -122,17 +140,18 @@ angular.module('CVGTool')
                     'points': JSON.stringify(points),
                     'frame': frame,
                     'cameraName': cameraName,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(canvasNumber, uid, type, frame, response.data.msg)
+                callbackSuccess(uid, type, frame, response.data.msg)
             }, function errorCallback(response) {
                 callbackError('danger', response.data.msg);
             })
         },
 
         // Get Epipolar line
-        getEpiline: function(frame, dataset, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
+        getEpiline: function(frame, dataset, datasetType, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/aik/computeEpiline',
@@ -141,7 +160,8 @@ angular.module('CVGTool')
                     'frame': frame,
                     'cam1': camera1,
                     'cam2': camera2,
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'datasetType': datasetType
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, camera1Index, camera2Index, pointNumber);
@@ -194,7 +214,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server to triangulate and create the new 3D point
-        updateAnnotation: function(user, dataset, scene, frame, objects, deleting, callbackSuccess, callbackError) {
+        updateAnnotation: function(user, dataset, scene, frame, objects, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
@@ -204,37 +224,18 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'objects': objects
+                    'object': objects  
+
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(objects.uid, objects.type, frame, deleting);
+                if (dataset.type.localeCompare("poseTrack") !== 0) {
+                    callbackSuccess(objects.uid, objects.type, frame);
+                } else {
+                    callbackSuccess(objects.track_id, objects.type, frame);
+                }
+                
             }, function errorCallback(response) {
                 callbackError('danger', response)
-            })
-        },
-
-        // Sends the 2D points to the server
-        updateAnnotationPT: function(user, dataset, scene, frame, object, deleting, points, callbackSuccess, callbackError) {
-            $http({
-                method: 'POST',
-                url: '/api/annotation/updateAnnotationPT',
-                data: {
-                    'user': user,
-                    'dataset': dataset.name,
-                    'datasetType': dataset.type,
-                    'scene': scene,
-                    'frame': frame,
-                    'object': {
-                        uid: object.original_uid,
-                        type: object.type,
-                        track_id: object.uid
-                    },
-                    'points': points
-                }
-            }).then(function successCallback(response) {
-                callbackSuccess(object.original_uid, object.type, frame, deleting);
-            }, function errorCallback(response) {
-                callbackError('danger', response);
             })
         },
 
@@ -259,7 +260,7 @@ angular.module('CVGTool')
                 }
         },
 
-        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, frameArray, objectType,
+        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
             uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
@@ -276,7 +277,7 @@ angular.module('CVGTool')
                     'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess(uidObject, frameArray, objectType);
+                    callbackSuccess(uidObject, objectType, startFrame, endFrame);
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);
@@ -287,7 +288,7 @@ angular.module('CVGTool')
         getActivitiesList: function(dataset, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/action/getActivities',
+                url: '/api/activity/getActivities',
                 headers: {
                     dataset: dataset
                 }
@@ -300,13 +301,14 @@ angular.module('CVGTool')
         },
 
         // Create a new action
-        createAction: function(user, startFrame, endFrame, activity, object, dataset, callbackSuccess, callbackError) {
+        createAction: function(user, startFrame, endFrame, activity, object, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/action/createAction',
                 data: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'name': activity,
                     'objectUID': object,
                     'startFrame': startFrame,
@@ -321,13 +323,14 @@ angular.module('CVGTool')
         },
 
         // Fetch the list of all Actions in the frame
-        getActions: function(user, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        getActions: function(user, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/action/getActions',
                 headers: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'startFrame': startFrame,
                     'endFrame': endFrame
                 }
@@ -340,13 +343,14 @@ angular.module('CVGTool')
         },
 
         // Fetch the list of all Actions of an Object in the frame
-        getActionsByUID: function(user, objectUID, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        getActionsByUID: function(user, objectUID, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
                 url: '/api/action/getActionsByUID',
                 headers: {
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'objectUID': objectUID,
                     'startFrame': startFrame,
                     'endFrame': endFrame
@@ -360,7 +364,7 @@ angular.module('CVGTool')
         },
 
         // Remove an action
-        removeAction: function(name, user, objectUID, startFrame, endFrame, dataset, callbackSuccess, callbackError) {
+        removeAction: function(name, user, objectUID, startFrame, endFrame, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/action/removeAction',
@@ -368,6 +372,7 @@ angular.module('CVGTool')
                     'name': name,
                     'user': user,
                     'dataset': dataset,
+                    'datasetType': datasetType,
                     'objectUID': objectUID,
                     'startFrame': startFrame,
                     'endFrame': endFrame

@@ -1,7 +1,10 @@
 import logging
+import copy
 
 from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.datasetManager import DatasetManager
+
+from python.objects.activity import Activity
 
 # UserService logger
 log = logging.getLogger('actionService')
@@ -12,96 +15,56 @@ datasetManager = DatasetManager()
 
 class ActionService:
 
-    # Return ok if activity created successfully
-    def createActivity(self, req):
-        dataset = req['dataset']
-        activity = {"name": req['activity']}
-
-        # Check if task exist for this user
-        activities = actionManager.getActivities(dataset)
-        if activity in activities:
-            return False, 'The activity already exists', 400
-        else:
-            # Create new activity
-            result = actionManager.createActivity(dataset, activity["name"])
-            if result == 'Error':
-                return False, 'Error creating activity', 400
-            else:
-                return True, 'Activity created successfully', 200
-
-    # Return list of activities
-    def getActivities(self, dataset):
-        result = actionManager.getActivities(dataset)
-        if result == 'Error':
-            return False, 'Error retrieving activities', 400
-        else:
-            activities = [d['name'] for d in result]
-            return True, {"activities": activities}, 200
-
-    # Return ok if action created successfully
-    def createAction(self, req):
-        dataset = req['dataset']
-        objectUID = req['objectUID']
-        name = req['name']
-        user = req['user']
-        startFrame = req['startFrame']
-        endFrame = req['endFrame']
-
-        # Check if task exist for this user
-        if actionManager.getAction(dataset, objectUID, user, name, startFrame, endFrame) != 'Error':
-            return False, 'The action already exists', 400
-        else:
-            # Create task with lastFrame equal to frameFrom
-            result = actionManager.createAction(dataset, objectUID, user, name, startFrame, endFrame)
-            if result == 'Error':
-                return False, 'Error creating action', 400
-            else:
-                return True, 'ok', 200
-
-    # Return list of actions by objectUID in frame range
-    def getActionsByUID(self, dataset, objectUID, user, startFrame, endFrame):
-        result = actionManager.getActionsByUID(dataset, objectUID, user, startFrame, endFrame)
-        if result == 'Error':
-            return False, 'Error retrieving actions', 400
-        else:
-            return True, result, 200
-
     # Return list of actions in frame range
-    def getActions(self, dataset, user, startFrame, endFrame):
-        result = actionManager.getActions(dataset, user, startFrame, endFrame)
-        if result == 'Error':
-            return False, 'Error retrieving actions', 400
-        else:
-            return True, result, 200
-
-    # Return list of actions in frame range
-    def getAction(self, dataset, objectUID, user, name, startFrame, endFrame):
-        result = actionManager.getAction(dataset, objectUID, user, name, startFrame, endFrame)
+    def get_action(self, action):
+        result = actionManager.get_action(action)
         if result == 'Error':
             return False, 'Error retrieving action', 400
         else:
             return True, result, 200
 
-    # Remove an action
-    def removeAction(self,  req):
-        dataset = req['dataset']
-        objectUID = req['objectUID']
-        name = req['name']
-        user = req['user']
-        startFrame = req['startFrame']
-        endFrame = req['endFrame']
+    # Return list of actions in frame range
+    def get_actions(self, dataset, user, start_frame, end_frame):
+        result = actionManager.get_actions(dataset, user, start_frame, end_frame)
+        if result == 'Error':
+            return False, 'Error retrieving actions', 400
+        else:
+            return True, [r.to_json() for r in result], 200
 
-        result = actionManager.removeAction(dataset, objectUID, user, name, startFrame, endFrame)
+    # Return list of actions by objectUID in frame range
+    def get_actions_by_UID(self, dataset, object_uid, user, start_frame, end_frame):
+        result = actionManager.get_actions_by_UID(dataset, object_uid, user, start_frame, end_frame)
+        if result == 'Error':
+            return False, 'Error retrieving actions', 400
+        else:
+            return True, [r.to_json() for r in result], 200
+
+    # Return ok if action created successfully
+    def create_action(self, action):
+        # Check if task exist for this user
+        if actionManager.get_action(action) != 'Error':
+            return False, 'The action already exists', 400
+        else:
+            # Create task with lastFrame equal to frameFrom
+            result = actionManager.create_action(action)
+            if result == 'Error':
+                return False, 'Error creating action', 400
+            else:
+                return True, 'ok', 200
+
+    # Remove an action
+    def remove_action(self,  action):
+        result = actionManager.remove_action(action)
         if result == 'Error':
             return False, 'Error deleting action', 400
         else:
             return True, result, 200
 
     # Merge all possible actions with same start and end frames
-    def mergeActions(self):
-        datasets = datasetManager.getDatasets()
+    def merge_actions(self):
+        datasets = datasetManager.get_datasets()
         for d in datasets:
-            actions = actionManager.getActionsByDataset(d['name'])
+            actions = actionManager.get_actions_by_dataset(d)
 
             # Check all actions of all datasets
             if actions != 'Error':
@@ -112,15 +75,18 @@ class ActionService:
                     while nested:
 
                         # Search if there is an action with startFrame = endFrame of actual action (or endFrame+1) = overlapping actions
-                        actionResult = actionManager.getActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['endFrame'])
+                        action_result = actionManager.get_action_by_start_frame(a)
 
-                        if actionResult != 'Error':
+                        if action_result != 'Error':
                             # Update action with greater endFrame
-                            result = actionManager.updateActionByStartFrame(a['dataset'], a['objectUID'], a['name'], a['startFrame'], actionResult['endFrame'])
+                            new_action = copy.copy(a)
+                            new_action.end_frame = action_result.end_frame
+
+                            result = actionManager.update_action_by_start_frame(new_action)
                             if result == 'ok':
-                                a['endFrame'] = actionResult['endFrame']  # Update endFrame in actual action
+                                a.end_frame = action_result.end_frame  # Update endFrame in actual action
                                 # Remove action included in new range
-                                result = actionManager.removeAction(actionResult['dataset'], actionResult['objectUID'], actionResult['user'], actionResult['name'], actionResult['startFrame'], actionResult['endFrame'])
+                                result = actionManager.remove_action(action_result)
                                 if result == 'Error': nested = False
                             else:
                                 nested = False      # End loop if error occurs
