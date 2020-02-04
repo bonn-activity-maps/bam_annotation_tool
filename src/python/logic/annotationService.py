@@ -28,6 +28,16 @@ aikService = AIKService()
 class AnnotationService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the annotations
 
+    # Convert bytes to MB, GB, etc
+    def convert_bytes(self, num):
+        """
+        self function will convert bytes to MB.... GB... etc
+        """
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return "%3.1f %s" % (num, x)
+            num /= 1024.0
+
     def pad(self, num, size):
         s = str(num)
         while len(s) < size:
@@ -73,6 +83,23 @@ class AnnotationService:
             return False, 'Error retrieving annotated objects', 400
         else:
             return True, result, 200
+
+    # Return a list of folders (except dataset folders)
+    def get_folders(self):
+        list_dir = os.listdir(self.STORAGE_DIR)
+        folders = []
+        # List with dataset names
+        dataset_names = [d.name for d in datasetManager.get_datasets()]
+
+        for f in list_dir:
+            f_path = os.path.join(self.STORAGE_DIR, f)
+            if os.path.isdir(f_path) and f not in dataset_names:
+                size = os.stat(f_path).st_size
+                folders.append({
+                    "name": f,
+                    "size": self.convert_bytes(size)
+                })
+        return True, folders, 200
 
     # Triangulate points from 2D points to 3D
     # Always a single object in "objects" so always objects[0] !!
@@ -330,7 +357,7 @@ class AnnotationService:
             log.error('Error uploading annotations to dataset.')
             return False, 'Error uploading annotations. Please try to upload the annotations again', 400
         else:
-            return True, 'ok', 200
+            return True, 'Annotations uploaded successfully', 200
 
     # Upload new annotations to an existing dataset
     # Replace old annotations if they already exist

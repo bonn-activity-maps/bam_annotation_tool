@@ -91,7 +91,6 @@ angular.module('CVGTool')
             },
 
             getZipFiles: function(callback, callbackError) {
-                console.log("service");
                 $http({
                     method: 'GET',
                     url: 'api/dataset/getZipFiles'
@@ -100,6 +99,33 @@ angular.module('CVGTool')
                 }, function errorCallback(response) {
                     callbackError('danger', response.data.msg)
                 })
+            },
+
+            getAnnotationFolders: function(dataset, callback, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: 'api/annotation/getFolders'
+                }).then(function successCallback(response) {
+                   callback(dataset, response.data.msg)
+                }, function errorCallback(response) {
+                    callbackError('danger', response.data.msg)
+                })
+            },
+
+            uploadAnnotations: function (name, type, folder ,callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/annotation/uploadAnnotations',
+                    data: {
+                        'dataset': name,
+                        'datasetType': type,
+                        'folder': folder
+                    }
+                }).then(function successCallback(response) {
+                    callbackSuccess(response.data.msg)
+                }, function errorCallback(response) {
+                    callbackError(response.data.msg)
+                });
             },
 
             loadZip: function(name, type, callbackSuccess, callbackError) {

@@ -136,13 +136,11 @@ def remove_dataset():
     success, msg, status = datasetService.remove_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
 # Get list of zip files in file system
 @app.route('/api/dataset/getZipFiles', methods=['GET'])
 def get_zip_files():
     success, msg, status = datasetService.get_zip_files()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Load a zip file already in the file system
 # parameter: req_data['name'] = name+extension
@@ -224,6 +222,12 @@ def get_video_frames():
 
 
 #### ANNOTATION ####
+
+# Get list of folders in file system (except dataset folders)
+@app.route('/api/annotation/getFolders', methods=['GET'])
+def get_folders():
+    success, msg, status = annotationService.get_folders()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation info for given frame, dataset, scene and user
 @app.route('/api/annotation/getAnnotation', methods=['GET'])
