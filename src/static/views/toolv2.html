@@ -129,7 +129,7 @@
           <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
           <li class="divider"></li> 
           <li class="dropdown-header">Object types</li>
-          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type.type}}</button></li>
+          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type.type)" style="width: 100%;">{{type.type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">

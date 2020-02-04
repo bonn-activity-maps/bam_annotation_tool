@@ -152,7 +152,6 @@ angular.module('CVGTool')
                     _this.numberOfCamerasToLoad = successData.videos.length;
                     _this.numberOfLoadedCameras = 0;
 
-                    $scope.loadingScreenManager.setLoadingScreen();
                     _this.createCameras(successData);
                     _this.fillCameras(successData);
                 });
@@ -234,7 +233,6 @@ angular.module('CVGTool')
                         if (_this.numberOfLoadedCameras >= _this.numberOfCamerasToLoad) {
                             // Set redraw to draw the selected object
                             $scope.canvasesManager.redrawCanvases();
-                            $scope.loadingScreenManager.closeLoadingScreen();
                         }
                     }
                 };
@@ -273,6 +271,7 @@ angular.module('CVGTool')
             // Check where do we come from to load pre-loaded cameras if needed
             _this.checkWhereAreWeComingFrom = function() {
                 if (!_this.fromTaskHome) {
+                    // Load cameras
                     var camerasToLoad = { videos: [] };
                     var canvasCameras = $stateParams.obj.canvasCameras;
                     var originalRange = $stateParams.obj.originalRange;
@@ -292,6 +291,11 @@ angular.module('CVGTool')
 
                     // Reset sessionData of the cameras
                     navSrvc.resetSessionData();
+
+                    // Place the selected type
+                    if ($stateParams.obj.selectedType.localeCompare("") !== 0) {
+                        $scope.objectManager.changeSelectedType($stateParams.obj.selectedType);
+                    }
 
                     // Create the cameras
                     $scope.camerasManager.createCameras(camerasToLoad);
@@ -707,11 +711,13 @@ angular.module('CVGTool')
 
             // Function called everytime the selector type changes
             _this.changeSelectedType = function(type) {
-                _this.selectedType = type;
-               
+                _this.selectedType = _this.objectTypes[type];
+            
                 $scope.canvasesManager.refreshProjectionOfCanvases();
-                              
+                      
                 $scope.canvasesManager.redrawCanvases();
+
+                navSrvc.setSelectedType(type);  // Update selected type in session
             };
 
             // Creates a new object
@@ -850,9 +856,7 @@ angular.module('CVGTool')
 
             // Executes the whole AIK initialization process
             _this.initialize = function() {
-                $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
-                $scope.toolParameters.checkWhereAreWeComingFrom();
             }
 
             // STEP1: Retrieve all available object types
@@ -868,6 +872,7 @@ angular.module('CVGTool')
                             objects: {}
                         }
                     }
+                    $scope.toolParameters.checkWhereAreWeComingFrom();
                     _this.retrieveObjects();
                 }
                 
@@ -914,7 +919,6 @@ angular.module('CVGTool')
             _this.retrieveAnnotations = function() {
                 var callback = function(annotations) {
                     if (annotations.length == 0) { // Check if we received something
-                        $scope.loadingScreenManager.closeLoadingScreen();
                         return;
                     }; 
                     for (var j = 0; j < annotations.length; j++) {
@@ -936,7 +940,6 @@ angular.module('CVGTool')
                                  
                         }
                     }
-                    $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
 
@@ -1110,7 +1113,6 @@ angular.module('CVGTool')
 
             // Executes the whole PT initialization process
             _this.initialize = function() {
-                $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
                 $scope.toolParameters.checkWhereAreWeComingFrom();
             }
@@ -1133,8 +1135,6 @@ angular.module('CVGTool')
                             objects: {}
                         }
                     }
-
-                    $scope.loadingScreenManager.closeLoadingScreen();
                 }
 
                 toolSrvc.retrieveAvailableObjectTypes($scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage);
@@ -1240,7 +1240,6 @@ angular.module('CVGTool')
             _this.retrieveAnnotations = function() {
                 var callback = function(annotations) {
                     if (annotations.length == 0) {  // Check if we received something
-                        $scope.loadingScreenManager.closeLoadingScreen();
                         return;
                     }
         
@@ -1268,7 +1267,6 @@ angular.module('CVGTool')
                               
                         }
                     }
-                    $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
 
@@ -2182,6 +2180,7 @@ angular.module('CVGTool')
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = new Point([_this.mouse.pos.x, _this.mouse.pos.y]); 
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);   
                         if (!$scope.toolParameters.isPosetrack) $scope.keypointEditor.getEpilines();
+                        if ($scope.objectManager.selectedType.type.localeCompare("person") == 0) $scope.toolsManager.switchSubTool(""); // In the case of creating persons this will be useful
                         _this.setRedraw();
                     }
                 }
