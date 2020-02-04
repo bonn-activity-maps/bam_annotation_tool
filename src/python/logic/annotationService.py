@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-import os, json
+import os, json, shutil
 
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
@@ -107,58 +107,7 @@ class AnnotationService:
                 keypoints3d.append(point3d.tolist())  # Store 3d point
 
         # Modify original objects which contains info of object with calculated 3d keypoints
-        # annotation.objects[0].keypoints = keypoints3d
-        # return annotation.objects, False
         return keypoints3d, False
-
-    # # Triangulate points from 2D points to 3D
-    # # Always a single object in "objects" so always objects[0] !!
-    # def obtain_3d_points_AIK(self, annotation):
-    #     keypoints2d = annotation.objects[0].keypoints
-    #     keypoints3d = []  # New 3d kps
-    #     # Triangulate all keypoints of object
-    #     for kp in keypoints2d:
-    #         # Keypoints and camera parameters to triangulate
-    #         keypoints_triangulate = []
-    #         camera_params_triangulate = []
-    #
-    #         # Add existing points to triangulate (max 4 points)
-    #         if kp["cam1"] != "":
-    #             f = Frame(annotation.frame, kp["cam1"], annotation.dataset)
-    #             frame1 = frameManager.get_frame(f)
-    #             keypoints_triangulate.append(kp["p1"])
-    #             camera_params_triangulate.append(frame1.camera_parameters)
-    #
-    #         if kp["cam2"] != "":
-    #             f = Frame(annotation.frame, kp["cam2"], annotation.dataset)
-    #             frame2 = frameManager.get_frame(f)
-    #             keypoints_triangulate.append(kp["p2"])
-    #             camera_params_triangulate.append(frame2.camera_parameters)
-    #
-    #         if kp["cam3"] != "":
-    #             f = Frame(annotation.frame, kp["cam3"], annotation.dataset)
-    #             frame3 = frameManager.get_frame(f)
-    #             keypoints_triangulate.append(kp["p3"])
-    #             camera_params_triangulate.append(frame3.camera_parameters)
-    #
-    #         if kp["cam4"] != "":
-    #             f = Frame(annotation.frame, kp["cam4"], annotation.dataset)
-    #             frame4 = frameManager.get_frame(f)
-    #             keypoints_triangulate.append(kp["p4"])
-    #             camera_params_triangulate.append(frame4.camera_parameters)
-    #
-    #         if len(keypoints_triangulate) == 0:  # If 0 points, let the keypoint empty
-    #             keypoints_triangulate.append([])
-    #             camera_params_triangulate.append([])
-    #         elif len(keypoints_triangulate) < 2:  # Error if only 1 points
-    #             return annotation.objects, True
-    #         else:  # Triangulate using all available points
-    #             point3d = aikService.triangulate_2D_points(keypoints_triangulate, camera_params_triangulate)
-    #             keypoints3d.append(point3d.tolist())  # Store 3d point
-    #
-    #     # Modify original objects which contains info of object with calculated 3d keypoints
-    #     annotation.objects[0].keypoints = keypoints3d
-    #     return annotation.objects, False
 
     # Return the object with the 3d points for AIK datasets
     # Always a single object in "objects" so always objects[0] !!
@@ -243,7 +192,7 @@ class AnnotationService:
         else:
             # Create new object with max_uid+1
             new_uid = max_uid + 1
-            annotation.objects = Object(new_uid, object_type, [], annotation.dataset.type)
+            annotation.objects = [Object(new_uid, object_type, [], annotation.dataset.type)]
             result = annotationManager.create_frame_object(annotation)
 
             if result == 'Error':
@@ -270,7 +219,8 @@ class AnnotationService:
         elif found == 'No annotation':  # Add new existing object in frame
             result = annotationManager.create_frame_object(annotation)
         else:  # Update object in frame
-            if annotation.dataset.is_pt() and found.type != annotation.objects[0].type:
+            # if annotation.dataset.is_pt() and found.type != annotation.objects[0].type:
+            if found.type != annotation.objects[0].type:
                 result = annotationManager.create_frame_object(annotation)
             else:
                 result = annotationManager.update_frame_object(annotation)
@@ -367,11 +317,69 @@ class AnnotationService:
             log.error('Error interpolating keypoints')
             return False, final_result, 500
 
+    # Upload new annotations to an existing dataset
+    def upload_annotations(self, dataset, folder):
+        if dataset.is_aik():
+            result = self.upload_annotations_aik(dataset, folder)
+        elif dataset.is_pt():
+            result = False
+        else:
+            result = False
+
+        if not result:
+            log.error('Error uploading annotations to dataset.')
+            return False, 'Error uploading annotations. Please try to upload the annotations again', 400
+        else:
+            return True, 'ok', 200
+
+    # Upload new annotations to an existing dataset
+    # Replace old annotations if they already exist
+    def upload_annotations_aik(self, dataset, folder):
+        folder_path = os.path.join(dataset.STORAGE_DIR, folder)
+        annotations_dir = os.path.join(folder_path, 'tracks3d/')
+
+        list_dir = os.listdir(annotations_dir)    # List of all objects/persons
+        obj_type = 'poseAIK'             # Type of objects
+        final_result = True
+
+        for f in list_dir:
+            track_file = os.path.join(annotations_dir, f)
+
+            # Read uid/number of object
+            uid = int(os.path.splitext(f)[0].split('track')[1])
+
+            # Read data from file
+            try:
+                with open(track_file) as json_file:
+                    tracks = json.load(json_file)
+            except OSError:
+                log.exception('Could not read from file')
+                return False
+
+            # Transform annotation to our format and store in db
+            frames = tracks['frames']
+            poses = tracks['poses']
+            for i, frame in enumerate(frames):
+                # Replace empty keypoints with empty list
+                keypoints = [[] if kp is None else kp for kp in poses[i]]
+                obj = [Object(uid, obj_type, keypoints, dataset.type)]
+                annotation = Annotation(dataset, dataset.name, frame, 'root', obj)
+
+                # If the annotation for obj does not exist, it is created
+                # If obj already had an annotation, the old one is replaced by the new one
+                result = self.update_annotation_frame_object(annotation)
+                if result == 'Error':
+                    final_result = False   # finalResult False if there is some problem
+
+        # Remove folder with annotations
+        shutil.rmtree(folder_path)
+        return final_result
+
     # Add annotation of objects to database from videos directory
     # Return true if all annotation have been updated, False if has been some problem
     def add_annotations_AIK(self, dataset, dir):
         list_dir = os.listdir(dir)   # List of all objects/persons
-        type = 'personAIK'          # Type of objects
+        type = 'poseAIK'             # Type of objects
         final_result = True
 
         for f in list_dir:
@@ -392,11 +400,11 @@ class AnnotationService:
             frames = tracks['frames']
             poses = tracks['poses']
             for i, frame in enumerate(frames):
-                keypoints = poses[i]
-                object = Object(uid, type, keypoints, dataset.type)
+                # Replace empty keypoints with empty list
+                keypoints = [[] if kp is None else kp for kp in poses[i]]
+                object = [Object(uid, type, keypoints, dataset.type)]
                 annotation = Annotation(dataset, dataset.name, frame, 'root', object)
-                result = self.update_annotation_frame_object(annotation)
+                result = annotationManager.update_annotation_insert_objects(annotation)
                 if result == 'Error':
                     final_result = False   # finalResult False if there is some problem
-
         return final_result

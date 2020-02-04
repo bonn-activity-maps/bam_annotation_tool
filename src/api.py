@@ -340,6 +340,14 @@ def remove_annotation():
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Read data from stored zip
+@app.route('/api/annotation/uploadAnnotations', methods=['POST'])
+def upload_annotations():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = annotationService.upload_annotations(dataset, req_data['folder'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 #### OBJECT TYPE ####
 
