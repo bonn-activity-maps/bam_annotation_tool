@@ -666,7 +666,8 @@ angular.module('CVGTool')
 
 
             _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frame) {
-                $scope.objectManager.selectedType = $scope.objectManager.objectTypes[objectType.toString()];
+                $scope.objectManager.changeSelectedType(objectType.toString());
+
                 if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
                 
                 if (!$scope.toolParameters.isPosetrack) {
@@ -2456,14 +2457,14 @@ angular.module('CVGTool')
                 context.setLineDash([5, 5]);
                 // Draw horizontal line
                 context.beginPath();
-                context.strokeStyle = "red";
+                context.strokeStyle = "rgba(255, 0, 0, 0.5)";
                 context.moveTo(_this.mouse.pos.x - 1000, _this.mouse.pos.y);
                 context.lineTo(_this.mouse.pos.x + 1000, _this.mouse.pos.y);
                 context.stroke();
                 context.closePath();
                 // Draw vertical line
                 context.beginPath();
-                context.strokeStyle = "red";
+                context.strokeStyle = "rgba(255, 0, 0, 0.5)";
                 context.moveTo(_this.mouse.pos.x, _this.mouse.pos.y - 1000);
                 context.lineTo(_this.mouse.pos.x, _this.mouse.pos.y + 1000);
                 context.stroke();
