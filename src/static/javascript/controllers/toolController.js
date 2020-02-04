@@ -144,6 +144,7 @@ angular.module('CVGTool')
                         loadedCameras: _this.loadedCamerasNames
                     }
                 }).then(function(successData) {
+                    $scope.loadingScreenManager.setLoadingScreen();
                     if ($scope.toolParameters.isPosetrack) {
                         successData = { videos: [successData.videos] }
                     }
@@ -186,10 +187,6 @@ angular.module('CVGTool')
                 }
             }
 
-            _this.utoa = function(data) {
-                return btoa(unescape(encodeURIComponent(data)));
-            }
-
             // Fills the cameras as needed
             _this.fillCameras = function(cameraNames) {
                 var callback = function(response) {
@@ -227,11 +224,13 @@ angular.module('CVGTool')
                     // After all frames have loaded, call retrieve objects in PT
                     if ($scope.toolParameters.isPosetrack) {
                         $scope.canvasesManager.moveToCanvas(_this.loadedCameras[0], 1);
+                        $scope.loadingScreenManager.closeLoadingScreen();
                         $scope.commonManager.retrieveObjects();
                                               
                     } else { // If we are not in PT and we are finished, we can dismiss de dialog
                         if (_this.numberOfLoadedCameras >= _this.numberOfCamerasToLoad) {
                             // Set redraw to draw the selected object
+                            $scope.loadingScreenManager.closeLoadingScreen();
                             $scope.canvasesManager.redrawCanvases();
                         }
                     }
@@ -348,7 +347,7 @@ angular.module('CVGTool')
             // Unsets the loading screen
             _this.closeLoadingScreen = function() {
                 _this.loadingCounter--;
-                if (_this.loadingCounter <= 0) _this.loadingCounter = false;
+                if (_this.loadingCounter <= 0) _this.loading = false;
             }
         }
 
@@ -857,6 +856,7 @@ angular.module('CVGTool')
 
             // Executes the whole AIK initialization process
             _this.initialize = function() {
+                $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
             }
 
@@ -941,6 +941,7 @@ angular.module('CVGTool')
                                  
                         }
                     }
+                    $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
 
@@ -969,8 +970,10 @@ angular.module('CVGTool')
                             $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objects[i].uid, objects[i].type, frame);
                         }
                     }
+                    $scope.loadingScreenManager.closeLoadingScreen();
                 }
-
+                
+                $scope.loadingScreenManager.setLoadingScreen();
                 // Reset that object exist counter to false
                 var existsInit = [];
                 for (var j = 0; j < $scope.objectManager.objectTypes[objectType.toString()].labels.length; j++) {
@@ -1114,6 +1117,7 @@ angular.module('CVGTool')
 
             // Executes the whole PT initialization process
             _this.initialize = function() {
+                $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
                 $scope.toolParameters.checkWhereAreWeComingFrom();
             }
@@ -1136,6 +1140,7 @@ angular.module('CVGTool')
                             objects: {}
                         }
                     }
+                    $scope.loadingScreenManager.closeLoadingScreen();
                 }
 
                 toolSrvc.retrieveAvailableObjectTypes($scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage);
@@ -1230,6 +1235,8 @@ angular.module('CVGTool')
                     _this.retrieveAnnotations();
                 }
 
+                $scope.loadingScreenManager.setLoadingScreen();
+
                 if ($scope.camerasManager.loadedCameras.length > 0) {
                     toolSrvc.retrieveObjects($scope.toolParameters.activeDataset, $scope.camerasManager.loadedCameras[0].filename, $scope.toolParameters.user.name, callback, $scope.messagesManager.sendMessage);
                 } else {
@@ -1268,6 +1275,7 @@ angular.module('CVGTool')
                               
                         }
                     }
+                    $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
 
@@ -1303,8 +1311,10 @@ angular.module('CVGTool')
                         }
                         $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objects[i].track_id, objects[i].type, frame);
                     } 
+                    $scope.loadingScreenManager.closeLoadingScreen();
                 }
                 
+                $scope.loadingScreenManager.setLoadingScreen();
                 // Reset that object exist counter to false
                 var existsInit = [];
                 for (var j = 0; j < $scope.objectManager.objectTypes[objectType.toString()].labels.length; j++) {
@@ -2573,12 +2583,12 @@ angular.module('CVGTool')
                 } else {
                     // Whatever other shapes we may have, polygon, skeleton, etc
                 }
-                      
+
                 // Update
                 delete _this.objects2D.objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].shape; 
                 _this.objects2D.objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].shape = newObject;
                 delete newObject;
-                
+
                 _this.setRedraw();
             }
 

@@ -63,17 +63,13 @@
     <!-- LOADING PANEL -->
     <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
         <div class="row">
-            <div class="col col-md-4"></div>
-            <div class="col col-md-4">
-                <div class="panel">
-                    <div class="panel-body">
-                        <img src="/static/resources/loading.gif" />
-                        <h2>Loading content</h2>
-                        <p>Please wait</p>
-                    </div>
+            <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
+                <div class="panel-body">
+                    <img src="/static/resources/loading.gif" />
+                    <h2>Loading content</h2>
+                    <p>Please wait</p>
                 </div>
             </div>
-            <div class="col col-md-4"></div>
         </div>   
     </div>  
 </div>
