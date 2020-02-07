@@ -1872,7 +1872,7 @@ angular.module('CVGTool')
                 context.lineWidth = 3;
                 context.strokeText(_this.uid.toString(), _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
                 context.fillStyle = "white";
-                context.strokeText(_this.uid.toString(), _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
+                context.fillText(_this.uid.toString(), _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
                 context.fill();
                 context.closePath();
             }
@@ -1898,7 +1898,7 @@ angular.module('CVGTool')
                 context.lineWidth = 3;
                 context.strokeText(_this.labels[0], _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
                 context.fillStyle = "white";
-                context.strokeText(_this.labels[0], _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
+                context.fillText(_this.labels[0], _this.points[0].center[0] + 3, _this.points[0].center[1] - 9);
                 context.fill();
                 context.closePath();
             }
