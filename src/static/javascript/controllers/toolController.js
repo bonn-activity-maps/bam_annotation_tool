@@ -1122,12 +1122,13 @@ angular.module('CVGTool')
             }
 
             // Deletes the actual object in the actual frame
-            _this.deleteObject = function(object) {
+            _this.deleteAnnotation = function() {
                 var successFunction = function() {
                     $scope.messagesManager.sendMessage("success", "Annotation deleted!")
+                    let object = $scope.objectManager.selectedObject;
                     _this.retrieveAnnotation(object.uid, object.type, [$scope.timelineManager.slider.value]);
                 }
-                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, object.uid, object.type, successFunction, $scope.messagesManager.sendMessage);
+                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, $scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, successFunction, $scope.messagesManager.sendMessage);
             }
         }
 
@@ -1454,12 +1455,13 @@ angular.module('CVGTool')
             }
 
             // Deletes the actual object in the actual frame
-            _this.deleteObject = function(object) {
+            _this.deleteAnnotation = function() {
                 var successFunction = function() {
                     $scope.messagesManager.sendMessage("success", "Annotation deleted!")
+                    let object = $scope.objectManager.selectedObject;
                     _this.retrieveAnnotation(object.uid, object.type, [$scope.timelineManager.slider.value]);
                 }
-                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, object.uid, object.type, successFunction, $scope.messagesManager.sendMessage);
+                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, $scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, successFunction, $scope.messagesManager.sendMessage);
             }
         }
 
@@ -2848,6 +2850,15 @@ angular.module('CVGTool')
                 callback: function() { //check if the keypoint editor is open and then save
                     if ($scope.keypointEditor.editorActive === true) {
                         $scope.commonManager.updateAnnotation();
+                    }
+                }
+            })
+            .add({
+                combo: 'd',
+                description: 'Delete annotation',
+                callback: function() { //check if the keypoint editor is open and then save
+                    if ($scope.keypointEditor.editorActive === true) {
+                        $scope.commonManager.deleteAnnotation();
                     }
                 }
             });
