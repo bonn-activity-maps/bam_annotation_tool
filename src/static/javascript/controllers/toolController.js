@@ -2589,6 +2589,11 @@ angular.module('CVGTool')
                 _this.objects2D.objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].shape = newObject;
                 delete newObject;
 
+                // Add the shape to the corresponding place in the keypoint editor to be visualized in other canvases
+                if ($scope.keypointEditor.editorActive) {
+                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1] = newObject;
+                }
+
                 _this.setRedraw();
             }
 
