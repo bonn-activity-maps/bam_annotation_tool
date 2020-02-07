@@ -683,8 +683,10 @@ angular.module('CVGTool')
                             $scope.canvasesManager.canvases[i].projectObject(objectUID, objectType, frame);
                         }
                     }
+                    if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
                 } else {
                     $scope.canvasesManager.canvases[0].update2DObject(objectUID, objectType, frame, $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints);
+                    if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
                 }
             }
 
@@ -1570,7 +1572,7 @@ angular.module('CVGTool')
                 $scope.objectManager.selectedObject = object;
                 $scope.timelineManager.slider.value = frame;
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
-
+                
                 _this.keypointEditorData = {
                     searchUID: null,
                     shapes: [],
@@ -2626,7 +2628,7 @@ angular.module('CVGTool')
                 delete newObject;
 
                 // Add the shape to the corresponding place in the keypoint editor to be visualized in other canvases
-                if ($scope.keypointEditor.editorActive) {
+                if ($scope.keypointEditor.editorActive && $scope.keypointEditor.keypointEditorData.searchUID.toString().localeCompare(uid.toString()) === 0 && frame === $scope.timelineManager.slider.value) {
                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1] = newObject;
                 }
 
