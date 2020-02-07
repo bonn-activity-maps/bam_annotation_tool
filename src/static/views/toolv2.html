@@ -291,9 +291,17 @@
             </div>
         </div>
         <hr>
-        <div class="checkbox">
-            <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+        <div class="row">
+            <div class="col col-md-6">
+                <div class="checkbox">
+                    <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+                </div>
+            </div>
+            <div class="col col-md-6">
+                <button class="btn-sm btn-danger" ng-click="commonManager.deleteObject(objectManager.selectedObject)">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+            </div>
         </div>
+        
         <hr>
         <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
             <table class="table table-hover table-bordered" style="height: 100px; width: 300;">

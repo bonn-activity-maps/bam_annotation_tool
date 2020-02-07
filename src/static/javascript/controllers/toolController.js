@@ -374,8 +374,6 @@ angular.module('CVGTool')
             // Moves the video "video" to the canvas specified by "number"
             _this.moveToCanvas = function(video, number) {
                 _this.canvases[number - 1].setCamera(video); // Set the camera
-
-                _this.refreshProjectionOfCanvas(number - 1);
                 _this.redrawCanvases();
     
                 // Updatethe navBar struct
@@ -1113,12 +1111,21 @@ angular.module('CVGTool')
                             frameArray.push(i);
                         }
 
-                        $scope.commonManager.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
+                        _this.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
                         
                     } else if (data.msg.localeCompare("error") == 0) {
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }
                 }) 
+            }
+
+            // Deletes the actual object in the actual frame
+            _this.deleteObject = function(object) {
+                var successFunction = function() {
+                    $scope.messagesManager.sendMessage("success", "Annotation deleted!")
+                    _this.retrieveAnnotation(object.uid, object.type, [$scope.timelineManager.slider.value]);
+                }
+                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, object.uid, object.type, successFunction, $scope.messagesManager.sendMessage);
             }
         }
 
@@ -1436,12 +1443,21 @@ angular.module('CVGTool')
                             frameArray.push(i);
                         }
 
-                        $scope.commonManager.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
+                        _this.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
                         
                     } else if (data.msg.localeCompare("error") == 0) {
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }
                 }) 
+            }
+
+            // Deletes the actual object in the actual frame
+            _this.deleteObject = function(object) {
+                var successFunction = function() {
+                    $scope.messagesManager.sendMessage("success", "Annotation deleted!")
+                    _this.retrieveAnnotation(object.uid, object.type, [$scope.timelineManager.slider.value]);
+                }
+                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, object.uid, object.type, successFunction, $scope.messagesManager.sendMessage);
             }
         }
 
@@ -2394,10 +2410,13 @@ angular.module('CVGTool')
                     }
                 }
             }
-
+            _this.imagesLoaded = 0;
+    
             // Initialization function
             _this.init = function() {
                 if (_this.activeCamera !== null) {
+                    _this.imagesLoaded = 0;
+
                     for (var i = 0; i < _this.activeCamera.frames.length; i++) {
                         var scale = {
                             x: 1,
@@ -2410,11 +2429,18 @@ angular.module('CVGTool')
                         image.onload = function() {
                             scale.x = image.width / canvas.width;
                             scale.y = image.height / canvas.height;
+                            _this.imagesLoaded++;
+
+                            if (_this.imagesLoaded >= $scope.toolParameters.numberOfFrames) {
+                                $scope.canvasesManager.refreshProjectionOfCanvas(_this.canvasNumber - 1);
+                                _this.imagesLoaded = 0;
+                            }
                         };
                         image.src = _this.activeCamera.frames[i].image;
                         _this.scale = scale;
                         _this.images[i] = image;
                     }
+                    
                     _this.setRedraw();
                 }
             }
@@ -2534,9 +2560,9 @@ angular.module('CVGTool')
                 
 
                 // Project the objects to visualize them if the objects are in 3D
-                if ($scope.toolParameters.activeDataset.dim == 3) {
+                if (!$scope.toolParameters.isPosetrack) {
                     _this.projectObjects();
-                } else if ($scope.toolParameters.activeDataset.dim == 2) { // If we are in 2D already, no need to project them
+                } else { // If we are in 2D already, no need to project them
                     _this.updateObjects();
                 }
 
@@ -2749,6 +2775,8 @@ angular.module('CVGTool')
             if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
             $scope.canvasesManager.redrawCanvases();
         });
+
+
 
         // Function that is executed when checkAnnotations msg is received.
         // Check if all annotations are complete
