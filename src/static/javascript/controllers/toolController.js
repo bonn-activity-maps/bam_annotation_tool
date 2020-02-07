@@ -231,6 +231,7 @@ angular.module('CVGTool')
                         if (_this.numberOfLoadedCameras >= _this.numberOfCamerasToLoad) {
                             // Set redraw to draw the selected object
                             $scope.loadingScreenManager.closeLoadingScreen();
+                            
                             $scope.canvasesManager.redrawCanvases();
                         }
                     }
@@ -373,6 +374,9 @@ angular.module('CVGTool')
             // Moves the video "video" to the canvas specified by "number"
             _this.moveToCanvas = function(video, number) {
                 _this.canvases[number - 1].setCamera(video); // Set the camera
+
+                _this.refreshProjectionOfCanvas(number - 1);
+                _this.redrawCanvases();
     
                 // Updatethe navBar struct
                 navSrvc.setCanvasCamera(video.filename, number);
@@ -660,6 +664,12 @@ angular.module('CVGTool')
                             $scope.canvasesManager.canvases[i].projectObjects();
                         }
                     }
+                }
+            }
+
+            _this.refreshProjectionOfCanvas = function(number) {
+                if ($scope.canvasesManager.canvases[number].hasActiveCamera()){
+                    $scope.canvasesManager.canvases[number].projectObjects();
                 }
             }
 
