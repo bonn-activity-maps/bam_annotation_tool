@@ -20,6 +20,7 @@ angular.module('CVGTool')
             frameRange: 0, // Range of frames
             loadedCameras: [], // Filenames of the cameras that have been loaded
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            selectedType: "",
             maxFrame: -1, // Max frame of the session to check frame range displacements
             minFrame: -1 // Min frame of the session to check frame range displacements
         };
@@ -113,10 +114,10 @@ angular.module('CVGTool')
         // Function to move the tool to the next range
         $scope.goNextRange = function() {
             if ($scope.sessionData.frameEnd + $scope.sessionData.frameRange > $scope.sessionData.maxFrame) {
-                $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+                $state.go('tool', { obj: { from: $scope.sessionData.maxFrame - $scope.sessionData.frameRange, to: $scope.sessionData.maxFrame, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, selectedType: $scope.sessionData.selectedType,fromTaskHome: false } });
 
             } else {
-                $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+                $state.go('tool', { obj: { from: $scope.sessionData.frameStart + $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras,selectedType: $scope.sessionData.selectedType  ,fromTaskHome: false } });
             }
         };
 
@@ -124,9 +125,9 @@ angular.module('CVGTool')
         $scope.goPreviousRange = function() {
             // Check if we can go to the previous range
             if ($scope.sessionData.frameStart - $scope.sessionData.frameRange < $scope.sessionData.minFrame) {
-                $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+                $state.go('tool', { obj: { from: $scope.sessionData.minFrame, to: $scope.sessionData.minFrame + $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, selectedType: $scope.sessionData.selectedType, fromTaskHome: false } });
             } else {
-                $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, fromTaskHome: false } });
+                $state.go('tool', { obj: { from: $scope.sessionData.frameStart - $scope.sessionData.frameRange, to: $scope.sessionData.frameEnd - $scope.sessionData.frameRange, originalRange: $scope.sessionData.frameRange, loadedCameras: $scope.sessionData.loadedCameras, canvasCameras: $scope.sessionData.canvasCameras, selectedType: $scope.sessionData.selectedType, fromTaskHome: false } });
             }
         };
 

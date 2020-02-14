@@ -63,17 +63,13 @@
     <!-- LOADING PANEL -->
     <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
         <div class="row">
-            <div class="col col-md-4"></div>
-            <div class="col col-md-4">
-                <div class="panel">
-                    <div class="panel-body">
-                        <img src="/static/resources/loading.gif" />
-                        <h2>Loading content</h2>
-                        <p>Please wait</p>
-                    </div>
+            <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
+                <div class="panel-body">
+                    <img src="/static/resources/loading.gif" />
+                    <h2>Loading content</h2>
+                    <p>Please wait</p>
                 </div>
             </div>
-            <div class="col col-md-4"></div>
         </div>   
     </div>  
 </div>
@@ -129,7 +125,7 @@
           <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
           <li class="divider"></li> 
           <li class="dropdown-header">Object types</li>
-          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type.type}}</button></li>
+          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type.type)" style="width: 100%;">{{type.type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -295,9 +291,17 @@
             </div>
         </div>
         <hr>
-        <div class="checkbox">
-            <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+        <div class="row">
+            <div class="col col-md-6">
+                <div class="checkbox">
+                    <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+                </div>
+            </div>
+            <div class="col col-md-6">
+                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()" data-toggle="tooltip" data-placement="top" title="D">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+            </div>
         </div>
+        
         <hr>
         <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
             <table class="table table-hover table-bordered" style="height: 100px; width: 300;">

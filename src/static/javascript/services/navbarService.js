@@ -25,6 +25,7 @@ angular.module('CVGTool')
             frameRange: 0, // Range
             loadedCameras: [], // Filenames of the cameras that have been loaded
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+            selectedType: "",
             maxFrame: -1, // Max frame of the session to check frame range displacements
             minFrame: -1 // Min frame of the session to check frame range displacements
         };
@@ -80,6 +81,7 @@ angular.module('CVGTool')
                     frameRange: 0, // Range
                     loadedCameras: [], // Filenames of the cameras that have been loaded
                     canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
+                    selectedType: "",
                     maxFrame: -1,
                     minFrame: -1
                 };
@@ -100,6 +102,12 @@ angular.module('CVGTool')
                         sessionData.loadedCameras.splice(i, 1);
                     }
                 }
+                updateSessionData();
+            },
+
+            // Set the object type that wants to be kept when jumping frames
+            setSelectedType: function(type) {
+                sessionData.selectedType = type;
                 updateSessionData();
             },
 

@@ -28,6 +28,7 @@
                                         <td>{{dataset.type}}</td>
                                         <td>
                                             <button ng-click="editActivities(dataset)" class="btn btn-success"><span class="glyphicon glyphicon-tags"></span></button>
+                                            <button ng-click="getAnnotationFolders(dataset)" ng-if="dataset.type=='actionInKitchen'" class="btn btn-info"><span class="glyphicon glyphicon-upload"></span></button>
                                             <button ng-click="exportDataset(dataset)" class="btn btn-primary"><span class="glyphicon glyphicon-download"></span></button>
                                         </td>
                                         <td>
