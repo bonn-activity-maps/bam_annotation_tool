@@ -1,9 +1,5 @@
 import os
-import base64
 import logging
-from flask import url_for
-
-
 
 from python.logic.frameService import FrameService
 from python.infrastructure.videoManager import VideoManager
@@ -82,7 +78,6 @@ class VideoService:
             # Get frame
             f = Frame(frame, video.name, video.dataset)
             f = frameManager.get_frame(f)
-            # frame_url = url_for("get_frame", filename=f.path)
             imgs.append({'frame': f.number, 'video': f.video, 'image': f.path})
         return True, imgs, 200
 

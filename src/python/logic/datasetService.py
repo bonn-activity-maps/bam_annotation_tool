@@ -293,7 +293,7 @@ class DatasetService:
         # Directories and files
         dir_cameras = dir + "/cameras"
         dir_videos = dir + "/videos"
-        dir_poses = dir + "/poses"
+        dir_poses = dir + "/tracks3d"
         file_dataset = dir + "/dataset.json"
 
         # Check dirs and files
@@ -315,7 +315,7 @@ class DatasetService:
     def add_info_AIK(self, dataset):
         # Directories for AIK datasets
         videos_dir = os.path.join(dataset.dir, 'videos/')
-        annotations_dir = os.path.join(dataset.dir, 'poses/')
+        annotations_dir = os.path.join(dataset.dir, 'tracks3d/')
 
         # Store info in DB
         result_videos = videoService.add_videos_AIK(dataset, videos_dir)
