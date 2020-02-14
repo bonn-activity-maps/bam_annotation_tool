@@ -930,6 +930,8 @@ angular.module('CVGTool')
             _this.retrieveAnnotations = function() {
                 var callback = function(annotations) {
                     if (annotations.length == 0) { // Check if we received something
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        $scope.canvasesManager.refreshProjectionOfCanvases();
                         return;
                     }; 
                     for (var j = 0; j < annotations.length; j++) {
@@ -962,7 +964,10 @@ angular.module('CVGTool')
             // Retrieves the annotations for a given UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
                 var callback = function(annotations) {
-                    if (annotations.length <= 0) return;
+                    if (annotations.length <= 0) {
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        return;
+                    }
 
                     for(var j= 0; j< annotations.length; j++) {
                         var frame = annotations[j].frame;
@@ -1268,6 +1273,8 @@ angular.module('CVGTool')
             _this.retrieveAnnotations = function() {
                 var callback = function(annotations) {
                     if (annotations.length == 0) {  // Check if we received something
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        $scope.canvasesManager.refreshProjectionOfCanvases();
                         return;
                     }
         
@@ -1310,8 +1317,12 @@ angular.module('CVGTool')
 
             // Retrieve annotation by UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
-                var callback = function(annotation) {
-                    if (annotation.length <= 0) return; // Check if we received something
+                var callback = function(annotation) { // Check if we received something
+                    if (annotation.length <= 0) {
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        return;
+                    }
+
                     var frame = annotation[0].frame;
                     var objects = annotation[0].objects;
                     for (var i= 0; i< objects.length; i++) {
