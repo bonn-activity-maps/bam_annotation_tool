@@ -880,8 +880,14 @@ angular.module('CVGTool')
                             datasetType: obj[i].datasetType,
                             numKeypoints: obj[i].numKeypoints,
                             labels: obj[i].labels,
+                            skeleton: obj[i].skeleton,
                             objects: {}
                         }
+
+                        // // If it is a pose, we also store the skeleton
+                        // if (obj[i].type.localeCompare("poseAIK") == 0) {
+                        //     $scope.objectManager.objectTypes[obj[i].type].skeleton = obj[i].skeleton;
+                        // }
                     }
                     $scope.toolParameters.checkWhereAreWeComingFrom();
                     _this.retrieveObjects();
@@ -1724,6 +1730,116 @@ angular.module('CVGTool')
                 context.lineWidth = 3;
                 context.stroke();
                 context.closePath();
+            }
+        }
+
+        function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
+            var _this = this;
+
+            _this.labels = labels;
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+            _this.skeleton = skeleton;
+
+            // CONSTRUCT
+            if (projectedPoints.length !== 0) {
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
+            }
+
+            _this.draw = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.drawEdges = function(context, color) {
+                for (var i = 0; i < _this.skeleton.length; i++) {
+                    _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
+                }
+            }
+
+            _this.drawEdge = function(context, color, point1, point2) {
+                if (point1 === null || point2 === null) return;
+
+                context.beginPath();
+                context.moveTo(point1.center[0], point1.center[1]);
+                context.lineTo(point2.center[0], point2.center[1]);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
+            }
+
+            _this.drawWithUID = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.drawWithLabel = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.isInside = function(x,y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            _this.move = function(dx, dy, index) {
+                if (_this.points[index] == null) return;
+                _this.points[index].move(dx,dy);
+            }
+
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                _this.cameraPoints[index][0] += dxCamera;
+                _this.cameraPoints[index][1] += dyCamera;
+            }
+
+            _this.removePoint = function(index) {
+                _this.points[index] = null;
+                _this.cameraPoints[index] = [];
+            }
+
+            _this.getPointIndex = function(x, y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
             }
         }
 
@@ -2631,6 +2747,8 @@ angular.module('CVGTool')
                     newObject = new BBox(uid, imgPoints, points, labels);
                 } else if (type.localeCompare("person") == 0) {
                     newObject = new Person(uid, imgPoints, points, labels);
+                } else if (type.localeCompare("poseAIK") == 0) {
+                    newObject = new PoseAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
                 } else {
                     // Whatever other shapes we may have, polygon, skeleton, etc
                 }
