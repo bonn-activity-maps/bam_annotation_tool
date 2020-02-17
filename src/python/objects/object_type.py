@@ -18,6 +18,8 @@ class Object_type:
         self.type = type
         self.dataset_type = dataset_type
         self.labels = labels
+        self.skeleton = skeleton
+
         if num_keypoints is not None:
             self.num_keypoints = int(num_keypoints)
         elif labels is not None:
@@ -28,7 +30,6 @@ class Object_type:
         if dataset_type == self.pt:
             self.supercategory = supercategory
             self.id = int(id) if id is not None else None
-            self.skeleton = skeleton
             self.is_polygon = is_polygon
 
     def __repr__(self):
@@ -40,12 +41,13 @@ class Object_type:
             'datasetType': self.dataset_type,
             'labels': self.labels,
             'numKeypoints': self.num_keypoints,
+            'skeleton': self.skeleton if self.skeleton is not None else None
         }
+
         # Add optional parameters if they exist for pt
         if self.dataset_type == self.pt:
             if self.supercategory is not None: obj['supercategory'] = self.supercategory
             if self.id is not None: obj['id'] = self.id
-            if self.skeleton is not None: obj['skeleton'] = self.skeleton
             if self.is_polygon is not None: obj['is_polygon'] = self.is_polygon
         return obj
 
