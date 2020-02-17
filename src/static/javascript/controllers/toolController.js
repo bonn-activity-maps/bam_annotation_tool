@@ -873,6 +873,7 @@ angular.module('CVGTool')
             // STEP1: Retrieve all available object types
             _this.retrieveAvailableObjectTypes = function() {
                 var callback = function(obj) {
+                    console.log(obj)
                     $scope.objectManager.resetObjectManager();
                     for (var i = 0; i < obj.length; i++) {
                         $scope.objectManager.objectTypes[obj[i].type] = {
@@ -883,11 +884,6 @@ angular.module('CVGTool')
                             skeleton: obj[i].skeleton,
                             objects: {}
                         }
-
-                        // // If it is a pose, we also store the skeleton
-                        // if (obj[i].type.localeCompare("poseAIK") == 0) {
-                        //     $scope.objectManager.objectTypes[obj[i].type].skeleton = obj[i].skeleton;
-                        // }
                     }
                     $scope.toolParameters.checkWhereAreWeComingFrom();
                     _this.retrieveObjects();
@@ -1168,6 +1164,7 @@ angular.module('CVGTool')
                             datasetType: obj[i].datasetType,
                             numKeypoints: obj[i].numKeypoints,
                             labels: obj[i].labels,
+                            skeleton: obj[i].skeleton,
                             objects: {}
                         }
                     }
