@@ -363,7 +363,7 @@ class AnnotationService:
     # Replace old annotations if they already exist
     def upload_annotations_aik(self, dataset, folder):
         folder_path = os.path.join(dataset.STORAGE_DIR, folder)
-        annotations_dir = os.path.join(folder_path, 'tracks3d/')
+        annotations_dir = os.path.join(folder_path, 'poses/')
 
         list_dir = os.listdir(annotations_dir)    # List of all objects/persons
         obj_type = 'poseAIK'             # Type of objects
