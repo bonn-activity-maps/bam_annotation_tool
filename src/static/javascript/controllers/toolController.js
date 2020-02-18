@@ -673,7 +673,6 @@ angular.module('CVGTool')
 
 
             _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frame) {
-                $scope.objectManager.changeSelectedType(objectType.toString());
 
                 if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
                 
@@ -873,7 +872,6 @@ angular.module('CVGTool')
             // STEP1: Retrieve all available object types
             _this.retrieveAvailableObjectTypes = function() {
                 var callback = function(obj) {
-                    console.log(obj)
                     $scope.objectManager.resetObjectManager();
                     for (var i = 0; i < obj.length; i++) {
                         $scope.objectManager.objectTypes[obj[i].type] = {
@@ -1028,7 +1026,7 @@ angular.module('CVGTool')
                     }
                 }
 
-                if (frameFrom === null) return; // Nothing found to interpolate to
+                if (frameFrom === null || frameFrom + 1 == frameTo) return; // Nothing found to interpolate to
 
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
@@ -1732,7 +1730,6 @@ angular.module('CVGTool')
 
         function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
             var _this = this;
-
             _this.labels = labels;
             _this.uid = uid;
             _this.points = [];
@@ -1740,19 +1737,20 @@ angular.module('CVGTool')
             _this.skeleton = skeleton;
 
             // CONSTRUCT
-            if (projectedPoints.length !== 0) {
-                for (var i = 0; i < projectedPoints.length; i++) {
-                    if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i]));
-                    } else _this.points.push(null);
-                }
-                _this.cameraPoints = cameraPoints;    
-            } else {
+            if (projectedPoints.length === 0) {
                 for (var i = 0; i < _this.labels.length; i++) {
                     _this.points.push(null);
                     _this.cameraPoints.push([]);
                 }
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints; 
             }
+          
 
             _this.draw = function(context, color) {
                 // First draw all points
