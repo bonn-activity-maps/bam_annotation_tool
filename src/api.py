@@ -545,6 +545,15 @@ def project_to_camera():
     success, msg, status = aikService.project_to_camera(frame, request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
+@app.route('/api/aik/projectToCameras', methods=['GET'])
+def project_to_cameras():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = aikService.project_to_cameras(int(request.headers['startFrame']), int(request.headers['endFrame']),
+                                                         int(request.headers['cameraName']), dataset,
+                                                         request.headers['points'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 def compute_epiline():
