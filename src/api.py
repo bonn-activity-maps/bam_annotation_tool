@@ -537,17 +537,9 @@ def merge_actions():
 
 
 #### AIK and OPENCV computations ####
-# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
+# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
 @app.route('/api/aik/projectToCamera', methods=['GET'])
 def project_to_camera():
-    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    frame = Frame(request.headers['frame'], request.headers['cameraName'], dataset)
-    success, msg, status = aikService.project_to_camera(frame, request.headers['points'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
-# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
-@app.route('/api/aik/projectToCameras', methods=['GET'])
-def project_to_cameras():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = aikService.project_to_cameras(int(request.headers['startFrame']), int(request.headers['endFrame']),
                                                          int(request.headers['cameraName']), dataset,
