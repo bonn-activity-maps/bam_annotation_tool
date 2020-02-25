@@ -882,7 +882,10 @@ angular.module('CVGTool')
                             skeleton: obj[i].skeleton,
                             objects: {}
                         }
+
+                        if (obj[i].type.localeCompare("poseAIK") ==0) console.log(obj[i].labels)
                     }
+                    
                     $scope.toolParameters.checkWhereAreWeComingFrom();
                     _this.retrieveObjects();
                 }
@@ -938,6 +941,8 @@ angular.module('CVGTool')
                         var annotation = annotations[j];
                         
                         for (var i = 0; i < annotation.objects.length; i++) {
+                            if (annotation.objects[i].type.localeCompare("poseAIK") == 0) console.log(annotation.objects[i].keypoints)
+
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                 .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
                                 annotation.objects[i].keypoints.slice();
