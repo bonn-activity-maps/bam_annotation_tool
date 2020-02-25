@@ -135,7 +135,7 @@ angular.module('CVGTool')
         projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
-                url: '/api/aik/projectToCameras',
+                url: '/api/aik/projectToCamera',
                 headers: {
                     'points': JSON.stringify(points),
                     'startFrame': startFrame,
