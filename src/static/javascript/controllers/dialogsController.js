@@ -186,6 +186,38 @@ angular.module('CVGTool')
 ])
 
 /*
+ * Controller of the dialog of the "upload annotations to existing dataset" action
+ */
+.controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name', 'type',
+    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name, type) {
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = 'Annotations successfully uploaded.'
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = 'There was an error when upload the annotations.'
+        };
+
+        // Function that generates the call to the server to remove the file
+        $scope.export = function() {
+            adminDatasetsSrvc.exportDataset(name, type, showSuccess, showError)
+        }
+    }
+])
+
+/*
  * Controller of the dialog of the "remove stored user as administrator" action
  */
 .controller('dialogRemoveUserCtrl', ['$scope', 'adminUsersSrvc', '$mdDialog', 'username', function($scope, adminUsersSrvc, $mdDialog, username) {
@@ -253,6 +285,55 @@ angular.module('CVGTool')
             $scope.filename = file.name;
             $scope.mode = 'progress';
             adminDatasetsSrvc.loadZip(file.name, $scope.variables.datasetType, showSuccess, showError);
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response;
+            $scope.success = true;
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response;
+            $scope.success = false;
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $scope.successData = {
+                success: $scope.success,
+                filename: $scope.filename,
+                type: $scope.variables.datasetType
+            };
+            $mdDialog.hide($scope.successData);
+        }
+    }
+])
+
+/*
+* Controller of the dialog of show zip files
+*/
+.controller('dialogShowFoldersCtrl', ['$scope', '$mdDialog', 'dataset', 'files', 'adminDatasetsSrvc',
+    function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
+        $scope.variables = {
+            files: files,
+            dataset: dataset.name,
+            datasetType: dataset.type
+        };
+
+        $scope.filename = '';
+        $scope.success = false;
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Select a folder to upload
+        $scope.selectZip = function(file) {
+            $scope.filename = file.name;
+            $scope.mode = 'progress';
+            adminDatasetsSrvc.uploadAnnotations($scope.variables.dataset, $scope.variables.datasetType, $scope.filename, showSuccess, showError);
         };
 
         // Recall function if the rename worked

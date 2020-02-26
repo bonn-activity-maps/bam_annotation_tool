@@ -143,13 +143,11 @@ def remove_dataset():
     success, msg, status = datasetService.remove_dataset(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
 # Get list of zip files in file system
 @app.route('/api/dataset/getZipFiles', methods=['GET'])
 def get_zip_files():
     success, msg, status = datasetService.get_zip_files()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Load a zip file already in the file system
 # parameter: req_data['name'] = name+extension
@@ -231,6 +229,12 @@ def get_video_frames():
 
 
 #### ANNOTATION ####
+
+# Get list of folders in file system (except dataset folders)
+@app.route('/api/annotation/getFolders', methods=['GET'])
+def get_folders():
+    success, msg, status = annotationService.get_folders()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation info for given frame, dataset, scene and user
 @app.route('/api/annotation/getAnnotation', methods=['GET'])
@@ -345,6 +349,14 @@ def remove_annotation():
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object])
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Read data from stored zip
+@app.route('/api/annotation/uploadAnnotations', methods=['POST'])
+def upload_annotations():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = annotationService.upload_annotations(dataset, req_data['folder'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -532,12 +544,13 @@ def merge_actions():
 
 
 #### AIK and OPENCV computations ####
-# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points 
+# Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
 @app.route('/api/aik/projectToCamera', methods=['GET'])
 def project_to_camera():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    frame = Frame(request.headers['frame'], request.headers['cameraName'], dataset)
-    success, msg, status = aikService.project_to_camera(frame, request.headers['points'])
+    success, msg, status = aikService.project_to_camera(int(request.headers['startFrame']), int(request.headers['endFrame']),
+                                                         int(request.headers['cameraName']), dataset,
+                                                         request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

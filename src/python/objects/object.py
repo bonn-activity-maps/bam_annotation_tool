@@ -85,7 +85,7 @@ class Object:
                                                                                self.labels)
 
     def is_pt(self):
-        return self.pt == self.type
+        return self.pt == self.dataset_type
 
     def is_aik(self):
-        return self.aik == self.type
+        return self.aik == self.dataset_type

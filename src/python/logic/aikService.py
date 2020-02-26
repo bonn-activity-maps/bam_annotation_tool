@@ -28,16 +28,22 @@ class AIKService:
         except KeyError:
             return None
 
-    def project_to_camera(self, frame, points_array):
+    # Project points to camera
+    def project_to_camera(self, start_frame, end_frame, camera_name, dataset, points_array):
         # Convert the points json to Python list
         points_array = json.loads(points_array)
 
-        # Get camera parameters for the frame, camera and dataset
-        frame = frameManager.get_frame(frame)
-
-        # Project and return the points into the camera
-        return True, self.project_3D_points_to_camera(points_array, frame.camera_parameters), 200
-
+        final_points = []
+        for i, f in enumerate(range(start_frame, end_frame+1)):
+            if points_array[i]:
+                # Get camera parameters for the frame, camera and dataset
+                f = Frame(f, camera_name, dataset)
+                frame = frameManager.get_frame(f)
+                # Project points and add to final list
+                final_points.append(self.project_3D_points_to_camera(points_array[i], frame.camera_parameters))
+            else:
+                final_points.append([])
+        return True, final_points, 200
 
     # Auxiliar function that creates a "AIK camera obejct" from the given camera parameters
     def create_camera(self, camera_params):
