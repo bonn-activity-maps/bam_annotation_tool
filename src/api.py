@@ -36,11 +36,18 @@ frameService = FrameService()
 actionService = ActionService()
 activity_service = ActivityService()
 
+from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
+precompute = PrecomputeAnnotations()
+
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
     return make_response(open('/usr/src/templates/index.html').read())
 
+
+@app.route("/precomputeAnnotations")
+def precomputeAnnotations():
+    precompute.precomputeAnnotations()
 
 #### USER ####
 
