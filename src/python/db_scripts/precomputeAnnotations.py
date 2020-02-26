@@ -91,33 +91,20 @@ class PrecomputeAnnotations:
             # Pass 2: Create empty objects for every track id, type and frame and update the db
             # Create the person_ids for every track_id, key is track_id
             person_ids = [i for i in range(person_id, person_id + len(track_ids))]
-            # print("track_ids: ", track_ids)
-            # print("person_ids: ", person_ids)
             for annotation in annotations:
-                # print("Annotation ", annotation.frame, " of ", len(annotations))
                 objects = list(annotation.objects)
                 # For each track_id already in the video
                 index = 0
                 for track_id in track_ids:
-                    # print("track_id ", track_id, " of ", track_ids)
                     # For each of the types
                     for objectType in ["bbox", "bbox_head", "person"]:
                         # print("objectType: ", objectType)
                         obj = self.find_pair(objects, "type", objectType, "track_id", track_id)
                         # If object does not exist, create empty one
-                        if obj == 0:    # TODO el problema esta aqui en algun lado
-                            # print("SENT annotation")
-                            # print(annotation)
-                            # print("objects", len(objects))
-                            # print("nr_id: ", nr_id[annotation.frame])
-                            # print("track_id: ", track_id)
+                        if obj == 0:
                             uid, nr_id = self.generate_uid(annotation, list(objects), list(nr_id), track_id)
-                            # print("uid: ", uid)
-                            # print("type: ", objectType)
                             new_obj = Object(uid, objectType, keypoints=[], dataset_type=self.pt,
                                              track_id=track_id, person_id=person_ids[index])
-                            # print("NEW OBJECT: ")
-                            # print(new_obj)
                             objects.append(new_obj)
                         else:
                             objects = self.add_person_id_to_object(list(objects), obj.uid, objectType, person_ids[index])
