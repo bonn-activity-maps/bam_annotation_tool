@@ -7,11 +7,14 @@ from python.infrastructure.objectTypeManager import ObjectTypeManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.datasetManager import DatasetManager
+from python.infrastructure.user_action_manager import UserActionManager
+
 from python.logic.aikService import AIKService
 
 from python.objects.frame import Frame
 from python.objects.annotation import Annotation
 from python.objects.object import Object
+from python.objects.user_action import UserAction
 
 
 # AnnotationService logger
@@ -23,6 +26,7 @@ frameManager = FrameManager()
 actionManager = ActionManager()
 datasetManager = DatasetManager()
 aikService = AIKService()
+user_action_manager = UserActionManager()
 
 
 class AnnotationService:
@@ -150,7 +154,6 @@ class AnnotationService:
         return keypoints_3d, error_flag
 
     # Return 'ok' if the annotation has been updated
-
     def update_annotation(self, annotation):
         # Triangulate points from 2D points to 3D if dataset is AIK
         if annotation.dataset.is_aik():
@@ -164,13 +167,17 @@ class AnnotationService:
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
-            else:
-                return True, result, 200
+            # else:
+            #     return True, result, 200
         elif annotation.dataset.is_pt():
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
-        return True, 'Ok', 200
+
+        # Create user action in db
+        user_action = UserAction(annotation.user, 'annotation', annotation.scene, annotation.dataset)
+        user_action_manager.create_user_action(user_action)
+        return True, 'ok', 200
 
     # Return 'ok' if the annotation has been updated
     # Same as above but for PoseTrack
