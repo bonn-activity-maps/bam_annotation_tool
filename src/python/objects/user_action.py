@@ -18,8 +18,8 @@ class UserAction:
         self.dataset = dataset
         if timestamp is None:
             self.timestamp = datetime.now()
-        # elif type(timestamp) == 'str':
-        #     self.timestamp = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S.%f')
+        elif isinstance(timestamp, str):
+            self.timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
         else:
             self.timestamp = timestamp
 
