@@ -319,11 +319,9 @@ class AnnotationService:
             start_annotation.objects = [object2]
         obj1 = annotationManager.get_frame_object(start_annotation)
         obj2 = annotationManager.get_frame_object(end_annotation)
-        
         type = obj1.type
         kps1 = obj1.keypoints
         kps2 = obj2.keypoints
-
 
         num_frames = end_annotation.frame - start_annotation.frame + 1
         num_kpts = len(kps1)

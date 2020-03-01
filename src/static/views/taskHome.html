@@ -10,6 +10,7 @@
             </div>
             <div ng-if="videos.length > 0 && isPosetrack()" style="padding-top: 20px;" class="container">
                 <div style="overflow-y: auto; max-height: 400px;">
+                    <p><input class="form-control" type="text" ng-model="search" placeholder="Search.."></p>
                     <table class="table table-bordered table-responsive text-center">
                         <thead>
                             <tr>
@@ -24,7 +25,7 @@
                             </tr>
                         </thead>
 
-                        <tr ng-repeat="video in videos">
+                        <tr ng-repeat="video in videos | filter:search">
                             <td>{{video.video}}</td>
                             <td>{{video.type}}</td>
                             <td>{{video.minFrame}}</td>
