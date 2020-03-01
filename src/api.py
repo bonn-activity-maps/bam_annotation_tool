@@ -47,8 +47,8 @@ def redirect():
 
 @app.route("/precomputeAnnotations")
 def precomputeAnnotations():
-    precompute.precomputeAnnotations()
-
+    success, msg, status =  precompute.precomputeAnnotations()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 #### USER ####
 
 # User login
@@ -322,7 +322,7 @@ def interpolate_annotation():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-# Get annotation of one object in frame for given frame, dataset, video and user
+# Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])

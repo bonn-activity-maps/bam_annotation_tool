@@ -15,6 +15,18 @@ videoService = VideoService()
 annotationService = AnnotationService()
 
 
+def delete_duplicated_objects(lst):
+    lst_unique = []
+    for obj in lst:
+        exists = False
+        for obj2 in lst_unique:
+            if obj.track_id == obj2.track_id and obj.type == obj2.type:
+                exists = True
+        if not exists:
+            lst_unique.append(obj)
+    return lst_unique
+
+
 class PrecomputeAnnotations:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
@@ -109,11 +121,11 @@ class PrecomputeAnnotations:
                         else:
                             objects = self.add_person_id_to_object(list(objects), obj.uid, objectType, person_ids[index])
                     index += 1
-                annotation.objects = objects
+                annotation.objects = delete_duplicated_objects(objects)
                 result = self.db.annotation.replace_one({"dataset": "posetrack_data", "scene": video.name, "user": "root",
                                                          "frame": annotation.frame}, annotation.to_json(), upsert=True)
                 if not result:
                     print("ERROR")
                     exit()
             person_id = person_id + len(track_ids)
-            # exit()
+        return True, "OK", 200
