@@ -95,6 +95,7 @@ transition: all linear 0.2s;
 .bg-image {
     background-image: url("/static/resources/background_gif.gif");
     filter: blur(12px);
+    transform: scale(1.1);
     -webkit-filter: blur(12px);
 
     position: absolute;
