@@ -222,6 +222,13 @@ transition: all linear 0.2s;
     width: 2.5%;
 }
 
+.panel-alert {
+    box-shadow: 2px 10px 20px grey;
+    position: absolute;
+    top: 6%;
+    left: 3%; 
+}
+
 .panel-floating {
     box-shadow: 2px 10px 20px grey;
     position: absolute;

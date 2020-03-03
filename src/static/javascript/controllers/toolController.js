@@ -253,6 +253,8 @@ angular.module('CVGTool')
             _this.numberOfFrames = _this.frameTo - _this.frameFrom;
             _this.frameList = [];
             _this.fromTaskHome = stateParams.obj.fromTaskHome;
+            _this.showObjectTypeAlert = false;
+            if (!_this.fromTaskHome) _this.showObjectTypeAlert = true;
             _this.activeDataset = navSrvc.getActiveDataset(); // Get the active dataset information
             _this.isPosetrack = navSrvc.isPosetrack();
             _this.user = navSrvc.getUser();
@@ -266,6 +268,11 @@ angular.module('CVGTool')
                     frames.push(i);
                 }
                 _this.frameList = frames;
+            }
+
+            // Closes the alert to select an object type again
+            _this.closeObjectTypeAlert = function() {
+                _this.showObjectTypeAlert = false;
             }
 
             // Check where do we come from to load pre-loaded cameras if needed
@@ -292,11 +299,6 @@ angular.module('CVGTool')
                     // Reset sessionData of the cameras
                     navSrvc.resetSessionData();
 
-                    // Place the selected type
-                    if ($stateParams.obj.selectedType.localeCompare("") !== 0) {
-                        $scope.objectManager.changeSelectedType($stateParams.obj.selectedType);
-                    }
-
                     // Create the cameras
                     $scope.camerasManager.createCameras(camerasToLoad);
 
@@ -304,6 +306,12 @@ angular.module('CVGTool')
                     navSrvc.setFrameStart(_this.frameFrom);
                     navSrvc.setFrameEnd(_this.frameTo);
                     navSrvc.setFrameRange(originalRange);
+
+                    // // Place the selected type
+                    // if ($stateParams.obj.selectedType !== undefined && $stateParams.obj.selectedType.localeCompare("") !== 0 && !$scope.toolParameters.fromTaskHome) {
+                    //     $scope.objectManager.selectedType = $scope.objectManager.objectTypes[$stateParams.obj.selectedType];
+                    //     //$scope.objectManager.changeSelectedType($stateParams.obj.selectedType);
+                    // } 
 
                     if (!_this.isPosetrack) {   // If its posetrack we dont need to do this since the createCamera will place it automatically
                         // Place cameras in canvases if needed
@@ -324,8 +332,6 @@ angular.module('CVGTool')
 
                     // Fill all cameras
                     $scope.camerasManager.fillCameras(camerasToLoad);
-
-
                 } else {
                     if (_this.isPosetrack) $scope.camerasManager.addCamera();
                 }
@@ -887,8 +893,8 @@ angular.module('CVGTool')
                         }
                     }
                     
-                    $scope.toolParameters.checkWhereAreWeComingFrom();
                     _this.retrieveObjects();
+                    
                 }
                 
                 toolSrvc.retrieveAvailableObjectTypes($scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage);
@@ -957,8 +963,14 @@ angular.module('CVGTool')
                                  
                         }
                     }
+                    
                     $scope.loadingScreenManager.closeLoadingScreen();
-                    $scope.canvasesManager.refreshProjectionOfCanvases();
+                    if (!$scope.toolParameters.fromTaskHome) {
+                      $scope.toolParameters.checkWhereAreWeComingFrom();  
+                    } else $scope.canvasesManager.refreshProjectionOfCanvases();
+                    
+                    
+                    
                 }
 
                 toolSrvc.getAnnotationsByFrameRange($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
@@ -1819,7 +1831,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                _this.drawEdges(context, color);
+                //_this.drawEdges(context, color);
             }
 
             _this.drawWithLabel = function(context, color) {
@@ -1829,7 +1841,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                _this.drawEdges(context, color);
+                //_this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
@@ -2798,8 +2810,8 @@ angular.module('CVGTool')
                 _this.resetObjectStructure();
                 _this.prepareObjectStructure();
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
-                    for (var i= startFrame; i < endFrame; i++) {
-                        _this.update2DObject(uid, type, i, points[i]);
+                    for (var i= startFrame; i <= endFrame; i++) {
+                        _this.update2DObject(uid, type, i, points[i - $scope.toolParameters.frameFrom]);
                     }
                 }
                 // Select only the active type
@@ -2813,6 +2825,7 @@ angular.module('CVGTool')
                     for (var i=0; i < object.frames.length; i++) {
                         points.push(object.frames[i].keypoints);
                     }
+
 
                     toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }              

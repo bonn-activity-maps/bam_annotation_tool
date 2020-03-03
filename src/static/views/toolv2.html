@@ -25,8 +25,7 @@
             </div>
         </div>
     </div>
-                        <!-- <select class="form-control" id="selObjType" ng-change="objectManager.changeSelectedType()" ng-model="objectManager.selectedType" ng-options="objectType.type for objectType in objectManager.objectTypes track by objectType.type">
-                        </select> -->
+                        
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
         <div id="TimelinePanel" class="panel panel-tool">
@@ -464,6 +463,15 @@
                 </div>
             </div> 
         </div>
+    </div>
+</div>
+
+
+<!-- Object Type reselection alert floating panel -->
+<div id="KeypointEditor" class="panel panel-alert" style="width: 300;" ng-show="toolParameters.showObjectTypeAlert" ng-click="toolParameters.closeObjectTypeAlert()">
+    <div class="panel panel-body">
+        <h4> <span class="glyphicon glyphicon-arrow-left"></span> Select the Object Type again.</h4>
+        <small class="form-text text-muted" style="text-align: center;">Click anywhere on this panel to close it</small>
     </div>
 </div>
 
