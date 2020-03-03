@@ -253,6 +253,8 @@ angular.module('CVGTool')
             _this.numberOfFrames = _this.frameTo - _this.frameFrom;
             _this.frameList = [];
             _this.fromTaskHome = stateParams.obj.fromTaskHome;
+            _this.showObjectTypeAlert = false;
+            if (!_this.fromTaskHome) _this.showObjectTypeAlert = true;
             _this.activeDataset = navSrvc.getActiveDataset(); // Get the active dataset information
             _this.isPosetrack = navSrvc.isPosetrack();
             _this.user = navSrvc.getUser();
@@ -266,6 +268,11 @@ angular.module('CVGTool')
                     frames.push(i);
                 }
                 _this.frameList = frames;
+            }
+
+            // Closes the alert to select an object type again
+            _this.closeObjectTypeAlert = function() {
+                _this.showObjectTypeAlert = false;
             }
 
             // Check where do we come from to load pre-loaded cameras if needed
@@ -292,11 +299,6 @@ angular.module('CVGTool')
                     // Reset sessionData of the cameras
                     navSrvc.resetSessionData();
 
-                    // Place the selected type
-                    if ($stateParams.obj.selectedType.localeCompare("") !== 0) {
-                        $scope.objectManager.changeSelectedType($stateParams.obj.selectedType);
-                    }
-
                     // Create the cameras
                     $scope.camerasManager.createCameras(camerasToLoad);
 
@@ -304,6 +306,12 @@ angular.module('CVGTool')
                     navSrvc.setFrameStart(_this.frameFrom);
                     navSrvc.setFrameEnd(_this.frameTo);
                     navSrvc.setFrameRange(originalRange);
+
+                    // // Place the selected type
+                    // if ($stateParams.obj.selectedType !== undefined && $stateParams.obj.selectedType.localeCompare("") !== 0 && !$scope.toolParameters.fromTaskHome) {
+                    //     $scope.objectManager.selectedType = $scope.objectManager.objectTypes[$stateParams.obj.selectedType];
+                    //     //$scope.objectManager.changeSelectedType($stateParams.obj.selectedType);
+                    // } 
 
                     if (!_this.isPosetrack) {   // If its posetrack we dont need to do this since the createCamera will place it automatically
                         // Place cameras in canvases if needed
@@ -324,8 +332,6 @@ angular.module('CVGTool')
 
                     // Fill all cameras
                     $scope.camerasManager.fillCameras(camerasToLoad);
-
-
                 } else {
                     if (_this.isPosetrack) $scope.camerasManager.addCamera();
                 }
@@ -671,23 +677,25 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.refreshCanvasPointByUID = function(objectUID, objectType, frame) {
+                if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
 
-            _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frame) {
-                //$scope.objectManager.changeSelectedType(objectType.toString());
+                $scope.canvasesManager.canvases[0].update2DObject(objectUID, objectType, frame, $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints);
+                if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
+            }
+
+            _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frameFrom, frameTo) {
 
                 if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
                 
-                if (!$scope.toolParameters.isPosetrack) {
-                    for (var i = 0; i < $scope.canvasesManager.canvases.length; i++) {
-                        if ($scope.canvasesManager.canvases[i].hasActiveCamera()) {
-                            $scope.canvasesManager.canvases[i].projectObject(objectUID, objectType, frame);
-                        }
+                for (var i = 0; i < $scope.canvasesManager.canvases.length; i++) {
+                    if ($scope.canvasesManager.canvases[i].hasActiveCamera()) {
+                        $scope.canvasesManager.canvases[i].projectObject(objectUID, objectType, frameFrom, frameTo);
                     }
-                    if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
-                } else {
-                    $scope.canvasesManager.canvases[0].update2DObject(objectUID, objectType, frame, $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints);
-                    if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
                 }
+
+                if ($scope.keypointEditor.editorActive) $scope.keypointEditor.openEditor($scope.objectManager.selectedObject, $scope.timelineManager.slider.value);
+        
             }
 
             _this.projectKeypointEditorData = function(frame) {
@@ -880,11 +888,13 @@ angular.module('CVGTool')
                             datasetType: obj[i].datasetType,
                             numKeypoints: obj[i].numKeypoints,
                             labels: obj[i].labels,
+                            skeleton: obj[i].skeleton,
                             objects: {}
                         }
                     }
-                    $scope.toolParameters.checkWhereAreWeComingFrom();
+                    
                     _this.retrieveObjects();
+                    
                 }
                 
                 toolSrvc.retrieveAvailableObjectTypes($scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage);
@@ -953,8 +963,14 @@ angular.module('CVGTool')
                                  
                         }
                     }
+                    
                     $scope.loadingScreenManager.closeLoadingScreen();
-                    $scope.canvasesManager.refreshProjectionOfCanvases();
+                    if (!$scope.toolParameters.fromTaskHome) {
+                      $scope.toolParameters.checkWhereAreWeComingFrom();  
+                    } else $scope.canvasesManager.refreshProjectionOfCanvases();
+                    
+                    
+                    
                 }
 
                 toolSrvc.getAnnotationsByFrameRange($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
@@ -968,7 +984,7 @@ angular.module('CVGTool')
                         $scope.loadingScreenManager.closeLoadingScreen();
                         return;
                     }
-
+   
                     for(var j= 0; j< annotations.length; j++) {
                         var frame = annotations[j].frame;
                         var objects = annotations[j].objects;
@@ -981,10 +997,11 @@ angular.module('CVGTool')
                                         .objects[objects[i].uid.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[k] = true;
                                 } 
                             }
-                            
-                            $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objects[i].uid, objects[i].type, frame);
                         }
                     }
+
+                    $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objectUID, objectType, frameArray[0], frameArray[frameArray.length - 1]);
+
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
 
@@ -1026,7 +1043,11 @@ angular.module('CVGTool')
                     }
                 }
 
+<<<<<<< HEAD
                 if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
+=======
+                if (frameFrom === null || frameFrom + 1 == frameTo) return; // Nothing found to interpolate to
+>>>>>>> a88c8729c42ca5402510a6fafe72303a5a484d81
 
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
@@ -1162,6 +1183,7 @@ angular.module('CVGTool')
                             datasetType: obj[i].datasetType,
                             numKeypoints: obj[i].numKeypoints,
                             labels: obj[i].labels,
+                            skeleton: obj[i].skeleton,
                             objects: {}
                         }
                     }
@@ -1340,7 +1362,7 @@ angular.module('CVGTool')
                                     .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
                             } 
                         }
-                        $scope.canvasesManager.refreshProjectionOfCanvasesByUID(objects[i].track_id, objects[i].type, frame);
+                        $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
                     } 
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
@@ -1724,6 +1746,116 @@ angular.module('CVGTool')
                 context.lineWidth = 3;
                 context.stroke();
                 context.closePath();
+            }
+        }
+
+        function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
+            var _this = this;
+            _this.labels = labels;
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+            _this.skeleton = skeleton;
+
+            // CONSTRUCT
+            if (projectedPoints.length === 0) {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints; 
+            }
+          
+
+            _this.draw = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            _this.drawEdges = function(context, color) {
+                for (var i = 0; i < _this.skeleton.length; i++) {
+                    _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
+                }
+            }
+
+            _this.drawEdge = function(context, color, point1, point2) {
+                if (point1 === null || point2 === null) return;
+
+                context.beginPath();
+                context.moveTo(point1.center[0], point1.center[1]);
+                context.lineTo(point2.center[0], point2.center[1]);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
+            }
+
+            _this.drawWithUID = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+
+                // Then draw all the edges
+                //_this.drawEdges(context, color);
+            }
+
+            _this.drawWithLabel = function(context, color) {
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+
+                // Then draw all the edges
+                //_this.drawEdges(context, color);
+            }
+
+            _this.isInside = function(x,y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            _this.move = function(dx, dy, index) {
+                if (_this.points[index] == null) return;
+                _this.points[index].move(dx,dy);
+            }
+
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                _this.cameraPoints[index][0] += dxCamera;
+                _this.cameraPoints[index][1] += dyCamera;
+            }
+
+            _this.removePoint = function(index) {
+                _this.points[index] = null;
+                _this.cameraPoints[index] = [];
+            }
+
+            _this.getPointIndex = function(x, y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
             }
         }
 
@@ -2631,6 +2763,8 @@ angular.module('CVGTool')
                     newObject = new BBox(uid, imgPoints, points, labels);
                 } else if (type.localeCompare("person") == 0) {
                     newObject = new Person(uid, imgPoints, points, labels);
+                } else if (type.localeCompare("poseAIK") == 0) {
+                    newObject = new PoseAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
                 } else {
                     // Whatever other shapes we may have, polygon, skeleton, etc
                 }
@@ -2652,39 +2786,45 @@ angular.module('CVGTool')
             _this.projectObjects = function() {
                 _this.resetObjectStructure();
                 _this.prepareObjectStructure();
-                var callbackProjection = function(uid, type, frame, points) {
-                    _this.update2DObject(uid, type, frame, points);
+                var callbackProjection = function(uid, type, startFrame, endFrame, points) {
+                    for (var i= startFrame; i <= endFrame; i++) {
+                        _this.update2DObject(uid, type, i, points[i - $scope.toolParameters.frameFrom]);
+                    }
                 }
                 // Select only the active type
                 var selectedType = $scope.objectManager.selectedType;
 
                 for (obj in selectedType.objects) {
                     var object = selectedType.objects[obj.toString()];
-                    for (var i = 0; i < object.frames.length; i++) {
-                        if (object.frames[i].keypoints.length != 0) {
-                            toolSrvc.projectToCamera(object.uid, object.type, object.frames[i].keypoints, object.frames[i].frame, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                        } else {
-                            _this.update2DObject(object.uid, object.type, object.frames[i].frame, []);
-                        }
+                    var points = [];
+                    
+                    // Crate the structure to project
+                    for (var i=0; i < object.frames.length; i++) {
+                        points.push(object.frames[i].keypoints);
                     }
+
+
+                    toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }              
             }
 
             // Project one object defined by objectUid
-            _this.projectObject = function(objectUID, objectType, frameToProject) {
-                var callbackProjection = function(uid, type, frame, points) {
-                    _this.update2DObject(uid, type, frame, points);
+            _this.projectObject = function(objectUID, objectType, frameFrom, frameTo) {
+                var callbackProjection = function(uid, type, startFrame, endFrame, points) {
+                    for (var i= startFrame; i < endFrame; i++) {
+                        _this.update2DObject(uid, type, i, points);
+                    }
                 }
 
-                // Select only the active type
-                var objectKeypoints = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frameToProject - $scope.toolParameters.frameFrom].keypoints;
+                var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()];
+                var points = [];
 
-                if (objectKeypoints.length != 0) {
-                    toolSrvc.projectToCamera(objectUID, objectType, objectKeypoints, frameToProject, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                } else {
-                    _this.update2DObject(objectUID, objectType, frameToProject, []);
+                // Crate the structure to project
+                for (var i=frameFrom; i <= frameTo; i++) {
+                    points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
                 }
 
+                toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
             }
 
             // Prepares the structure to store projected objects
