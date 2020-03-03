@@ -1004,10 +1004,17 @@ angular.module('CVGTool')
                     $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist = existsInit.slice();
                 }
 
-                if (frameArray.length == 1) {   // If there is only one frame
-                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[0], callback, $scope.messagesManager.sendMessage);
+                if (frameArray.length === 1) {   // If there is only one frame
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[0],
+                        callback, $scope.messagesManager.sendMessage);
                 } else {
-                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[frameArray.length - 1],callback, $scope.messagesManager.sendMessage);
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0],
+                        frameArray[frameArray.length - 1],
+                        callback, $scope.messagesManager.sendMessage);
                 }
             } 
 
@@ -1158,7 +1165,7 @@ angular.module('CVGTool')
                     $scope.objectManager.resetObjectManager();
                     for (var i = 0; i < obj.length; i++) {
                         // Fix the labels if the type is person
-                        if (obj[i].type.localeCompare("person") == 0) {
+                        if (obj[i].type.localeCompare("person") === 0) {
                             obj[i].labels = _this.fixPersonLabels(obj[i].labels);
                         }
 
@@ -1324,31 +1331,32 @@ angular.module('CVGTool')
 
             // Retrieve annotation by UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
-                var callback = function(annotation) { // Check if we received something
-                    if (annotation.length <= 0) {
+                var callback = function(annotations) { // Check if we received something
+                    if (annotations.length <= 0) {
                         $scope.loadingScreenManager.closeLoadingScreen();
                         return;
                     }
+                    for (let k = 0; k < annotations.length; k++) {
+                        var frame = annotations[k].frame;
+                        var objects = annotations[k].objects;
+                        for (var i= 0; i< objects.length; i++) {
+                            // If the object is of type "person", fix the keypoint structure to ignore ears
+                            if (objects[i].type.toString().localeCompare("person") === 0) {
+                                objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
+                            }
 
-                    var frame = annotation[0].frame;
-                    var objects = annotation[0].objects;
-                    for (var i= 0; i< objects.length; i++) {
-                        // If the object is of type "person", fix the keypoint structure to ignore ears
-                        if (objects[i].type.toString().localeCompare("person") === 0) {
-                            objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
+                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
+                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
+
+                            for (let j = 0; j < objects[i].keypoints.length; j++) {
+                                if (objects[i].keypoints[j].length !== 0) {
+                                    $scope.objectManager.objectTypes[objects[i].type.toString()]
+                                        .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
+                                }
+                            }
+                            $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
                         }
-    
-                        $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
-                        $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
-                        
-                        for (let j = 0; j < objects[i].keypoints.length; j++) {
-                            if (objects[i].keypoints[j].length !== 0) {
-                                $scope.objectManager.objectTypes[objects[i].type.toString()]
-                                    .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
-                            } 
-                        }
-                        $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
-                    } 
+                    }
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
                 
@@ -1363,18 +1371,20 @@ angular.module('CVGTool')
                     $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()]
                         .frames[frame - $scope.toolParameters.frameFrom].annotationsExist = existsInit.slice();
                 }
-
-                for (let i = 0; i < frameArray.length; i++) {
-                    // toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].getActiveCamera().filename, _this.generateNewOriginalUid(Math.abs(objectUID) % 100, frameArray[i]), objectType ,frameArray[i], frameArray[i], callback, $scope.messagesManager.sendMessage);
+                if (frameArray.length === 1) {   // If there is only one frame
                     toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
-                                                        $scope.toolParameters.activeDataset.name,
-                                                        $scope.toolParameters.activeDataset.type,
-                                                        $scope.canvasesManager.canvases[0].getActiveCamera().filename,
-                                                        objectUID, objectType ,frameArray[i], frameArray[i], callback,
-                                                        $scope.messagesManager.sendMessage);
-
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.canvasesManager.canvases[0].getActiveCamera().filename,
+                        objectUID, objectType ,frameArray[0], frameArray[0],
+                        callback, $scope.messagesManager.sendMessage);
+                } else {
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.canvasesManager.canvases[0].getActiveCamera().filename,
+                        objectUID, objectType ,frameArray[0], frameArray[frameArray.length - 1],
+                        callback, $scope.messagesManager.sendMessage);
                 }
-            }
+            };
 
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
@@ -1382,7 +1392,7 @@ angular.module('CVGTool')
                     var frameArray = [];
                     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
-                }
+                };
 
                 if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
 
@@ -1397,7 +1407,13 @@ angular.module('CVGTool')
 
                 if (frameFrom === null) return; // Nothing found to interpolate to
 
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                    frameFrom, frameTo,
+                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
+                    objectType,
+                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
+                    callbackSuccess, $scope.messagesManager.sendMessage);
             }
             
 

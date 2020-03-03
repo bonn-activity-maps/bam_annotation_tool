@@ -152,11 +152,11 @@ class AnnotationManager:
             else:
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find({"dataset": start_annotation.dataset.name, "scene": start_annotation.scene, "user": "root", "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
-                                               "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type},
-                                                {"objects": {"$elemMatch": {"uid": start_annotation.objects[0].uid, "type": start_annotation.objects[0].type}}, "dataset": 1, "scene": 1, "frame": 1, '_id': 0}).sort("frame", 1)
+                                               "objects.track_id": start_annotation.objects[0].track_id, "objects.type": start_annotation.objects[0].type},
+                                                {"objects": {"$elemMatch": {"track_id": start_annotation.objects[0].track_id, "type": start_annotation.objects[0].type}}, "dataset": 1, "scene": 1, "frame": 1, '_id': 0}).sort("frame", 1)
 
-            # return [Annotation.from_json(r, start_annotation.dataset.type) for r in list(result)]
-            return list(result)
+            return [Annotation.from_json(r, start_annotation.dataset.type) for r in list(result)]
+            # return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
             return 'Error'
@@ -352,15 +352,16 @@ class AnnotationManager:
             query = {"dataset": start_annotation.dataset.name, "scene": start_annotation.scene,
                      "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
                      "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type}
+            # Filter each annotation and select only objects with uid and type
+            array_filter = [{"elem.uid": {"$eq": start_annotation.objects[0].uid}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": {"$gte": int(startFrame), "$lte": int(endFrame)},
             #          "objects.uid": uidObj, "objects.type": objectType}         # User instead of root
             query = {"dataset": start_annotation.dataset.name, "scene": start_annotation.scene, "user": "root",
                      "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
-                     "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type}
-
-        # Filter each annotation and select only objects with uid and type
-        array_filter = [{"elem.uid": {"$eq": start_annotation.objects[0].uid}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
+                     "objects.track_id": start_annotation.objects[0].track_id, "objects.type": start_annotation.objects[0].type}
+            # Filter each annotation and select only objects with uid and type
+            array_filter = [{"elem.track_id": {"$eq": start_annotation.objects[0].track_id}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
 
         # Update object to empty list
         new_values = {"$set": {"objects.$[elem].keypoints": []}}
