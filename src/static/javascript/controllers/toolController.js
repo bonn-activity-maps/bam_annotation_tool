@@ -1043,11 +1043,7 @@ angular.module('CVGTool')
                     }
                 }
 
-<<<<<<< HEAD
                 if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
-=======
-                if (frameFrom === null || frameFrom + 1 == frameTo) return; // Nothing found to interpolate to
->>>>>>> a88c8729c42ca5402510a6fafe72303a5a484d81
 
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
