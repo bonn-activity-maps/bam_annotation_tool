@@ -2739,7 +2739,7 @@ angular.module('CVGTool')
             // Creates/updates the object into the object structure
             _this.update2DObject = function(uid, type, frame, points) {
                 var newObject = null;
-                
+        
                 var imgPoints = [];                
                 // Project if points exist
                 if (points.length != 0) {
@@ -2807,12 +2807,12 @@ angular.module('CVGTool')
             // Project one object defined by objectUid
             _this.projectObject = function(objectUID, objectType, frameFrom, frameTo) {
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
-                    for (var i= startFrame; i < endFrame; i++) {
-                        _this.update2DObject(uid, type, i, points);
-                    }
+                    for (var i= startFrame; i <= endFrame; i++) {
+                        _this.update2DObject(uid, type, i, points[i - startFrame]);
+                    }          
                 }
-
-                var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()];
+                //var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()];
+                var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
                 var points = [];
 
                 // Crate the structure to project
