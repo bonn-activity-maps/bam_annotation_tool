@@ -673,7 +673,7 @@ angular.module('CVGTool')
 
 
             _this.refreshProjectionOfCanvasesByUID = function(objectUID, objectType, frame) {
-                $scope.objectManager.changeSelectedType(objectType.toString());
+                //$scope.objectManager.changeSelectedType(objectType.toString());
 
                 if ($scope.objectManager.selectedObject != null) $scope.objectManager.selectedObject = $scope.objectManager.selectedType.objects[objectUID.toString()];
                 
@@ -1026,7 +1026,7 @@ angular.module('CVGTool')
                     }
                 }
 
-                if (frameFrom === null) return; // Nothing found to interpolate to
+                if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
 
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
@@ -1380,7 +1380,7 @@ angular.module('CVGTool')
                     }
                 }
 
-                if (frameFrom === null) return; // Nothing found to interpolate to
+                if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
 
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
