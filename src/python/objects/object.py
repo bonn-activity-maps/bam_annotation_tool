@@ -23,7 +23,7 @@ class Object:
 
         if dataset_type == self.pt:
             self.category_id = int(category_id)
-            self.track_id = int(track_id) if track_id is not None else abs(int(uid)) % 100
+            self.track_id = int(track_id) if track_id is not None else None
             self.original_id = int(original_id) if original_id is not None else None
             self.person_id = int(person_id) if person_id is not None else None
 
