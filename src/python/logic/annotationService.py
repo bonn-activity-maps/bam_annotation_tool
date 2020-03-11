@@ -48,10 +48,18 @@ class AnnotationService:
             s = "0" + s
         return s
 
-    def generate_new_original_uid(self, track_id, video, frame):
-        frame = self.pad(frame, 4)
-        track_id = self.pad(track_id, 2)
-        return int("1" + video + frame + track_id)
+    # def generate_new_original_uid(self, track_id, video, frame):
+    #     frame = self.pad(frame, 4)
+    #     track_id = self.pad(track_id, 2)
+    #     return int("1" + video + frame + track_id)
+
+    # Return 0 if no object in list
+    # Return uid of object with track id and type specified in list obj_list
+    def get_object_uid(self, obj_list, track_id, type):
+        for obj in obj_list:
+            if obj.track_id == track_id and obj.type == type:
+                return obj.uid
+        return 0
 
     # Get annotation info for given frame, dataset, video and user
     def get_annotation(self, annotation):
@@ -240,7 +248,7 @@ class AnnotationService:
         if result == 'Error':
             return False, 'The object does not exist in frames', 400
         else:
-            return True, result, 200
+            return True, [r.to_json() for r in result], 200
 
     # Store annotation for an object for given frame, dataset, video and user
     # Always a single object in "objects" so always objects[0] !!
@@ -264,22 +272,7 @@ class AnnotationService:
     # Remove annotation for an object for given frame, dataset, video and user
     # Always a single object in "objects" so always objects[0] !!
     def remove_annotation_frame_object(self, start_annotation, end_annotation):
-        # PT: the uidObject change for each frame, iterate for all frames with the corresponding id
-        if start_annotation.dataset.is_pt():
-            result = 'ok'
-            start_frame = start_annotation.frame
-            end_frame = end_annotation.frame+1
-            track_id = start_annotation.objects[0].uid
-            for f in range(start_frame, end_frame):
-                start_annotation.objects[0].uid = self.generate_new_original_uid(track_id, start_annotation.scene, f)
-                # modify only 1 frame
-                start_annotation.frame = f
-                end_annotation.frame = f
-                r = annotationManager.remove_frame_object(start_annotation, end_annotation)
-                if r == 'Error': result = 'Error'
-        else:
-            result = annotationManager.remove_frame_object(start_annotation, end_annotation)
-
+        result = annotationManager.remove_frame_object(start_annotation, end_annotation)
         if result == 'ok':
             return True, result, 200
         else:
@@ -314,9 +307,12 @@ class AnnotationService:
     # Interpolate and store the interpolated 3d points
     # Always a single object in "objects" so always objects[0] !!
     def interpolate_annotation(self, dataset, start_annotation, end_annotation, object2):
+        annotations_in_range = []
         # Search object in respective start and end frames
         if dataset.is_pt():
             start_annotation.objects = [object2]
+            annotations_in_range = annotationManager.get_object_in_frames(start_annotation, end_annotation)
+
         obj1 = annotationManager.get_frame_object(start_annotation)
         obj2 = annotationManager.get_frame_object(end_annotation)
         type = obj1.type
@@ -333,12 +329,16 @@ class AnnotationService:
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():
-                new_uid = self.generate_new_original_uid(abs(start_annotation.objects[0].uid) % 100, start_annotation.scene, start_annotation.frame + i)
-                obj = Object(new_uid, type, final_kpts[i], dataset_type=dataset.type, track_id=new_uid % 100)
-                annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i, start_annotation.user, [obj])
+                # new_uid = self.generate_new_original_uid(abs(start_annotation.objects[0].uid) % 100, start_annotation.scene, start_annotation.frame + i)
+                new_uid = annotations_in_range[i].objects[0].uid
+                obj = Object(new_uid, type, final_kpts[i], dataset_type=dataset.type,
+                             track_id=annotations_in_range[i].objects[0].track_id)
+                annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i,
+                                        start_annotation.user, [obj])
             else:
                 obj = Object(start_annotation.objects[0].uid, type, final_kpts[i], dataset_type=dataset.type)
-                annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i, start_annotation.user, [obj])
+                annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i,
+                                        start_annotation.user, [obj])
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 final_result = 'There was some error interpolating the keypoints, please check them'

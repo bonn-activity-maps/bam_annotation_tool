@@ -38,12 +38,19 @@ actionService = ActionService()
 activity_service = ActivityService()
 user_action_service = UserActionService()
 
+from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
+precompute = PrecomputeAnnotations()
+
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
     return make_response(open('/usr/src/templates/index.html').read())
 
 
+@app.route("/precomputeAnnotations")
+def precomputeAnnotations():
+    success, msg, status =  precompute.precomputeAnnotations()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 #### USER ####
 
 # User login
@@ -317,7 +324,7 @@ def interpolate_annotation():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-# Get annotation of one object in frame for given frame, dataset, video and user
+# Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])

@@ -1016,10 +1016,17 @@ angular.module('CVGTool')
                     $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist = existsInit.slice();
                 }
 
-                if (frameArray.length == 1) {   // If there is only one frame
-                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[0], callback, $scope.messagesManager.sendMessage);
+                if (frameArray.length === 1) {   // If there is only one frame
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[0],
+                        callback, $scope.messagesManager.sendMessage);
                 } else {
-                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0], frameArray[frameArray.length - 1],callback, $scope.messagesManager.sendMessage);
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.toolParameters.activeDataset.name, objectUID, objectType ,frameArray[0],
+                        frameArray[frameArray.length - 1],
+                        callback, $scope.messagesManager.sendMessage);
                 }
             } 
 
@@ -1170,7 +1177,7 @@ angular.module('CVGTool')
                     $scope.objectManager.resetObjectManager();
                     for (var i = 0; i < obj.length; i++) {
                         // Fix the labels if the type is person
-                        if (obj[i].type.localeCompare("person") == 0) {
+                        if (obj[i].type.localeCompare("person") === 0) {
                             obj[i].labels = _this.fixPersonLabels(obj[i].labels);
                         }
 
@@ -1272,7 +1279,8 @@ angular.module('CVGTool')
                         let object = objects[obj].object;
                         if (object.frame >= $scope.toolParameters.frameFrom && object.frame <= $scope.toolParameters.frameTo) {
                             $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                                .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = _this.generateNewOriginalUid(object.track_id, object.frame); 
+                                // .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = _this.generateNewOriginalUid(object.track_id, object.frame);
+                                .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = object.uid;
                         }
                     }
                     _this.retrieveAnnotations();
@@ -1335,31 +1343,32 @@ angular.module('CVGTool')
 
             // Retrieve annotation by UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
-                var callback = function(annotation) { // Check if we received something
-                    if (annotation.length <= 0) {
+                var callback = function(annotations) { // Check if we received something
+                    if (annotations.length <= 0) {
                         $scope.loadingScreenManager.closeLoadingScreen();
                         return;
                     }
+                    for (let k = 0; k < annotations.length; k++) {
+                        var frame = annotations[k].frame;
+                        var objects = annotations[k].objects;
+                        for (var i= 0; i< objects.length; i++) {
+                            // If the object is of type "person", fix the keypoint structure to ignore ears
+                            if (objects[i].type.toString().localeCompare("person") === 0) {
+                                objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
+                            }
 
-                    var frame = annotation[0].frame;
-                    var objects = annotation[0].objects;
-                    for (var i= 0; i< objects.length; i++) {
-                        // If the object is of type "person", fix the keypoint structure to ignore ears
-                        if (objects[i].type.toString().localeCompare("person") == 0) {
-                            objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
+                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
+                            $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
+
+                            for (let j = 0; j < objects[i].keypoints.length; j++) {
+                                if (objects[i].keypoints[j].length !== 0) {
+                                    $scope.objectManager.objectTypes[objects[i].type.toString()]
+                                        .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
+                                }
+                            }
+                            $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
                         }
-    
-                        $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
-                        $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
-                        
-                        for (var j = 0; j < objects[i].keypoints.length; j++) {
-                            if (objects[i].keypoints[j].length != 0) {
-                                $scope.objectManager.objectTypes[objects[i].type.toString()]
-                                    .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
-                            } 
-                        }
-                        $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
-                    } 
+                    }
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
                 
@@ -1369,15 +1378,25 @@ angular.module('CVGTool')
                 for (var j = 0; j < $scope.objectManager.objectTypes[objectType.toString()].labels.length; j++) {
                     existsInit.push(false);
                 }
-                for (var i = 0; i < frameArray.length; i++) {
+                for (let i = 0; i < frameArray.length; i++) {
                     var frame = frameArray[i];
-                    $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist = existsInit.slice();
+                    $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()]
+                        .frames[frame - $scope.toolParameters.frameFrom].annotationsExist = existsInit.slice();
                 }
-
-                for (var i = 0; i < frameArray.length; i++) {
-                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].getActiveCamera().filename, _this.generateNewOriginalUid(Math.abs(objectUID) % 100, frameArray[i]), objectType ,frameArray[i], frameArray[i], callback, $scope.messagesManager.sendMessage);
+                if (frameArray.length === 1) {   // If there is only one frame
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.canvasesManager.canvases[0].getActiveCamera().filename,
+                        objectUID, objectType ,frameArray[0], frameArray[0],
+                        callback, $scope.messagesManager.sendMessage);
+                } else {
+                    toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        $scope.canvasesManager.canvases[0].getActiveCamera().filename,
+                        objectUID, objectType ,frameArray[0], frameArray[frameArray.length - 1],
+                        callback, $scope.messagesManager.sendMessage);
                 }
-            }
+            };
 
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
@@ -1385,9 +1404,9 @@ angular.module('CVGTool')
                     var frameArray = [];
                     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
-                }
+                };
 
-                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+                if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
 
                 var frameFrom = null;
                 // Find the frame to interpolate to
@@ -1400,7 +1419,13 @@ angular.module('CVGTool')
 
                 if (frameFrom === null) return; // Nothing found to interpolate to
 
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frameFrom, frameTo, $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid, objectType, $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                    frameFrom, frameTo,
+                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
+                    objectType,
+                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
+                    callbackSuccess, $scope.messagesManager.sendMessage);
             }
             
 
@@ -1409,7 +1434,7 @@ angular.module('CVGTool')
                 var callbackSuccess = function(uid, type, frame) {
                     $scope.toolsManager.switchSubTool("");
                     $scope.messagesManager.sendMessage("success", "Annotation updated!");
-                    _this.retrieveAnnotation(uid, type, [frame])
+                    _this.retrieveAnnotation(uid, type, [frame]);
 
                     if ($scope.keypointEditor.autoInterpolate) {
                         _this.interpolate(uid, type, frame);
@@ -1425,32 +1450,33 @@ angular.module('CVGTool')
                 }
 
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
-                if (objects.type.localeCompare("person") == 0) {
+                if (objects.type.localeCompare("person") === 0) {
                     objects.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
                 }
                 objects.keypoints = shape.cameraPoints;
 
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
-            }
+            };
 
-            // Function that generates a legit poseTrack UID for new objects
-            _this.generateNewOriginalUid = function(track_id, frame) {
-                // Convert num to String and add 0s to the left of size size.
-                function pad (num, size) {
-                    let s = String(num);
-                    while (s.length < size) { s = "0" + s; }
-                    return s;
-                }
-                let video = "";
-                try{
-                    video = $scope.canvasesManager.canvases[0].activeCamera.filename;
-                } catch (e) {
-                    video = $scope.camerasManager.loadedCameras[0].filename;
-                }
-                frame = pad(frame, 4);
-                track_id = pad(track_id, 2);
-                return Number("1" + video + frame + track_id)
-            }
+            // Deprecated code beloging to original ID generation. Left just in case
+            // // Function that generates a legit poseTrack UID for new objects
+            // _this.generateNewOriginalUid_old = function(track_id, frame) {
+            //     // Convert num to String and add 0s to the left of size size.
+            //     function pad (num, size) {
+            //         let s = String(num);
+            //         while (s.length < size) { s = "0" + s; }
+            //         return s;
+            //     }
+            //     let video = "";
+            //     try{
+            //         video = $scope.canvasesManager.canvases[0].activeCamera.filename;
+            //     } catch (e) {
+            //         video = $scope.camerasManager.loadedCameras[0].filename;
+            //     }
+            //     frame = pad(frame, 4);
+            //     track_id = pad(track_id, 2);
+            //     return Number("1" + video + frame + track_id)
+            // };
 
             // Opens the dialog for batch-deleting points
             _this.openBatchDelete = function(object) {
@@ -1624,7 +1650,8 @@ angular.module('CVGTool')
                 if ($scope.toolParameters.isPosetrack) {
                     // Add original UID to selected object. Create it if it doesn't exist.
                     if ($scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].original_uid === undefined) {
-                        $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].original_uid = $scope.commonManager.generateNewOriginalUid(object.uid, frame);
+                        // NOTE: This should NEVER happen!!
+                        // $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].original_uid = $scope.commonManager.generateNewOriginalUid(object.uid, frame);
                     }
                     $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].original_uid;
 
@@ -2739,7 +2766,7 @@ angular.module('CVGTool')
             // Creates/updates the object into the object structure
             _this.update2DObject = function(uid, type, frame, points) {
                 var newObject = null;
-                
+        
                 var imgPoints = [];                
                 // Project if points exist
                 if (points.length != 0) {
@@ -2807,12 +2834,12 @@ angular.module('CVGTool')
             // Project one object defined by objectUid
             _this.projectObject = function(objectUID, objectType, frameFrom, frameTo) {
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
-                    for (var i= startFrame; i < endFrame; i++) {
-                        _this.update2DObject(uid, type, i, points);
-                    }
+                    for (var i= startFrame; i <= endFrame; i++) {
+                        _this.update2DObject(uid, type, i, points[i - startFrame]);
+                    }          
                 }
-
-                var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()];
+                //var object = $scope.objectManager.objectTypes[objectType.toString()].objects[objectUID.toString()];
+                var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
                 var points = [];
 
                 // Crate the structure to project
