@@ -183,8 +183,8 @@ class AnnotationService:
                 return False, 'Error updating annotation', 400
 
         # Create user action in db
-        user_action = UserAction(annotation.user, 'annotation', annotation.scene, annotation.dataset)
-        user_action_manager.create_user_action(user_action)
+        # user_action = UserAction(annotation.user, 'annotation', annotation.scene, annotation.dataset)
+        # user_action_manager.create_user_action(user_action)
         return True, 'ok', 200
 
     # Return 'ok' if the annotation has been updated
