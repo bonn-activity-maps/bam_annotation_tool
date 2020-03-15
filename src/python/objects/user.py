@@ -3,7 +3,7 @@ import flask_login
 
 class User(flask_login.UserMixin):
 
-    def __init__(self, id, name, password, assigned_to, role, email):
+    def __init__(self,  name, password, assigned_to, role, email):
         """
         :param id : str
         :param name: str
@@ -12,7 +12,6 @@ class User(flask_login.UserMixin):
         :param role: str        {user, admin, root}
         :param email: str
         """
-        self.id = id
         self.name = name
         self.password = password
         self.assigned_to = assigned_to
