@@ -9,7 +9,7 @@ from python.objects.frame import Frame
 
 class FrameManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient('127.0.0.1', 27017)
     db = c.cvg
     collection = db.frame
 
