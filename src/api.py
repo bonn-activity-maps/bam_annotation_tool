@@ -1,5 +1,6 @@
 from flask import Flask, make_response, request, send_file
 import json, os
+import flask_login
 
 from python.logic.datasetService import DatasetService
 from python.logic.videoService import VideoService
@@ -26,6 +27,10 @@ from python.objects.user_action import UserAction
 
 app = Flask(__name__)
 
+# Login manager for user sessions
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+
 datasetService = DatasetService()
 videoService = VideoService()
 annotationService = AnnotationService()
@@ -41,29 +46,84 @@ user_action_service = UserActionService()
 from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
 precompute = PrecomputeAnnotations()
 
+# Configuration for user session management
+app.secret_key = os.urandom(16)                 # Create random key for user sessions
+# login_manager.login_view = "users.login"        # Log in view
+login_manager.session_protection = "strong"     # Strong protection
+
+
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
     return make_response(open('/usr/src/templates/index.html').read())
 
-
 @app.route("/precomputeAnnotations")
 def precomputeAnnotations():
     success, msg, status =  precompute.precomputeAnnotations()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### SESSION ####
+
+# Reload the user object from the user ID stored in the session
+# TODO: change id for mongo id?
+@login_manager.user_loader
+def user_loader(user_name):
+    # Check if user exists
+    success, msg, status = userService.get_user(user_name)
+    if not success:
+        return None
+
+    user = msg
+    user.id = user_name
+    return user
+    # return User.get(user_id)
+
+# # Check if user and password are correct
+# @login_manager.request_loader
+# def request_loader(request):
+#     # email = request.form.get('email')
+#     success, msg, status = userService.user_login(request.headers['username'], request.headers['password'])
+#     if not success:
+#         return
+#
+#     user = msg
+#     user.id = user.name
+#     user.is_authenticated = success
+#     return user
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return 'Unauthorized'
+
 #### USER ####
 
 # User login
 @app.route("/api/user/login", methods=['GET'])
 def user_login():
     success, msg, status = userService.user_login(request.headers['username'], request.headers['password'])
+    # Create user session with id = user name
+    if success:
+        msg.id = msg.name
+        flask_login.login_user(msg)
+        msg = msg.to_json()
+
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+@app.route("/api/user/logout", methods=['GET'])
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    return json.dumps({'success': True, 'msg': "Logged out"}), 200, {'ContentType': 'application/json'}
 
 # Get user info
 @app.route("/api/user/getUser", methods=['GET'])
+@flask_login.login_required
 def get_user():
     success, msg, status = userService.get_user(request.headers['username'])
+    # Convert user object to json if the user exists
+    if success:
+        msg = msg.to_json()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
