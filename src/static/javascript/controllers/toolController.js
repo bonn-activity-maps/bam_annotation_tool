@@ -786,7 +786,7 @@ angular.module('CVGTool')
                 var prepared = keypoints.slice()
                 for (var i=0; i< keypoints.length; i++) {
                     for (var j=0; j < keypoints[i].length; j++) {
-                        keypoints[i][j] = keypoints[i][j] / 2.0
+                        prepared[i][j] = keypoints[i][j] / 2.0
                     }
                     
                 }
@@ -798,7 +798,7 @@ angular.module('CVGTool')
                 var prepared = keypoints.slice()
                 for (var i=0; i< keypoints.length; i++) {
                     for (var j=0; j < keypoints[i].length; j++) {
-                        keypoints[i][j] = keypoints[i][j] * 2.0
+                        prepared[i][j] = keypoints[i][j] * 2.0
                     }
                 }
 
