@@ -11,6 +11,7 @@ from python.logic.aikService import AIKService
 from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
 from python.logic.activity_service import ActivityService
+from python.logic.user_action_service import UserActionService
 
 from python.objects.user import User
 from python.objects.dataset import Dataset
@@ -21,7 +22,7 @@ from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.action import Action
 from python.objects.activity import Activity
-
+from python.objects.user_action import UserAction
 
 app = Flask(__name__)
 
@@ -35,6 +36,7 @@ aikService = AIKService()
 frameService = FrameService()
 actionService = ActionService()
 activity_service = ActivityService()
+user_action_service = UserActionService()
 
 from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
 precompute = PrecomputeAnnotations()
@@ -549,8 +551,8 @@ def merge_actions():
 def project_to_camera():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = aikService.project_to_camera(int(request.headers['startFrame']), int(request.headers['endFrame']),
-                                                         int(request.headers['cameraName']), dataset,
-                                                         request.headers['points'])
+                                                        int(request.headers['cameraName']), dataset,
+                                                        request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -604,6 +606,56 @@ def remove_frame():
 def get_frames_info_of_dataset_group_by_video():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = frameService.get_frames_info_of_dataset_group_by_video(dataset)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### USER ACTIONS ####
+
+# Get user action for specific user and dataset
+@app.route("/api/userAction/getUserActions/user", methods=['GET'])
+def get_user_action_by_user():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_user(dataset, request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user actions for specific action and dataset
+@app.route("/api/userAction/getUserActions/action", methods=['GET'])
+def get_user_action_by_action():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_action(dataset, request.headers['action'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user actions for specific user, action and dataset
+@app.route("/api/userAction/getUserActions/user/action", methods=['GET'])
+def get_user_action_by_user_action():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_user_action(dataset, request.headers['user'],
+                                                                              request.headers['action'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user action for specific dataset
+@app.route("/api/userAction/getUserActions", methods=['GET'])
+def get_user_actions():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_actions(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Create new action for specific user
+@app.route('/api/userAction/createUserAction', methods=['POST'])
+def create_user_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset)
+    success, msg, status = user_action_service.create_user_action(user_action)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove an action
+@app.route('/api/userAction/removeUserAction', methods=['POST'])
+def remove_user_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset, req_data['timestamp'])
+    success, msg, status = user_action_service.remove_user_action(user_action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

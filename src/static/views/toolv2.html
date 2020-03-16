@@ -420,8 +420,9 @@
                     </button>
                     <div id="ActionCreationDropdown" class="dropdown-menu text-center">
                         <li class="dropdown-header">Actions:</li>
+                        <p><input class="form-control" type="text" ng-model="search" placeholder="Filter actions..."></p>
                         <li>
-                            <select class="form-control" id="selAction" ng-model="actionManager.actionCreationData.selectedType" ng-options="activity for activity in actionManager.activitiesList">
+                            <select class="form-control" id="selAction" ng-model="actionManager.actionCreationData.selectedType" ng-options="activity for activity in actionManager.activitiesList | filter:search">
                             </select>
                         </li>
                         <li class="divider"></li>
