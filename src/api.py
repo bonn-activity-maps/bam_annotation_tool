@@ -39,7 +39,7 @@ activity_service = ActivityService()
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
-    return make_response(open('/usr/src/templates/index.html').read())
+    return make_response(open('/home/cvg_anno/ThanosDidNothingWrong/src/templates/index.html').read())
 
 
 #### USER ####
@@ -612,4 +612,4 @@ def insert_frames():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=8888)
