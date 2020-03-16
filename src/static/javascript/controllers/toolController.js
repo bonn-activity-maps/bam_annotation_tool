@@ -785,7 +785,10 @@ angular.module('CVGTool')
             _this.prepareKeypointsForFrontend = function(keypoints) {
                 var prepared = keypoints.slice()
                 for (var i=0; i< keypoints.length; i++) {
-                    prepared[i] = prepared[i] / 2.0
+                    for (var j=0; j < keypoints[i].length; j++) {
+                        keypoints[i][j] = keypoints[i][j] / 2.0
+                    }
+                    
                 }
 
                 return prepared;
@@ -794,7 +797,9 @@ angular.module('CVGTool')
             _this.prepareKeypointsForBackend = function(keypoints) {
                 var prepared = keypoints.slice()
                 for (var i=0; i< keypoints.length; i++) {
-                    prepared[i] = prepared[i] * 2.0
+                    for (var j=0; j < keypoints[i].length; j++) {
+                        keypoints[i][j] = keypoints[i][j] * 2.0
+                    }
                 }
 
                 return prepared;
@@ -2676,10 +2681,14 @@ angular.module('CVGTool')
                 context.restore();
             }
 
+            _this.prepareEpilineForFrontend = function(el) {
+                return [el[0] / 2.0, el[1] / 2.0]
+            }
+
             // Set Epiline
             _this.setEpiline = function(el1, el2, color, number) {
                 // Create Epiline object
-                _this.epilinesManager[number] = new Epiline(_this.toImage($scope.objectManager.prepareKeypointsForFrontend(el1)), _this.toImage($scope.objectManager.prepareKeypointsForFrontend(el2)), color);
+                _this.epilinesManager[number] = new Epiline(_this.toImage(_this.prepareEpilineForFrontend(el1)), _this.toImage(_this.prepareEpilineForFrontend(el2)), color);
                 _this.setRedraw();
 
             }
