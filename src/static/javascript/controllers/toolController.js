@@ -787,10 +787,16 @@ angular.module('CVGTool')
                 for (var i=0; i< keypoints.length; i++) {
                     for (var j=0; j < keypoints[i].length; j++) {
                         prepared[i][j] = keypoints[i][j] / 2.0
-                    }
-                    
+                    }    
                 }
+                return prepared;
+            }
 
+            _this.prepareKeypointForFrontend = function(keypoint) {
+                var prepared = keypoint.slice()
+                for (var i=0; i< keypoint.length; i++) {
+                    prepared[i] = keypoint[i] / 2.0
+                }
                 return prepared;
             }
 
@@ -801,7 +807,14 @@ angular.module('CVGTool')
                         prepared[i][j] = keypoints[i][j] * 2.0
                     }
                 }
+                return prepared;
+            }
 
+            _this.prepareKeypointForBackend = function(keypoint) {
+                var prepared = keypoint.slice()
+                for (var i=0; i< keypoint.length; i++) {
+                    prepared[i] = keypoint[i] * 2.0
+                }
                 return prepared;
             }
         }
@@ -1106,7 +1119,7 @@ angular.module('CVGTool')
 
                         for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
                             if (points[j] !== null) {
-                                objects.keypoints[j].points[i] =  $scope.objectManager.prepareKeypointsForBackend(cameraPoints[j]);
+                                objects.keypoints[j].points[i] =  $scope.objectManager.prepareKeypointForBackend(cameraPoints[j]);
                                 objects.keypoints[j].cameras[i] = $scope.canvasesManager.canvases[i].activeCamera.filename;
                             }
                         }
@@ -1735,7 +1748,7 @@ angular.module('CVGTool')
                             for (var j = 0; j < $scope.canvasesManager.canvases.length; j++) {
                                 if ($scope.canvasesManager.canvases[j].hasActiveCamera() && $scope.canvasesManager.canvases[j].activeCamera.filename.localeCompare(cameraName) !== 0) {
                                     var cameraToProject = $scope.canvasesManager.canvases[j].activeCamera.filename;
-                                    toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.objectManager.prepareKeypointsForBackend([point]), cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
+                                    toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.objectManager.prepareKeypointForBackend(point), cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
                                 }
                             }
                         }
