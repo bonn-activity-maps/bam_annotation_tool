@@ -7,7 +7,6 @@ show_help ()
   echo "sudo ./launch.sh <option>"
   echo "-----------------------------"
   echo "Options:"
-  echo "    -ldb:  launch mongo database. "
   echo "    -rdb:  reset mongo database. "
   echo "    -fdb: fill database with test data."
   echo "    -aweb: launch web application (update) synchronously."
@@ -29,9 +28,7 @@ elif [ "$1" = "-fdb" ]; then
 elif [ "$1" = "-aweb" ]; then
   pip3 install -r requirements.txt
   sudo npm install --prefix static/
-  python3.6 api.py
-elif [ "$1" = "-ldb" ]; then
-  sudo docker-compose up db
+  python api.py
 else
   show_help
 fi

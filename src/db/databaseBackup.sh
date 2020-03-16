@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Backup db
-mongodump --host "127.0.0.1:27017" --out /usr/storage/database_backups/$(date +"%Y-%m-%d_%H:%M:%S") --db cvg --forceTableScan
-
-# Remove backups older than 7 days
-find /usr/storage/database_backups -mtime +6 -delete
+mongodump --host "127.0.0.1:27017" --out /home/cvg_anno/database_backups/$(date +"%Y-%m-%d_%H:%M:%S") --db cvg --forceTableScan
 
 # Request for merging overlapping actions
-curl -X POST http://localhost:5000/api/action/mergeActions
+curl -X POST http://localhost:8888/api/action/mergeActions
+
+#Copy to cvg25
+
+# Remove backup
+rm -rf /home/cvg_anno/database_backups/*
+
