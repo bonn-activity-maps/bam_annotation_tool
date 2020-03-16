@@ -1092,7 +1092,7 @@ angular.module('CVGTool')
                     objects.keypoints.push(pointStructure);
                 }
 
-                object.keypoints = $scope.objectManager.prepareKeypointsForFrontend(object.keypoints);
+                objects.keypoints = $scope.objectManager.prepareKeypointsForFrontend(objects.keypoints);
 
                 // For each canvas and for each label, fill the data
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.shapes.length; i++) {
