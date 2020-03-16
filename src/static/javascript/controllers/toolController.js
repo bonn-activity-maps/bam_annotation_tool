@@ -1092,8 +1092,6 @@ angular.module('CVGTool')
                     objects.keypoints.push(pointStructure);
                 }
 
-                objects.keypoints = $scope.objectManager.prepareKeypointsForFrontend(objects.keypoints);
-
                 // For each canvas and for each label, fill the data
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.shapes.length; i++) {
                     if ($scope.keypointEditor.keypointEditorData.shapes[i] !== null){
@@ -1103,7 +1101,7 @@ angular.module('CVGTool')
 
                         for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
                             if (points[j] !== null) {
-                                objects.keypoints[j].points[i] = cameraPoints[j];
+                                objects.keypoints[j].points[i] =  $scope.objectManager.prepareKeypointsForFrontend(cameraPoints[j]);
                                 objects.keypoints[j].cameras[i] = $scope.canvasesManager.canvases[i].activeCamera.filename;
                             }
                         }
