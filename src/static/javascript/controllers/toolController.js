@@ -1735,7 +1735,7 @@ angular.module('CVGTool')
                             for (var j = 0; j < $scope.canvasesManager.canvases.length; j++) {
                                 if ($scope.canvasesManager.canvases[j].hasActiveCamera() && $scope.canvasesManager.canvases[j].activeCamera.filename.localeCompare(cameraName) !== 0) {
                                     var cameraToProject = $scope.canvasesManager.canvases[j].activeCamera.filename;
-                                    toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.objectManager.prepareKeypointsForBackend(point), cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
+                                    toolSrvc.getEpiline($scope.timelineManager.slider.value, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.objectManager.prepareKeypointsForBackend([point]), cameraName, cameraToProject, i, j, _this.keypointEditorData.indexBeingEdited, callbackSuccess, $scope.messagesManager.sendMessage);
                                 }
                             }
                         }
