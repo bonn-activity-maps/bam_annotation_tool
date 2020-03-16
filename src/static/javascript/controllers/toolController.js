@@ -1101,7 +1101,7 @@ angular.module('CVGTool')
 
                         for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
                             if (points[j] !== null) {
-                                objects.keypoints[j].points[i] =  $scope.objectManager.prepareKeypointsForFrontend(cameraPoints[j]);
+                                objects.keypoints[j].points[i] =  $scope.objectManager.prepareKeypointsForBackend(cameraPoints[j]);
                                 objects.keypoints[j].cameras[i] = $scope.canvasesManager.canvases[i].activeCamera.filename;
                             }
                         }
