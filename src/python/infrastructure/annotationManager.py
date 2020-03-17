@@ -5,13 +5,15 @@ from bson.son import SON
 from python.objects.annotation import Annotation
 from python.objects.object import Object
 
+import python.config as cfg
+
 # AnnotationManager logger
 log = logging.getLogger('annotationManager')
 
 
 class AnnotationManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+	c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.annotation
 
