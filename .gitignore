@@ -9,3 +9,4 @@ docker-compose.yml
 initialize.js
 src/static/node_modules/
 src/python/config.py
+notes.txtk

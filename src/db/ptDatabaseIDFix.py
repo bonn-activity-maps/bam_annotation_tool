@@ -5,7 +5,7 @@ from bson.son import SON
 # AnnotationManager logger
 log = logging.getLogger('annotationManager')
 
-c = MongoClient('172.18.0.2', 27017)
+c = MongoClient('127.0.0.1', 27017)
 db = c.cvg  # The one in production
 
 aik = 'actionInKitchen'

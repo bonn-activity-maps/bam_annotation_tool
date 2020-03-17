@@ -37,9 +37,9 @@ elif [ "$1" = "-lweb" ]; then
 elif [ "$1" = "-ldb" ]; then
   sudo docker-compose up db
 elif [ "$1" = "-rdb" ]; then
-  mongo 172.18.0.2:27017/cvg db/reset.js
+  mongo 127.0.0.1:27017/cvg db/reset.js
 elif [ "$1" = "-fdb" ]; then
-  mongo 172.18.0.2:27017/cvg db/initialize.js
+  mongo 127.0.0.1:27017/cvg db/initialize.js
   elif [ "$1" = "-aweb" ]; then
   sudo npm install --prefix static/
   sudo docker-compose build web

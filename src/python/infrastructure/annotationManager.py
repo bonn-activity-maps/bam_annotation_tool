@@ -13,7 +13,7 @@ log = logging.getLogger('annotationManager')
 
 class AnnotationManager:
 
-    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
+	c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.annotation
 
