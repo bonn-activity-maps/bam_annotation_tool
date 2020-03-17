@@ -2259,6 +2259,7 @@ angular.module('CVGTool')
                             if (objects[i].type.toString().localeCompare("person") === 0) {
                                 objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
                             }
+                        }
 
 						var frame = annotations[k].frame;
 						var objects = annotations[k].objects;
@@ -2275,10 +2276,11 @@ angular.module('CVGTool')
 							$scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
 
 							for (var j = 0; j < objects[i].keypoints.length; j++) {
-								if (objects[i].keypoints[j].length != 0) {
-									$scope.objectManager.objectTypes[objects[i].type.toString()]
-										.objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
-								} 
+                                if (objects[i].keypoints[j].length != 0) {
+                                    $scope.objectManager.objectTypes[objects[i].type.toString()]
+                                        .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
+                                }
+                            }
                         }
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
@@ -2337,7 +2339,10 @@ angular.module('CVGTool')
                     $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
                     objectType,
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
-                    callbackSuccess, $scope.messagesManager.sendMessage);
+                    callbackSuccess, $scope.messagesManager.sendMessage,
+                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].uid,
+                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].uid); //TODO track id needed for interpolation but it's nowhere to find it
+                console.log($scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom]) //TODO no track_id here...
             }
             
 

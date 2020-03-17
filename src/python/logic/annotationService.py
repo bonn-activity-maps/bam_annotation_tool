@@ -311,6 +311,7 @@ class AnnotationService:
         # Search object in respective start and end frames
         if dataset.is_pt():
             start_annotation.objects = [object2]
+            print("start annotation objects", object2)
             annotations_in_range = annotationManager.get_object_in_frames(start_annotation, end_annotation)
 
         obj1 = annotationManager.get_frame_object(start_annotation)
@@ -325,7 +326,8 @@ class AnnotationService:
 
         # Final keypoints
         final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2)
-        
+        # print("annotations in range", len(annotations_in_range))
+        # print(annotations_in_range)
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():

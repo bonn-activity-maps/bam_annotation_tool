@@ -318,8 +318,8 @@ def create_new_uid_object():
 def interpolate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
-    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'], track_id=req_data['track_id'])
+    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'], track_id=req_data['track_id2'])
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object1])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
     success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
@@ -673,4 +673,4 @@ def insert_frames():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8888)
+    app.run(host=cfg.app["ip"], port=cfg.app["port"])

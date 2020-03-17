@@ -13,7 +13,7 @@ log = logging.getLogger('annotationManager')
 
 class AnnotationManager:
 
-	c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.annotation
 
@@ -152,6 +152,8 @@ class AnnotationManager:
                                                "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type},
                                                 {"objects": {"$elemMatch": {"uid": start_annotation.objects[0].uid, "type": start_annotation.objects[0].type}}, "dataset": 1, "scene": 1, "frame": 1,  '_id': 0}).sort("frame", 1)
             else:
+                # print("dataset", start_annotation.dataset.name, "scene", start_annotation.scene, "user", "root", "frame >=:",  start_annotation.frame, "<=:", end_annotation.frame,
+                # "objects.track_id", start_annotation.objects[0].track_id, "objects.type", start_annotation.objects[0].type)
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find({"dataset": start_annotation.dataset.name, "scene": start_annotation.scene, "user": "root", "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
                                                "objects.track_id": start_annotation.objects[0].track_id, "objects.type": start_annotation.objects[0].type},

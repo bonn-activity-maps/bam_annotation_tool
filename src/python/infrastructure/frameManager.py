@@ -9,6 +9,7 @@ log = logging.getLogger('frameManager')
 
 from python.objects.frame import Frame
 
+
 class FrameManager:
 
     c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
