@@ -24,6 +24,8 @@ from python.objects.action import Action
 from python.objects.activity import Activity
 from python.objects.user_action import UserAction
 
+import python.config as cfg
+
 app = Flask(__name__)
 
 datasetService = DatasetService()
@@ -44,7 +46,7 @@ precompute = PrecomputeAnnotations()
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
-    return make_response(open('/usr/src/templates/index.html').read())
+    return make_response(open(cfg.index_path).read())
 
 
 @app.route("/precomputeAnnotations")

@@ -1,6 +1,8 @@
 from pymongo import MongoClient, errors
 import logging
 
+import python.config as cfg
+
 from python.objects.object_type import Object_type
 
 # ObjectTypeManager logger
@@ -9,7 +11,7 @@ log = logging.getLogger('objectTypeManager')
 
 class ObjectTypeManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.objectType
 
