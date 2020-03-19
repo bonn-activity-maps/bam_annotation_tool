@@ -172,7 +172,7 @@ angular.module('CVGTool')
         },
 
         // Retrieves the object defined by objectUid
-        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, startFrame, endFrame, callbackSuccess, callbackError) {
+        getAnnotationOfFrameByUID: function(user, dataset, datasetType, scene, objectUid, objectType, startFrame, endFrame, callbackSuccess, callbackError, track_id) {
             $http({
                 method: 'GET',
                 url: "/api/annotation/getAnnotation/object",
@@ -184,7 +184,8 @@ angular.module('CVGTool')
                     "objectType": objectType,
                     "startFrame": startFrame,
                     "endFrame": endFrame,
-                    "uidObject": objectUid
+                    "uidObject": objectUid,
+                    "track_id": track_id || 0
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
@@ -262,7 +263,7 @@ angular.module('CVGTool')
         },
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
-            uidObject2, callbackSuccess, callbackError, track_id, track_id2) {
+            uidObject2, callbackSuccess, callbackError, track_id) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",
@@ -273,11 +274,10 @@ angular.module('CVGTool')
                     'startFrame': startFrame,
                     'endFrame': endFrame,
                     'uidObject': uidObject,
-                    'track_id': track_id || 0,
+                    'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
                     'datasetType': datasetType,
                     'objectType': objectType,
-                    'uidObject2': uidObject2,
-                    'track_id2': track_id2 || 0
+                    'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(uidObject, objectType, startFrame, endFrame);
