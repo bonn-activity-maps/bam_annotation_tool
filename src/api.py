@@ -11,6 +11,7 @@ from python.logic.aikService import AIKService
 from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
 from python.logic.activity_service import ActivityService
+from python.logic.user_action_service import UserActionService
 
 from python.objects.user import User
 from python.objects.dataset import Dataset
@@ -21,7 +22,9 @@ from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.action import Action
 from python.objects.activity import Activity
+from python.objects.user_action import UserAction
 
+import python.config as cfg
 
 app = Flask(__name__)
 
@@ -35,13 +38,21 @@ aikService = AIKService()
 frameService = FrameService()
 actionService = ActionService()
 activity_service = ActivityService()
+user_action_service = UserActionService()
+
+from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
+precompute = PrecomputeAnnotations()
 
 # Base redirection to index.html. Let AngularJS handle Webapp states
 @app.route("/")
 def redirect():
-    return make_response(open('/usr/src/templates/index.html').read())
+    return make_response(open(cfg.index_path).read())
 
 
+@app.route("/precomputeAnnotations")
+def precomputeAnnotations():
+    success, msg, status =  precompute.precomputeAnnotations()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 #### USER ####
 
 # User login
@@ -307,19 +318,21 @@ def create_new_uid_object():
 def interpolate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
-    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                     track_id=req_data['track_id'])
+    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                     track_id=req_data['track_id'])
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object1])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
     success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-# Get annotation of one object in frame for given frame, dataset, video and user
+# Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type= request.headers['datasetType'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=request.headers['datasetType'], track_id=request.headers['track_id'])
     annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], [object])
     annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], [object])
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
@@ -338,7 +351,8 @@ def get_annotation_frame_object():
 def remove_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                    track_id=req_data['uidObject'])
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object])
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
@@ -542,8 +556,8 @@ def merge_actions():
 def project_to_camera():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = aikService.project_to_camera(int(request.headers['startFrame']), int(request.headers['endFrame']),
-                                                         int(request.headers['cameraName']), dataset,
-                                                         request.headers['points'])
+                                                        int(request.headers['cameraName']), dataset,
+                                                        request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -600,6 +614,56 @@ def get_frames_info_of_dataset_group_by_video():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+#### USER ACTIONS ####
+
+# Get user action for specific user and dataset
+@app.route("/api/userAction/getUserActions/user", methods=['GET'])
+def get_user_action_by_user():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_user(dataset, request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user actions for specific action and dataset
+@app.route("/api/userAction/getUserActions/action", methods=['GET'])
+def get_user_action_by_action():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_action(dataset, request.headers['action'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user actions for specific user, action and dataset
+@app.route("/api/userAction/getUserActions/user/action", methods=['GET'])
+def get_user_action_by_user_action():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_action_by_user_action(dataset, request.headers['user'],
+                                                                              request.headers['action'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get user action for specific dataset
+@app.route("/api/userAction/getUserActions", methods=['GET'])
+def get_user_actions():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_actions(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Create new action for specific user
+@app.route('/api/userAction/createUserAction', methods=['POST'])
+def create_user_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset)
+    success, msg, status = user_action_service.create_user_action(user_action)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove an action
+@app.route('/api/userAction/removeUserAction', methods=['POST'])
+def remove_user_action():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset, req_data['timestamp'])
+    success, msg, status = user_action_service.remove_user_action(user_action)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
 # Remove and insert new frames for one video and dataset
 @app.route('/api/dataset/insertFramesError', methods=['POST'])
@@ -612,4 +676,4 @@ def insert_frames():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8888)
+    app.run(host=cfg.app["ip"], port=cfg.app["port"])

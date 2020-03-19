@@ -1,13 +1,15 @@
 from pymongo import MongoClient, errors
 import logging
 
+import python.config as cfg
+
 # TaskManager logger
 log = logging.getLogger('taskManager')
 
 
 class TaskManager:
 
-    c = MongoClient('127.0.0.1', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.task
 

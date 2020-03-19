@@ -2,14 +2,17 @@ from pymongo import MongoClient, errors
 import logging
 from bson.son import SON
 
+import python.config as cfg
+
 # FrameManager logger
 log = logging.getLogger('frameManager')
 
 from python.objects.frame import Frame
 
+
 class FrameManager:
 
-    c = MongoClient('127.0.0.1', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.frame
 
