@@ -3,14 +3,17 @@ import copy
 
 from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.datasetManager import DatasetManager
+from python.infrastructure.user_action_manager import UserActionManager
 
 from python.objects.activity import Activity
+from python.objects.user_action import UserAction
 
 # UserService logger
 log = logging.getLogger('actionService')
 
 actionManager = ActionManager()
 datasetManager = DatasetManager()
+user_action_manager = UserActionManager()
 
 
 class ActionService:
@@ -50,6 +53,9 @@ class ActionService:
             if result == 'Error':
                 return False, 'Error creating action', 400
             else:
+                # Create user action in db
+                # user_action = UserAction(action.user, 'action', action.dataset.name, action.dataset)
+                # user_action_manager.create_user_action(user_action)
                 return True, 'ok', 200
 
     # Remove an action

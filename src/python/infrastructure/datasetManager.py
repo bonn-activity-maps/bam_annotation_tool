@@ -1,14 +1,17 @@
 from pymongo import MongoClient, errors
 import logging
 import os
+import python.config as cfg
 
 from python.objects.dataset import Dataset
 
 # DatasetManager logger
 log = logging.getLogger('datasetManager')
 
+
 class DatasetManager:
-    c = MongoClient('127.0.0.1', 27017)
+
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.dataset
 
