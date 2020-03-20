@@ -378,8 +378,10 @@ def create_new_uid_object():
 def interpolate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'], track_id=req_data['track_id'])
-    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'], track_id=req_data['track_id2'])
+    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                     track_id=req_data['track_id'])
+    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                     track_id=req_data['track_id'])
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object1])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
     success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
@@ -390,7 +392,7 @@ def interpolate_annotation():
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type= request.headers['datasetType'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=request.headers['datasetType'], track_id=request.headers['track_id'])
     annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], [object])
     annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], [object])
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
@@ -409,7 +411,8 @@ def get_annotation_frame_object():
 def remove_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                    track_id=req_data['uidObject'])
     start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object])
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)

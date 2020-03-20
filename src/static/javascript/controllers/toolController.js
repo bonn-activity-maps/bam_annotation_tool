@@ -2194,17 +2194,17 @@ angular.module('CVGTool')
             // Retrieve annotations
             _this.retrieveAnnotations = function() {
                 var callback = function(annotations) {
-                    if (annotations.length == 0) {  // Check if we received something
+                    if (annotations.length === 0) {  // Check if we received something
                         $scope.loadingScreenManager.closeLoadingScreen();
                         $scope.canvasesManager.refreshProjectionOfCanvases();
                         return;
                     }
         
-                    for (var j = 0; j < annotations.length; j++) {
-                        var annotation = annotations[j];
-                        for (var i = 0; i < annotation.objects.length; i++) {
+                    for (let j = 0; j < annotations.length; j++) {
+                        let annotation = annotations[j];
+                        for (let i = 0; i < annotation.objects.length; i++) {
                             // If the object is of type "person", fix the keypoint structure to ignore ears
-                            if (annotation.objects[i].type.toString().localeCompare("person") == 0) {
+                            if (annotation.objects[i].type.toString().localeCompare("person") === 0) {
                                 annotation.objects[i].keypoints = _this.fixPersonKeypoints(annotation.objects[i].keypoints);
                             }
                             // In any case, store in that frame the keypoints, the frame number and the actions
@@ -2223,7 +2223,7 @@ angular.module('CVGTool')
                                 annotation.frame;
                             
                             for (var k = 0; k < annotation.objects[i].keypoints.length; k++) {
-                                if (annotation.objects[i].keypoints[k].length != 0) {
+                                if (annotation.objects[i].keypoints[k].length !== 0) {
                                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                         .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].annotationsExist[k] = true;
                                 } 
@@ -2252,20 +2252,11 @@ angular.module('CVGTool')
                         return;
                     }
                     for (let k = 0; k < annotations.length; k++) {
-                        var frame = annotations[k].frame;
-                        var objects = annotations[k].objects;
-                        for (var i= 0; i< objects.length; i++) {
-                            // If the object is of type "person", fix the keypoint structure to ignore ears
-                            if (objects[i].type.toString().localeCompare("person") === 0) {
-                                objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
-                            }
-                        }
-
-						var frame = annotations[k].frame;
-						var objects = annotations[k].objects;
-						for (var i= 0; i< objects.length; i++) {
+						let frame = annotations[k].frame;
+						let objects = annotations[k].objects;
+						for (let i= 0; i< objects.length; i++) {
 							// If the object is of type "person", fix the keypoint structure to ignore ears
-							if (objects[i].type.toString().localeCompare("person") == 0) {
+							if (objects[i].type.toString().localeCompare("person") === 0) {
 								objects[i].keypoints = _this.fixPersonKeypoints(objects[i].keypoints);
 							}
 							if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
@@ -2276,15 +2267,16 @@ angular.module('CVGTool')
 							$scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
 
 							for (var j = 0; j < objects[i].keypoints.length; j++) {
-                                if (objects[i].keypoints[j].length != 0) {
+                                if (objects[i].keypoints[j].length !== 0) {
                                     $scope.objectManager.objectTypes[objects[i].type.toString()]
                                         .objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist[j] = true;
                                 }
                             }
-                        }
+                            $scope.canvasesManager.refreshCanvasPointByUID(objects[i].track_id, objects[i].type, frame);
+						}
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
-                }
+                };
                 
                 $scope.loadingScreenManager.setLoadingScreen();
                 // Reset that object exist counter to false
@@ -2302,13 +2294,13 @@ angular.module('CVGTool')
                         $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
                         $scope.canvasesManager.canvases[0].getActiveCamera().filename,
                         objectUID, objectType ,frameArray[0], frameArray[0],
-                        callback, $scope.messagesManager.sendMessage);
+                        callback, $scope.messagesManager.sendMessage, $scope.objectManager.selectedObject.uid);
                 } else {
                     toolSrvc.getAnnotationOfFrameByUID($scope.toolParameters.user.name,
                         $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
                         $scope.canvasesManager.canvases[0].getActiveCamera().filename,
                         objectUID, objectType ,frameArray[0], frameArray[frameArray.length - 1],
-                        callback, $scope.messagesManager.sendMessage);
+                        callback, $scope.messagesManager.sendMessage, objectUID);
                 }
             };
 
@@ -2332,7 +2324,6 @@ angular.module('CVGTool')
                 }
 
                 if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
-
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
                     $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
                     frameFrom, frameTo,
@@ -2340,9 +2331,7 @@ angular.module('CVGTool')
                     objectType,
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
                     callbackSuccess, $scope.messagesManager.sendMessage,
-                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].uid,
-                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].uid); //TODO track id needed for interpolation but it's nowhere to find it
-                console.log($scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom]) //TODO no track_id here...
+                    $scope.objectManager.selectedObject.uid);
             }
             
 
@@ -2417,7 +2406,7 @@ angular.module('CVGTool')
                         username: $scope.toolParameters.user.name
                     }
                 }).then(function(data) { // When finished, update the frames
-                    if (data.msg.localeCompare("success") == 0) {
+                    if (data.msg.localeCompare("success") === 0) {
                         $scope.messagesManager.sendMessage("success", "Annotations deleted!")
                         var frameArray = [];
                         for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
@@ -2426,7 +2415,7 @@ angular.module('CVGTool')
 
                         _this.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
                         
-                    } else if (data.msg.localeCompare("error") == 0) {
+                    } else if (data.msg.localeCompare("error") === 0) {
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }
                 }) 
