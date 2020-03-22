@@ -300,7 +300,6 @@ def get_min_frame():
 
 # Get a frame from video
 @app.route('/usr/storage/<path:filename>', methods=['GET'])
-@flask_login.login_required
 def get_video_frame(filename):
     return send_file('/usr/storage/'+filename)
 
