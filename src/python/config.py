@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+import os
+
 mongo = {
-    "ip": '127.0.0.1',
+    "ip": '172.18.0.2',
     "port": 27017
 }
-index_path = '/home/cvg_anno/ThanosDidNothingWrong/src/templates/index.html'
+index_path = '/usr/src/templates/index.html'
 app = {
     'ip': "0.0.0.0",
-    'port': 8888
+    'port': 5000
 }
+secret_key = os.urandom(16)     # Create random key for user sessions
