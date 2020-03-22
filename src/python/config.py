@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 mongo = {
-    "ip": '172.18.0.2',
+    "ip": '127.0.0.1',
     "port": 27017
 }
-index_path = '/usr/src/templates/index.html'
+index_path = '/home/cvg_anno/ThanosDidNothingWrong/src/templates/index.html'
 app = {
     'ip': "0.0.0.0",
-    'port': 5000
+    'port': 8888
 }
