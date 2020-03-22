@@ -70,8 +70,9 @@ class Object:
             category_id = None
             track_id = None
             original_id = None
+            person_id = None
 
-        return Object(uid, type, keypoints, dataset_type, labels, category_id, track_id, original_id)
+        return Object(uid, type, keypoints, dataset_type, labels, category_id, track_id, original_id, person_id)
 
     def to_string(self):
         if self.dataset_type == self.pt:

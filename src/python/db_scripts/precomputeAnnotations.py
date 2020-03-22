@@ -28,7 +28,7 @@ def delete_duplicated_objects(lst):
 
 
 class PrecomputeAnnotations:
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient('127.0.0.1', 27017)
     db = c.cvg
 
     aik = 'actionInKitchen'
@@ -83,7 +83,7 @@ class PrecomputeAnnotations:
             print("Precomputing for ", video.name)
             _, min_frame, _ = videoService.get_min_frame(video)
             _, max_frame, _ = videoService.get_max_frame(video)
-            _, vid_annotations, _ = annotationService.get_annotations(Annotation(video.dataset, video.name))
+            _, vid_annotations, _ = annotationService.get_annotations(Annotation(dataset, video.name))
             # vid_annotations = [Annotation.from_json(r,  video.dataset.type) for r in list(vid_annotations)]
             track_ids = []          # list of track_id numbers during the video
             nr_id = [0] * max_frame["frames"]   # ordered list of highest nr_id in original ids of a frame. key is
@@ -103,6 +103,7 @@ class PrecomputeAnnotations:
             # Pass 2: Create empty objects for every track id, type and frame and update the db
             # Create the person_ids for every track_id, key is track_id
             person_ids = [i for i in range(person_id, person_id + len(track_ids))]
+            # print(track_ids)
             for annotation in annotations:
                 objects = list(annotation.objects)
                 # For each track_id already in the video
@@ -122,8 +123,9 @@ class PrecomputeAnnotations:
                             objects = self.add_person_id_to_object(list(objects), obj.uid, objectType, person_ids[index])
                     index += 1
                 annotation.objects = delete_duplicated_objects(objects)
-                result = self.db.annotation.replace_one({"dataset": "posetrack_data", "scene": video.name, "user": "root",
-                                                         "frame": annotation.frame}, annotation.to_json(), upsert=True)
+                # print(annotation)
+                # exit()
+                result = self.db.annotation.replace_one({"dataset": "posetrack_data", "scene": video.name, "user": "root", "frame": annotation.frame}, annotation.to_json(), upsert=True)
                 if not result:
                     print("ERROR")
                     exit()

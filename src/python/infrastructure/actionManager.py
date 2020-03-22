@@ -3,6 +3,7 @@ import logging
 
 from python.objects.action import Action
 from python.objects.activity import Activity
+import python.config as cfg
 
 # TaskManager logger
 log = logging.getLogger('actionManager')
@@ -10,7 +11,7 @@ log = logging.getLogger('actionManager')
 
 class ActionManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.action
 

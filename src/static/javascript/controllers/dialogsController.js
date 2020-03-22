@@ -564,7 +564,9 @@ angular.module('CVGTool')
                 $scope.values.deleteFrom = $scope.values.deleteTo;
                 $scope.values.deleteTo = aux;
             }
-            toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene, $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid, $scope.object.type, successFunction, errorFunction);
+            toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                $scope.object.type, successFunction, errorFunction);
         }
     }
 ])
