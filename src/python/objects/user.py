@@ -12,6 +12,7 @@ class User(flask_login.UserMixin):
         :param role: str        {user, admin, root}
         :param email: str
         """
+        self.id = name              # only for flask_login
         self.name = name
         self.password = password
         self.assigned_to = assigned_to
