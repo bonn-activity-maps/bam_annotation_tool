@@ -430,7 +430,7 @@ def interpolate_annotation():
 @flask_login.login_required
 def get_annotation_frame_object():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=request.headers['datasetType'], track_id=request.headers['track_id'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=request.headers['datasetType'], track_id=request.headers['uidObject'])
     annotation1 = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'], [object])
     annotation2 = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'], [object])
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)

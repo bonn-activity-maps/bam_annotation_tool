@@ -28,7 +28,7 @@ def delete_duplicated_objects(lst):
 
 
 class PrecomputeAnnotations:
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient('127.0.0.1', 27017)
     db = c.cvg
 
     aik = 'actionInKitchen'
@@ -125,8 +125,7 @@ class PrecomputeAnnotations:
                 annotation.objects = delete_duplicated_objects(objects)
                 # print(annotation)
                 # exit()
-                result = self.db.annotation.replace_one({"dataset": "posetrack_data", "scene": video.name, "user": "root",
-                                                         "frame": annotation.frame}, annotation.to_json(), upsert=True)
+                result = self.db.annotation.replace_one({"dataset": "posetrack_data", "scene": video.name, "user": "root", "frame": annotation.frame}, annotation.to_json(), upsert=True)
                 if not result:
                     print("ERROR")
                     exit()
