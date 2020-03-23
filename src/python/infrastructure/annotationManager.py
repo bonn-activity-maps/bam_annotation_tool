@@ -259,6 +259,22 @@ class AnnotationManager:
     #         log.exception('Error updating validated annotation in db')
     #         return 'Error'
 
+    # Return max person ID of objects in dataset
+    def max_person_id(self, dataset):
+        try:
+            result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset.name}},
+                                                {"$group": {"_id": None, "max": {"$max": "$objects.person_id"}}},
+                                                {"$project": {"_id": 0, "max": 1}}])       # Avoid returning mongo id
+            # Read max value returned
+            result = list(result)
+            if not result:    # If there are no objects -> max uid is 0
+                return 0
+            else:               # Return max
+                return result[0]['max']
+        except errors.PyMongoError as e:
+            log.exception('Error finding maximum id in annotation in db')
+            return 'Error'
+
     # Return max uid of objects in dataset
     def max_uid_object_dataset(self, dataset):
         try:

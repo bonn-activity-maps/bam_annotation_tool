@@ -256,10 +256,28 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg.maxUid, type)
-                }),
+                },
                 function errorCallback(response) {
                     callbackError('danger', response);
+                })
+        },
+
+        // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
+        createPersonPT: function(scene, dataset, datasetType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/createPersonPT',
+                data: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'datasetType': datasetType
                 }
+            }).then(function successCallback(response) {
+                callbackSuccess()
+            },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
         },
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,

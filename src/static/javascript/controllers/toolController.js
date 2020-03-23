@@ -2065,7 +2065,7 @@ angular.module('CVGTool')
                 $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
                 $scope.toolParameters.checkWhereAreWeComingFrom();
-            }
+            };
 
             // STEP1: Retrieve all object types, thats the only initialization step
             _this.retrieveAvailableObjectTypes = function() {
@@ -2189,7 +2189,7 @@ angular.module('CVGTool')
                 } else {
                     toolSrvc.retrieveObjects($scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].getActiveCamera().filename, $scope.toolParameters.user.name, callback, $scope.messagesManager.sendMessage);
                 }
-            }
+            };
 
             // Retrieve annotations
             _this.retrieveAnnotations = function() {
@@ -2233,7 +2233,7 @@ angular.module('CVGTool')
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
-                }
+                };
 
                 if ($scope.camerasManager.loadedCameras.length > 0) {
                     toolSrvc.getAnnotationsByFrameRange($scope.camerasManager.loadedCameras[0].filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
@@ -2242,7 +2242,7 @@ angular.module('CVGTool')
                     toolSrvc.getAnnotationsByFrameRange($scope.canvasesManager.canvases[0].getActiveCamera().filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
                         $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback);
                 }
-            }
+            };
 
             // Retrieve annotation by UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
@@ -2332,8 +2332,18 @@ angular.module('CVGTool')
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
                     callbackSuccess, $scope.messagesManager.sendMessage,
                     $scope.objectManager.selectedObject.uid);
-            }
-            
+            };
+
+            _this.createPerson = function() {
+                let callbackSuccess = function() {
+                    $scope.loadingScreenManager.closeLoadingScreen();
+                    _this.retrieveObjects();
+                };
+                $scope.loadingScreenManager.setLoadingScreen();
+                toolSrvc.createPersonPT($scope.canvasesManager.canvases[0].activeCamera.filename,
+                    $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                    callbackSuccess, $scope.messagesManager.sendMessage)
+            };
 
             // Updates the annotation being edited
             _this.updateAnnotation = function() {

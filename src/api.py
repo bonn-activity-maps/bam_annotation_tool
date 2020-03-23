@@ -337,7 +337,13 @@ def get_annotation_frame_object():
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
+# Create a new person for Posetrack. This implies computing a new ID and precomputing all annotations
+@app.route('/api/annotation/createPersonPT', methods=['POST'])
+def create_person_pt():
+    req_data = request.get_json()
+    video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
+    success, msg, status = annotationService.create_person_pt(video)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
 # @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])

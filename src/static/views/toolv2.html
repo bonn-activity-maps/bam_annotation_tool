@@ -218,8 +218,10 @@
                             </tr>
                             <tr>
                                 <td class="zui-sticky-col">
-                                    <button class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
+                                    <button ng-if="!toolParameters.isPosetrack" class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
                                                     class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack" class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
                                 </td>
                             </tr>
                         </tbody>

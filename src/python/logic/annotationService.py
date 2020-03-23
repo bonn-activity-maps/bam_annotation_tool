@@ -6,6 +6,7 @@ from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.actionManager import ActionManager
+from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.user_action_manager import UserActionManager
 
@@ -27,10 +28,14 @@ actionManager = ActionManager()
 datasetManager = DatasetManager()
 aikService = AIKService()
 user_action_manager = UserActionManager()
+video_manager = VideoManager()
 
 
 class AnnotationService:
     STORAGE_DIR = '/usr/storage/'  # Path to store the annotations
+
+    aik = 'actionInKitchen'
+    pt = 'poseTrack'
 
     # Convert bytes to MB, GB, etc
     def convert_bytes(self, num):
@@ -224,6 +229,35 @@ class AnnotationService:
     #         return True, 'ok', 200
     #     else:
     #         return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
+
+    # Create a new person in a video for PT, precompute every annotation
+    def create_person_pt(self, video):
+        annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))
+        max_track_id = 0
+        # Find the highest track id in the video
+        for obj in annotations[0].objects:
+            max_track_id = obj.track_id if obj.track_id > max_track_id else max_track_id
+        # Increase it to create the new person
+        track_id = max_track_id + 1
+        # Find the highest person_id in the dataset and increase it to create the new one.
+        person_id = annotationManager.max_person_id(video.dataset) + 1
+        for annotation in annotations:
+            nr_id = 0
+            for obj in annotation.objects:
+                idobj = obj.uid % 100
+                # print("idobj: ", idobj, " nr_id: ", nr_id)
+                nr_id = idobj if idobj > nr_id else nr_id
+            annotation.objects = [] # Reset objects to insert only new ones
+            uid = "1" + annotation.scene + self.pad(str(annotation.frame), 4) + self.pad(str(nr_id + 1), 2)
+            # For each of the types
+            for objectType in ["bbox", "bbox_head", "person"]:
+                new_obj = Object(uid, objectType, keypoints=[], dataset_type=self.pt,
+                                 track_id=track_id, person_id=person_id)
+                annotation.objects.append(new_obj)
+            result = annotationManager.update_annotation_insert_objects(annotation)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
+        return True, 'ok', 200
 
     # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
     def create_new_uid_object(self, annotation, object_type):
