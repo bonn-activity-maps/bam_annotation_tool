@@ -1,6 +1,8 @@
 <div ng-controller="toastCtrl">
 </div>
 
+
+<!-- CANVASES -->
 <div style="height: 100%;">
     <div class="row" style="height: 90%; width: 94%; margin-left: 4%; margin-right: 2%">
         <div class="panel panel-canvases" style="height: 100%;">
@@ -25,6 +27,7 @@
             </div>
         </div>
     </div>
+    
                         
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
@@ -218,8 +221,10 @@
                             </tr>
                             <tr>
                                 <td class="zui-sticky-col">
-                                    <button class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
+                                    <button ng-if="!toolParameters.isPosetrack" class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
                                                     class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack" class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -273,6 +278,11 @@
                         <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Track ID:</label>
                         <div class="col-sm-8">
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                        </div>
+                        <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Person:</label>
+                        <div class="col-sm-8">
+<!--                            <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)" TODO substitute again when done-->
+                            <p class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
                         </div>
                     </div>
                     <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
@@ -467,15 +477,13 @@
     </div>
 </div>
 
-
-<!-- Object Type reselection alert floating panel -->
+<!-- OBJECT TYPE RESELECTION ALERT FLOATING PANEL -->
 <div id="KeypointEditor" class="panel panel-alert" style="width: 300;" ng-show="toolParameters.showObjectTypeAlert" ng-click="toolParameters.closeObjectTypeAlert()">
     <div class="panel panel-body">
         <h4> <span class="glyphicon glyphicon-arrow-left"></span> Select the Object Type again.</h4>
         <small class="form-text text-muted" style="text-align: center;">Click anywhere on this panel to close it</small>
     </div>
 </div>
-
 
 <!-- ALL THE OTHER WINDOWS -->
 

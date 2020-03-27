@@ -196,11 +196,26 @@ transition: all linear 0.2s;
     margin-bottom: 0px !important;
 }
 
+.floating-canvas {
+    position: absolute !important;
+    background-color: transparent !important;
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-right: 0px;
+    padding-left: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 240px; 
+    height: 240px;
+    border:5px solid #0000;
+}
+
 .padding-1{
     padding-right:1;
     padding-left:1;
 }
-
 
 .panel-body-canvases {
     background-color: white;

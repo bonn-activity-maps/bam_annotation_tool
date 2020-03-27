@@ -1,14 +1,18 @@
+import flask_login
 
-class User:
 
-    def __init__(self, name, password, assigned_to, role, email):
+class User(flask_login.UserMixin):
+
+    def __init__(self,  name, password, assigned_to, role, email):
         """
+        :param id : str
         :param name: str
         :param password: str
         :param assigned_to: []   list with assigned datasets
         :param role: str        {user, admin, root}
         :param email: str
         """
+        self.id = name              # only for flask_login
         self.name = name
         self.password = password
         self.assigned_to = assigned_to

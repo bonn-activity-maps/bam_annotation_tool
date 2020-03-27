@@ -11,7 +11,8 @@ angular.module('CVGTool')
             name: "",
             role: "",
             email: "",
-            assignedTo: []
+            assignedTo: [],
+            sessionToken: null
         };
 
         var activeDataset = { // Active dataset selected
@@ -119,7 +120,8 @@ angular.module('CVGTool')
                     headers: {
                         'dataset': dataset,
                         'datasetType': datasetType,
-                        'video': video
+                        'video': video,
+                        'Authorization': 'Bearer ' + this.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     sessionData.maxFrame = response.data.msg.frames; // Directly set the maxFrame
@@ -136,7 +138,8 @@ angular.module('CVGTool')
                     headers: {
                         'dataset': dataset,
                         'datasetType': datasetType,
-                        'video': video
+                        'video': video,
+                        'Authorization': 'Bearer ' + this.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     sessionData.minFrame = response.data.msg.frames; // Directly set the minFrame
@@ -166,12 +169,18 @@ angular.module('CVGTool')
                 return user.role;
             },
 
+            // Return session token
+            getSessionToken: function() {
+                return user.sessionToken;
+            },
+
             // Set user to u
             setUser: function(u) {
                 user.name = u.name;
                 user.role = u.role;
                 user.email = u.email;
                 user.assignedTo = u.assignedTo;
+                user.sessionToken = u.sessionToken;
             },
 
             // Set active dataset to dataset
@@ -188,6 +197,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/user/updateUserPassword',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.getSessionToken()
+                    },
                     data: {
                         'username': user,
                         'password': pwd

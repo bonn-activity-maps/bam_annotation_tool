@@ -1,12 +1,15 @@
 angular.module('CVGTool')
 
-    .factory('adminUsersSrvc', function($state, $http, $httpParamSerializer) {
+    .factory('adminUsersSrvc', ['navSrvc', '$state', '$http', '$httpParamSerializer', function(navSrvc, $state, $http, $httpParamSerializer) {
 
         return {
             getUsers: function (callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/user/getUsers'
+                    url: '/api/user/getUsers',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    }
                 }).then(function successCallback(response) {
                     if (response.data.msg.length === 0) {
                         callbackSuccess([])
@@ -24,7 +27,8 @@ angular.module('CVGTool')
                     url: '/api/user/getUsersByDataset',
                     headers: {
                         dataset: dataset,
-                        role: role
+                        role: role,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     if (response.data.msg.length === 0) {
@@ -41,6 +45,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: 'api/user/createUser',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': userName,
                         'email': userEmail,
@@ -59,6 +66,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: 'api/user/updateUser',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': userName,
                         'email': userEmail,
@@ -78,6 +88,9 @@ angular.module('CVGTool')
                 $http({
                     method:'POST',
                     url: 'api/user/removeUser',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': userName
                     }
@@ -88,4 +101,4 @@ angular.module('CVGTool')
                 })
             }
         }
-    });
+    }]);

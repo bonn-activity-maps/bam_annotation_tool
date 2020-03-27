@@ -34,7 +34,7 @@ angular.module('CVGTool')
 
         // Callback function to redirect the user if the login worked
         var successRedirect = function (user) {
-            navSrvc.setUser(user);
+            navSrvc.setUser(user);  // Send user info and session token to storage
             if (user.role.localeCompare('user') === 0) { // NOT assign dataset automatically, select in task page
                 // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
                 $state.go('taskHome');

@@ -2065,7 +2065,7 @@ angular.module('CVGTool')
                 $scope.loadingScreenManager.setLoadingScreen();
                 _this.retrieveAvailableObjectTypes();
                 $scope.toolParameters.checkWhereAreWeComingFrom();
-            }
+            };
 
             // STEP1: Retrieve all object types, thats the only initialization step
             _this.retrieveAvailableObjectTypes = function() {
@@ -2158,6 +2158,7 @@ angular.module('CVGTool')
 
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
                             uid: object.track_id,
+                            person_id: object.person_id,
                             type: object.type,
                             frames: []
                         };
@@ -2175,7 +2176,6 @@ angular.module('CVGTool')
                         let object = objects[obj].object;
                         if (object.frame >= $scope.toolParameters.frameFrom && object.frame <= $scope.toolParameters.frameTo) {
                             $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                                // .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = _this.generateNewOriginalUid(object.track_id, object.frame);
                                 .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = object.uid;
                         }
                     }
@@ -2189,7 +2189,7 @@ angular.module('CVGTool')
                 } else {
                     toolSrvc.retrieveObjects($scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].getActiveCamera().filename, $scope.toolParameters.user.name, callback, $scope.messagesManager.sendMessage);
                 }
-            }
+            };
 
             // Retrieve annotations
             _this.retrieveAnnotations = function() {
@@ -2233,7 +2233,7 @@ angular.module('CVGTool')
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
                     $scope.canvasesManager.refreshProjectionOfCanvases();
-                }
+                };
 
                 if ($scope.camerasManager.loadedCameras.length > 0) {
                     toolSrvc.getAnnotationsByFrameRange($scope.camerasManager.loadedCameras[0].filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
@@ -2242,7 +2242,7 @@ angular.module('CVGTool')
                     toolSrvc.getAnnotationsByFrameRange($scope.canvasesManager.canvases[0].getActiveCamera().filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
                         $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback);
                 }
-            }
+            };
 
             // Retrieve annotation by UID, objectType and range of frames
             _this.retrieveAnnotation = function(objectUID, objectType, frameArray) {
@@ -2332,8 +2332,18 @@ angular.module('CVGTool')
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
                     callbackSuccess, $scope.messagesManager.sendMessage,
                     $scope.objectManager.selectedObject.uid);
-            }
-            
+            };
+
+            _this.createPerson = function() {
+                let callbackSuccess = function() {
+                    $scope.loadingScreenManager.closeLoadingScreen();
+                    _this.retrieveObjects();
+                };
+                $scope.loadingScreenManager.setLoadingScreen();
+                toolSrvc.createPersonPT($scope.canvasesManager.canvases[0].activeCamera.filename,
+                    $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                    callbackSuccess, $scope.messagesManager.sendMessage)
+            };
 
             // Updates the annotation being edited
             _this.updateAnnotation = function() {
@@ -2389,6 +2399,31 @@ angular.module('CVGTool')
             //     track_id = pad(track_id, 2);
             //     return Number("1" + video + frame + track_id)
             // };
+
+            // Opens the dialog for changing person ID
+            _this.openChangePersonID = function(object) {
+                $mdDialog.show({
+                    templateUrl: '/static/views/dialogs/changePersonIDDialog.html',
+                    controller: 'changePersonIDCtrl',
+                    escapeToClose: false,
+                    locals: {
+                        toolSrvc: toolSrvc,
+                        object: object,
+                        dataset: $scope.toolParameters.activeDataset,
+                        scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        username: $scope.toolParameters.user.name
+                    }
+                }).then(function(data) { // When finished, update the frames
+                    if (data.msg.localeCompare("success") === 0) {
+                        $scope.messagesManager.sendMessage("success", "Person ID Updated!");
+                        $scope.loadingScreenManager.setLoadingScreen();
+                        _this.retrieveObjects();
+
+                    } else if (data.msg.localeCompare("error") === 0) {
+                        $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                    }
+                })
+            }
 
             // Opens the dialog for batch-deleting points
             _this.openBatchDelete = function(object) {
@@ -2480,7 +2515,7 @@ angular.module('CVGTool')
     
                         _this.mugshots.push({ 'image': stringImage });
                     }
-                }      
+                };
 
                 _this.mugshots = [];
                 if ($scope.toolParameters.isPosetrack) {
@@ -3152,7 +3187,6 @@ angular.module('CVGTool')
             }
         }
 
-        // TODO: Polygon, skeleton and move points of everyone of them
 
         function CanvasObject(canvas, number) {
             //----- SETUP -----//
@@ -3174,9 +3208,9 @@ angular.module('CVGTool')
 
             // Some pages have fixed-position bars (like the stumbleupon bar) at the top or left of the page
             // They will mess up mouse coordinates and _this fixes that
-            var html = document.body.parentNode;
-            _this.htmlTop = html.offsetTop;
-            _this.htmlLeft = html.offsetLeft;
+            _this.rect = _this.canvas.getBoundingClientRect();
+            _this.rectX = _this.rect.x;
+            _this.rectY = _this.rect.y;
 
             //----- STATE TRACKING -----//
             _this.activeCamera = null;
@@ -3224,13 +3258,16 @@ angular.module('CVGTool')
                 y: 1
             }
 
+            _this.zoomScale = 1;
+
             // Mouse variable
             _this.mouse = {
                 pos: { x: 0, y: 0 },
                 worldPos: { x: 0, y: 0 },
                 posLast: { x: 0, y: 0 },
                 dragPos: { x: 0, y: 0 },
-                dragging: false
+                dragging: false,
+                inside: false
             }
 
             // View transform
@@ -3267,30 +3304,16 @@ angular.module('CVGTool')
                 return false;
             }, false);
 
+            canvas.addEventListener('mouseout', function(e) {
+                _this.mouse.inside = false;
+                _this.setRedraw();
+            }, false)
+
             // MouseDown event
             canvas.addEventListener('mousedown', function(e) {
                 var mouse = _this.getMouse(e);
                 _this.mouse.pos.x = mouse.x;
                 _this.mouse.pos.y = mouse.y;
-
-                // // If the tool is navigation
-                // if ($scope.toolsManager.tool.localeCompare('navigation') == 0) {
-                //     _this.dragging = true;
-                // }
-
-                // // If the subtool is 'Zoom Out'
-                // if ($scope.toolsManager.subTool.localeCompare('zoomIn') == 0) {
-                //     _this.zoom += 0.5;
-                //     _this.constraintZoom();
-                //     _this.setRedraw();
-                // }
-
-                // // If the subtool is 'Zoom In'
-                // if ($scope.toolsManager.subTool.localeCompare('zoomOut') == 0) {
-                //     _this.zoom -= 0.5;
-                //     _this.constraintZoom();
-                //     _this.setRedraw();
-                // }
 
                 // If we are creating points
                 if ($scope.toolsManager.subTool.localeCompare('pointCreation') == 0) {
@@ -3336,7 +3359,7 @@ angular.module('CVGTool')
             // MouseMove event
             canvas.addEventListener('mousemove', function(e) {
                 var mouse = _this.getMouse(e);
-
+                _this.mouse.inside = true;
                 _this.mouse.pos.x = mouse.x;
                 _this.mouse.pos.y = mouse.y;
 
@@ -3425,8 +3448,10 @@ angular.module('CVGTool')
                     var canvas = _this.canvas;
 
                     if (_this.activeCamera !== null) {
+                        ctx.save();
+
                         //Redraw background first
-                        ctx.drawImage(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], 0, 0, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].width / _this.zoom, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].height / _this.zoom, 0, 0, canvas.width, canvas.height)
+                        ctx.drawImage(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], 0, 0, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].width, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].height, 0, 0, canvas.width, canvas.height)
                         
                         // Check what we have to draw
                         if (angular.equals(_this.objectsIn2D, {})) return; // Control to avoid errors while loading objects
@@ -3477,7 +3502,7 @@ angular.module('CVGTool')
                         
                         // Last thing, always draw the camera name in the top left corner of the canvas
                         _this.drawCameraName(_this.ctx);
-
+                        ctx.restore();
                     }
                     // Set the camera to valid
                     _this.valid = true;
@@ -3504,7 +3529,6 @@ angular.module('CVGTool')
                             x: 1,
                             y: 1
                         }
-                        var zoom = _this.zoom;
                         var canvas = _this.canvas;
 
                         var image = new Image();
@@ -3581,23 +3605,25 @@ angular.module('CVGTool')
 
             // Draws guide lines to aid in the creation of bounding boxes
             _this.drawGuideLines = function(context) {
-                context.save();
-                context.setLineDash([5, 5]);
-                // Draw horizontal line
-                context.beginPath();
-                context.strokeStyle = "rgba(255, 0, 0, 0.5)";
-                context.moveTo(_this.mouse.pos.x - 1000, _this.mouse.pos.y);
-                context.lineTo(_this.mouse.pos.x + 1000, _this.mouse.pos.y);
-                context.stroke();
-                context.closePath();
-                // Draw vertical line
-                context.beginPath();
-                context.strokeStyle = "rgba(255, 0, 0, 0.5)";
-                context.moveTo(_this.mouse.pos.x, _this.mouse.pos.y - 1000);
-                context.lineTo(_this.mouse.pos.x, _this.mouse.pos.y + 1000);
-                context.stroke();
-                context.closePath();
-                context.restore();
+                if (_this.mouse.inside) {
+                    context.save();
+                    context.setLineDash([5, 5]);
+                    // Draw horizontal line
+                    context.beginPath();
+                    context.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                    context.moveTo(_this.mouse.pos.x - 1000, _this.mouse.pos.y);
+                    context.lineTo(_this.mouse.pos.x + 1000, _this.mouse.pos.y);
+                    context.stroke();
+                    context.closePath();
+                    // Draw vertical line
+                    context.beginPath();
+                    context.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                    context.moveTo(_this.mouse.pos.x, _this.mouse.pos.y - 1000);
+                    context.lineTo(_this.mouse.pos.x, _this.mouse.pos.y + 1000);
+                    context.stroke();
+                    context.closePath();
+                    context.restore();
+                }    
             }
 
             _this.prepareEpilineForFrontend = function(el) {
@@ -3941,6 +3967,13 @@ angular.module('CVGTool')
                     if ($scope.keypointEditor.editorActive === true) {
                         $scope.commonManager.updateAnnotation();
                     }
+                }
+            })
+            .add({
+                combo: 'ctrl',
+                description: 'Toggle zoom',
+                callback: function() {
+                    $scope.canvasZoomManager.toggle();
                 }
             })
             .add({
