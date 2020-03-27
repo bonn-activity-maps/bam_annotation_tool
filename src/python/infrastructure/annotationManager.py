@@ -263,7 +263,7 @@ class AnnotationManager:
     # Return max person ID of objects in dataset
     def max_person_id(self, dataset):
         try:
-            result = self.collection.find([{"$unwind": "$objects"}, {"$match": {"dataset": dataset.name}},
+            result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset.name}},
                                                 {"$group": {"_id": None, "max": {"$max": "$objects.person_id"}}},
                                                 {"$project": {"_id": 0, "max": 1}}])       # Avoid returning mongo id
             # Read max value returned
@@ -279,7 +279,7 @@ class AnnotationManager:
     # Return True if the person ID exists in the dataset
     def is_person_id_in_use(self, dataset, person_id):
         try:
-            result = self.collection.aggregate({"dataset": dataset.name, "objects.person_id": person_id},
+            result = self.collection.find({"dataset": dataset.name, "objects.person_id": person_id},
                                                {"objects": {"$elemMatch": {"person_id": person_id}},
                                                 "frame": 1, "scene": 1, "dataset": 1, '_id': 0})
             # Read max value returned

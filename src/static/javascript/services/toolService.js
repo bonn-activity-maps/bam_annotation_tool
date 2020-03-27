@@ -283,6 +283,7 @@ angular.module('CVGTool')
                 method: 'GET',
                 url: '/api/annotation/isPersonIDInUse',
                 headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                     dataset: dataset,
                     datasetType: datasetType,
                     person_id: person_id
@@ -299,6 +300,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/annotation/createPersonPT',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'dataset': dataset,
                     'scene': scene,
