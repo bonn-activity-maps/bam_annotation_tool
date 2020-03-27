@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-.factory('toolSrvc', function($state, $http, $httpParamSerializer) {
+.factory('toolSrvc', ['navSrvc', '$state', '$http', '$httpParamSerializer', function(navSrvc, $state, $http, $httpParamSerializer) {
 
     return {
         // Gets the information of all the available videos of a dataset
@@ -9,7 +9,8 @@ angular.module('CVGTool')
                 method: 'GET',
                 url: '/api/video/getVideos',
                 headers: {
-                    'dataset': dataset
+                    'dataset': dataset,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 if (response.data.msg.length === 0) {
@@ -31,7 +32,8 @@ angular.module('CVGTool')
                     'video': fileName,
                     'frame': frame,
                     'dataset': dataset,
-                    'datasetType': type
+                    'datasetType': type,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data, fileName, frame);
@@ -49,7 +51,8 @@ angular.module('CVGTool')
                     'video': fileName,
                     'frame': frame,
                     'dataset': dataset,
-                    'datasetType': type
+                    'datasetType': type,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data, fileName, frame);
@@ -68,7 +71,8 @@ angular.module('CVGTool')
                     'startFrame': frameStart,
                     'endFrame': frameEnd,
                     'dataset': dataset,
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
@@ -88,7 +92,8 @@ angular.module('CVGTool')
                         'endFrame': frameEnd,
                         'dataset': dataset,
                         'datasetType': datasetType,
-                        'user': user
+                        'user': user,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)
@@ -104,7 +109,8 @@ angular.module('CVGTool')
                 method: 'GET',
                 url: '/api/objectType/getObjectTypes',
                 headers: {
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
@@ -122,7 +128,8 @@ angular.module('CVGTool')
                     'dataset': dataset.name,
                     'datasetType': dataset.type,
                     'scene': scene,
-                    'user': user
+                    'user': user,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
@@ -142,7 +149,8 @@ angular.module('CVGTool')
                     'endFrame': endFrame,
                     'cameraName': cameraName,
                     'dataset': dataset,
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(uid, type, startFrame, endFrame, response.data.msg)
@@ -162,7 +170,8 @@ angular.module('CVGTool')
                     'cam1': camera1,
                     'cam2': camera2,
                     'dataset': dataset,
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, camera1Index, camera2Index, pointNumber);
@@ -185,7 +194,8 @@ angular.module('CVGTool')
                     "startFrame": startFrame,
                     "endFrame": endFrame,
                     "uidObject": objectUid,
-                    "track_id": track_id || 0
+                    "track_id": track_id || 0,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
@@ -206,7 +216,8 @@ angular.module('CVGTool')
                     "scene": scene,
                     "frame": frame,
                     "uidObject": objectUid,
-                    "objectType": objectType
+                    "objectType": objectType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, frame);
@@ -220,6 +231,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'user': user,
                     'dataset': dataset.name,
@@ -227,7 +241,6 @@ angular.module('CVGTool')
                     'scene': scene,
                     'frame': frame,
                     'object': objects  
-
                 }
             }).then(function successCallback(response) {
                 if (dataset.type.localeCompare("poseTrack") !== 0) {
@@ -246,6 +259,9 @@ angular.module('CVGTool')
             $http({
                     method: 'POST',
                     url: '/api/annotation/createNewUidObject',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'user': user,
                         'dataset': dataset,
@@ -301,6 +317,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: "/api/annotation/interpolate",
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'user': user,
                     'dataset': dataset,
@@ -327,7 +346,8 @@ angular.module('CVGTool')
                 method: 'GET',
                 url: '/api/activity/getActivities',
                 headers: {
-                    dataset: dataset
+                    dataset: dataset,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)
@@ -342,6 +362,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/action/createAction',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'user': user,
                     'dataset': dataset,
@@ -369,7 +392,8 @@ angular.module('CVGTool')
                     'dataset': dataset,
                     'datasetType': datasetType,
                     'startFrame': startFrame,
-                    'endFrame': endFrame
+                    'endFrame': endFrame,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)
@@ -390,7 +414,8 @@ angular.module('CVGTool')
                     'datasetType': datasetType,
                     'objectUID': objectUID,
                     'startFrame': startFrame,
-                    'endFrame': endFrame
+                    'endFrame': endFrame,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)
@@ -405,6 +430,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/action/removeAction',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'name': name,
                     'user': user,
@@ -432,7 +460,8 @@ angular.module('CVGTool')
                     'datasetType': datasetType,
                     'scene': scene,
                     'user': user,
-                    'uid': objectUID
+                    'uid': objectUID,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
@@ -444,6 +473,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/annotation/removeAnnotation/object',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'dataset': dataset,
                     'datasetType': datasetType,
@@ -466,6 +498,9 @@ angular.module('CVGTool')
             $http({
                 method: 'POST',
                 url: '/api/annotation/removeAnnotation/object',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
                 data: {
                     'dataset': dataset,
                     'datasetType': datasetType,
@@ -483,4 +518,4 @@ angular.module('CVGTool')
             })
         }
     }
-});
+}]);

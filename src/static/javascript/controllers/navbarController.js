@@ -132,8 +132,6 @@ angular.module('CVGTool')
         };
 
         // Functions that are executed when a message is received.
-
-        // Then, it updates the info about the sessionData
         $scope.$on('advanceFrames', function(evt, data) {
             if (data.range === 'next') {
                 $scope.goNextRange();

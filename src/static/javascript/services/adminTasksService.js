@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-.factory('adminTasksSrvc', function($state, $http, $httpParamSerializer) {
+.factory('adminTasksSrvc', ['navSrvc', '$state', '$http', '$httpParamSerializer', function(navSrvc, $state, $http, $httpParamSerializer) {
     return {
         getUsersByDataset: function(dataset, role, callbackSuccess) {
             $http({
@@ -8,7 +8,8 @@ angular.module('CVGTool')
                 url: '/api/user/getUsersByDataset',
                 headers: {
                     dataset: dataset,
-                    role: role
+                    role: role,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 if (response.data.msg.length === 0) {
@@ -24,7 +25,10 @@ angular.module('CVGTool')
         getDatasets: function(callback) {
             $http({
                 method: 'GET',
-                url: '/api/dataset/getDatasets'
+                url: '/api/dataset/getDatasets',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                }
             }).then(function successCallback(response) {
                 callback(response.data.msg);
                 console.log("Successfully retrieved list of users")
@@ -33,4 +37,4 @@ angular.module('CVGTool')
             });
         },
     }
-});
+}]);

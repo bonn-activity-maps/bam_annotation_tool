@@ -39,7 +39,7 @@ class UserService:
 
         if self.check_password(pwd, result.password):
             result.password = ''
-            return True, result.to_json(), 200
+            return True, result, 200
         else:
             return False, 'Wrong credentials', 400
 
@@ -49,7 +49,7 @@ class UserService:
         if result == 'Error':
             return False, 'Incorrect user', 400
         else:
-            return True, result.to_json(), 200
+            return True, result, 200
 
     # Return users info
     def get_users(self):
