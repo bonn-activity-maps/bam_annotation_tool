@@ -344,6 +344,14 @@ def create_person_pt():
     video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
     success, msg, status = annotationService.create_person_pt(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Return True if the person id is in use, false otherwise
+@app.route('/api/annotation/isPersonIDInUse', methods=['GET'])
+def is_person_id_in_use():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['person_id'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
 # @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])

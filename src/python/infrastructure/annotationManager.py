@@ -83,7 +83,8 @@ class AnnotationManager:
                 result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root"}},
                                                     {"$group": {"_id": {"uid": "$objects.uid", "type": "$objects.type",
                                                                         "track_id": "$objects.track_id",
-                                                                        "frame": "$frame"}}},
+                                                                        "frame": "$frame",
+                                                                        "person_id": "$objects.person_id"}}},
                                                     {"$project": {"_id": 0, "object": "$_id"}},
                                                     {"$sort": SON([("object.track_id", 1)])}])
             elif annotation.dataset.is_aik():
@@ -262,7 +263,7 @@ class AnnotationManager:
     # Return max person ID of objects in dataset
     def max_person_id(self, dataset):
         try:
-            result = self.collection.aggregate([{"$unwind": "$objects"}, {"$match": {"dataset": dataset.name}},
+            result = self.collection.find([{"$unwind": "$objects"}, {"$match": {"dataset": dataset.name}},
                                                 {"$group": {"_id": None, "max": {"$max": "$objects.person_id"}}},
                                                 {"$project": {"_id": 0, "max": 1}}])       # Avoid returning mongo id
             # Read max value returned
@@ -273,6 +274,22 @@ class AnnotationManager:
                 return result[0]['max']
         except errors.PyMongoError as e:
             log.exception('Error finding maximum id in annotation in db')
+            return 'Error'
+
+    # Return True if the person ID exists in the dataset
+    def is_person_id_in_use(self, dataset, person_id):
+        try:
+            result = self.collection.aggregate({"dataset": dataset.name, "objects.person_id": person_id},
+                                               {"objects": {"$elemMatch": {"person_id": person_id}},
+                                                "frame": 1, "scene": 1, "dataset": 1, '_id': 0})
+            # Read max value returned
+            result = list(result)
+            if not result:    # If there are no objects, the person_id is unused
+                return False
+            else:               # If there are, it is used
+                return True
+        except errors.PyMongoError as e:
+            log.exception('Error finding person id in annotation in db')
             return 'Error'
 
     # Return max uid of objects in dataset

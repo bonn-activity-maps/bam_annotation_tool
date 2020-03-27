@@ -2158,6 +2158,7 @@ angular.module('CVGTool')
 
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
                             uid: object.track_id,
+                            person_id: object.person_id,
                             type: object.type,
                             frames: []
                         };
@@ -2175,7 +2176,6 @@ angular.module('CVGTool')
                         let object = objects[obj].object;
                         if (object.frame >= $scope.toolParameters.frameFrom && object.frame <= $scope.toolParameters.frameTo) {
                             $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()]
-                                // .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = _this.generateNewOriginalUid(object.track_id, object.frame);
                                 .frames[object.frame - $scope.toolParameters.frameFrom].original_uid = object.uid;
                         }
                     }
@@ -2400,6 +2400,31 @@ angular.module('CVGTool')
             //     return Number("1" + video + frame + track_id)
             // };
 
+            // Opens the dialog for changing person ID
+            _this.openChangePersonID = function(object) {
+                $mdDialog.show({
+                    templateUrl: '/static/views/dialogs/changePersonIDDialog.html',
+                    controller: 'changePersonIDCtrl',
+                    escapeToClose: false,
+                    locals: {
+                        toolSrvc: toolSrvc,
+                        object: object,
+                        dataset: $scope.toolParameters.activeDataset,
+                        scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        username: $scope.toolParameters.user.name
+                    }
+                }).then(function(data) { // When finished, update the frames
+                    if (data.msg.localeCompare("success") === 0) {
+                        $scope.messagesManager.sendMessage("success", "Person ID Updated!");
+                        $scope.loadingScreenManager.setLoadingScreen();
+                        _this.retrieveObjects();
+
+                    } else if (data.msg.localeCompare("error") === 0) {
+                        $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                    }
+                })
+            }
+
             // Opens the dialog for batch-deleting points
             _this.openBatchDelete = function(object) {
                 $mdDialog.show({
@@ -2490,7 +2515,7 @@ angular.module('CVGTool')
     
                         _this.mugshots.push({ 'image': stringImage });
                     }
-                }      
+                };
 
                 _this.mugshots = [];
                 if ($scope.toolParameters.isPosetrack) {

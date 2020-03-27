@@ -230,6 +230,14 @@ class AnnotationService:
     #     else:
     #         return False, 'Error updating validated flag of annotation. Some flags could have not changed', 400
 
+    # Return True if the person id specified is in use
+    def is_person_id_in_use(self, dataset, person_id):
+        result = annotationManager.is_person_id_in_use(dataset, person_id)
+        if result == 'Error':
+            return False, 'Error looking up person id', 400
+        else:
+            return True, result, 200
+
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):
         annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))

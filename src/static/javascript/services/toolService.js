@@ -262,6 +262,22 @@ angular.module('CVGTool')
                 })
         },
 
+        isPersonIDInUse: function(dataset, datasetType, person_id, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/annotation/isPersonIDInUse',
+                headers: {
+                    dataset: dataset,
+                    datasetType: datasetType,
+                    person_id: person_id
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
+        },
+
         // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
         createPersonPT: function(scene, dataset, datasetType, callbackSuccess, callbackError) {
             $http({

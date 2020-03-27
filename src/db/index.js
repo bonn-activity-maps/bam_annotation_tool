@@ -15,6 +15,8 @@ db.annotation.createIndex( {"dataset":1, "scene": 1, "user": 1, "frame": 1});
 db.annotation.createIndex( {"dataset":1, "scene": 1, "frame": 1});
 db.annotation.createIndex( {"dataset":1, "scene": 1, "objects.uid": 1, "objects.type": 1, "frame": 1});
 db.annotation.createIndex( {"dataset":1, "scene": 1, "user": 1, "objects.uid": 1, "objects.type": 1, "frame": 1});
+db.annotation.createIndex( {"dataset":1, "scene": 1, "objects.uid": 1, "objects.type": 1, "frame": 1, "person_id": 1});
+db.annotation.createIndex( {"dataset":1, "scene": 1, "user": 1, "objects.uid": 1, "objects.type": 1, "frame": 1, "person_id": 1});
 
 db.objectType.createIndex({"datasetType": 1, "type": 1});
 
