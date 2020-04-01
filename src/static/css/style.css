@@ -5,8 +5,9 @@
     border-radius: 0;
     border: 1px aliceblue;
     font-size: 18px;
-    color: rgba(0, 0, 0, 0.6);
+    color: #00000099;
 }
+
 
 .form-control-icon  {
     top: 35px;

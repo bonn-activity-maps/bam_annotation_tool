@@ -27,7 +27,9 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- ZOOM CANVAS -->
+    <canvas ng-show="canvasZoomManager.isActive()" id="canvasZoom" class="playable-canvas" style="border:3px solid #0000; pointer-events:none; position:absolute; width: 200px; height: 200px;"></canvas>
                         
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
@@ -150,7 +152,6 @@
     <hr class="tool panel-hr">
     <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
     <button ng-if="!toolParameters.isPosetrack" class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
-    
 </div>
 
 <!-- KEYPOINT EDITOR FLOATING PANEL -->
