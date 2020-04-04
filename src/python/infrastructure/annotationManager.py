@@ -355,11 +355,12 @@ class AnnotationManager:
         # if annotation.dataset_type is not None and
         if annotation.dataset.is_aik():
             query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            array_filter = [{"elem.uid": {"$eq": annotation.objects[0].uid}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
         else:
             # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
-            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
-
-        array_filter = [{"elem.uid": {"$eq": annotation.objects[0].uid}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
+            # query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.track_id": annotation.objects[0].track_id, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            array_filter = [{"elem.track_id": {"$eq": annotation.objects[0].track_id}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
 
         # Update object (uid, type, kps) and labels only if it's in objects
         if annotation.objects[0].labels is not None:
