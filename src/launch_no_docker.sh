@@ -4,7 +4,7 @@ show_help ()
 {
   echo "-----------------------------"
   echo "Usage:"
-  echo "sudo ./launch.sh <option>"
+  echo "sudo ./launch_no_docker.sh <option>"
   echo "-----------------------------"
   echo "Options:"
   echo "    -rdb:  reset mongo database. "
