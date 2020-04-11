@@ -3170,8 +3170,8 @@ angular.module('CVGTool')
                 _this.canvasZoom = new CanvasZoom(canvasZoom)
             }
 
-            _this.update = function(image, mouseX, mouseY, pageX, pageY, canvasWithImage, canvasNumber) {
-                _this.canvasZoom.update(image, mouseX, mouseY, pageX, pageY, canvasWithImage, canvasNumber)
+            _this.update = function(image, mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber) {
+                _this.canvasZoom.update(image, mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber)
             }
 
 
@@ -3202,6 +3202,12 @@ angular.module('CVGTool')
                 pageY: null
             }
 
+            // Scale of relation between image and canvas
+            _this.scale = {
+                x: 1,
+                y: 1
+            }
+
             _this.width = 200
             _this.height = 200
 
@@ -3210,6 +3216,13 @@ angular.module('CVGTool')
 
             _this.toggle = function() {
                 _this.active = !_this.active;
+            }
+
+            // From camera frame to image frame
+            _this.toImage = function(point) {
+                var x = point[0] / _this.scale.x;
+                var y = point[1] / _this.scale.y;
+                return [x, y]
             }
 
             _this.updateMousePosition = function(mouseX, mouseY, pageX, pageY) {
@@ -3224,13 +3237,22 @@ angular.module('CVGTool')
             }
 
             _this.updateImage = function(image, canvasWithImage) {
-                _this.image = image;
+                _this.image = new Image()
+                _this.image.src = image.src
+                _this.image.width = _this.width
+                _this.image.height = _this.height
+
+
+                _this.scale.x = _this.image.width / _this.canvas.width
+                _this.scale.y = _this.image.height / _this.canvas.height
+
                 if (canvasWithImage) _this.draw();
             }
 
-            _this.update = function(image,mouseX, mouseY, pageX, pageY, canvasWithImage, canvasNumber) {
+            _this.update = function(image,mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber) {
                 _this.activeOnCanvasNumber = canvasNumber
-                _this.updateMousePosition(mouseX, mouseY, pageX, pageY);
+                var goodCoords = _this.toImage(mouseCoordinates)
+                _this.updateMousePosition(goodCoords[0], goodCoords[1], pageX, pageY);
                 _this.updateImage(image, canvasWithImage);
             }
 
@@ -3239,7 +3261,8 @@ angular.module('CVGTool')
                     _this.ctx.fillStyle = "white"
                     // TODO: Just fix the image that goes here and zooom is fixed
                     _this.ctx.fillRect(0,0, _this.canvas.width,_this.canvas.height)
-                    _this.ctx.drawImage(_this.image, _this.mouse.x * _this.image.width - (_this.canvas.width / 2.0), _this.mouse.y * _this.image.height - (_this.canvas.height / 2.0), 100, 100, 0, 0, _this.canvas.width, _this.canvas.height )
+                    _this.ctx.drawImage(_this.image, _this.mouse.x, _this.mouse.y, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height)
+                    // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.image.width, _this.mouse.y * _this.image.height, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height )
                     // _this.ctx.drawImage(_this.image, 0, 0, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
                     // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.canvas.width * 2.0 - (_this.canvas.width / 2.0), _this.mouse.y * _this.canvas.height * 2.0 - (_this.canvas.height / 2.0), 100, 100, 0, 0, _this.canvas.width, _this.canvas.height) 
                     _this.drawGuideLines(_this.ctx)
@@ -3444,7 +3467,10 @@ angular.module('CVGTool')
                 _this.mouse.pos.y = mouse.y;
 
                 // Update the zoom
-                $scope.canvasZoomManager.update(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], mouse.x / _this.canvas.width, mouse.y / _this.canvas.height, mouse.pageX, mouse.pageY, _this.hasActiveCamera(), _this.canvasNumber);
+                if (_this.hasActiveCamera()) {
+                    var coordinates = _this.toCamera([mouse.x, mouse.y])
+                    $scope.canvasZoomManager.update(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], coordinates, mouse.pageX, mouse.pageY, _this.hasActiveCamera(), _this.canvasNumber);
+                } 
 
                 if (_this.dragging) {
                     _this.mouse.posLast.x = _this.mouse.pos.x;
