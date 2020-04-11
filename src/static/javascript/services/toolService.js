@@ -272,10 +272,48 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg.maxUid, type)
-                }),
+                },
                 function errorCallback(response) {
                     callbackError('danger', response);
+                })
+        },
+
+        isPersonIDInUse: function(dataset, datasetType, person_id, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/annotation/isPersonIDInUse',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    dataset: dataset,
+                    datasetType: datasetType,
+                    person_id: person_id
                 }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg)
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
+        },
+
+        // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
+        createPersonPT: function(scene, dataset, datasetType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/createPersonPT',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'datasetType': datasetType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess()
+            },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
         },
 
         interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,

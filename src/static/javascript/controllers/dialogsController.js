@@ -498,6 +498,70 @@ angular.module('CVGTool')
 //     }
 // ])
 
+    /*
+ * Controller of the dialog of change person ID
+ */
+.controller('changePersonIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, dataset, scene, username) {
+        $scope.object = object;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+        $scope.values = {
+            old_person_id: object.person_id,
+            new_person_id: Number()
+        };
+        $scope.old_person_id = object.person_id;
+        $scope.new_person_id = Number();
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        };
+
+        $scope.change = function() {
+            $scope.mode = "check";
+        };
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        };
+
+        let successFunction = function() {
+            let successData = {
+                msg: "success",
+                object: $scope.object
+            };
+            $mdDialog.hide(successData);
+        };
+
+        let errorFunction = function() {
+            let successData = {
+                msg: "error",
+                object: $scope.object
+            };
+            $mdDialog.hide(successData)
+        };
+
+        $scope.confirm = function() {
+            let callback = function(response){
+                if(!response) {
+                    console.log("respuesta");
+                    console.log(response);
+                    //TODO not in use, show that everything is OK and confirm
+                } else {
+                    // TODO in use, show warning but let user change it if they confirm
+                }
+            };
+
+            // Check if ID is previously used
+            !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction)
+            // Update object
+
+        }
+    }
+])
+
 /*
  * Controller of the dialog of batch delete
  */
