@@ -150,6 +150,7 @@ angular.module('CVGTool')
                     'cameraName': cameraName,
                     'dataset': dataset,
                     'datasetType': datasetType,
+                    'objectType': type,
                     'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
