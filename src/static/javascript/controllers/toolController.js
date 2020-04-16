@@ -3920,7 +3920,8 @@ angular.module('CVGTool')
                 var selectedType = $scope.objectManager.selectedType;
 
                 // Check if the object is poseAIK. The requests are different because of the size of the objects
-                if (selectedType.type.localeCompare("poseAIK") == 0) {
+                
+                if (selectedType.hasOwnProperty('type') && selectedType.type.localeCompare("poseAIK") == 0) {
                     for (obj in selectedType.objects) {
                         var object = selectedType.objects[obj.toString()];
                     
@@ -3950,7 +3951,7 @@ angular.module('CVGTool')
                     }          
                 }
                 
-                if ($scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
+                if ($scope.objectManager.selectedType.hasOwnProperty("type") && $scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
                     var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
 
                     for (var i=frameFrom; i <= frameTo; i++) {
