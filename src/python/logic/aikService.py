@@ -29,10 +29,11 @@ class AIKService:
             return None
 
     # Project points to camera
-    def project_to_camera(self, start_frame, end_frame, camera_name, dataset, points_array):
+    def project_to_camera(self, start_frame, end_frame, camera_name, dataset, object_type, points_array):
         # Convert the points json to Python list
         points_array = json.loads(points_array)
-
+        # print('frames: ',start_frame, end_frame)
+        # print(object_type)
         final_points = []
         for i, f in enumerate(range(start_frame, end_frame+1)):
             if points_array[i]:
@@ -40,9 +41,10 @@ class AIKService:
                 f = Frame(f, camera_name, dataset)
                 frame = frameManager.get_frame(f)
                 # Project points and add to final list
-                final_points.append(self.project_3D_points_to_camera(points_array[i], frame.camera_parameters))
+                final_points.append(self.project_3D_points_to_camera(points_array[i], frame.camera_parameters, object_type))
             else:
                 final_points.append([])
+
         return True, final_points, 200
 
     # Auxiliar function that creates a "AIK camera obejct" from the given camera parameters
@@ -50,16 +52,39 @@ class AIKService:
         return Camera(camera_params['K'], camera_params['rvec'], camera_params['tvec'], camera_params['dist_coef'], camera_params['w'], camera_params['h'])
     
     # Project 3D points into a camera given the camera parameters
-    def project_3D_points_to_camera(self, points_3D, camera_params):
+    def project_3D_points_to_camera(self, points_3D, camera_params, object_type):
         # Create the camera given camera parameters
         camera = self.create_camera(camera_params)
         if len(points_3D) == 1 and len(points_3D[0]) == 0:
             return [[]]
-        # Project all the points in the camera
-        points_2D = camera.project_points(points_3D)
-        
+
+        # Only separate empty points if the object type is poseAIK
+        if object_type == 'poseAIK':
+            # Treatment for empty points
+            points_to_interpolate = []
+            indexes_of_empty_points = []
+
+
+            # Add index of empty points to new list and remove the empty elements
+            for i, p in enumerate(points_3D):
+                if p:
+                    points_to_interpolate.append(p)
+                else:
+                    indexes_of_empty_points.append(i)
+
+            # Project all the points in the camera
+            points_2D = camera.project_points(np.asarray(points_to_interpolate)).tolist()
+
+            # if the list is not empty (if there are some empty array) --> add it again
+            if indexes_of_empty_points:
+                # print('indexes: ',indexes_of_empty_points)
+                for index in indexes_of_empty_points:
+                    points_2D.insert(index, [])
+        else:
+            points_2D = camera.project_points(points_3D).tolist()
+
         # Return the projected points as a list
-        return points_2D.tolist()
+        return points_2D
     
     # Triangulates the 3D point from two 2D points and their respective cameras
     def triangulate_2D_points(self, points, cam_params):

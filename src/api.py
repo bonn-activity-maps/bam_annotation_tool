@@ -698,7 +698,7 @@ def project_to_camera():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = aikService.project_to_camera(int(request.headers['startFrame']), int(request.headers['endFrame']),
                                                         int(request.headers['cameraName']), dataset,
-                                                        request.headers['points'])
+                                                        request.headers['objectType'], request.headers['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
