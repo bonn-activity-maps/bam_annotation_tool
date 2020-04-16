@@ -2736,7 +2736,7 @@ angular.module('CVGTool')
             } else {
                 for (var i = 0; i < _this.labels.length; i++) {
                     if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i]));
+                        _this.points.push(new Point(projectedPoints[i], 8));
                     } else _this.points.push(null);
                 }
                 _this.cameraPoints = cameraPoints; 
@@ -2778,7 +2778,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                //_this.drawEdges(context, color);
+                _this.drawEdges(context, color);
             }
 
             _this.drawWithLabel = function(context, color) {
@@ -2788,7 +2788,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                //_this.drawEdges(context, color);
+                _this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
@@ -3142,11 +3142,11 @@ angular.module('CVGTool')
         }
 
         // Basic point
-        function Point(projectedCenter) {
+        function Point(projectedCenter, radius=10) {
             var _this = this;
 
             _this.center = projectedCenter;
-            _this.radius = 10;
+            _this.radius = radius;
 
             _this.draw = function(context, color) {
                 context.beginPath();
@@ -3914,7 +3914,6 @@ angular.module('CVGTool')
                     for (var i=0; i < object.frames.length; i++) {
                         points.push(object.frames[i].keypoints);
                     }
-
 
                     toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }              
