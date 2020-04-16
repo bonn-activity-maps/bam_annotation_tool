@@ -27,7 +27,9 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- ZOOM CANVAS -->
+    <canvas ng-show="canvasZoomManager.isActive()" id="canvasZoom" class="playable-canvas" style="border:3px solid #0000; pointer-events:none; position:absolute; width: 200px; height: 200px;"></canvas>
                         
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
@@ -150,7 +152,6 @@
     <hr class="tool panel-hr">
     <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
     <button ng-if="!toolParameters.isPosetrack" class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
-    
 </div>
 
 <!-- KEYPOINT EDITOR FLOATING PANEL -->
@@ -175,7 +176,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.minimized">
+    <div class="panel-body" style="height: 525px;" ng-show="!keypointEditor.minimized">
         <div ng-if="objectManager.selectedType.type === undefined">
             <p>
                 Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
@@ -257,7 +258,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 525px;" ng-show="!keypointEditor.editorMinimized">
+    <div class="panel-body" style="height: 530px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
             <div class="col col-md-8">
                 <form class="form-horizontal">

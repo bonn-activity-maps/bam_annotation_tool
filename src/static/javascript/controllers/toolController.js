@@ -939,7 +939,10 @@ angular.module('CVGTool')
             // STEP2: Retrieve all available objects
             _this.retrieveObjects = function() {
                 var callback = function(objects) {
-                    if (objects.length <= 0) return;
+                    if (objects.length <= 0) {
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        return
+                    };
                     
                     for (obj in objects) {
                         var object = objects[obj].object;
@@ -2746,7 +2749,7 @@ angular.module('CVGTool')
             } else {
                 for (var i = 0; i < _this.labels.length; i++) {
                     if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i]));
+                        _this.points.push(new Point(projectedPoints[i], 8));
                     } else _this.points.push(null);
                 }
                 _this.cameraPoints = cameraPoints; 
@@ -2788,7 +2791,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                //_this.drawEdges(context, color);
+                _this.drawEdges(context, color);
             }
 
             _this.drawWithLabel = function(context, color) {
@@ -2798,7 +2801,7 @@ angular.module('CVGTool')
                 }
 
                 // Then draw all the edges
-                //_this.drawEdges(context, color);
+                _this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
@@ -3152,11 +3155,11 @@ angular.module('CVGTool')
         }
 
         // Basic point
-        function Point(projectedCenter) {
+        function Point(projectedCenter, radius=10) {
             var _this = this;
 
             _this.center = projectedCenter;
-            _this.radius = 10;
+            _this.radius = radius;
 
             _this.draw = function(context, color) {
                 context.beginPath();
@@ -3194,6 +3197,144 @@ angular.module('CVGTool')
             _this.move = function(x,y) {
                 _this.center[0] += x;
                 _this.center[1] += y; 
+            }
+        }
+
+        function CanvasZoomManager() {
+            var _this = this;
+
+            _this.canvasZoom = null;
+
+            _this.isActive = function() {
+                return _this.canvasZoom.active;
+            }
+
+            _this.toggle = function() {
+                _this.canvasZoom.toggle()
+            }
+
+            _this.initialize = function() {
+                var canvasZoom = document.getElementById('canvasZoom');
+                _this.canvasZoom = new CanvasZoom(canvasZoom)
+            }
+
+            _this.update = function(image, mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber) {
+                _this.canvasZoom.update(image, mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber)
+            }
+
+
+            _this.updateImage = function(image) {
+                _this.canvasZoom.updateImage(image, true)
+            }
+
+            _this.isActiveOnMe = function(number) {
+                if (number == _this.canvasZoom.activeOnCanvasNumber) return true
+                return false
+            }
+        }
+
+        function CanvasZoom(canvas) {
+            var _this = this;
+
+            _this.canvas = canvas
+            _this.ctx = _this.canvas.getContext('2d')
+            _this.image = null;
+            _this.active = false;
+
+            _this.activeOnCanvasNumber = 0
+
+            _this.mouse = {
+                x: null,
+                y: null,
+                pageX: null,
+                pageY: null
+            }
+
+            // Scale of relation between image and canvas
+            _this.scale = {
+                x: 1,
+                y: 1
+            }
+
+            _this.width = 200
+            _this.height = 200
+
+            _this.halfWidth = _this.width / 2.0
+            _this.halfHeight = _this.height / 2.0
+
+            _this.toggle = function() {
+                _this.active = !_this.active;
+            }
+
+            // From camera frame to image frame
+            _this.toImage = function(point) {
+                var x = point[0] / _this.scale.x;
+                var y = point[1] / _this.scale.y;
+                return [x, y]
+            }
+
+            _this.updateMousePosition = function(mouseX, mouseY, pageX, pageY) {
+                _this.mouse.x = mouseX;
+                _this.mouse.y = mouseY;
+                _this.mouse.pageX = pageX;
+                _this.mouse.pageY = pageY;
+
+                _this.canvas.style.top = _this.mouse.pageY - _this.halfHeight + 'px';
+                _this.canvas.style.left = _this.mouse.pageX - _this.halfWidth + 'px';
+                _this.canvas.style.display = "block"
+            }
+
+            _this.updateImage = function(image, canvasWithImage) {
+                _this.image = new Image()
+                _this.image.src = image.src
+                _this.image.width = _this.width
+                _this.image.height = _this.height
+
+
+                _this.scale.x = _this.image.width / _this.canvas.width
+                _this.scale.y = _this.image.height / _this.canvas.height
+
+                if (canvasWithImage) _this.draw();
+            }
+
+            _this.update = function(image,mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber) {
+                _this.activeOnCanvasNumber = canvasNumber
+                var goodCoords = _this.toImage(mouseCoordinates)
+                _this.updateMousePosition(goodCoords[0], goodCoords[1], pageX, pageY);
+                _this.updateImage(image, canvasWithImage);
+            }
+
+            _this.draw = function() {
+                if (_this.active) {
+                    _this.ctx.fillStyle = "white"
+                    // TODO: Just fix the image that goes here and zooom is fixed
+                    _this.ctx.fillRect(0,0, _this.canvas.width,_this.canvas.height)
+                    _this.ctx.drawImage(_this.image, _this.mouse.x, _this.mouse.y, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height)
+                    // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.image.width, _this.mouse.y * _this.image.height, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height )
+                    // _this.ctx.drawImage(_this.image, 0, 0, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
+                    // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.canvas.width * 2.0 - (_this.canvas.width / 2.0), _this.mouse.y * _this.canvas.height * 2.0 - (_this.canvas.height / 2.0), 100, 100, 0, 0, _this.canvas.width, _this.canvas.height) 
+                    _this.drawGuideLines(_this.ctx)
+                } 
+            }
+
+            _this.drawGuideLines = function(context) {
+                    context.save();
+                    context.setLineDash([5, 5]);
+                    // Draw horizontal line
+                    context.beginPath();
+                    context.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                    context.moveTo(_this.canvas.width / 2.0 - 1000, _this.canvas.height / 2.0);
+                    context.lineTo(_this.canvas.width / 2.0 + 1000, _this.canvas.height / 2.0);
+                    context.stroke();
+                    context.closePath();
+                    // Draw vertical line
+                    context.beginPath();
+                    context.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                    context.moveTo(_this.canvas.width / 2.0, _this.canvas.height / 2.0 - 1000);
+                    context.lineTo(_this.canvas.width / 2.0, _this.canvas.height / 2.0 + 1000);
+                    context.stroke();
+                    context.closePath();
+                    context.restore();
             }
         }
 
@@ -3373,6 +3514,12 @@ angular.module('CVGTool')
                 _this.mouse.pos.x = mouse.x;
                 _this.mouse.pos.y = mouse.y;
 
+                // Update the zoom
+                if (_this.hasActiveCamera()) {
+                    var coordinates = _this.toCamera([mouse.x, mouse.y])
+                    $scope.canvasZoomManager.update(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], coordinates, mouse.pageX, mouse.pageY, _this.hasActiveCamera(), _this.canvasNumber);
+                } 
+
                 if (_this.dragging) {
                     _this.mouse.posLast.x = _this.mouse.pos.x;
                     _this.mouse.posLast.y = _this.mouse.pos.y;
@@ -3437,7 +3584,7 @@ angular.module('CVGTool')
                 var mx = e.clientX - rect.left;
                 var my = e.clientY - rect.top;
 
-                return { x: mx, y: my };
+                return { x: mx, y: my, pageX: e.pageX, pageY: e.pageY};
             }
 
             // Function that set the flag to redraw to false
@@ -3457,8 +3604,11 @@ angular.module('CVGTool')
                     var ctx = _this.ctx;
                     var canvas = _this.canvas;
 
-                    if (_this.activeCamera !== null) {
+                    if (_this.hasActiveCamera()) {
                         ctx.save();
+
+                         // Update the zoom
+                        if ($scope.canvasZoomManager.isActiveOnMe(_this.canvasNumber)) $scope.canvasZoomManager.updateImage(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom]);
 
                         //Redraw background first
                         ctx.drawImage(_this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom], 0, 0, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].width, _this.images[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].height, 0, 0, canvas.width, canvas.height)
@@ -3778,7 +3928,6 @@ angular.module('CVGTool')
                         points.push(object.frames[i].keypoints);
                     }
 
-
                     toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }              
             }
@@ -3878,6 +4027,9 @@ angular.module('CVGTool')
         $scope.canvasesManager.initializeCanvases();
 
         $scope.commonManager.initialize();
+
+        $scope.canvasZoomManager = new CanvasZoomManager();
+        $scope.canvasZoomManager.initialize()
 
         // Editors
         $scope.actionsEditor = new ActionsEditor();
