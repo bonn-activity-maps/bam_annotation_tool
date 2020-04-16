@@ -2358,26 +2358,27 @@ angular.module('CVGTool')
                 }
 
 
-                var objects = {
+                var object = {
                     uid: $scope.objectManager.selectedObject.original_uid,
                     type: $scope.objectManager.selectedObject.type,
                     track_id: $scope.objectManager.selectedObject.uid,
+                    person_id: $scope.objectManager.selectedObject.person_id,
                     keypoints: []
                 }
 
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
-                if (objects.type.localeCompare("person") === 0) {
-                    objects.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
+                if (object.type.localeCompare("person") === 0) {
+                    object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
                 }
                 
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    objects.keypoints = $scope.objectManager.prepareKeypointsForBackend(shape.cameraPoints);
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(shape.cameraPoints);
                 } else {
-                    objects.keypoints = shape.cameraPoints;
+                    object.keypoints = shape.cameraPoints;
                 }
                 
 
-                toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
             // Deprecated code beloging to original ID generation. Left just in case
@@ -2400,6 +2401,12 @@ angular.module('CVGTool')
             //     return Number("1" + video + frame + track_id)
             // };
 
+            _this.callbackChangePersonID = function(msg, new_person_id) {
+                _this.retrieveObjects();
+                $scope.objectManager.selectedObject.person_id = new_person_id;
+                $scope.messagesManager.sendMessage('success', msg);
+            }
+
             // Opens the dialog for changing person ID
             _this.openChangePersonID = function(object) {
                 $mdDialog.show({
@@ -2415,10 +2422,13 @@ angular.module('CVGTool')
                     }
                 }).then(function(data) { // When finished, update the frames
                     if (data.msg.localeCompare("success") === 0) {
-                        $scope.messagesManager.sendMessage("success", "Person ID Updated!");
-                        $scope.loadingScreenManager.setLoadingScreen();
+                        toolSrvc.updatePersonID($scope.canvasesManager.canvases[0].activeCamera.filename,
+                            $scope.toolParameters.activeDataset.name,
+                            $scope.toolParameters.activeDataset.type,
+                            object.uid, data.new_person_id,
+                            _this.callbackChangePersonID,
+                            $scope.messagesManager.sendMessage);
                         _this.retrieveObjects();
-
                     } else if (data.msg.localeCompare("error") === 0) {
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }

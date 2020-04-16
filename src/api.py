@@ -452,6 +452,18 @@ def is_person_id_in_use():
     success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['person_id'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Update the person id for every object in a sequence
+@app.route('/api/annotation/updatePersonID', methods=['POST'])
+@flask_login.login_required
+def update_person_id():
+    req_data = request.get_json()
+    video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
+    new_person_id = req_data["new_person_id"]
+    track_id = req_data["track_id"]
+    success, msg, status = annotationService.update_person_id(video, track_id, new_person_id)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
 # @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])

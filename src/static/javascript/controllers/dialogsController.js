@@ -510,7 +510,8 @@ angular.module('CVGTool')
         $scope.mode = "normal";
         $scope.values = {
             old_person_id: object.person_id,
-            new_person_id: Number()
+            new_person_id: Number(),
+            is_id_in_use: Boolean()
         };
         $scope.old_person_id = object.person_id;
         $scope.new_person_id = Number();
@@ -520,6 +521,12 @@ angular.module('CVGTool')
         };
 
         $scope.change = function() {
+            let callback = function(response){
+                $scope.values.is_id_in_use = response;
+            };
+
+            // Check if ID is previously used
+            !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction);
             $scope.mode = "check";
         };
 
@@ -544,20 +551,13 @@ angular.module('CVGTool')
         };
 
         $scope.confirm = function() {
-            let callback = function(response){
-                if(!response) {
-                    console.log("respuesta");
-                    console.log(response);
-                    //TODO not in use, show that everything is OK and confirm
-                } else {
-                    // TODO in use, show warning but let user change it if they confirm
-                }
+            var successData = {
+                msg: "success",
+                new_person_id: $scope.values.new_person_id,
+                old_person_id: $scope.values.old_person_id,
+                object: $scope.object
             };
-
-            // Check if ID is previously used
-            !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction)
-            // Update object
-
+            $mdDialog.hide(successData);
         }
     }
 ])

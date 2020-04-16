@@ -9,7 +9,7 @@
                 </div>
                 <div class="form-group">
                     <label>New Person ID:</label>
-                    <input type="text" class="form-control" ng-model="values.new_person_id" required>
+                    <input type="number" class="form-control" ng-model="values.new_person_id" required>
                 </div>
             </md-dialog-content>
             <md-dialog-actions>
@@ -19,6 +19,14 @@
         </div>
         <div class="panel" ng-if="mode=='check'">
             <md-dialog-content>
+                <div ng-if="values.is_id_in_use" class="alert alert-danger">
+                    <strong>&#9888</strong> The ID: {{values.new_person_id}} is <b>already in use.</b> <br>
+                    You can still proceed
+                    if you are assigning a person that already exists in another sequence.
+                </div>
+                <div ng-if="!values.is_id_in_use" class="alert alert-success">
+                    <strong>&#10004</strong> The ID: {{values.new_person_id}} is <b>not in use.</b>
+                </div>
                 <h2>Confirmation</h2>
                 <hr/>
                 <p>You are going to change the person ID from <b>{{values.old_person_id}}</b> to <b>{{values.new_person_id}}</b> for the
