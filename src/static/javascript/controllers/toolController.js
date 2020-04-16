@@ -939,7 +939,10 @@ angular.module('CVGTool')
             // STEP2: Retrieve all available objects
             _this.retrieveObjects = function() {
                 var callback = function(objects) {
-                    if (objects.length <= 0) return;
+                    if (objects.length <= 0) {
+                        $scope.loadingScreenManager.closeLoadingScreen();
+                        return
+                    };
                     
                     for (obj in objects) {
                         var object = objects[obj].object;
