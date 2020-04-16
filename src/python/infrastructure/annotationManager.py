@@ -279,15 +279,32 @@ class AnnotationManager:
     # Return True if the person ID exists in the dataset
     def is_person_id_in_use(self, dataset, person_id):
         try:
-            result = self.collection.find({"dataset": dataset.name, "objects.person_id": person_id},
-                                               {"objects": {"$elemMatch": {"person_id": person_id}},
-                                                "frame": 1, "scene": 1, "dataset": 1, '_id': 0})
-            # Read max value returned
-            result = list(result)
+            result = self.collection.find_one({"dataset": dataset.name, "objects.person_id": int(person_id)})
+
             if not result:    # If there are no objects, the person_id is unused
                 return False
             else:               # If there are, it is used
+                result = list(result)
                 return True
+        except errors.PyMongoError as e:
+            log.exception('Error finding person id in annotation in db')
+            return 'Error'
+
+    # Update the person id for every object with given track id in given video
+    def update_person_id(self, video, track_id, new_person_id):
+        query = {"dataset": video.dataset.name, "scene": video.name, "objects.track_id": track_id}
+        array_filter = [{"elem.track_id": {"$eq": track_id}}]     # Filter by track id
+
+        # Update person id only when track id matches
+        new_values = {"$set": {"objects.$[elem].person_id": new_person_id}}
+
+        try:
+            result = self.collection.update_many(query, new_values, upsert=False, array_filters=array_filter)
+            # ok if no error
+            if result.acknowledged == 1:
+                return 'ok'
+            else:
+                return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error finding person id in annotation in db')
             return 'Error'

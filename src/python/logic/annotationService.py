@@ -238,6 +238,14 @@ class AnnotationService:
         else:
             return True, result, 200
 
+    # Return True if the objects with track id specified for the given video is updated correctly
+    def update_person_id(self, video, track_id, new_person_id):
+        result = annotationManager.update_person_id(video, track_id, new_person_id)
+        if result == 'Error':
+            return False, 'Error updating person id', 400
+        else:
+            return True, result, 200
+
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):
         annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))

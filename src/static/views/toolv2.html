@@ -281,9 +281,9 @@
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
                         <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Person:</label>
-                        <div class="col-sm-8">
-<!--                            <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)" TODO substitute again when done-->
-                            <p class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
+                        <div ng-if="toolParameters.isPosetrack" class="col-sm-8">
+                            <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
+                            class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
                         </div>
                     </div>
                     <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
