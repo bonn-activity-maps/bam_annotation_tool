@@ -293,20 +293,18 @@ class DatasetService:
         # Directories and files
         dir_cameras = dir + "/cameras"
         dir_videos = dir + "/videos"
-        dir_poses = dir + "/poses"
         file_dataset = dir + "/dataset.json"
 
         # Check dirs and files
         is_dir = os.path.isdir(dir)
         has_cameras = os.path.isdir(dir_cameras)
         has_videos = os.path.isdir(dir_videos)
-        has_poses = os.path.isdir(dir_poses)
         has_dataset = os.path.isfile(file_dataset)
 
         try:
             has_consistency = self.check_integrity_of_annotations(dir_cameras, dir_videos+"/")
 
-            return is_dir and has_cameras and has_videos and has_poses and has_dataset and has_consistency
+            return is_dir and has_cameras and has_videos and has_dataset and has_consistency
         except:
             log.exception('Error checking integrity of zip')
             return False
@@ -315,12 +313,16 @@ class DatasetService:
     def add_info_AIK(self, dataset):
         # Directories for AIK datasets
         videos_dir = os.path.join(dataset.dir, 'videos/')
-        annotations_dir = os.path.join(dataset.dir, 'poses/')
+        annotations_file = os.path.join(dataset.dir, 'persons2poses.json')
 
         # Store info in DB
         result_videos = videoService.add_videos_AIK(dataset, videos_dir)
         result_cameras = frameService.add_frame_AIK(dataset)
-        result_annotations = annotationService.add_annotations_AIK(dataset, annotations_dir)
+        # Store annotations in DB only if file exists
+        if os.path.isfile(annotations_file):
+            result_annotations = annotationService.add_annotations_AIK(dataset, annotations_file)
+        else:
+            result_annotations = True
 
         if result_videos == 'Error' or result_cameras == 'Error' or result_annotations == 'Error':
             self.remove_dataset(dataset)
