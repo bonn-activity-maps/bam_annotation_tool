@@ -2749,7 +2749,7 @@ angular.module('CVGTool')
             } else {
                 for (var i = 0; i < _this.labels.length; i++) {
                     if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i], 8));
+                        _this.points.push(new Point(projectedPoints[i], 10));
                     } else _this.points.push(null);
                 }
                 _this.cameraPoints = cameraPoints; 
