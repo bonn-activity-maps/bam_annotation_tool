@@ -1117,15 +1117,14 @@ angular.module('CVGTool')
 
                 // Append as many keypoints structures as labels the object has
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.realLabels.length; i++) {
-                    objects.keypoints.push(pointStructure);
+                    objects.keypoints.push(JSON.parse(JSON.stringify(pointStructure)));
                 }
 
                 // For each canvas and for each label, fill the data
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.shapes.length; i++) {
                     if ($scope.keypointEditor.keypointEditorData.shapes[i] !== null){
-                        var points = $scope.keypointEditor.keypointEditorData.shapes[i].points;;
+                        var points = $scope.keypointEditor.keypointEditorData.shapes[i].points;
                         var cameraPoints = $scope.keypointEditor.keypointEditorData.shapes[i].cameraPoints;
-                        var count = 0;
 
                         for (var j = 0; j < $scope.keypointEditor.keypointEditorData.realLabels.length; j++) {
                             if (points[j] !== null) {
