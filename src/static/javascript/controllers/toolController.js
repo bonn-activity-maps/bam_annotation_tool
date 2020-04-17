@@ -3912,9 +3912,14 @@ angular.module('CVGTool')
                 _this.resetObjectStructure();
                 _this.prepareObjectStructure();
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
-                    for (var i= startFrame; i <= endFrame; i++) {
-                        _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - $scope.toolParameters.frameFrom]));
+                    if (startFrame == endFrame) {
+                        _this.update2DObject(uid, type, startFrame, $scope.objectManager.prepareKeypointsForFrontend(points[0]))
+                    } else {
+                        for (var i= startFrame; i <= endFrame; i++) {
+                            _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - $scope.toolParameters.frameFrom]));
+                        }
                     }
+                    
                 }
                 // Select only the active type
                 var selectedType = $scope.objectManager.selectedType;
