@@ -121,6 +121,7 @@ class AnnotationService:
     # Triangulate points from 2D points to 3D
     # Always a single object in "objects" so always objects[0] !!
     def obtain_3d_points_AIK(self, annotation):
+        # print(annotation)
         keypoints2d = annotation.objects[0].keypoints
         keypoints3d = []  # New 3d kps
 
@@ -161,7 +162,7 @@ class AnnotationService:
         keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
 
         # If the object is not a person -> we have to calculate 8 points for the box of object
-        if annotation.objects[0].type != 'personAIK' and not error_flag:
+        if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
             kp1, kp2, kp3 = np.asarray(keypoints_3d)
             keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
