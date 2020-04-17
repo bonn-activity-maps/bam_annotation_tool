@@ -1148,11 +1148,12 @@ angular.module('CVGTool')
                     if (count < 2 && count != 0) {
                         $scope.messagesManager.sendMessage("warning", "The label '" + $scope.keypointEditor.keypointEditorData.realLabels[i] + "' needs to have 0 or at least 2 points placed.");
                         return;
-                    } else {       
-                        // Update the object
-                        toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
                     }
                 }
+
+                // If we get here, update the object
+                toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
+
             }
 
             // Opens the dialog for batch-deleting points
