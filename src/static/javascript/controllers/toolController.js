@@ -3958,12 +3958,9 @@ angular.module('CVGTool')
                 
                 if ($scope.objectManager.selectedType.hasOwnProperty("type") && $scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
                     var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-
                     for (var i=frameFrom; i <= frameTo; i++) {
-                        toolSrvc.projectToCamera(object.uid, object.type, object.frames[i - $scope.toolParameters.frameFrom].keypoints, i, i, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+                        toolSrvc.projectToCamera(object.uid, object.type, [object.frames[i - $scope.toolParameters.frameFrom].keypoints], i, i, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                     }
-
-
                 } else {
                     var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
                     var points = [];
