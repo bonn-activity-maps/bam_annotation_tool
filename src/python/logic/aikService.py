@@ -32,8 +32,6 @@ class AIKService:
     def project_to_camera(self, start_frame, end_frame, camera_name, dataset, object_type, points_array):
         # Convert the points json to Python list
         points_array = json.loads(points_array)
-        # print('frames: ',start_frame, end_frame)
-        # print(object_type)
         final_points = []
         for i, f in enumerate(range(start_frame, end_frame+1)):
             if points_array[i]:
@@ -64,7 +62,6 @@ class AIKService:
             points_to_interpolate = []
             indexes_of_empty_points = []
 
-
             # Add index of empty points to new list and remove the empty elements
             for i, p in enumerate(points_3D):
                 if p:
@@ -77,7 +74,6 @@ class AIKService:
 
             # if the list is not empty (if there are some empty array) --> add it again
             if indexes_of_empty_points:
-                # print('indexes: ',indexes_of_empty_points)
                 for index in indexes_of_empty_points:
                     points_2D.insert(index, [])
         else:
@@ -212,7 +208,7 @@ class AIKService:
 
                         if frame_result != 'Error':
                             # Obtain 2d keypoints for corresponding camera
-                            kps2d = self.project_3D_points_to_camera(kps3d, frame_result.camera_parameters)[0]
+                            kps2d = self.project_3D_points_to_camera(kps3d, frame_result.camera_parameters, 'personAIK')[0]
                             kpX, kpY = int(kps2d[0]), int(kps2d[1])
 
                             # Read img, make mugshot 200px and add to final images
