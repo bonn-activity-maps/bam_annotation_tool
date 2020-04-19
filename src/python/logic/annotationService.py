@@ -121,6 +121,7 @@ class AnnotationService:
     # Triangulate points from 2D points to 3D
     # Always a single object in "objects" so always objects[0] !!
     def obtain_3d_points_AIK(self, annotation):
+        # print(annotation)
         keypoints2d = annotation.objects[0].keypoints
         keypoints3d = []  # New 3d kps
 
@@ -161,7 +162,7 @@ class AnnotationService:
         keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
 
         # If the object is not a person -> we have to calculate 8 points for the box of object
-        if annotation.objects[0].type != 'personAIK' and not error_flag:
+        if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
             kp1, kp2, kp3 = np.asarray(keypoints_3d)
             keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
@@ -235,6 +236,14 @@ class AnnotationService:
         result = annotationManager.is_person_id_in_use(dataset, person_id)
         if result == 'Error':
             return False, 'Error looking up person id', 400
+        else:
+            return True, result, 200
+
+    # Return True if the objects with track id specified for the given video is updated correctly
+    def update_person_id(self, video, track_id, new_person_id):
+        result = annotationManager.update_person_id(video, track_id, new_person_id)
+        if result == 'Error':
+            return False, 'Error updating person id', 400
         else:
             return True, result, 200
 
@@ -324,7 +333,7 @@ class AnnotationService:
     def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
         # Interpolate for all keypoints in all frames in between
         interpolated_kps = []
-        for i in range(num_kpts):           
+        for i in range(num_kpts):
             if len(kps1[i]) != 0 and len(kps2[i]) != 0: # If one of the two points is empty -> Not interpolate
                 interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames).tolist()
                 interpolated_kps.append(interpolated_coords)
@@ -334,7 +343,7 @@ class AnnotationService:
                     empty.append([])
                 interpolated_kps.append(empty)
 
-        final_kps = []    
+        final_kps = []
         for i in range(num_frames):
             frame = []
             for j in range(num_kpts):
@@ -343,7 +352,7 @@ class AnnotationService:
                 else:
                     frame.append(interpolated_kps[j][i])
             final_kps.append(frame)
-                
+
         return final_kps
 
     # Interpolate and store the interpolated 3d points
@@ -412,75 +421,56 @@ class AnnotationService:
     # Replace old annotations if they already exist
     def upload_annotations_aik(self, dataset, folder):
         folder_path = os.path.join(dataset.STORAGE_DIR, folder)
-        annotations_dir = os.path.join(folder_path, 'poses/')
+        annotations_file = os.path.join(folder_path, 'persons2poses.json')
 
-        list_dir = os.listdir(annotations_dir)    # List of all objects/persons
         obj_type = 'poseAIK'             # Type of objects
         final_result = True
 
-        for f in list_dir:
-            track_file = os.path.join(annotations_dir, f)
+        # Read data from file
+        try:
+            with open(annotations_file) as json_file:
+                poses = json.load(json_file)
+        except OSError:
+            log.exception('Could not read from file')
+            return False
 
-            # Read uid/number of object
-            uid = int(os.path.splitext(f)[0].split('track')[1])
-
-            # Read data from file
-            try:
-                with open(track_file) as json_file:
-                    tracks = json.load(json_file)
-            except OSError:
-                log.exception('Could not read from file')
-                return False
-
-            # Transform annotation to our format and store in db
-            frames = tracks['frames']
-            poses = tracks['poses']
-            for i, frame in enumerate(frames):
-                # Replace empty keypoints with empty list
-                keypoints = [[] if kp is None else kp for kp in poses[i]]
-                obj = [Object(uid, obj_type, keypoints, dataset.type)]
-                annotation = Annotation(dataset, dataset.name, frame, 'root', obj)
-
-                # If the annotation for obj does not exist, it is created
-                # If obj already had an annotation, the old one is replaced by the new one
-                result = self.update_annotation_frame_object(annotation)
-                if result == 'Error':
-                    final_result = False   # finalResult False if there is some problem
+        # Transform annotation to our format and store in db
+        for i, p in enumerate(poses):
+            kps = p['pose']
+            # Replace empty keypoints with empty list
+            keypoints = [[] if kp is None else kp for kp in kps]
+            object = [Object(p['pid'], obj_type, keypoints, dataset.type)]
+            annotation = Annotation(dataset, dataset.name, p['frame'], 'root', object)
+            result = self.update_annotation_frame_object(annotation)
+            if result == 'Error':
+                final_result = False   # finalResult False if there is some problem
 
         # Remove folder with annotations
         shutil.rmtree(folder_path)
         return final_result
 
-    # Add annotation of objects to database from videos directory
+    # Add annotation of objects to database from annotations_file
     # Return true if all annotation have been updated, False if has been some problem
-    def add_annotations_AIK(self, dataset, dir):
-        list_dir = os.listdir(dir)   # List of all objects/persons
-        type = 'poseAIK'             # Type of objects
+    def add_annotations_AIK(self, dataset, annotations_file):
+        obj_type = 'poseAIK'             # Type of objects
         final_result = True
 
-        for f in list_dir:
-            track_file = os.path.join(dir, f)
+        # Read data from file
+        try:
+            with open(annotations_file) as json_file:
+                poses = json.load(json_file)
+        except OSError:
+            log.exception('Could not read from file')
+            return False
 
-            # Read uid/number of object
-            uid = int(os.path.splitext(f)[0].split('track')[1])
-
-            # Read data from file
-            try:
-                with open(track_file) as json_file:
-                    tracks = json.load(json_file)
-            except OSError:
-                log.exception('Could not read from file')
-                return False
-
-            # Transform annotation to our format and store in db
-            frames = tracks['frames']
-            poses = tracks['poses']
-            for i, frame in enumerate(frames):
-                # Replace empty keypoints with empty list
-                keypoints = [[] if kp is None else kp for kp in poses[i]]
-                object = [Object(uid, type, keypoints, dataset.type)]
-                annotation = Annotation(dataset, dataset.name, frame, 'root', object)
-                result = annotationManager.update_annotation_insert_objects(annotation)
-                if result == 'Error':
-                    final_result = False   # finalResult False if there is some problem
+        # Transform annotation to our format and store in db
+        for i, p in enumerate(poses):
+            kps = p['pose']
+            # Replace empty keypoints with empty list
+            keypoints = [[] if kp is None else kp for kp in kps]
+            object = [Object(p['pid'], obj_type, keypoints, dataset.type)]
+            annotation = Annotation(dataset, dataset.name, p['frame'], 'root', object)
+            result = annotationManager.update_annotation_insert_objects(annotation)
+            if result == 'Error':
+                final_result = False    # finalResult False if there is some problem
         return final_result

@@ -150,6 +150,7 @@ angular.module('CVGTool')
                     'cameraName': cameraName,
                     'dataset': dataset,
                     'datasetType': datasetType,
+                    'objectType': type,
                     'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
@@ -227,7 +228,7 @@ angular.module('CVGTool')
         },
 
         // Sends the 2D points to the server to triangulate and create the new 3D point
-        updateAnnotation: function(user, dataset, scene, frame, objects, callbackSuccess, callbackError) {
+        updateAnnotation: function(user, dataset, scene, frame, object, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateAnnotation',
@@ -240,13 +241,13 @@ angular.module('CVGTool')
                     'datasetType': dataset.type,
                     'scene': scene,
                     'frame': frame,
-                    'object': objects  
+                    'object': object
                 }
             }).then(function successCallback(response) {
                 if (dataset.type.localeCompare("poseTrack") !== 0) {
-                    callbackSuccess(objects.uid, objects.type, frame);
+                    callbackSuccess(object.uid, object.type, frame);
                 } else {
-                    callbackSuccess(objects.track_id, objects.type, frame);
+                    callbackSuccess(object.track_id, object.type, frame);
                 }
                 
             }, function errorCallback(response) {
@@ -311,6 +312,29 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess()
             },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
+        },
+
+        // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
+        updatePersonID: function(scene, dataset, datasetType, track_id, new_person_id, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/updatePersonID',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'datasetType': datasetType,
+                    "new_person_id": new_person_id,
+                    "track_id": track_id
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess("Person ID changed!", new_person_id)
+                },
                 function errorCallback(response) {
                     callbackError('danger', response);
                 })

@@ -7,4 +7,4 @@ mongodump --host "127.0.0.1:27017" --out /home/cvg_anno/database_backups/$(date 
 curl -X POST http://localhost:8888/api/action/mergeActions
 
 # Remove backups older than 2 days
-find /home/cvg_anno/database_backups -mtime +1 -delete
+find /home/cvg_anno/database_backups -mtime +1 -execdir rm -r -- '{}' \;
