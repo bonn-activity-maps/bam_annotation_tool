@@ -3240,6 +3240,7 @@ angular.module('CVGTool')
             _this.ctx = _this.canvas.getContext('2d')
             _this.image = null;
             _this.active = false;
+            _this.ctx.scale(2,2);
 
             _this.activeOnCanvasNumber = 0
 
@@ -3249,7 +3250,6 @@ angular.module('CVGTool')
                 pageX: null,
                 pageY: null
             }
-
             // Scale of relation between image and canvas
             _this.scale = {
                 x: 1,
@@ -3299,20 +3299,16 @@ angular.module('CVGTool')
 
             _this.update = function(image,mouseCoordinates, pageX, pageY, canvasWithImage, canvasNumber) {
                 _this.activeOnCanvasNumber = canvasNumber
-                var goodCoords = _this.toImage(mouseCoordinates)
-                _this.updateMousePosition(goodCoords[0], goodCoords[1], pageX, pageY);
+                //var goodCoords = _this.toImage(mouseCoordinates)
+                _this.updateMousePosition(mouseCoordinates[0], mouseCoordinates[1], pageX, pageY);
                 _this.updateImage(image, canvasWithImage);
             }
 
             _this.draw = function() {
                 if (_this.active) {
                     _this.ctx.fillStyle = "white"
-                    // TODO: Just fix the image that goes here and zooom is fixed
                     _this.ctx.fillRect(0,0, _this.canvas.width,_this.canvas.height)
-                    _this.ctx.drawImage(_this.image, _this.mouse.x, _this.mouse.y, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height)
-                    // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.image.width, _this.mouse.y * _this.image.height, 100, 100, 0, 0, _this.canvas.width, _this.canvas.height )
-                    // _this.ctx.drawImage(_this.image, 0, 0, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
-                    // _this.ctx.drawImage(_this.image, _this.mouse.x * _this.canvas.width * 2.0 - (_this.canvas.width / 2.0), _this.mouse.y * _this.canvas.height * 2.0 - (_this.canvas.height / 2.0), 100, 100, 0, 0, _this.canvas.width, _this.canvas.height) 
+                    _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /4.0) + 25, _this.mouse.y - (_this.canvas.width /4.0) + 25, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
                     _this.drawGuideLines(_this.ctx)
                 } 
             }
@@ -3323,15 +3319,15 @@ angular.module('CVGTool')
                     // Draw horizontal line
                     context.beginPath();
                     context.strokeStyle = "rgba(255, 0, 0, 0.5)";
-                    context.moveTo(_this.canvas.width / 2.0 - 1000, _this.canvas.height / 2.0);
-                    context.lineTo(_this.canvas.width / 2.0 + 1000, _this.canvas.height / 2.0);
+                    context.moveTo(_this.canvas.width / 4.0 - 1000, _this.canvas.height / 4.0);
+                    context.lineTo(_this.canvas.width / 4.0 + 1000, _this.canvas.height / 4.0);
                     context.stroke();
                     context.closePath();
                     // Draw vertical line
                     context.beginPath();
                     context.strokeStyle = "rgba(255, 0, 0, 0.5)";
-                    context.moveTo(_this.canvas.width / 2.0, _this.canvas.height / 2.0 - 1000);
-                    context.lineTo(_this.canvas.width / 2.0, _this.canvas.height / 2.0 + 1000);
+                    context.moveTo(_this.canvas.width / 4.0, _this.canvas.height / 4.0 - 1000);
+                    context.lineTo(_this.canvas.width / 4.0, _this.canvas.height / 4.0 + 1000);
                     context.stroke();
                     context.closePath();
                     context.restore();
