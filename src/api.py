@@ -493,6 +493,20 @@ def upload_annotations():
     success, msg, status = annotationService.upload_annotations(dataset, req_data['folder'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Transfer pose to another person in one frame. If this person already has a pose they are swapped
+@app.route('/api/annotation/transferObject', methods=['POST'])
+@flask_login.login_required
+def transfer_object():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    old_object = Object(req_data['oldUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    new_object = Object(req_data['newUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    old_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [old_object])
+    new_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [new_object])
+    success, msg, status = annotationService.transfer_object(dataset, old_annotation, new_annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 
 #### OBJECT TYPE ####
 

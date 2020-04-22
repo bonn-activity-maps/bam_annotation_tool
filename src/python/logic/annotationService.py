@@ -474,3 +474,45 @@ class AnnotationService:
             if result == 'Error':
                 final_result = False    # finalResult False if there is some problem
         return final_result
+
+    # Transfer pose to another person in one frame.
+    # If this person already has a pose they are swapped
+    def transfer_object(self, dataset, old_annotation, new_annotation):
+        if dataset.is_aik():
+            old_object = annotationManager.get_frame_object(old_annotation)     # Get annotation of old uid
+            new_object = annotationManager.get_frame_object(new_annotation)     # Get annotation of new uid
+
+            # There is no object
+            if old_object == 'No annotation' and new_annotation == 'No annotation':
+                return False, 'No object to transfer', 400
+
+            # If new uid doesn't have any data --> Remove old annotation and create the new one with new uid
+            elif new_object == 'No annotation':
+                remove_result = annotationManager.remove_frame_object(old_annotation, old_annotation)
+                if remove_result == 'Error':
+                    return False, 'Error transfering object', 400
+                else:
+                    # Change uid for the new one
+                    # old_object.uid = new_annotation.objects[0].uid
+                    # new_annotation.objects = [old_object]
+                    old_annotation.objects[0].uid = new_annotation.objects[0].uid
+                    create_result = annotationManager.update_frame_object(old_annotation)
+                    if create_result == 'Error':
+                        return False, 'Error transfering object', 400
+            # Swap annotations for corresponding uids
+            else:
+                old_uid = old_object.uid
+                old_object.uid = new_object.uid
+                new_object.uid = old_uid
+                old_annotation.objects = [old_object]
+                new_annotation.objects = [new_object]
+                update_old_result = annotationManager.update_frame_object(old_annotation)
+                if update_old_result == 'Error':
+                    return False, 'Error transfering object', 400
+                else:
+                    update_new_result = annotationManager.update_frame_object(new_annotation)
+                    if update_new_result == 'Error':
+                        return False, 'Error transfering object', 400
+            return True, 'Object transferred successfully', 200
+        else:
+            return False, 'Operation not allowed', 400
