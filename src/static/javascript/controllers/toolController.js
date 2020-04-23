@@ -2736,6 +2736,9 @@ angular.module('CVGTool')
             _this.cameraPoints = [];
             _this.skeleton = skeleton;
 
+            _this.rightSide = [2,3,4,8,9,10,14,16,21,22,23];
+            _this.leftSide = [5,6,7,11,12,13,15,17,18,19,20];
+
             // CONSTRUCT
             if (projectedPoints.length === 0) {
                 for (var i = 0; i < _this.labels.length; i++) {
@@ -2781,13 +2784,24 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                var lightColor = _this.updateColorLight(color);
+                var darkColor = _this.updateColorDark(color);
+
+
+                // Draw all the points but the nose
+                for (var i = 1; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.leftSide.includes(i)) _this.points[i].draw(context, lightColor);
+                        else if (_this.rightSide.includes(i)) _this.points[i].draw(context, darkColor);
+                        else _this.points[i].draw(context, color);   
+                    }
                 }
 
                 // Then draw all the edges
                 _this.drawEdges(context, color);
+
+                // Nose always goes on top of everything
+                if (_this.points[0] !== null) _this.points[0].drawWithText(context, color, _this.uid);
             }
 
             _this.drawWithLabel = function(context, color) {
@@ -2835,6 +2849,50 @@ angular.module('CVGTool')
                         }
                     }
                 }
+            }
+
+            _this.colorChannelClamp = function(channel) {
+                return Math.min(Math.max(parseInt(channel), 0), 255);
+            }
+
+            _this.updateColorDark = function(color) {
+                var rgbColor = _this.hexToRgb(color);
+                rgbColor.r = _this.colorChannelClamp(rgbColor.r - 30);
+                rgbColor.g = _this.colorChannelClamp(rgbColor.g - 30);
+                rgbColor.b = _this.colorChannelClamp(rgbColor.b - 30);
+                return _this.rgbToHex(rgbColor.r, rgbColor.g, rgbColor.b);
+            }
+
+            _this.updateColorLight = function(color) {
+                var rgbColor = _this.hexToRgb(color);
+                rgbColor.r = _this.colorChannelClamp(rgbColor.r + 30);
+                rgbColor.g = _this.colorChannelClamp(rgbColor.g + 30);
+                rgbColor.b = _this.colorChannelClamp(rgbColor.b + 30);
+                return _this.rgbToHex(rgbColor.r, rgbColor.g, rgbColor.b);
+            }
+
+            _this.componentToHex = function(c) {
+                var hex = c.toString(16);
+                return hex.length == 1 ? "0" + hex: hex;
+            }
+
+            _this.rgbToHex = function(r,g,b) {
+                return "#" + _this.componentToHex(r) + _this.componentToHex(g) + _this.componentToHex(b);
+            }
+
+            _this.hexToRgb = function(hex) {
+                // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+                var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+                hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+                    return r + r + g + g + b + b;
+                });
+
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
             }
         }
 
