@@ -1099,7 +1099,7 @@ angular.module('CVGTool')
                     $scope.messagesManager.sendMessage("success", "Annotation updated!");
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
-                    if ($scope.keypointEditor.autoInterpolate) {
+                    if ($scope.optionsManager.options.autoInterpolate) {
                         _this.interpolate(uid, type, frame);
                     }
                 }
@@ -2355,7 +2355,7 @@ angular.module('CVGTool')
                     $scope.messagesManager.sendMessage("success", "Annotation updated!");
                     _this.retrieveAnnotation(uid, type, [frame]);
 
-                    if ($scope.keypointEditor.autoInterpolate) {
+                    if ($scope.optionsManager.options.autoInterpolate) {
                         _this.interpolate(uid, type, frame);
                     }
                 }
@@ -2577,10 +2577,6 @@ angular.module('CVGTool')
             _this.minimized = false;
             _this.editorMinimized = false;
 
-            _this.autoInterpolate = true;
-            _this.showGuideLines = true;
-            _this.showLabels = true;
-
             _this.keypointEditorData = {};
 
             // Opens the panel to edit keypoints
@@ -2749,7 +2745,7 @@ angular.module('CVGTool')
             } else {
                 for (var i = 0; i < _this.labels.length; i++) {
                     if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i], 10));
+                        _this.points.push(new Point(projectedPoints[i]));
                     } else _this.points.push(null);
                 }
                 _this.cameraPoints = cameraPoints; 
@@ -3155,15 +3151,14 @@ angular.module('CVGTool')
         }
 
         // Basic point
-        function Point(projectedCenter, radius=10) {
+        function Point(projectedCenter) {
             var _this = this;
 
             _this.center = projectedCenter;
-            _this.radius = radius;
 
             _this.draw = function(context, color) {
                 context.beginPath();
-                context.arc(_this.center[0], _this.center[1], _this.radius, 0, 2 * Math.PI, false);
+                context.arc(_this.center[0], _this.center[1], $scope.optionsManager.options.pointSize, 0, 2 * Math.PI, false);
                 context.fillStyle = color;
                 context.fill();
                 context.closePath();
@@ -3171,7 +3166,7 @@ angular.module('CVGTool')
 
             _this.drawWithText = function(context, color, text) {
                 context.beginPath();
-                context.arc(_this.center[0], _this.center[1], _this.radius, 0, 2 * Math.PI, false);
+                context.arc(_this.center[0], _this.center[1], $scope.optionsManager.options.pointSize, 0, 2 * Math.PI, false);
                 context.fillStyle = color;
                 context.fill();
                 context.closePath();
@@ -3190,7 +3185,7 @@ angular.module('CVGTool')
                 var dx = _this.center[0] - x;
                 var dy = _this.center[1] - y;
                 var distance = Math.sqrt((dx * dx) + (dy * dy));
-                if (distance <= _this.radius) return true;
+                if (distance <= $scope.optionsManager.options.pointSize) return true;
                 return false;
             }
 
@@ -3623,12 +3618,12 @@ angular.module('CVGTool')
                         } else if ($scope.objectManager.selectedObject !== null) { // If there is one object selected, draw only its points
                             if ($scope.toolsManager.subTool.localeCompare("pointCreation") == 0) {
                                 // If active, draw guide lines
-                                if ($scope.keypointEditor.showGuideLines) _this.drawGuideLines(ctx);
+                                if ($scope.optionsManager.options.showGuideLines) _this.drawGuideLines(ctx);
                                 
                                 // Draw epilines
                                 _this.drawEpilines(ctx);
 
-                                if ($scope.keypointEditor.showLabels) {
+                                if ($scope.optionsManager.options.showLabels) {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
                                 } else {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
@@ -3640,14 +3635,14 @@ angular.module('CVGTool')
                                 // }
                             } else if ($scope.toolsManager.subTool.localeCompare("boxCreation") == 0) {
                                 // If active, draw guide lines
-                                if ($scope.keypointEditor.showGuideLines) _this.drawGuideLines(ctx);
+                                if ($scope.optionsManager.options.showGuideLines) _this.drawGuideLines(ctx);
 
                                 if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[0] !== null) {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "blue");
                                 }
 
                             } else {
-                                if ($scope.keypointEditor.showLabels) {
+                                if ($scope.optionsManager.options.showLabels) {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
                                 } else {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
@@ -4021,6 +4016,17 @@ angular.module('CVGTool')
             }
         }
 
+        function OptionsManager() {
+            var _this = this;
+
+            _this.options = {
+                pointSize: 10,
+                showLabels: true,
+                showGuideLines: true,
+                autoInterpolate: true
+            }
+        }
+
         // Managers
         $scope.toolParameters = new ToolParametersManager($stateParams);
         $scope.toolsManager = new ToolsManager();
@@ -4032,6 +4038,8 @@ angular.module('CVGTool')
         $scope.actionManager = new ActionManager();
         $scope.actionManager.getActivitiesList();
         $scope.camerasManager = new CamerasManager();
+
+        $scope.optionsManager = new OptionsManager();
 
         $scope.commonManager = null;
         if ($scope.toolParameters.isPosetrack) {
@@ -4060,6 +4068,10 @@ angular.module('CVGTool')
 
         // Prevents Dropdowns from closing when clicked inside 
         document.getElementById("ObjectTypeDropdown").addEventListener('click', function (event) { 
+            event.stopPropagation(); 
+        });
+        
+        document.getElementById("OptionsDropdown").addEventListener('click', function (event) { 
             event.stopPropagation(); 
         }); 
 
