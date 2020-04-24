@@ -414,6 +414,7 @@ def interpolate_annotation():
     req_data = request.get_json()
     start_frames = req_data['startFrames']
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    # print('start_frames:', start_frames)
 
     # Use old interpolate if there is only 1 keypoint to interpolate, use new one if it's a poseAIK (>1kp)
     if len(start_frames) == 1:
