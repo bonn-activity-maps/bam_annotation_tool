@@ -1099,7 +1099,7 @@ angular.module('CVGTool')
 
                 // For each label find a possible frame to interpolate
                 for (var i=0; i<framesFrom.length; i++) {
-                    for (var j= frameTo - 1; j>=Math.max(($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange)); j--) {
+                    for (var j= frameTo - 1; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
                         if ($scope.objectManager.hasAnnotationForLabel(objectUID, objectType, j, i)) {
                             framesFrom[i] = j;
                             break;
@@ -1550,7 +1550,7 @@ angular.module('CVGTool')
                 if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
                     $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
-                    frameFrom, frameTo,
+                    [framesFrom], frameTo,
                     $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
                     objectType,
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
