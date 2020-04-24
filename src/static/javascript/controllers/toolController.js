@@ -1094,7 +1094,7 @@ angular.module('CVGTool')
                 // Create structure for the object to interpolate
                 var framesFrom = []
                 for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
-                    framesFrom.append(-1);
+                    framesFrom.push(-1);
                 }
 
                 // For each label find a possible frame to interpolate
