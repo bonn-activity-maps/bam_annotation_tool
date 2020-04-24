@@ -1550,7 +1550,7 @@ angular.module('CVGTool')
                 if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
                     $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
-                    [framesFrom], frameTo,
+                    [frameFrom], frameTo,
                     $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
                     objectType,
                     $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
