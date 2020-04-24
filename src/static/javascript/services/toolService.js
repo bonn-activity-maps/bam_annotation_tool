@@ -340,7 +340,7 @@ angular.module('CVGTool')
                 })
         },
 
-        interpolate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
+        interpolate: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
             uidObject2, callbackSuccess, callbackError, track_id) {
             $http({
                 method: 'POST',
@@ -352,7 +352,7 @@ angular.module('CVGTool')
                     'user': user,
                     'dataset': dataset,
                     'scene': scene,
-                    'startFrame': startFrame,
+                    'startFrames': startFrames,
                     'endFrame': endFrame,
                     'uidObject': uidObject,
                     'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
@@ -361,7 +361,7 @@ angular.module('CVGTool')
                     'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess(uidObject, objectType, startFrame, endFrame);
+                    callbackSuccess(uidObject, objectType, startFrames, endFrame);
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);
