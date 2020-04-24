@@ -327,14 +327,19 @@ class AnnotationService:
     # The annotation.objects[0].keypoints should contain a list with empty keypoints
     def update_annotation_frame_object_label(self, annotation, label, final_kpts):
         # Check if exists object in frame
+        # print('annotation: ',annotation)
         found = annotationManager.get_frame_object(annotation)
-        print("found: ",found)
+        # print("found: ",found)
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':  # Add new existing object in frame
             annotation.objects[0].keypoints[label] = final_kpts
             result = annotationManager.create_frame_object(annotation)
         else:  # Update object in frame
+            if not found.keypoints:     # if array is empty --> keypoints will be empty (as in annotation)
+                found.keypoints = annotation.objects[0].keypoints
+            # print('label: ', label)
+            # print('final_kps: ', final_kpts)
             found.keypoints[label] = final_kpts
             annotation.objects = [found]
             result = annotationManager.update_frame_object(annotation)
