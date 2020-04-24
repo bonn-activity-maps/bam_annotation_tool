@@ -785,7 +785,7 @@ angular.module('CVGTool')
             // Returns true if there is an annotation for the specific object for a specific label
             _this.hasAnnotationForLabel = function(objectUID, type, frame, labelIndex) {
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
-                if (existAnnotation[labelIndex]) return true;
+                if (existAnnotation[labelIndex] === true) return true;
                 else return false;
             }
 
