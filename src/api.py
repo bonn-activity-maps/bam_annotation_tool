@@ -348,7 +348,6 @@ def get_annotations_by_frame_range():
     success, msg, status = annotationService.get_annotations_by_frame_range(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)
 @app.route('/api/annotation/getAnnotations', methods=['GET'])
 @flask_login.login_required
@@ -377,7 +376,6 @@ def update_annotation():
     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
     success, msg, status = annotationService.update_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Update existing annotation for given frame, dataset, video and user
 # @app.route('/api/annotation/updateAnnotationPT', methods=['POST'])
@@ -409,20 +407,52 @@ def create_new_uid_object():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Interpolate between 2 points and store the interpolated 3d points
+# startFrame is an array with the frame of each label
 @app.route('/api/annotation/interpolate', methods=['POST'])
 @flask_login.login_required
 def interpolate_annotation():
     req_data = request.get_json()
+    start_frames = req_data['startFrames']
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
-                     track_id=req_data['track_id'])
-    object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
-                     track_id=req_data['track_id'])
-    start_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object1])
-    end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
-    success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
+    # print('start_frames:', start_frames)
+
+    # Use old interpolate if there is only 1 keypoint to interpolate, use new one if it's a poseAIK (>1kp)
+    if len(start_frames) == 1:
+        object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                         track_id=req_data['track_id'])
+        object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                         track_id=req_data['track_id'])
+        start_annotation = Annotation(dataset, req_data['scene'], start_frames[0], req_data['user'], [object1])
+        end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
+        success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
+    else:
+        success, msg, status = annotationService.interpolate_annotation_labels_aik(dataset, req_data['scene'], req_data['user'],
+                                                                        req_data['uidObject'], req_data['objectType'],
+                                                                        start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Interpolate between 2 points and store the interpolated 3d points
+# startFrame is an array with the frame of each label
+# @app.route('/api/annotation/interpolate/aik', methods=['POST'])
+# # @flask_login.login_required
+# def interpolate_annotation_aik():
+#     req_data = request.get_json()
+#     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+#     success, msg, status = annotationService.interpolate_annotation_aik(dataset, req_data['scene'], req_data['user'],
+#                                                                         req_data['uidObject'], req_data['objectType'],
+#                                                                         req_data['startFrames'], req_data['endFrame'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# # Update only one label in one object in one frame
+# @app.route('/api/annotation/updateLabel', methods=['POST'])
+# def update_label():
+#     req_data = request.get_json()
+#     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+#     empty_kpts = [[] for i in range(req_data['numKeypoints'])]
+#     obj = Object(req_data['uidObject'], req_data['objectType'], empty_kpts)
+#     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [obj])
+#     msg = annotationService.update_annotation_frame_object_label(annotation,
+#     return json.dumps({'success': True, 'msg': msg}), 200, {'ContentType': 'application/json'}
 
 # Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
@@ -492,6 +522,20 @@ def upload_annotations():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     success, msg, status = annotationService.upload_annotations(dataset, req_data['folder'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Transfer pose to another person in one frame. If this person already has a pose they are swapped
+@app.route('/api/annotation/transferObject', methods=['POST'])
+@flask_login.login_required
+def transfer_object():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    old_object = Object(req_data['oldUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    new_object = Object(req_data['newUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
+    old_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [old_object])
+    new_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [new_object])
+    success, msg, status = annotationService.transfer_object(dataset, old_annotation, new_annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 
 #### OBJECT TYPE ####
