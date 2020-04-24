@@ -1093,7 +1093,7 @@ angular.module('CVGTool')
 
                 // Create structure for the object to interpolate
                 var framesFrom = []
-                for (var i=0; i<$scope.objectManager.selectedType.labels; i++) {
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
                     framesFrom.append(-1);
                 }
 
