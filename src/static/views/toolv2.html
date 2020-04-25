@@ -120,8 +120,7 @@
     <!-- Selector de object type -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span
-            class="glyphicon glyphicon-tower"></span>
+            <span class="glyphicon glyphicon-tower"></span>
         </button>
         <div id="ObjectTypeDropdown" class="dropdown-menu text-center">
           <!-- Dropdown menu links -->
@@ -130,6 +129,25 @@
           <li class="divider"></li> 
           <li class="dropdown-header">Object types</li>
           <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type.type)" style="width: 100%;">{{type.type}}</button></li>
+        </div>
+    </div>
+    <hr class="tool-panel-hr">
+    <div class="btn-group dropright">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-cog"></span>
+        </button>
+        <div id="OptionsDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">Visual options:</li>
+            <li class="dropdown-item">
+                Point size:
+                <input type="number" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.pointSize" min="1" max="12">
+            </li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.showLabels"> Show labels</li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
+            <li class="divider"></li>
+            <li class="dropdown-header">Other options:</li>
+            <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -188,12 +206,6 @@
             </p>  
         </div>
         <div ng-if="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
-            <div class="checkbox">
-                <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate"> Auto-interpolate when saving</label>
-            </div>
-            <div class="checkbox">
-                <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showGuideLines"> Show guide-lines when creating points/boxes</label>
-            </div>
             <hr>
             <div class="zui-wrapper" >
                 <div class="zui-scroller">
@@ -307,11 +319,7 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col col-md-6">
-                <div class="checkbox">
-                    <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
-                </div>
-            </div>
+            <div class="col col-md-6"></div>
             <div class="col col-md-6">
                 <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()" data-toggle="tooltip" data-placement="top" title="D">Delete annotation<span class="glyphicon glyphicon-trash"></button>
             </div>
