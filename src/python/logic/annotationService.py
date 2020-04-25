@@ -16,6 +16,7 @@ from python.objects.frame import Frame
 from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.user_action import UserAction
+from python.objects.object_type import Object_type
 
 
 # AnnotationService logger
@@ -95,7 +96,6 @@ class AnnotationService:
     # Get all annotated objects for dataset, scene and user
     def get_annotated_objects(self, annotation):
         result = annotationManager.get_annotated_objects(annotation)
-        # print(result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -320,6 +320,28 @@ class AnnotationService:
 
         return result
 
+    # Update only one label with final_kpts in annotation for an object for given frame, dataset, video and user,
+    # Always a single object in "objects" so always objects[0] !!
+    # If the object does not exist, it's stored in db
+    # The annotation.objects[0].keypoints should contain a list with empty keypoints
+    def update_annotation_frame_object_label(self, annotation, label, final_kpts):
+        # Check if exists object in frame
+        # print('annotation: ',annotation)
+        found = annotationManager.get_frame_object(annotation)
+        # print("found: ",found)
+        if found == 'Error':
+            return 'Error'
+        elif found == 'No annotation':  # Add new existing object in frame
+            annotation.objects[0].keypoints[label] = final_kpts
+            result = annotationManager.create_frame_object(annotation)
+        else:  # Update object in frame
+            if not found.keypoints:     # if array is empty --> keypoints will be empty (as in annotation)
+                found.keypoints = annotation.objects[0].keypoints
+            found.keypoints[label] = final_kpts
+            annotation.objects = [found]
+            result = annotationManager.update_frame_object(annotation)
+        return result
+
     # Remove annotation for an object for given frame, dataset, video and user
     # Always a single object in "objects" so always objects[0] !!
     def remove_annotation_frame_object(self, start_annotation, end_annotation):
@@ -362,7 +384,7 @@ class AnnotationService:
         # Search object in respective start and end frames
         if dataset.is_pt():
             start_annotation.objects = [object2]
-            print("start annotation objects", object2)
+            # print("start annotation objects", object2)
             annotations_in_range = annotationManager.get_object_in_frames(start_annotation, end_annotation)
 
         obj1 = annotationManager.get_frame_object(start_annotation)
@@ -395,6 +417,50 @@ class AnnotationService:
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':
                 final_result = 'There was some error interpolating the keypoints, please check them'
+
+        if final_result == 'ok':
+            return True, final_result, 200
+        else:
+            log.error('Error interpolating keypoints')
+            return False, final_result, 500
+
+    # Interpolate and store the interpolated 3d points
+    # Always a single object in "objects" so always objects[0] !!
+    # startFrame is an array with the frame of each label
+    def interpolate_annotation_labels_aik(self, dataset, scene, user, uid_object, object_type, start_frames, end_frame):
+        object_type = objectTypeManager.get_object_type(Object_type(object_type, dataset.type))
+        empty_kpts = [[] for i in range(object_type.num_keypoints)]
+
+        # Get end/last object
+        obj = Object(uid_object, object_type.type, dataset_type=dataset.type)
+        end_annotation = Annotation(dataset, scene, end_frame, user, [obj])
+        end_obj = annotationManager.get_frame_object(end_annotation)
+        # print("end_obj: ",end_obj)
+
+        # Check num start_frames == num keypoints in object type
+        # assert len(start_frames) == object_type.num_keypoints, "Number of start frames should be equal to the number of labels"
+
+        # Interpolate for each label
+        final_result = 'ok'
+        for label, frame in enumerate(start_frames):
+            # print('label: ', label)
+            # print('frame: ', frame)
+            if frame != -1:         # if f=-1 --> no annotation available for that label
+                start_obj = annotationManager.get_frame_object(Annotation(dataset, scene, frame, user, [obj]))
+                num_frames = end_frame - frame + 1
+                # print('num_frames: ', num_frames)
+
+                # Interpolate keypoint for label between frame and end_frame
+                final_kpts = self.interpolate(num_frames, 1, dataset.keypoint_dim, [start_obj.keypoints[label]], [end_obj.keypoints[label]])
+                # print('final_kpts: ', final_kpts)
+
+                # Update keypoints in all frames for label
+                for i in range(1, len(final_kpts) - 1):
+                    interpolated_empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
+                    annotation = Annotation(dataset, scene, frame+i, user, [interpolated_empty_obj])
+                    result = self.update_annotation_frame_object_label(annotation, label, final_kpts[i][0])
+                    if result == 'Error':
+                        final_result = 'There was some error interpolating the keypoints, please check them'
 
         if final_result == 'ok':
             return True, final_result, 200
@@ -474,3 +540,45 @@ class AnnotationService:
             if result == 'Error':
                 final_result = False    # finalResult False if there is some problem
         return final_result
+
+    # Transfer pose to another person in one frame.
+    # If this person already has a pose they are swapped
+    def transfer_object(self, dataset, old_annotation, new_annotation):
+        if dataset.is_aik():
+            old_object = annotationManager.get_frame_object(old_annotation)     # Get annotation of old uid
+            new_object = annotationManager.get_frame_object(new_annotation)     # Get annotation of new uid
+
+            # There is no object
+            if old_object == 'No annotation' and new_annotation == 'No annotation':
+                return False, 'No object to transfer', 400
+
+            # If new uid doesn't have any data --> Remove old annotation and create the new one with new uid
+            elif new_object == 'No annotation':
+                remove_result = annotationManager.remove_frame_object(old_annotation, old_annotation)
+                if remove_result == 'Error':
+                    return False, 'Error transfering object', 400
+                else:
+                    # Change uid for the new one
+                    # old_object.uid = new_annotation.objects[0].uid
+                    # new_annotation.objects = [old_object]
+                    old_annotation.objects[0].uid = new_annotation.objects[0].uid
+                    create_result = annotationManager.update_frame_object(old_annotation)
+                    if create_result == 'Error':
+                        return False, 'Error transfering object', 400
+            # Swap annotations for corresponding uids
+            else:
+                old_uid = old_object.uid
+                old_object.uid = new_object.uid
+                new_object.uid = old_uid
+                old_annotation.objects = [old_object]
+                new_annotation.objects = [new_object]
+                update_old_result = annotationManager.update_frame_object(old_annotation)
+                if update_old_result == 'Error':
+                    return False, 'Error transfering object', 400
+                else:
+                    update_new_result = annotationManager.update_frame_object(new_annotation)
+                    if update_new_result == 'Error':
+                        return False, 'Error transfering object', 400
+            return True, 'Object transferred successfully', 200
+        else:
+            return False, 'Operation not allowed', 400

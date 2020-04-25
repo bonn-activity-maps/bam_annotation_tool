@@ -430,3 +430,36 @@ class AnnotationManager:
         except errors.PyMongoError as e:
             log.exception('Error updating object in annotation in db')
             return 'Error'
+
+    # Return 'ok' if the annotation for an object in a frame has been updated.
+    # The annotation is not created if it doesn't exist and return Error
+    # Always only one object in "objects" so use objects[0] !!
+    # AIK: ignore user parameter
+    def transfer_object(self, annotation):
+        # if annotation.dataset_type is not None and
+        if annotation.dataset.is_aik():
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            array_filter = [{"elem.uid": {"$eq": annotation.objects[0].uid}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
+        else:
+            # query = {"dataset": dataset, "scene": scene, "user": user, "frame": frame, "objects.uid": uidObj} # User instead of root
+            # query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.uid": annotation.objects[0].uid, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            query = {"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "objects.track_id": annotation.objects[0].track_id, "objects.type": annotation.objects[0].type, "frame": annotation.frame}
+            array_filter = [{"elem.track_id": {"$eq": annotation.objects[0].track_id}, "elem.type": {"$eq": annotation.objects[0].type}}]     # Filter by object uid and type
+
+        # Update object (uid, type, kps) and labels only if it's in objects
+        if annotation.objects[0].labels is not None:
+            new_values = {"$set": {"objects.$[elem].keypoints": annotation.objects[0].keypoints, "objects.$[elem].labels": annotation.objects[0].labels}}
+        else:
+            new_values = {"$set": {"objects.$[elem].keypoints": annotation.objects[0].keypoints}}
+
+        try:
+            result = self.collection.update_one(query, new_values, upsert=False, array_filters=array_filter)
+
+            # ok if no error (it doesn't matter if the keypoints have not been modified)
+            if result.acknowledged == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating object in annotation in db')
+            return 'Error'
