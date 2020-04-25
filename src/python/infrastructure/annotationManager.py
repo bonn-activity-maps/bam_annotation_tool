@@ -171,14 +171,15 @@ class AnnotationManager:
         try:
             if dataset.type == dataset.aik:
                 result = self.collection.find({"dataset": dataset.name, "scene": scene, "objects.uid": uid},
-                                              {"objects": {"$elemMatch": {"uid": uid}}, "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(2)
+                                              {"objects": {"$elemMatch": {"uid": uid}}, "frame": 1, "scene": 1,
+                                               "dataset": 1, '_id': 0}).limit(2)
             else:
                 # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, # User instead of root
                 result = self.collection.find({"dataset": dataset.name, "scene": scene, "user": "root",
-                                               "objects.track_id": uid, "objects.type": "bbox_head"},
-                                        {"objects": {"$elemMatch": {"track_id": uid, "type": "bbox_head"}},
-                                         "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(10)
-
+                                               "objects.track_id": uid, "objects.type": "bbox_head", # todo this is for mugshots
+                                               "objects.keypoints": {"$ne": []}}, #TODO why the fuck is this giving no results only SOMETIMES
+                                              {"objects": {"$elemMatch": {"track_id": uid, "type": "bbox_head"}},
+                                               "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(10)
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
