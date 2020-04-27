@@ -482,7 +482,7 @@ def create_person_pt():
 @flask_login.login_required
 def is_person_id_in_use():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['person_id'])
+    success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['personID'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update the person id for every object in a sequence
@@ -491,8 +491,8 @@ def is_person_id_in_use():
 def update_person_id():
     req_data = request.get_json()
     video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
-    new_person_id = req_data["new_person_id"]
-    track_id = req_data["track_id"]
+    new_person_id = req_data["newPersonID"]
+    track_id = req_data["trackID"]
     success, msg, status = annotationService.update_person_id(video, track_id, new_person_id)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
