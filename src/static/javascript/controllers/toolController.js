@@ -278,6 +278,9 @@ angular.module('CVGTool')
             // Check where do we come from to load pre-loaded cameras if needed
             _this.checkWhereAreWeComingFrom = function() {
                 if (!_this.fromTaskHome) {
+                    // Add the previous options
+                    $scope.optionsManager.options = $stateParams.obj.options;
+
                     // Load cameras
                     var camerasToLoad = { videos: [] };
                     var canvasCameras = $stateParams.obj.canvasCameras;
@@ -770,16 +773,34 @@ angular.module('CVGTool')
 
             // Returns "complete" if the whole object is annotated, "incomplete" if the object is not completely annotated or "empty" is the object is not annotated at all
             _this.annotationsState = function(objectUID, type, frame) {
+                // If the type is poseAIK use the auxiliar method instead
+                if (type.localeCompare("poseAIK") == 0) return _this.poseAIKAnnotationsState(objectUID, type, frame);
+
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
-                var max = existAnnotation.length;
                 var count = 0;
-                for (var i = 0; i < max; i++) {
+                for (var i = 0; i < existAnnotation.length; i++) {
                     if (existAnnotation[i]) count++;
                 }
 
                 if (count == 0) return 0;      // No annotation
-                if (count == max) return 1;    // All annotations
+                if (count == existAnnotation.length) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
+            }
+
+            // Auxiliar function to take care of the state of the poses, for AIK. (Takes into account optional joints)
+            _this.poseAIKAnnotationsState = function(objectUID, type, frame) {
+                var primaryLastIndex = 13;
+                var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
+
+                var count = 0;
+                for (var i = 0; i <= 13; i++) {
+                    if (existAnnotation[i]) count++;
+                }
+
+                if (count == 0) return 0;      // No annotation
+                if (count == 14) return 1;    // All annotations
+                return -1;                     // Some annotated, but not all
+
             }
 
             // Returns true if there is an annotation for the specific object for a specific label
@@ -1810,11 +1831,20 @@ angular.module('CVGTool')
                 _this.keypointEditorData = {
                     searchUID: null,
                     shapes: [],
-                    labels: $scope.objectManager.selectedType.labels,
-                    realLabels: $scope.objectManager.selectedType.labels,
+                    labels: $scope.objectManager.selectedType.labels.slice(),
+                    realLabels: $scope.objectManager.selectedType.labels.slice(),
                     creationType: "point",
                     indexBeingEdited: null,
                     modified: false
+                }
+
+                // Just for AIK and poseAIK add * to the optional labels
+                if ($scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
+                    var secondaryIndices = [14,15,16,17,18,19,20,21,22,23];
+                    for (var i=0; i < secondaryIndices.length; i++) {
+                        var index = secondaryIndices[i];
+                        _this.keypointEditorData.labels[index] = _this.keypointEditorData.labels[index] + " (*)"; 
+                    }
                 }
 
                 // In case of the object being of type box
@@ -1960,6 +1990,8 @@ angular.module('CVGTool')
             _this.rightSide = [2,3,4,8,9,10,14,16,21,22,23];
             _this.leftSide = [5,6,7,11,12,13,15,17,18,19,20];
 
+            _this.secondaryJoints = [14,15,16,17,18,19,20,21,22,23];
+
             // CONSTRUCT
             if (projectedPoints.length === 0) {
                 for (var i = 0; i < _this.labels.length; i++) {
@@ -1977,9 +2009,18 @@ angular.module('CVGTool')
           
 
             _this.draw = function(context, color) {
-                // First draw all points
+                var lightColor = _this.updateColorLight(color);
+                var darkColor = _this.updateColorDark(color);
+                
+                // Draw the points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                    if (_this.points[i] !== null) {
+                        if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                        
+                        if (_this.leftSide.includes(i)) _this.points[i].draw(context, lightColor);
+                        else if (_this.rightSide.includes(i)) _this.points[i].draw(context, darkColor);
+                        else _this.points[i].draw(context, color); 
+                    }
                 }
 
                 // Then draw all the edges
@@ -1988,6 +2029,8 @@ angular.module('CVGTool')
 
             _this.drawEdges = function(context, color) {
                 for (var i = 0; i < _this.skeleton.length; i++) {
+                    if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                    
                     _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
                 }
             }
@@ -2008,10 +2051,11 @@ angular.module('CVGTool')
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
 
-
                 // Draw all the points but the nose
                 for (var i = 1; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) {
+                        if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+
                         if (_this.leftSide.includes(i)) _this.points[i].draw(context, lightColor);
                         else if (_this.rightSide.includes(i)) _this.points[i].draw(context, darkColor);
                         else _this.points[i].draw(context, color);   
@@ -2026,9 +2070,18 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                // First draw all points
+                var lightColor = _this.updateColorLight(color);
+                var darkColor = _this.updateColorDark(color);
+                
+                // Draw the points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                    if (_this.points[i] !== null) {
+                        if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                        
+                        if (_this.leftSide.includes(i)) _this.points[i].draw(context, lightColor);
+                        else if (_this.rightSide.includes(i)) _this.points[i].draw(context, darkColor);
+                        else _this.points[i].drawWithText(context, color, _this.labels[i]); 
+                    }
                 }
 
                 // Then draw all the edges
@@ -2903,28 +2956,28 @@ angular.module('CVGTool')
                                 _this.drawEpilines(ctx);
 
                                 if ($scope.optionsManager.options.showLabels) {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "#24FF41");
                                 } else {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "#24FF41");
                                 }
                                 
                                 // // Draw just the tag being edited  
                                 // if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] !== null) {
-                                //     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "blue", _this.canvasNumber);
+                                //     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "#01A2FF", _this.canvasNumber);
                                 // }
                             } else if ($scope.toolsManager.subTool.localeCompare("boxCreation") == 0) {
                                 // If active, draw guide lines
                                 if ($scope.optionsManager.options.showGuideLines) _this.drawGuideLines(ctx);
 
                                 if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[0] !== null) {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "blue");
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "#01A2FF");
                                 }
 
                             } else {
                                 if ($scope.optionsManager.options.showLabels) {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "green");
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "#24FF41");
                                 } else {
-                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "green");
+                                    $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "#24FF41");
                                 }
                                 
                             }
@@ -3302,7 +3355,13 @@ angular.module('CVGTool')
                 pointSize: 10,
                 showLabels: true,
                 showGuideLines: true,
-                autoInterpolate: true
+                autoInterpolate: true,
+                showSecondaryPoseJoints: true
+            }
+
+            _this.optionChanged = function() {
+                navSrvc.setOptions(_this.options);
+                $scope.canvasesManager.redrawCanvases();
             }
         }
 

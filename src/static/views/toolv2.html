@@ -137,17 +137,19 @@
             <span class="glyphicon glyphicon-cog"></span>
         </button>
         <div id="OptionsDropdown" class="dropdown-menu text-center">
-            <li class="dropdown-header">Visual options:</li>
+            <li class="dropdown-header">General options:</li>
             <li class="dropdown-item">
                 Point size:
-                <input type="number" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.pointSize" min="1" max="12">
+                <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.pointSize" min="1" max="12">
             </li>
-            <li class="dropdown-item"><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.showLabels"> Show labels</li>
-            <li class="dropdown-item"><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
-            <li class="divider"></li>
-            <li class="dropdown-header">Other options:</li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
-
+            <div ng-if="!toolParameters.isPosetrack">
+                <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
+                <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
+            </div>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -370,6 +372,7 @@
                 </tbody>
             </table>
         </div>
+        <p ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><b>(*): </b>optional keypoint</p>
         <hr>
         <div class="row">
             <div class="col col-md-4">
