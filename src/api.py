@@ -445,7 +445,8 @@ def interpolate_annotation():
 #                                                                         req_data['startFrames'], req_data['endFrame'])
 #     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-# # Update only one label in one object in one frame
+# Only to check that the method works
+# Update only one label in one object in one frame
 # @app.route('/api/annotation/updateLabel', methods=['POST'])
 # def update_label():
 #     req_data = request.get_json()
@@ -748,6 +749,17 @@ def project_to_camera():
                                                         req_data['objectType'], req_data['points'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Given uid and type object, video, dataset, user and range of frames -> Returns the proyected points
+# @app.route('/api/aik/projectToCamera', methods=['GET'])
+# @flask_login.login_required
+# def project_to_camera_2():
+#     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+#     object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=dataset.type)
+#     start_annotation = Annotation(dataset, dataset.name, request.headers['startFrame'], request.headers['user'], [object])
+#     end_annotation = Annotation(dataset, dataset.name, request.headers['endFrame'], request.headers['user'], [object])
+#     success, msg, status = aikService.project_to_camera_2(int(request.headers['cameraName']), request.headers['objectType'],
+#                                                           start_annotation, end_annotation)
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 @flask_login.login_required
