@@ -287,7 +287,7 @@ angular.module('CVGTool')
                     'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                     dataset: dataset,
                     datasetType: datasetType,
-                    person_id: person_id
+                    personID: person_id
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
@@ -329,8 +329,8 @@ angular.module('CVGTool')
                     'dataset': dataset,
                     'scene': scene,
                     'datasetType': datasetType,
-                    "new_person_id": new_person_id,
-                    "track_id": track_id
+                    "newPersonID": new_person_id,
+                    "trackID": track_id
                 }
             }).then(function successCallback(response) {
                     callbackSuccess("Person ID changed!", new_person_id)

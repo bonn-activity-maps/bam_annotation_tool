@@ -60,7 +60,6 @@ def redirect():
     return make_response(open(cfg.index_path).read())
 
 @app.route("/precomputeAnnotations")
-@flask_login.login_required
 def precomputeAnnotations():
     success, msg, status = precompute.precomputeAnnotations()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
@@ -419,7 +418,6 @@ def interpolate_annotation():
     if len(start_frames) > 1 and all(x == start_frames[0] for x in start_frames):
         start_frames = [start_frames[0]]
 
-    # print('start_frames:', start_frames)
     # Use old interpolate if there is only 1 keypoint to interpolate, use new one if it's a poseAIK (>1kp)
     if len(start_frames) == 1:
         object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
@@ -483,7 +481,7 @@ def create_person_pt():
 @flask_login.login_required
 def is_person_id_in_use():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['person_id'])
+    success, msg, status = annotationService.is_person_id_in_use(dataset, request.headers['personID'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update the person id for every object in a sequence
@@ -492,8 +490,8 @@ def is_person_id_in_use():
 def update_person_id():
     req_data = request.get_json()
     video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
-    new_person_id = req_data["new_person_id"]
-    track_id = req_data["track_id"]
+    new_person_id = req_data["newPersonID"]
+    track_id = req_data["trackID"]
     success, msg, status = annotationService.update_person_id(video, track_id, new_person_id)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 

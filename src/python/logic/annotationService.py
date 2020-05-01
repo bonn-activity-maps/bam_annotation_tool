@@ -96,7 +96,6 @@ class AnnotationService:
     # Get all annotated objects for dataset, scene and user
     def get_annotated_objects(self, annotation):
         result = annotationManager.get_annotated_objects(annotation)
-        # print(result)
         if result == 'Error':
             return False, 'Error retrieving annotated objects', 400
         else:
@@ -338,8 +337,6 @@ class AnnotationService:
         else:  # Update object in frame
             if not found.keypoints:     # if array is empty --> keypoints will be empty (as in annotation)
                 found.keypoints = annotation.objects[0].keypoints
-            # print('label: ', label)
-            # print('final_kps: ', final_kpts)
             found.keypoints[label] = final_kpts
             annotation.objects = [found]
             result = annotationManager.update_frame_object(annotation)

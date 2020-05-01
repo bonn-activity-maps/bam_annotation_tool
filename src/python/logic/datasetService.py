@@ -549,7 +549,7 @@ class DatasetService:
             frame_persons = []
             frame_objects = []
             for obj in annotation['objects']:     # Each object in annotation
-                if obj['type'] == 'personAIK':
+                if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
                     p = {"pid": obj['uid'],
                          "location": obj['keypoints']}
                     frame_persons.append(p)
