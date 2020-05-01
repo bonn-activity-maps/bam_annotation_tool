@@ -60,7 +60,6 @@ def redirect():
     return make_response(open(cfg.index_path).read())
 
 @app.route("/precomputeAnnotations")
-@flask_login.login_required
 def precomputeAnnotations():
     success, msg, status = precompute.precomputeAnnotations()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
