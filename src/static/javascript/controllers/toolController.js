@@ -3247,28 +3247,16 @@ angular.module('CVGTool')
                 // Select only the active type
                 var selectedType = $scope.objectManager.selectedType;
 
-                // Check if the object is poseAIK. The requests are different because of the size of the objects
-                
-                if (selectedType.hasOwnProperty('type') && selectedType.type.localeCompare("poseAIK") == 0) {
-                    for (obj in selectedType.objects) {
-                        var object = selectedType.objects[obj.toString()];
+                for (obj in selectedType.objects) {
+                    var object = selectedType.objects[obj.toString()];
+                    var points = [];
                     
-                        for (var i=0; i < object.frames.length; i++) {
-                            toolSrvc.projectToCamera(object.uid, object.type, [object.frames[i].keypoints], object.frames[i].frame, object.frames[i].frame, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                        }
+                    // Crate the structure to project
+                    for (var i=0; i < object.frames.length; i++) {
+                        points.push(object.frames[i].keypoints);
                     }
-                } else {
-                    for (obj in selectedType.objects) {
-                        var object = selectedType.objects[obj.toString()];
-                        var points = [];
-                        
-                        // Crate the structure to project
-                        for (var i=0; i < object.frames.length; i++) {
-                            points.push(object.frames[i].keypoints);
-                        }
-                        toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                    } 
-                }            
+                    toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+                }             
             }
 
             // Project one object defined by objectUid
@@ -3279,22 +3267,16 @@ angular.module('CVGTool')
                     }          
                 }
                 
-                if ($scope.objectManager.selectedType.hasOwnProperty("type") && $scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
-                    var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-                    for (var i=frameFrom; i <= frameTo; i++) {
-                        toolSrvc.projectToCamera(object.uid, object.type, [object.frames[i - $scope.toolParameters.frameFrom].keypoints], i, i, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                    }
-                } else {
-                    var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-                    var points = [];
+                var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
+                var points = [];
 
-                    // Crate the structure to project
-                    for (var i=frameFrom; i <= frameTo; i++) {
-                        points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
-                    }
+                // Crate the structure to project
+                for (var i=frameFrom; i <= frameTo; i++) {
+                    points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
+                }
 
-                    toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                }   
+                toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+                 
             }
 
             // Prepares the structure to store projected objects
@@ -3411,6 +3393,10 @@ angular.module('CVGTool')
         
         document.getElementById("OptionsDropdown").addEventListener('click', function (event) { 
             event.stopPropagation(); 
+        });
+
+        document.getElementById("ShortcutsDropdown").addEventListener('click', function (event) { 
+            event.stopPropagation(); 
         }); 
 
         document.getElementById("ActionCreationDropdown").addEventListener('click', function (event) { 
@@ -3476,12 +3462,12 @@ angular.module('CVGTool')
         // KEYBINDINGS
         /////////
         hotkeys.bindTo($scope).add({
-                combo: 'right',
+                combo: 'd',
                 description: 'Go to the next frame',
                 callback: function() { $scope.timelineManager.nextFrame() }
             })
             .add({
-                combo: 'left',
+                combo: 'a',
                 description: 'Go to the previous frame',
                 callback: function() { $scope.timelineManager.previousFrame() }
             })
@@ -3492,7 +3478,7 @@ angular.module('CVGTool')
             })
             // TODO: Fix this when we have editor tab
             .add({
-                combo: 's',
+                combo: 'shift+s',
                 description: 'Save annotation',
                 callback: function() { //check if the keypoint editor is open and then save
                     if ($scope.keypointEditor.editorActive === true) {
@@ -3508,7 +3494,7 @@ angular.module('CVGTool')
                 }
             })
             .add({
-                combo: 'd',
+                combo: 'shift+d',
                 description: 'Delete annotation',
                 callback: function() { //check if the keypoint editor is open and then save
                     if ($scope.keypointEditor.editorActive === true) {
