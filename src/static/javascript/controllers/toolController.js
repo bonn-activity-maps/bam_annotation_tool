@@ -2,7 +2,6 @@ angular.module('CVGTool')
 
 .controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', 'hotkeys', '$stateParams',
     function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, hotkeys, $stateParams) {
-        
         // ENABLE TOOLTIPS //
         $(function() {
             $('[data-toggle="tooltip"]').tooltip()
@@ -1819,6 +1818,8 @@ angular.module('CVGTool')
             _this.minimized = false;
             _this.editorMinimized = false;
 
+            _this.selectedLabel = 0;
+
             _this.keypointEditorData = {};
 
             // Opens the panel to edit keypoints
@@ -1830,7 +1831,7 @@ angular.module('CVGTool')
                 
                 _this.keypointEditorData = {
                     searchUID: null,
-                    shapes: [],
+                    shapes: [].slice(),
                     labels: $scope.objectManager.selectedType.labels.slice(),
                     realLabels: $scope.objectManager.selectedType.labels.slice(),
                     creationType: "point",
@@ -1862,12 +1863,12 @@ angular.module('CVGTool')
                     }
                     $scope.objectManager.selectedObject.original_uid = $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].original_uid;
 
-                    _this.keypointEditorData.shapes = [null]; 
+                    _this.keypointEditorData.shapes = [null];
                     _this.keypointEditorData.searchUID = $scope.objectManager.selectedObject.uid;
 
 
                 } else {
-                    _this.keypointEditorData.shapes = [null, null, null, null];
+                    _this.keypointEditorData.shapes = [null,null,null,null];
                     _this.keypointEditorData.searchUID = $scope.objectManager.selectedObject.uid;
                     
                 }
@@ -1876,19 +1877,29 @@ angular.module('CVGTool')
 
             }
 
-            _this.setIndexBeingEdited = function(index) {
-                // If there was an index being edited and its not saved we remove whatever we created
-                // if (_this.keypointEditorData.indexBeingEdited !== null) {
-                //     _this.removeEditorDataPoint(_this.keypointEditorData.indexBeingEdited)
+            _this.startEditingSelectedLabel = function(index, toolType) {
+                _this.selectedLabel = index;
+                if (toolType.localeCompare('') === 0) {
+                    $scope.toolsManager.switchSubTool("");
+                    _this.keypointEditorData.indexBeingEdited = null;
+                    $scope.canvasesManager.redrawCanvases();
+                } else {
+                    if ($scope.toolsManager.subTool.localeCompare(toolType) !== 0) $scope.toolsManager.switchSubTool(toolType);
                     
-                //     if (!$scope.toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
-                // }
-                _this.keypointEditorData.indexBeingEdited = index;
+                    _this.keypointEditorData.indexBeingEdited = index;
+               
+
+                    // Remove that point from the
+                    _this.removeEditorDataPoint(index);               
+                }  
             }
+
 
             _this.removeEditorDataPoint = function(index) {
                 for (var i = 0; i < _this.keypointEditorData.shapes.length; i++) {
-                    if (_this.keypointEditorData.shapes[i] !== null) _this.keypointEditorData.shapes[i].removePoint(index);
+                    if (_this.keypointEditorData.shapes[i] !== null) {
+                        _this.keypointEditorData.shapes[i].removePoint(index);
+                    }
                 }
                 
                 $scope.canvasesManager.redrawCanvases();
@@ -1900,6 +1911,31 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.nextLabel = function() {
+                if (_this.selectedLabel + 1 > _this.keypointEditorData.labels.length - 1) {
+                    _this.selectedLabel = _this.keypointEditorData.labels.length - 1;
+                } else {
+                    _this.selectedLabel++;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+            }
+
+            _this.previousLabel = function() {
+                if (_this.selectedLabel - 1 < 0) {
+                    _this.selectedLabel = 0;
+                } else {
+                    _this.selectedLabel--;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+            }
+
+        
             _this.callInterpolate = function() {
                 $scope.commonManager.interpolate($scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, $scope.timelineManager.slider.value)
             }
@@ -2072,20 +2108,21 @@ angular.module('CVGTool')
             _this.drawWithLabel = function(context, color) {
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
                 
                 // Draw the points
                 for (var i = 0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) {
                         if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                         
-                        if (_this.leftSide.includes(i)) _this.points[i].draw(context, lightColor);
-                        else if (_this.rightSide.includes(i)) _this.points[i].draw(context, darkColor);
+                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, _this.labels[i]);
+                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor, _this.labels[i]);
                         else _this.points[i].drawWithText(context, color, _this.labels[i]); 
                     }
                 }
 
-                // Then draw all the edges
-                _this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
@@ -2111,6 +2148,7 @@ angular.module('CVGTool')
             }
 
             _this.removePoint = function(index) {
+                delete _this.points[index];
                 _this.points[index] = null;
                 _this.cameraPoints[index] = [];
             }
@@ -2954,17 +2992,12 @@ angular.module('CVGTool')
                                 
                                 // Draw epilines
                                 _this.drawEpilines(ctx);
-
                                 if ($scope.optionsManager.options.showLabels) {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].drawWithLabel(ctx, "#24FF41");
                                 } else {
                                     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].draw(ctx, "#24FF41");
                                 }
                                 
-                                // // Draw just the tag being edited  
-                                // if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] !== null) {
-                                //     $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited].drawWithText(ctx, "#01A2FF", _this.canvasNumber);
-                                // }
                             } else if ($scope.toolsManager.subTool.localeCompare("boxCreation") == 0) {
                                 // If active, draw guide lines
                                 if ($scope.optionsManager.options.showGuideLines) _this.drawGuideLines(ctx);
@@ -3167,9 +3200,11 @@ angular.module('CVGTool')
 
             // Projects the keypointCreationData if needed
             _this.projectKeypointEditorData = function(frame) {
-                $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1] = _this.objects2D.objects[$scope.keypointEditor.keypointEditorData.searchUID.toString()].frames[frame - $scope.toolParameters.frameFrom].shape;
+                var searchUID = $scope.keypointEditor.keypointEditorData.searchUID.toString();
+                $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1] = _this.objects2D.objects[searchUID].frames[frame - $scope.toolParameters.frameFrom].shape;
                 _this.setRedraw();
             };
+
 
             // Creates/updates the objects into the objects structure if no projection is needed (2D case)
             _this.updateObjects = function() {
@@ -3467,6 +3502,13 @@ angular.module('CVGTool')
                 callback: function() { $scope.timelineManager.nextFrame() }
             })
             .add({
+                combo: 'h',
+                description: 'Go to the previous frame',
+                callback: function() { 
+                    console.log($scope.keypointEditor.keypointEditorData.shapes) 
+                }
+            })
+            .add({
                 combo: 'a',
                 description: 'Go to the previous frame',
                 callback: function() { $scope.timelineManager.previousFrame() }
@@ -3494,11 +3536,55 @@ angular.module('CVGTool')
                 }
             })
             .add({
-                combo: 'shift+d',
+                combo: 'shift+r',
                 description: 'Delete annotation',
                 callback: function() { //check if the keypoint editor is open and then save
                     if ($scope.keypointEditor.editorActive === true) {
                         $scope.commonManager.deleteAnnotation();
+                    }
+                }
+            })
+            .add({
+                combo: 'shift+d',
+                description: 'Delete label',
+                callback: function() { //check if the keypoint editor is open and then save
+                    if ($scope.keypointEditor.editorActive === true) {
+                        $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+                    }
+                }
+            })
+            .add({
+                combo: 'w',
+                description: 'Previous label',
+                callback: function() {
+                    if ($scope.keypointEditor.editorActive === true) {
+                        $scope.keypointEditor.previousLabel();
+                    }
+                }
+            })
+            .add({
+                combo: 's',
+                description: 'Next label',
+                callback: function() {
+                    if ($scope.keypointEditor.editorActive === true) {
+                        $scope.keypointEditor.nextLabel();
+                    }
+                }
+            })
+            .add({
+                combo: 'shift+a',
+                description: 'Annotate',
+                callback: function() {
+                    if ($scope.keypointEditor.editorActive === true) {
+                        if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
+                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
+                        } else {
+                            var tool = "";
+                            if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
+                            else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
+                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
+                        }
+                        
                     }
                 }
             });

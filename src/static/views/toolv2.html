@@ -45,13 +45,13 @@
                 <div class="col-md-11">
                     <div class="row">
                         <div class="col-md-2" style="text-align: center; padding-top: 20px;">
-                            <button ng-click="timelineManager.previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
+                            <button ng-click="timelineManager.previousFrame()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-chevron-left"></span></button>
-                            <button ng-if="!timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                            <button ng-if="!timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-play"></button>
-                            <button ng-if="timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                            <button ng-if="timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-pause"></button>
-                            <button ng-click="timelineManager.nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
+                            <button ng-click="timelineManager.nextFrame()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-chevron-right"></span></button>
                         </div>
                         <div class="col-md-10">
@@ -157,8 +157,21 @@
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-list-alt"></span>
         </button>
-        <div id="ShortcutsDropdown" class="dropdown-menu text-center">
-          <!-- Dropdown menu links -->
+        <div id="ShortcutsDropdown" class="dropdown-menu text-center" style="font-size: x-small;">
+            <li class="dropdown-header">Global shortcuts:</li>
+            <li class="dropdown-item">Next frame: <b>D</b></li>
+            <li class="dropdown-item">Previous frame: <b>A</b></li>
+            <li class="dropdown-item">Play/Pause: <b>Spacebar</b></li>
+            <li class="dropdown-item">Toggle zoom: <b>Ctrl</b></li>
+            <li class="divider"></li> 
+            <li class="dropdown-header">Editor shortcuts:</li>
+            <li class="dropdown-item">Next label: <b>S</b></li>
+            <li class="dropdown-item">Previous label: <b>W</b></li>
+            <li class="dropdown-item">Start annotating: <b>Shift + A</b></li>
+            <li class="dropdown-item">Save annotation: <b>Shift + S</b></li>
+            <li class="dropdown-item">Delete label: <b>Shift + D</b></li>
+            <li class="dropdown-item">Reset annotation: <b>Shift + R</b></li>
+            
         
         </div>
     </div>
@@ -333,7 +346,7 @@
         <div class="row">
             <div class="col col-md-6"></div>
             <div class="col col-md-6">
-                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()" data-toggle="tooltip" data-placement="top" title="D">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
             </div>
         </div>
         
@@ -350,13 +363,14 @@
                 </thead>
                 <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('point') === 0">
                     <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
-                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
+                        <td>
+                            <span ng-if="keypointEditor.selectedLabel === $index" class="glyphicon glyphicon-arrow-right"></span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
                             <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
                         <th>  
-                            <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
-
+                            <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>
+                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="keypointEditor.startEditingSelectedLabel($index, '');"><span class="glyphicon glyphicon-edit"></span></button>
                         </th>
                         <th>-</th>
                         <th>
@@ -366,7 +380,9 @@
                 </tbody>
                 <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('box') === 0">
                     <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
-                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
+                        <td>
+                            <span ng-if="keypointEditor.selectedLabel === $index" class="glyphicon glyphicon-arrow-right"></span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
                             <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] !== null" class="label label-success">{{tag}}</span></td>
                         <th>  
                             <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
@@ -386,7 +402,7 @@
         <hr>
         <div class="row">
             <div class="col col-md-4">
-                <button class="btn-success" ng-click="commonManager.updateAnnotation();" data-toggle="tooltip" data-placement="top" title="S">Save</button>
+                <button class="btn-success" ng-click="commonManager.updateAnnotation();">Save</button>
             </div>
             <div class="col col-md-4"></div>
             <div class="col col-md-4">
