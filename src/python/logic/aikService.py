@@ -12,6 +12,8 @@ from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.frameManager import FrameManager
 
 from python.objects.frame import Frame
+from python.objects.annotation import Annotation
+from python.objects.object import Object
 
 # aikService logger
 log = logging.getLogger('aikService')
@@ -44,6 +46,38 @@ class AIKService:
                 final_points.append([])
 
         return True, final_points, 200
+
+    # Project points of one object to camera
+    def project_to_camera_2(self, camera_name, object_type, start_annotation, end_annotation):
+        final_points = []
+
+        # Get annotations for the object in frames between start and end frame
+        annotations = annotationManager.get_object_in_frames(start_annotation, end_annotation)
+        if annotations == 'Error':
+            return False, 'Error projecting points in cameras', 400
+
+        # Project points into the camera
+        try:
+            annotation_index = 0
+            for f in range(start_annotation.frame, end_annotation.frame+1):
+                if annotation_index < len(annotations) and annotations[annotation_index].frame == f:
+                    a = annotations[annotation_index]
+                    annotation_index += 1
+
+                    if a.objects[0].keypoints:
+                        # Get camera parameters for the frame, camera and dataset
+                        f = Frame(a.frame, camera_name, start_annotation.dataset)
+                        frame = frameManager.get_frame(f)
+                        # Project points and add to final list
+                        final_points.append(self.project_3D_points_to_camera(a.objects[0].keypoints, frame.camera_parameters, object_type))
+                    else:
+                        final_points.append([])
+                else:       # Add empty points if there are no more points or no annotation for that frame
+                    final_points.append([])
+            return True, final_points, 200
+
+        except TypeError:      # If annotation has not attribute objects
+            return True, [], 200
 
     # Auxiliar function that creates a "AIK camera obejct" from the given camera parameters
     def create_camera(self, camera_params):

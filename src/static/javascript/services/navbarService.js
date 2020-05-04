@@ -28,7 +28,8 @@ angular.module('CVGTool')
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
             selectedType: "",
             maxFrame: -1, // Max frame of the session to check frame range displacements
-            minFrame: -1 // Min frame of the session to check frame range displacements
+            minFrame: -1, // Min frame of the session to check frame range displacements
+            options: null // Options selected from the user
         };
 
         return {
@@ -74,6 +75,11 @@ angular.module('CVGTool')
                 updateSessionData();
             },
 
+            setOptions: function(options) {
+                sessionData.options = options;
+                updateSessionData();
+            },
+
             // Reset sessionData
             resetSessionData: function() {
                 sessionData = {
@@ -84,7 +90,8 @@ angular.module('CVGTool')
                     canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
                     selectedType: "",
                     maxFrame: -1,
-                    minFrame: -1
+                    minFrame: -1,
+                    options: null
                 };
             },
 
