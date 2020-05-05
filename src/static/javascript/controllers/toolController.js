@@ -301,6 +301,9 @@ angular.module('CVGTool')
                     // Reset sessionData of the cameras
                     navSrvc.resetSessionData();
 
+                    // Update the navbar options in case we advance again
+                    $scope.optionsManager.optionChanged();  
+
                     // Create the cameras
                     $scope.camerasManager.createCameras(camerasToLoad);
 
@@ -3376,10 +3379,13 @@ angular.module('CVGTool')
                 showSecondaryPoseJoints: true
             }
 
+            navSrvc.setOptions(_this.options); // First set
+
             _this.optionChanged = function() {
                 navSrvc.setOptions(_this.options);
                 $scope.canvasesManager.redrawCanvases();
             }
+
         }
 
         // Managers
@@ -3395,7 +3401,7 @@ angular.module('CVGTool')
         $scope.camerasManager = new CamerasManager();
 
         $scope.optionsManager = new OptionsManager();
-
+        
         $scope.commonManager = null;
         if ($scope.toolParameters.isPosetrack) {
             $scope.commonManager = new PTManager();
