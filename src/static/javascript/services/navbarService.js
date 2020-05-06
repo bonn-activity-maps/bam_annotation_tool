@@ -1,6 +1,9 @@
 angular.module('CVGTool')
     .factory('navSrvc', function($state, $rootScope, $http, $httpParamSerializer) {
 
+        // Actual version of the tool, THIS IS THE MAIN VARIABLE
+        var toolVersion = "1.1";
+
         // Function to send message to tell the controller to update
         var updateSessionData = function() {
             $rootScope.$broadcast('sessionDataMsg', {});
@@ -33,6 +36,12 @@ angular.module('CVGTool')
         };
 
         return {
+
+            // Returns the version of the tool
+            getToolVersion: function() {
+                return toolVersion;
+            },
+
             /* Session data storage */
             // Gets the sessionData struct
             getSessionData: function() {
