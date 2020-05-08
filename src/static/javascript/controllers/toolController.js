@@ -1208,6 +1208,7 @@ angular.module('CVGTool')
                     locals: {
                         toolSrvc: toolSrvc,
                         object: object,
+                        objectType: $scope.objectManager.selectedType,
                         minFrame: $scope.toolParameters.frameFrom,
                         maxFrame: $scope.toolParameters.frameTo,
                         dataset: $scope.toolParameters.activeDataset,
