@@ -1,8 +1,8 @@
 <div class="bg-image"></div>
 <div ng-controller="loginCtrl">
     <div class="row">
-        <div class="panel panel-login" style="background-color: transparent">
-            <div class="panel-body" style="color: transparent">
+        <div class="panel panel-login" style="background-color: transparent; box-shadow: none">
+            <div class="panel-body" style="color: transparent; box-shadow: none">
                 <form role="form" ng-submit="login()">
                     <div ng-if="error" class="alert alert-danger feedbackMessages">
                         <strong>&#10008</strong> {{errorMsg}}
@@ -27,6 +27,9 @@
                     </p>
                 </form>
             </div>
+        </div>
+        <div style="text-align: center">
+            <p style="color: rgba(255,255,255,0.8); bottom: 0; position: absolute;left:47%">Current version: {{toolVersion}}</p>
         </div>
     </div>
 </div>

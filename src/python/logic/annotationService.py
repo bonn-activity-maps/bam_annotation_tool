@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import os, json, shutil
+import copy
 
 from python.infrastructure.annotationManager import AnnotationManager
 from python.infrastructure.objectTypeManager import ObjectTypeManager
@@ -351,6 +352,23 @@ class AnnotationService:
         else:
             return False, 'Error deleting annotation', 500
 
+    # Remove label in annotation for an object for given range of frames, dataset, video and user
+    # Always a single object in "objects" so always objects[0] !!
+    def remove_annotation_frame_object_label(self, annotation, start_frame, end_frame, object_type, label):
+        if object_type != 'poseAIK':
+            return False, 'Operation not allowed', 400
+        else:
+            object_type = objectTypeManager.get_object_type(Object_type(object_type, annotation.dataset.type))
+            empty_kpts = [[] for i in range(object_type.num_keypoints)]
+
+            for f in range(start_frame, end_frame+1):
+                annotation.frame = f
+                annotation.objects[0].keypoints = empty_kpts
+                result = self.update_annotation_frame_object_label(annotation, label, [])
+                if result == 'Error':
+                    return False, 'Error deleting label in annotations', 500
+            return True, 'ok', 200
+
     # Interpolate all keypoints between 2 points
     def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
         # Interpolate for all keypoints in all frames in between
@@ -543,42 +561,49 @@ class AnnotationService:
 
     # Transfer pose to another person in one frame.
     # If this person already has a pose they are swapped
-    def transfer_object(self, dataset, old_annotation, new_annotation):
+    def transfer_object(self, dataset, old_annotation, new_annotation, start_frame, end_frame):
         if dataset.is_aik():
-            old_object = annotationManager.get_frame_object(old_annotation)     # Get annotation of old uid
-            new_object = annotationManager.get_frame_object(new_annotation)     # Get annotation of new uid
+            for f in range(start_frame, end_frame+1):
+                # Update actual frame in both annotations
+                old_annotation.frame = f
+                new_annotation.frame = f
 
-            # There is no object
-            if old_object == 'No annotation' and new_annotation == 'No annotation':
-                return False, 'No object to transfer', 400
+                # Get annotations for both uids
+                old_object = annotationManager.get_frame_object(old_annotation)
+                new_object = annotationManager.get_frame_object(new_annotation)
 
-            # If new uid doesn't have any data --> Remove old annotation and create the new one with new uid
-            elif new_object == 'No annotation':
-                remove_result = annotationManager.remove_frame_object(old_annotation, old_annotation)
-                if remove_result == 'Error':
-                    return False, 'Error transfering object', 400
-                else:
-                    # Change uid for the new one
-                    # old_object.uid = new_annotation.objects[0].uid
-                    # new_annotation.objects = [old_object]
-                    old_annotation.objects[0].uid = new_annotation.objects[0].uid
-                    create_result = annotationManager.update_frame_object(old_annotation)
+                # There is no object
+                if old_object == 'No annotation' and new_object == 'No annotation':
+                    return False, 'No object to transfer', 400
+
+                # If new uid doesn't have any data --> Remove old annotation and create the new one with new uid
+                elif new_object == 'No annotation':
+                    remove_result = annotationManager.remove_frame_object(old_annotation, old_annotation)
+                    if remove_result == 'Error':
+                        return False, 'Error transfering object', 400
+                    # Change uid for the new one and insert object in annotation to update/create it
+                    old_object.uid = new_annotation.objects[0].uid
+                    updated_annotation = copy.deepcopy(old_annotation)
+                    updated_annotation.objects[0] = old_object
+
+                    create_result = annotationManager.create_frame_object(updated_annotation)
                     if create_result == 'Error':
-                        return False, 'Error transfering object', 400
-            # Swap annotations for corresponding uids
-            else:
-                old_uid = old_object.uid
-                old_object.uid = new_object.uid
-                new_object.uid = old_uid
-                old_annotation.objects = [old_object]
-                new_annotation.objects = [new_object]
-                update_old_result = annotationManager.update_frame_object(old_annotation)
-                if update_old_result == 'Error':
-                    return False, 'Error transfering object', 400
+                        return False, 'Error transfering object, please check the annotations', 400
+
+                # Swap annotations for corresponding uids
                 else:
-                    update_new_result = annotationManager.update_frame_object(new_annotation)
-                    if update_new_result == 'Error':
-                        return False, 'Error transfering object', 400
+                    old_uid = old_object.uid
+                    old_object.uid = new_object.uid
+                    new_object.uid = old_uid
+                    updated_old_annotation = copy.deepcopy(old_annotation)
+                    updated_old_annotation.objects[0] = old_object
+                    updated_new_annotation = copy.deepcopy(new_annotation)
+                    updated_new_annotation.objects[0] = new_object
+
+                    update_old_result = annotationManager.update_frame_object(updated_old_annotation)
+                    update_new_result = annotationManager.update_frame_object(updated_new_annotation)
+                    if update_old_result == 'Error' or update_new_result == 'Error':
+                        return False, 'Error transfering object, please check the annotations', 400
             return True, 'Object transferred successfully', 200
         else:
             return False, 'Operation not allowed', 400

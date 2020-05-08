@@ -2,6 +2,10 @@ angular.module('CVGTool')
 
 .controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', 'hotkeys', '$stateParams',
     function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, hotkeys, $stateParams) {
+
+        // Tool version
+        $scope.toolVersion = navSrvc.getToolVersion();
+
         // ENABLE TOOLTIPS //
         $(function() {
             $('[data-toggle="tooltip"]').tooltip()
