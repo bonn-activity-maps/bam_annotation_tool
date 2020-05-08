@@ -2026,11 +2026,12 @@ angular.module('CVGTool')
         function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
             var _this = this;
             _this.labels = labels;
+            _this.abbreviatedLabels = [];
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
             _this.skeleton = skeleton;
-
+            
             _this.rightSide = [2,3,4,8,9,10,14,16,21,22,23];
             _this.leftSide = [5,6,7,11,12,13,15,17,18,19,20];
 
@@ -2050,8 +2051,14 @@ angular.module('CVGTool')
                 }
                 _this.cameraPoints = cameraPoints; 
             }
-          
 
+            // ABBREVIATED LABELS
+            for (var i=0; i< _this.labels.length; i++) {
+                _this.abbreviatedLabels.push(angular.copy(_this.labels[i]).replace(/\W*(\w)\w*/g, '$1$2').toUpperCase())
+            }
+
+
+            // FUNCTIONS
             _this.draw = function(context, color) {
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
@@ -2117,6 +2124,8 @@ angular.module('CVGTool')
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
 
+                var labelsToUse = (($scope.optionsManager.options.abbreviateLabels) ? _this.abbreviatedLabels : _this.labels);
+
                 // Then draw all the edges
                 _this.drawEdges(context, color);
                 
@@ -2125,9 +2134,9 @@ angular.module('CVGTool')
                     if (_this.points[i] !== null) {
                         if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                         
-                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, _this.labels[i]);
-                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor, _this.labels[i]);
-                        else _this.points[i].drawWithText(context, color, _this.labels[i]); 
+                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, labelsToUse[i]);
+                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor,labelsToUse[i]);
+                        else _this.points[i].drawWithText(context, color, labelsToUse[i]); 
                     }
                 }
 
@@ -3379,6 +3388,7 @@ angular.module('CVGTool')
             _this.options = {
                 pointSize: 10,
                 showLabels: true,
+                abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
                 showSecondaryPoseJoints: true

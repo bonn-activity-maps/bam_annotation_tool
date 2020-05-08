@@ -149,6 +149,7 @@
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.abbreviateLabels"> Abbreviate labels</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
             </div>
         </div>
@@ -170,9 +171,7 @@
             <li class="dropdown-item">Start annotating: <b>Shift + A</b></li>
             <li class="dropdown-item">Save annotation: <b>Shift + S</b></li>
             <li class="dropdown-item">Delete label: <b>Shift + D</b></li>
-            <li class="dropdown-item">Reset annotation: <b>Shift + R</b></li>
-            
-        
+            <li class="dropdown-item">Reset annotation: <b>Shift + R</b></li>  
         </div>
     </div>
     <hr class="tool-panel-hr">
