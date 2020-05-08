@@ -352,6 +352,23 @@ class AnnotationService:
         else:
             return False, 'Error deleting annotation', 500
 
+    # Remove label in annotation for an object for given range of frames, dataset, video and user
+    # Always a single object in "objects" so always objects[0] !!
+    def remove_annotation_frame_object_label(self, annotation, start_frame, end_frame, object_type, label):
+        if object_type != 'poseAIK':
+            return False, 'Operation not allowed', 400
+        else:
+            object_type = objectTypeManager.get_object_type(Object_type(object_type, annotation.dataset.type))
+            empty_kpts = [[] for i in range(object_type.num_keypoints)]
+
+            for f in range(start_frame, end_frame+1):
+                annotation.frame = f
+                annotation.objects[0].keypoints = empty_kpts
+                result = self.update_annotation_frame_object_label(annotation, label, [])
+                if result == 'Error':
+                    return False, 'Error deleting label in annotations', 500
+            return True, 'ok', 200
+
     # Interpolate all keypoints between 2 points
     def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
         # Interpolate for all keypoints in all frames in between
