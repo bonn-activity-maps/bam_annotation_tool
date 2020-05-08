@@ -519,7 +519,7 @@ def remove_annotation():
 
 # Delete label(position in array) for an object in annotation for given frames, dataset, video and user
 @app.route('/api/annotation/removeAnnotation/object/label', methods=['POST'])
-# @flask_login.login_required
+@flask_login.login_required
 def remove_annotation_frame_object_label():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
