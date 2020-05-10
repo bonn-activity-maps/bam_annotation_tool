@@ -2144,7 +2144,7 @@ angular.module('CVGTool')
                 }
 
                 // Lastly draw the selected point, to be on top of the rest
-                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
             }
 
             _this.isInside = function(x,y) {
