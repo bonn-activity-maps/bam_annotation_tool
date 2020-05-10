@@ -143,6 +143,10 @@
                 Point size:
                 <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.pointSize" min="1" max="12">
             </li>
+            <li class="dropdown-item">
+                Font size:
+                <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.fontSize" min="1" max="12">
+            </li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>

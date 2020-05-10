@@ -1929,6 +1929,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
             _this.previousLabel = function() {
@@ -1941,6 +1942,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
         
@@ -2052,11 +2054,9 @@ angular.module('CVGTool')
                 _this.cameraPoints = cameraPoints; 
             }
 
-            // ABBREVIATED LABELS
-            for (var i=0; i< _this.labels.length; i++) {
-                _this.abbreviatedLabels.push(angular.copy(_this.labels[i]).replace(/\W*(\w)\w*/g, '$1$2').toUpperCase())
-            }
-
+            // ABBREVIATED LABELS. Temporal, it would be nice to generate them on the fly
+            _this.abbreviatedLabels = ["No", "Ne", "ShR", "ElR", "HaR", "ShL", "ElL", "HaL", "HiR", "KnR", "FoR", "HiL", "KnL",
+            "FoL", "EyR", "EyL", "EaR", "EaL", "STL", "LTL", "HeL", "STR", "LTR", "HeR"];
 
             // FUNCTIONS
             _this.draw = function(context, color) {
@@ -2076,6 +2076,9 @@ angular.module('CVGTool')
 
                 // Then draw all the edges
                 _this.drawEdges(context, color);
+
+                // Lastly draw the selected point, to be on top of the rest
+                _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
             }
 
             _this.drawEdges = function(context, color) {
@@ -2126,7 +2129,7 @@ angular.module('CVGTool')
 
                 var labelsToUse = (($scope.optionsManager.options.abbreviateLabels) ? _this.abbreviatedLabels : _this.labels);
 
-                // Then draw all the edges
+                // Draw all the edges
                 _this.drawEdges(context, color);
                 
                 // Draw the points
@@ -2136,10 +2139,12 @@ angular.module('CVGTool')
                         
                         if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, labelsToUse[i]);
                         else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor,labelsToUse[i]);
-                        else _this.points[i].drawWithText(context, color, labelsToUse[i]); 
+                        else _this.points[i].drawWithText(context, color, labelsToUse[i]);    
                     }
                 }
 
+                // Lastly draw the selected point, to be on top of the rest
+                _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
             }
 
             _this.isInside = function(x,y) {
@@ -2558,7 +2563,7 @@ angular.module('CVGTool')
                 context.fill();
                 context.closePath();
                 context.beginPath();
-                context.font = "12px sans-serif";
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
                 context.strokeText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
@@ -3387,6 +3392,7 @@ angular.module('CVGTool')
 
             _this.options = {
                 pointSize: 10,
+                fontSize: 10,
                 showLabels: true,
                 abbreviateLabels: false,
                 showGuideLines: true,
