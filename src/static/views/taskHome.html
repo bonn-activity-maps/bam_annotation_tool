@@ -1,75 +1,78 @@
 <div class="bg-image"></div>
 <div class="col-sm-6 col-sm-offset-3" style="max-height: 95%;overflow-y: auto">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <h4>Tasks</h4>
-                <hr/> Don't forget to select a dataset from the selector in the navbar!
-                <hr/>
-                <div ng-if="videos.length <= 0 && isPosetrack()" style="padding-top: 20px;" class="panel-body">
-                    <p style="text-align: center">
-                        <button class="btn btn-primary" ng-click="loadVideoTable()">Show Video table</button>
-                    </p>
-                </div>
-                <div ng-if="videos.length > 0 && isPosetrack()" style="padding: 0;" class="panel-body">
-                    <div style="overflow-y: auto; max-height: 30em;">
-                        <p><input class="form-control" type="text" ng-model="search" placeholder="Search.."></p>
-                        <table class="table table-bordered table-responsive text-center">
-                            <thead>
-                                <tr>
-                                    <th class="col-md-8" colspan="5" style="text-align: center">Video Info</th>
-                                </tr>
-                                <tr>
-                                    <td class="col-md-2">Name<br></td>
-                                    <td class="col-md-2">Type</td>
-                                    <td class="col-md-1">Start Frame<br></td>
-                                    <td class="col-md-1">End Frame</td>
-                                    <td class="col-md-1">Total Frames<br></td>
-                                </tr>
-                            </thead>
-
-                            <tr ng-repeat="video in videos | filter:search">
-                                <td>{{video.video}}</td>
-                                <td>{{video.type}}</td>
-                                <td>{{video.minFrame}}</td>
-                                <td>{{video.maxFrame}}</td>
-                                <td>{{video.totalFrames}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                <div style="padding: 0;" class="panel-body">
-                    <hr />
-                    <!-- Select frame intervals -->
-                    <div class="form">
-                        <h4 class="control-label col-md-12">Select frame range:</h4>
-                        <hr/>
-                        <div class="form-group">
-                            <div class="col-md-3 col-md-offset-3">
-                                <label style="height: 30px; line-height: 30px" >Initial frame:</label>
-                                <br/>
-                                <label style="height: 30px; line-height: 30px">Range: </label>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="number" ng-model="initialFrame" min="{{slider.options.floor}}" ng-blur="checkSlider()"
-                                style="height: 30px;width: 100%"/>
-                                <br/>
-                                <input type="number" ng-model="slider.range" min="{{slider.options.floor}}" max="{{slider.options.ceil}}"
-                                style="height: 30px;width: 100%"/>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <rzslider rz-slider-model="slider.range" rz-slider-options="slider.options"></rzslider>
-
-                            Loading frames from {{initialFrame}} to {{initialFrame+slider.range}}
-                        </div>
-                    </div>
-                </div>
-                <div class="alert alert-warning" role="alert" ng-show="slider.range > 100">
-                    A range bigger than 100 frames is only recommended for annotating actions! If you are going to annotate points, keep in mind that bigger ranges may lead to a decrease in the perfomance of the Tool. A range of 100 frames is big enough for annotating points.
-                </div>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h4>Tasks</h4>
+            <hr/> Don't forget to select a dataset from the selector in the navbar!
+            <hr/>
+            <div ng-if="videos.length <= 0 && isPosetrack()" style="padding-top: 20px;" class="panel-body">
                 <p style="text-align: center">
-                    <button class="btn btn-success" ng-click="goToTool()">Continue</button>
+                    <button class="btn btn-primary" ng-click="loadVideoTable()">Show Video table</button>
                 </p>
             </div>
+            <div ng-if="videos.length > 0 && isPosetrack()" style="padding: 0;" class="panel-body">
+                <div style="overflow-y: auto; max-height: 30em;">
+                    <p><input class="form-control" type="text" ng-model="search" placeholder="Search.."></p>
+                    <table class="table table-bordered table-responsive text-center">
+                        <thead>
+                            <tr>
+                                <th class="col-md-8" colspan="5" style="text-align: center">Video Info</th>
+                            </tr>
+                            <tr>
+                                <td class="col-md-2">Name<br></td>
+                                <td class="col-md-2">Type</td>
+                                <td class="col-md-1">Start Frame<br></td>
+                                <td class="col-md-1">End Frame</td>
+                                <td class="col-md-1">Total Frames<br></td>
+                            </tr>
+                        </thead>
+
+                        <tr ng-repeat="video in videos | filter:search">
+                            <td>{{video.video}}</td>
+                            <td>{{video.type}}</td>
+                            <td>{{video.minFrame}}</td>
+                            <td>{{video.maxFrame}}</td>
+                            <td>{{video.totalFrames}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div style="padding: 0;" class="panel-body">
+                <hr />
+                <!-- Select frame intervals -->
+                <div class="form">
+                    <h4 class="control-label col-md-12">Select frame range:</h4>
+                    <hr/>
+                    <div class="form-group">
+                        <div class="col-md-3 col-md-offset-3">
+                            <label style="height: 30px; line-height: 30px" >Initial frame:</label>
+                            <br/>
+                            <label style="height: 30px; line-height: 30px">Range: </label>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" ng-model="initialFrame" min="{{slider.options.floor}}" ng-blur="checkSlider()"
+                            style="height: 30px;width: 100%"/>
+                            <br/>
+                            <input type="number" ng-model="slider.range" min="{{slider.options.floor}}" max="{{slider.options.ceil}}"
+                            style="height: 30px;width: 100%"/>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <rzslider rz-slider-model="slider.range" rz-slider-options="slider.options"></rzslider>
+
+                        Loading frames from {{initialFrame}} to {{initialFrame+slider.range}}
+                    </div>
+                </div>
+            </div>
+            <div class="alert alert-warning" role="alert" ng-show="slider.range > 100">
+                A range bigger than 100 frames is only recommended for annotating actions! If you are going to annotate points, keep in mind that bigger ranges may lead to a decrease in the perfomance of the Tool. A range of 100 frames is big enough for annotating points.
+            </div>
+            <p style="text-align: center">
+                <button class="btn btn-success" ng-click="goToTool()">Continue</button>
+            </p>
         </div>
     </div>
+</div>
+<div style="text-align: center">
+    <p style="color: rgba(255,255,255,0.8); bottom: 0; position: absolute;left:47%">Current version: {{toolVersion}}</p>
+</div>

@@ -6,6 +6,9 @@ angular.module('CVGTool')
     .controller('loginCtrl', ['$scope', '$state', 'loginSrvc', 'navSrvc', 'adminDatasetsSrvc',
         function ($scope, $state, loginSrvc, navSrvc, adminDatasetsSrvc) {
 
+        // Version of the tool
+        $scope.toolVersion = navSrvc.getToolVersion();
+
         // Feedback handling variables
         $scope.errorMsg = "";
         $scope.successMsg = "";

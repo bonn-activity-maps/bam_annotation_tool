@@ -517,6 +517,20 @@ def remove_annotation():
     success, msg, status = annotationService.remove_annotation_frame_object(start_annotation, end_annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Delete label(position in array) for an object in annotation for given frames, dataset, video and user
+@app.route('/api/annotation/removeAnnotation/object/label', methods=['POST'])
+@flask_login.login_required
+def remove_annotation_frame_object_label():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
+                    track_id=req_data['uidObject'])
+    annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
+    success, msg, status = annotationService.remove_annotation_frame_object_label(annotation, int(req_data['startFrame']),
+                                                                                  int(req_data['endFrame']), req_data['objectType'],
+                                                                                  int(req_data['label']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Read data from stored zip
 @app.route('/api/annotation/uploadAnnotations', methods=['POST'])
 @flask_login.login_required
@@ -534,9 +548,10 @@ def transfer_object():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     old_object = Object(req_data['oldUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
     new_object = Object(req_data['newUid'], req_data['objectType'], dataset_type=req_data['datasetType'])
-    old_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [old_object])
-    new_annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [new_object])
-    success, msg, status = annotationService.transfer_object(dataset, old_annotation, new_annotation)
+    old_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [old_object])
+    new_annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [new_object])
+    success, msg, status = annotationService.transfer_object(dataset, old_annotation, new_annotation,
+                                                             req_data['startFrame'], req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

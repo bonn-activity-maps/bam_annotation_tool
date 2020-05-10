@@ -2,6 +2,10 @@ angular.module('CVGTool')
 
 .controller('toolCtrl', ['$scope', '$rootScope', '$state', '$interval', '$mdDialog', 'toolSrvc', 'navSrvc', 'hotkeys', '$stateParams',
     function($scope, $rootScope, $state, $interval, $mdDialog, toolSrvc, navSrvc, hotkeys, $stateParams) {
+
+        // Tool version
+        $scope.toolVersion = navSrvc.getToolVersion();
+
         // ENABLE TOOLTIPS //
         $(function() {
             $('[data-toggle="tooltip"]').tooltip()
@@ -1208,6 +1212,7 @@ angular.module('CVGTool')
                     locals: {
                         toolSrvc: toolSrvc,
                         object: object,
+                        objectType: $scope.objectManager.selectedType,
                         minFrame: $scope.toolParameters.frameFrom,
                         maxFrame: $scope.toolParameters.frameTo,
                         dataset: $scope.toolParameters.activeDataset,
@@ -1924,6 +1929,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
             _this.previousLabel = function() {
@@ -1936,6 +1942,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
         
@@ -2021,11 +2028,12 @@ angular.module('CVGTool')
         function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
             var _this = this;
             _this.labels = labels;
+            _this.abbreviatedLabels = [];
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
             _this.skeleton = skeleton;
-
+            
             _this.rightSide = [2,3,4,8,9,10,14,16,21,22,23];
             _this.leftSide = [5,6,7,11,12,13,15,17,18,19,20];
 
@@ -2045,8 +2053,12 @@ angular.module('CVGTool')
                 }
                 _this.cameraPoints = cameraPoints; 
             }
-          
 
+            // ABBREVIATED LABELS. Temporal, it would be nice to generate them on the fly
+            _this.abbreviatedLabels = ["No", "Ne", "ShR", "ElR", "HaR", "ShL", "ElL", "HaL", "HiR", "KnR", "FoR", "HiL", "KnL",
+            "FoL", "EyR", "EyL", "EaR", "EaL", "STL", "LTL", "HeL", "STR", "LTR", "HeR"];
+
+            // FUNCTIONS
             _this.draw = function(context, color) {
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
@@ -2064,11 +2076,14 @@ angular.module('CVGTool')
 
                 // Then draw all the edges
                 _this.drawEdges(context, color);
+
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
             }
 
             _this.drawEdges = function(context, color) {
                 for (var i = 0; i < _this.skeleton.length; i++) {
-                    if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                    if ((_this.secondaryJoints.includes(_this.skeleton[i][0]) || _this.secondaryJoints.includes(_this.skeleton[i][1])) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                     
                     _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
                 }
@@ -2112,7 +2127,9 @@ angular.module('CVGTool')
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
 
-                // Then draw all the edges
+                var labelsToUse = (($scope.optionsManager.options.abbreviateLabels) ? _this.abbreviatedLabels : _this.labels);
+
+                // Draw all the edges
                 _this.drawEdges(context, color);
                 
                 // Draw the points
@@ -2120,12 +2137,14 @@ angular.module('CVGTool')
                     if (_this.points[i] !== null) {
                         if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                         
-                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, _this.labels[i]);
-                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor, _this.labels[i]);
-                        else _this.points[i].drawWithText(context, color, _this.labels[i]); 
+                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, labelsToUse[i]);
+                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor,labelsToUse[i]);
+                        else _this.points[i].drawWithText(context, color, labelsToUse[i]);    
                     }
                 }
 
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
             }
 
             _this.isInside = function(x,y) {
@@ -2544,7 +2563,7 @@ angular.module('CVGTool')
                 context.fill();
                 context.closePath();
                 context.beginPath();
-                context.font = "12px sans-serif";
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
                 context.strokeText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
@@ -3373,7 +3392,9 @@ angular.module('CVGTool')
 
             _this.options = {
                 pointSize: 10,
+                fontSize: 10,
                 showLabels: true,
+                abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
                 showSecondaryPoseJoints: true
@@ -3386,6 +3407,204 @@ angular.module('CVGTool')
                 $scope.canvasesManager.redrawCanvases();
             }
 
+        }
+
+        function ShortcutsManager() {
+            var _this = this;
+
+            _this.shortcuts = {
+                selectedShortcuts: null,
+                oldShortcuts: null,
+                layouts: [
+                    {
+                        layout: 'QWERTY/QWERTZ',
+                        nextFrame: {
+                            label: 'D',
+                            shortcut: 'd'
+                        },
+                        previousFrame: {
+                            label: 'A',
+                            shortcut: 'a'
+                        },
+                        playPause: {
+                            label: 'Space',
+                            shortcut: 'space'
+                        },
+                        toggleZoom: {
+                            label: 'Ctrl',
+                            shortcut: 'ctrl'
+                        },
+                        startAnn: {
+                            label: 'Shift + A',
+                            shortcut: 'shift+a'
+                        },
+                        saveAnn: {
+                            label: 'Shift + S',
+                            shortcut: 'shift+s'
+                        },
+                        resetAnn: {
+                            label: 'Shift + R',
+                            shortcut: 'shift+r'
+                        },
+                        deleteLabel: {
+                            label: 'Shift + D',
+                            shortcut: 'shift+d'
+                        },
+                        nextLabel: {
+                            label: 'S',
+                            shortcut: 's'
+                        },
+                        previousLabel: {
+                            label: 'W',
+                            shortcut: 'w'
+                        } 
+                    },
+                    {
+                        layout: 'DVORAK',
+                        nextFrame: {
+                            label: 'E',
+                            shortcut: 'e'
+                        },
+                        previousFrame: {
+                            label: 'A',
+                            shortcut: 'a'
+                        },
+                        playPause: {
+                            label: 'Space',
+                            shortcut: 'space'
+                        },
+                        toggleZoom: {
+                            label: 'Ctrl',
+                            shortcut: 'ctrl'
+                        },
+                        startAnn: {
+                            label: 'Shift + A',
+                            shortcut: 'shift+a'
+                        },
+                        saveAnn: {
+                            label: 'Shift + O',
+                            shortcut: 'shift+o'
+                        },
+                        resetAnn: {
+                            label: 'Shift + P',
+                            shortcut: 'shift+p'
+                        },
+                        deleteLabel: {
+                            label: 'Shift + E',
+                            shortcut: 'shift+e'
+                        },
+                        nextLabel: {
+                            label: 'O',
+                            shortcut: 'o'
+                        },
+                        previousLabel: {
+                            label: '<',
+                            shortcut: '<'
+                        }
+                    }
+                ]
+            }
+
+            _this.bindKeys = function() {
+                hotkeys.bindTo($scope).add({
+                    combo: _this.shortcuts.selectedShortcuts.nextFrame.shortcut,
+                    description: 'Go to the next frame',
+                    callback: function() { $scope.timelineManager.nextFrame() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.previousFrame.shortcut,
+                    description: 'Go to the previous frame',
+                    callback: function() { $scope.timelineManager.previousFrame() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.playPause.shortcut,
+                    description: 'Play/Pause',
+                    callback: function() { $scope.timelineManager.switchPlay() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.saveAnn.shortcut,
+                    description: 'Save annotation',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.commonManager.updateAnnotation();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.toggleZoom.shortcut,
+                    description: 'Toggle zoom',
+                    callback: function() {
+                        $scope.canvasZoomManager.toggle();
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.resetAnn.shortcut,
+                    description: 'Delete annotation',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.commonManager.deleteAnnotation();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.deleteLabel.shortcut,
+                    description: 'Delete label',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.previousLabel.shortcut,
+                    description: 'Previous label',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.previousLabel();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.nextLabel.shortcut,
+                    description: 'Next label',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.nextLabel();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.startAnn.shortcut,
+                    description: 'Annotate',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
+                                $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
+                            } else {
+                                var tool = "";
+                                if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
+                                else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
+                                $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
+                            }
+                            
+                        }
+                    }
+                });
+            }
+
+            _this.unbindKeys = function() {
+                for (key in _this.shortcuts.oldShortcuts) {
+                    if (_this.shortcuts.oldShortcuts[key].hasOwnProperty('shortcut')) {
+                        hotkeys.del(_this.shortcuts.oldShortcuts[key].shortcut)
+                    }
+                }
+                _this.shortcuts.oldShortcuts = angular.copy(_this.shortcuts.selectedShortcuts);
+            }
+
+            // By default, the qwerty shortcuts are used
+            _this.shortcuts.selectedShortcuts = _this.shortcuts.layouts[0];
+            _this.shortcuts.oldShortcuts = angular.copy(_this.shortcuts.layouts[0]);
+            _this.bindKeys();
         }
 
         // Managers
@@ -3401,6 +3620,7 @@ angular.module('CVGTool')
         $scope.camerasManager = new CamerasManager();
 
         $scope.optionsManager = new OptionsManager();
+        $scope.shortcutsManager = new ShortcutsManager();
         
         $scope.commonManager = null;
         if ($scope.toolParameters.isPosetrack) {
@@ -3502,98 +3722,90 @@ angular.module('CVGTool')
         /////////
         // KEYBINDINGS
         /////////
-        hotkeys.bindTo($scope).add({
-                combo: 'd',
-                description: 'Go to the next frame',
-                callback: function() { $scope.timelineManager.nextFrame() }
-            })
-            .add({
-                combo: 'h',
-                description: 'Go to the previous frame',
-                callback: function() { 
-                    console.log($scope.keypointEditor.keypointEditorData.shapes) 
-                }
-            })
-            .add({
-                combo: 'a',
-                description: 'Go to the previous frame',
-                callback: function() { $scope.timelineManager.previousFrame() }
-            })
-            .add({
-                combo: 'space',
-                description: 'Play/Pause',
-                callback: function() { $scope.timelineManager.switchPlay() }
-            })
-            // TODO: Fix this when we have editor tab
-            .add({
-                combo: 'shift+s',
-                description: 'Save annotation',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.commonManager.updateAnnotation();
-                    }
-                }
-            })
-            .add({
-                combo: 'ctrl',
-                description: 'Toggle zoom',
-                callback: function() {
-                    $scope.canvasZoomManager.toggle();
-                }
-            })
-            .add({
-                combo: 'shift+r',
-                description: 'Delete annotation',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.commonManager.deleteAnnotation();
-                    }
-                }
-            })
-            .add({
-                combo: 'shift+d',
-                description: 'Delete label',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
-                    }
-                }
-            })
-            .add({
-                combo: 'w',
-                description: 'Previous label',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.previousLabel();
-                    }
-                }
-            })
-            .add({
-                combo: 's',
-                description: 'Next label',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.nextLabel();
-                    }
-                }
-            })
-            .add({
-                combo: 'shift+a',
-                description: 'Annotate',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
-                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
-                        } else {
-                            var tool = "";
-                            if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
-                            else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
-                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
-                        }
+        // hotkeys.bindTo($scope).add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.nextFrame.shortcut,
+        //         description: 'Go to the next frame',
+        //         callback: function() { $scope.timelineManager.nextFrame() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.previousFrame.shortcut,
+        //         description: 'Go to the previous frame',
+        //         callback: function() { $scope.timelineManager.previousFrame() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.playPause.shortcut,
+        //         description: 'Play/Pause',
+        //         callback: function() { $scope.timelineManager.switchPlay() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.saveAnn.shortcut,
+        //         description: 'Save annotation',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.commonManager.updateAnnotation();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.toggleZoom.shortcut,
+        //         description: 'Toggle zoom',
+        //         callback: function() {
+        //             $scope.canvasZoomManager.toggle();
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.resetAnn.shortcut,
+        //         description: 'Delete annotation',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.commonManager.deleteAnnotation();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.shortcut,
+        //         description: 'Delete label',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.previousLabel.shortcut,
+        //         description: 'Previous label',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.previousLabel();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.nextLabel.shortcut,
+        //         description: 'Next label',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.nextLabel();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.startAnn.shortcut,
+        //         description: 'Annotate',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
+        //                     $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
+        //                 } else {
+        //                     var tool = "";
+        //                     if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
+        //                     else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
+        //                     $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
+        //                 }
                         
-                    }
-                }
-            });
+        //             }
+        //         }
+        //     });
 
         /////////
         // END OF KEYBINDINGS 

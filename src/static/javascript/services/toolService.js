@@ -546,6 +546,33 @@ angular.module('CVGTool')
             }, function errorCallback() {
                 callbackError();
             })
-        }
+        },
+
+        // Batch delete annotations
+        batchDeleteLabel: function(dataset, datasetType, scene, startFrame, endFrame, username, uidObject, objectType, labelIndex, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object/label',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType,
+                    'label': labelIndex 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
+        },
+
     }
 }]);
