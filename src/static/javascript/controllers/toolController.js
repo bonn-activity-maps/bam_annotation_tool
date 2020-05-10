@@ -2080,7 +2080,7 @@ angular.module('CVGTool')
 
             _this.drawEdges = function(context, color) {
                 for (var i = 0; i < _this.skeleton.length; i++) {
-                    if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                    if ((_this.secondaryJoints.includes(_this.skeleton[i][0]) || _this.secondaryJoints.includes(_this.skeleton[i][1])) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                     
                     _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
                 }
