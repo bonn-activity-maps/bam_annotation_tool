@@ -1140,7 +1140,7 @@ angular.module('CVGTool')
             }
 
             // Autocompletes the annotation from previous annotations
-            _this.autoComplete = function(objectUID, frameTo) {
+            _this.autoComplete = function() {
                 var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
                     // First remove -1 values from the frame array
                     var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
@@ -1154,6 +1154,9 @@ angular.module('CVGTool')
                     for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
+
+                var objectUID = $scope.objectManager.selectedObject.uid;
+                var frameTo = $scope.timelineManager.slider.value;
 
                 // Create structure for the object to interpolate
                 var framesFrom = []
