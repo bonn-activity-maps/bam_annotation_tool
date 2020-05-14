@@ -1156,6 +1156,7 @@ angular.module('CVGTool')
                 }
 
                 var objectUID = $scope.objectManager.selectedObject.uid;
+                var objectType = $scope.objectManager.selectedType.type;
                 var frameTo = $scope.timelineManager.slider.value;
 
                 // Create structure for the object to interpolate
@@ -1176,7 +1177,7 @@ angular.module('CVGTool')
 
                 if (framesFrom.length === 0) return; // Nothing found to autocomplete
 
-                toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,$scope.objectManager.selectedType.type, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
             // Updates the annotation being edited
