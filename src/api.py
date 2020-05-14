@@ -436,27 +436,11 @@ def interpolate_annotation():
 # Autocomplete between 2 points and store the completed 3d points
 # startFrame is an array with the frame of each label
 @app.route('/api/annotation/autocomplete', methods=['POST'])
-# @flask_login.login_required
+@flask_login.login_required
 def autocomplete_annotation():
     req_data = request.get_json()
     start_frames = req_data['startFrames']
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-
-    # # Check if all elements are the same and substitute by only one element
-    # if len(start_frames) > 1 and all(x == start_frames[0] for x in start_frames):
-    #     start_frames = [start_frames[0]]
-
-    # # Use old interpolate if there is only 1 keypoint to interpolate, use new one if it's a poseAIK (>1kp)
-    # if len(start_frames) == 1:
-    #     object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
-    #                      track_id=req_data['track_id'])
-    #     object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
-    #                      track_id=req_data['track_id'])
-    #     start_annotation = Annotation(dataset, req_data['scene'], start_frames[0], req_data['user'], [object1])
-    #     end_annotation = Annotation(dataset, req_data['scene'], req_data['endFrame'], req_data['user'], [object1])
-    #     success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
-    # else:
-
     success, msg, status = annotationService.autocomplete_annotation(dataset, req_data['scene'], req_data['user'],
                                                                      int(req_data['uidObject']), req_data['objectType'],
                                                                      start_frames, req_data['endFrame'])
