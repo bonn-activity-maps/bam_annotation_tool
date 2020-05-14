@@ -486,6 +486,47 @@ class AnnotationService:
             log.error('Error interpolating keypoints')
             return False, final_result, 500
 
+    # Autocomplete and store the completed 3d points for each label depending on start frames
+    # Always a single object in "objects" so always objects[0] !!
+    # startFrame is an array with the frame of each label
+    def autocomplete_annotation(self, dataset, scene, user, uid_object, object_type, start_frames, end_frame):
+        object_type = objectTypeManager.get_object_type(Object_type(object_type, dataset.type))
+        empty_kpts = [[] for i in range(object_type.num_keypoints)]
+        empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
+        obj = Object(uid_object, object_type.type, dataset_type=dataset.type)
+        print("start_frames: ",start_frames)
+        print("end_frame: ",end_frame)
+
+        # Check num start_frames == num keypoints in object type
+        # assert len(start_frames) == object_type.num_keypoints, "Number of start frames should be equal to the number of labels"
+
+        # Copy the annotation for each label
+        final_result = 'ok'
+        for label, frame in enumerate(start_frames):
+            print('label: ', label)
+            print('frame: ', frame)
+            if frame != -1:         # if f=-1 --> no annotation available for that label
+                start_obj = annotationManager.get_frame_object(Annotation(dataset, scene, frame, user, [obj]))
+                num_frames = end_frame - frame
+                start_kp_to_copy = start_obj.keypoints[label]
+                print("start_obj: ",start_obj)
+                print("start_kp_to_copy: ",start_kp_to_copy)
+                print('num_frames: ', num_frames)
+
+                # Update keypoints in all frames for label
+                for i in range(1, num_frames+1):
+                    print("updated_frame: ", frame+i)
+                    annotation = Annotation(dataset, scene, frame+i, user, [empty_obj])
+                    result = self.update_annotation_frame_object_label(annotation, label, start_kp_to_copy)
+                    if result == 'Error':
+                        final_result = 'There was some error filling in the keypoints, please check them'
+
+        if final_result == 'ok':
+            return True, final_result, 200
+        else:
+            log.error('Error filling in keypoints')
+            return False, final_result, 500
+
     # Upload new annotations to an existing dataset
     def upload_annotations(self, dataset, folder):
         if dataset.is_aik():
