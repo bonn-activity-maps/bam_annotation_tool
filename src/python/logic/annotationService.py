@@ -355,7 +355,7 @@ class AnnotationService:
     # Remove label in annotation for an object for given range of frames, dataset, video and user
     # Always a single object in "objects" so always objects[0] !!
     def remove_annotation_frame_object_label(self, annotation, start_frame, end_frame, object_type, label):
-        if object_type != 'poseAIK':
+        if annotation.dataset.is_pt():
             return False, 'Operation not allowed', 400
         else:
             object_type = objectTypeManager.get_object_type(Object_type(object_type, annotation.dataset.type))
