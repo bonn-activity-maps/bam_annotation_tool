@@ -392,7 +392,6 @@ class AnnotationService:
                 else:
                     frame.append(interpolated_kps[j][i])
             final_kps.append(frame)
-
         return final_kps
 
     # Interpolate and store the interpolated 3d points
@@ -448,12 +447,12 @@ class AnnotationService:
     def interpolate_annotation_labels_aik(self, dataset, scene, user, uid_object, object_type, start_frames, end_frame):
         object_type = objectTypeManager.get_object_type(Object_type(object_type, dataset.type))
         empty_kpts = [[] for i in range(object_type.num_keypoints)]
+        interpolated_empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
 
         # Get end/last object
         obj = Object(uid_object, object_type.type, dataset_type=dataset.type)
         end_annotation = Annotation(dataset, scene, end_frame, user, [obj])
         end_obj = annotationManager.get_frame_object(end_annotation)
-        # print("end_obj: ",end_obj)
 
         # Check num start_frames == num keypoints in object type
         # assert len(start_frames) == object_type.num_keypoints, "Number of start frames should be equal to the number of labels"
@@ -461,22 +460,19 @@ class AnnotationService:
         # Interpolate for each label
         final_result = 'ok'
         for label, frame in enumerate(start_frames):
-            # print('label: ', label)
-            # print('frame: ', frame)
-            if frame != -1:         # if f=-1 --> no annotation available for that label
+            # NOT interpolate if f=-1 --> no annotation available for that label
+            # or the frames are consecutive
+            if frame != -1 and (end_frame - frame > 1):
                 start_obj = annotationManager.get_frame_object(Annotation(dataset, scene, frame, user, [obj]))
                 num_frames = end_frame - frame + 1
-                # print('num_frames: ', num_frames)
 
                 # Interpolate keypoint for label between frame and end_frame
                 final_kpts = self.interpolate(num_frames, 1, dataset.keypoint_dim, [start_obj.keypoints[label]], [end_obj.keypoints[label]])
-                # print('final_kpts: ', final_kpts)
 
                 # Update keypoints in all frames for label
                 for i in range(1, len(final_kpts) - 1):
-                    interpolated_empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
                     annotation = Annotation(dataset, scene, frame+i, user, [interpolated_empty_obj])
-                    result = self.update_annotation_frame_object_label(annotation, label, final_kpts[i][0])
+                    result = self.update_annotation_frame_object_label(copy.deepcopy(annotation), label, final_kpts[i][0])
                     if result == 'Error':
                         final_result = 'There was some error interpolating the keypoints, please check them'
 
@@ -563,7 +559,7 @@ class AnnotationService:
                 final_result = False   # finalResult False if there is some problem
 
         # Remove folder with annotations
-        shutil.rmtree(folder_path)
+        # shutil.rmtree(folder_path)
         return final_result
 
     # Add annotation of objects to database from annotations_file
