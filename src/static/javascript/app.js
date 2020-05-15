@@ -52,6 +52,12 @@ angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', '
     .state('adminStatistics', {
         url: "/admin/statistics",
         templateUrl: "static/views/adminStatistics.html"
+    })
+
+    .state('adminUserActions', {
+        url: "/admin/useractions",
+        templateUrl: "static/views/adminUserActions.html",
+        controller: "adminUserActionsCtrl"
     });
 
     $urlRouterProvider.otherwise('login');
