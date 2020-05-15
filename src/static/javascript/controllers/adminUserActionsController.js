@@ -60,7 +60,6 @@ angular.module('CVGTool')
             $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg, 'finishType': finishType});
         };
 
-        console.log("Chutando")
         $scope.getListOfDatasets();
         $scope.getInfoOfActions();
 

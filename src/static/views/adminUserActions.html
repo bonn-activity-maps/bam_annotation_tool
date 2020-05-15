@@ -5,12 +5,12 @@
     <div class="row" style="height: 98%;">
         <div class="panel panel-default" style="height: 100%">
             <div class="panel-body">
-                <h2 class="col-md-3">Datasets</h2>
-                <h2 class="col-md-9">User Actions</h2>
+                <h2 class="col-md-4">Datasets</h2>
+                <h2 class="col-md-8">User Actions</h2>
                 <hr/>
                 <div class="row">
 
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div style="overflow-y: auto; max-height: 800px;">
                             <table class="table table-bordered table-responsive text-center">
                                 <thead>
@@ -45,21 +45,23 @@
                         </div>
                     </div>
 
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <div style="overflow-y: auto; max-height: 800px;">
                             <table class="table table-bordered table-responsive text-center">
                                 <thead>
                                 <tr>
-                                    <th class="col-md-5">User</th>
+                                    <th class="col-md-1">User</th>
                                     <th class="col-md-1">Dataset</th>
+                                    <th ng-if="selectedDataset.type === 'poseTrack'" class="col-md-1">Scene</th>
                                     <th class="col-md-2">Action</th>
-                                    <th class="col-md-2">Timestamp</th>
+                                    <th class="col-md-5">Timestamp</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr ng-if="listOfActions.length > 0" ng-repeat="userAction in listOfActions">
                                     <td class="text-left">{{userAction.user}}</td>
-                                    <td>{{userAction.dataset.name}}</td>
+                                    <td>{{userAction.dataset}}</td>
+                                    <td ng-if="selectedDataset.type === 'poseTrack'">{{userAction.scene}}</td>
                                     <td>{{userAction.action}}</td>
                                     <td>{{userAction.timestamp}}</td>
                                 </tr>

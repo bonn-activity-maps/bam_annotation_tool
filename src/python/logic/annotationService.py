@@ -240,7 +240,11 @@ class AnnotationService:
             return True, result, 200
 
     # Return True if the objects with track id specified for the given video is updated correctly
-    def update_person_id(self, video, track_id, new_person_id):
+    def update_person_id(self, video, track_id, new_person_id, user):
+        # Create user action in db
+        user_action = UserAction(user, 'person id', video.name, video.dataset)
+        user_action_manager.create_user_action(user_action)
+
         result = annotationManager.update_person_id(video, track_id, new_person_id)
         if result == 'Error':
             return False, 'Error updating person id', 400

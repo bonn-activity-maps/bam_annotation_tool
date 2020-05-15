@@ -1676,7 +1676,7 @@ angular.module('CVGTool')
                         toolSrvc.updatePersonID($scope.canvasesManager.canvases[0].activeCamera.filename,
                             $scope.toolParameters.activeDataset.name,
                             $scope.toolParameters.activeDataset.type,
-                            object.uid, data.new_person_id,
+                            object.uid, data.new_person_id, $scope.toolParameters.user.name,
                             _this.callbackChangePersonID,
                             $scope.messagesManager.sendMessage);
                         _this.retrieveObjects();

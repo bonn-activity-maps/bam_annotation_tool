@@ -493,7 +493,8 @@ def update_person_id():
     video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
     new_person_id = req_data["newPersonID"]
     track_id = req_data["trackID"]
-    success, msg, status = annotationService.update_person_id(video, track_id, new_person_id)
+    user = req_data["user"]
+    success, msg, status = annotationService.update_person_id(video, track_id, new_person_id, user)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
