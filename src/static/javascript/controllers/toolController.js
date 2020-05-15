@@ -2080,6 +2080,21 @@ angular.module('CVGTool')
 
             _this.secondaryJoints = [14,15,16,17,18,19,20,21,22,23];
 
+            _this.limbsToShowLengthConnections = {
+                "2": [3,5,8],
+                "3": [2,4],
+                "4": [3],
+                "5": [2,6,11],
+                "6": [5,7],
+                "7": [6],
+                "8": [2,9,11],
+                "9": [9,10],
+                "10": [9],
+                "11": [5,8,12],
+                "12": [11,13],
+                "13": [12]
+            }
+
             // CONSTRUCT
             if (projectedPoints.length === 0) {
                 for (var i = 0; i < _this.labels.length; i++) {
@@ -2119,7 +2134,12 @@ angular.module('CVGTool')
                 _this.drawEdges(context, color);
 
                 // Lastly draw the selected point, to be on top of the rest
-                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
+                    _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                        _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
+                    }
+                }
             }
 
             _this.drawEdges = function(context, color) {
@@ -2128,6 +2148,42 @@ angular.module('CVGTool')
                     
                     _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
                 }
+            }
+
+            _this.drawEdgesWithLengths = function(context, index, indices) {
+                var point3D_1 = $scope.objectManager.selectedObject.frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints[index];
+                var point2D_1 = _this.points[index];
+
+                for (var i=0; i < indices.length; i++) {
+                    if (_this.points[indices[i]] !== null) {
+                        var point3D_2 = $scope.objectManager.selectedObject.frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints[indices[i]];
+                        var point2D_2 = _this.points[indices[i]];
+                        var distance = _this.getDistance3D(point3D_1, point3D_2)
+                        var position = [(point2D_1.center[0] + point2D_2.center[0]) / 2.0, (point2D_1.center[1] + point2D_2.center[1]) / 2.0]
+
+                        _this.drawEdge(context, "#FF8F3D", point2D_1, point2D_2)
+                        _this.drawLength(context, position, distance);
+                    }
+                }
+            }
+
+            _this.drawLength = function(context, position, length) {
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.strokeText(length.toFixed(2), position[0], position[1]);
+                context.fillStyle = "white";
+                context.fillText(length.toFixed(2), position[0], position[1]);
+                context.fill();
+                context.closePath();
+            }
+
+            _this.getDistance3D = function(p1, p2) {
+                var a = (p2[0] - p1[0])
+                var b = (p2[1] - p1[1])
+                var c = (p2[2] - p1[2])
+                return Math.sqrt((a*a) + (b*b) + (c*c))
             }
 
             _this.drawEdge = function(context, color, point1, point2) {
@@ -2185,7 +2241,12 @@ angular.module('CVGTool')
                 }
 
                 // Lastly draw the selected point, to be on top of the rest
-                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                    _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                        _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
+                    }
+                }          
             }
 
             _this.isInside = function(x,y) {
@@ -3438,7 +3499,8 @@ angular.module('CVGTool')
                 abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
-                showSecondaryPoseJoints: true
+                showSecondaryPoseJoints: true,
+                drawLimbLengths: false
             }
 
             navSrvc.setOptions(_this.options); // First set
