@@ -1674,26 +1674,6 @@ angular.module('CVGTool')
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
-            // Deprecated code beloging to original ID generation. Left just in case
-            // // Function that generates a legit poseTrack UID for new objects
-            // _this.generateNewOriginalUid_old = function(track_id, frame) {
-            //     // Convert num to String and add 0s to the left of size size.
-            //     function pad (num, size) {
-            //         let s = String(num);
-            //         while (s.length < size) { s = "0" + s; }
-            //         return s;
-            //     }
-            //     let video = "";
-            //     try{
-            //         video = $scope.canvasesManager.canvases[0].activeCamera.filename;
-            //     } catch (e) {
-            //         video = $scope.camerasManager.loadedCameras[0].filename;
-            //     }
-            //     frame = pad(frame, 4);
-            //     track_id = pad(track_id, 2);
-            //     return Number("1" + video + frame + track_id)
-            // };
-
             _this.callbackChangePersonID = function(msg, new_person_id) {
                 _this.retrieveObjects();
                 $scope.objectManager.selectedObject.person_id = new_person_id;
@@ -1737,6 +1717,7 @@ angular.module('CVGTool')
                     locals: {
                         toolSrvc: toolSrvc,
                         object: object,
+                        objectType: $scope.objectManager.selectedType,
                         minFrame: $scope.toolParameters.frameFrom,
                         maxFrame: $scope.toolParameters.frameTo,
                         dataset: $scope.toolParameters.activeDataset,
@@ -2043,9 +2024,8 @@ angular.module('CVGTool')
                     }
                 }
             }
-        }
-
-
+        }    
+       
         //// OBJECTS ////
         function Epiline (projectedPoint1, projectedPoint2, color) {
             var _this = this;
@@ -2332,105 +2312,48 @@ angular.module('CVGTool')
             }
         }
 
-        function Person (uid, projectedPoints, cameraPoints, labels) {
+        function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
-            _this.labels = labels; 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
+            _this.labels = labels;
 
-            // CONSTRUCT
+            // CONSTRUCTOR
             if (projectedPoints.length !== 0) {
-                for (var i = 0; i < projectedPoints.length; i++) {
-                    if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i]));
-                    } else _this.points.push(null);
-                }
-                _this.cameraPoints = cameraPoints;    
+                _this.points = [new Point(projectedPoints[0])];
+                _this.cameraPoints = cameraPoints;
             } else {
-                for (var i = 0; i < _this.labels.length; i++) {
-                    _this.points.push(null);
-                    _this.cameraPoints.push([]);
-                }
+                _this.points = [null];
+                _this.cameraPoints = [[]];
             }
 
+            // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
-            }
-
-            // Draws all the edges
-            _this.drawEdges = function(context, color) {
-                _this.drawEdge(context, color, _this.points[0], _this.points[1]);   // Nose -> Neck
-                _this.drawEdge(context, color, _this.points[0], _this.points[2]);   // Nose -> Head
-                _this.drawEdge(context, color, _this.points[1], _this.points[3]);   // Neck -> Left Shoulder
-                _this.drawEdge(context, color, _this.points[1], _this.points[4]);   // Neck -> Right Shoulder
-                _this.drawEdge(context, color, _this.points[3], _this.points[5]);   // Left Shoulder -> Left Elbow
-                _this.drawEdge(context, color, _this.points[5], _this.points[7]);   // Left Elbow - > Left Wrist
-                _this.drawEdge(context, color, _this.points[4], _this.points[6]);   // Right Shoulder -> Right Elbow
-                _this.drawEdge(context, color, _this.points[6], _this.points[8]);   // Right Elbow -> Right Wirst
-                _this.drawEdge(context, color, _this.points[3], _this.points[9]);   // Left Shoulder -> Left Hip
-                _this.drawEdge(context, color, _this.points[4], _this.points[10]);  // Right Shoulder -> Right Hip
-                _this.drawEdge(context, color, _this.points[9], _this.points[11]);  // Left Hip -> Left Knee
-                _this.drawEdge(context, color, _this.points[11], _this.points[13]); // Left Knee -> Left Ankle
-                _this.drawEdge(context, color, _this.points[10], _this.points[12]); // Right Hip -> Right Knee
-                _this.drawEdge(context, color, _this.points[12], _this.points[14]); // Right Knee -> Right Ankle
-            }
-
-            // Draw an edge between two points
-            _this.drawEdge = function(context, color, point1, point2) {
-                if (point1 == null || point2 == null) return;
-
-                context.beginPath();
-                context.moveTo(point1.center[0], point1.center[1]);
-                context.lineTo(point2.center[0], point2.center[1]);
-                context.strokeStyle = color;
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
+                if (_this.points[0] === null) return;
+                _this.points[0].draw(context, color);          
             }
 
             _this.drawWithUID = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
+                if (_this.points[0] === null) return;
+                _this.points[0].drawWithText(context, color, _this.uid); 
             }
 
             _this.drawWithLabel = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
+                if (_this.points[0] === null) return;
+                _this.points[0].drawWithText(context, color, _this.labels[0]);     
             }
 
             _this.isInside = function(x,y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return true;
-                        }
-                    }
-                }
+                if (_this.points[0] === null) return false;
 
-                return false;
+                return _this.points[0].isInside(x,y);
             }
 
-            _this.move = function(dx, dy, index) {
-                if (_this.points[index] == null) return;
-                _this.points[index].move(dx,dy);
+            _this.move = function(dx,dy, index) {
+                if (_this.points[index] === null) return;
+                _this.points[index].move(dx,dy); 
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -2444,15 +2367,11 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return i;
-                        }
-                    }
-                }
+                if (_this.points[0].isInside(x,y)) return 0;
             }
         }
+
+        
 
         function BBox (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
@@ -2585,48 +2504,107 @@ angular.module('CVGTool')
             }
         }
 
-        function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
+        
+
+        function Person (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
+            _this.labels = labels; 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
-            _this.labels = labels;
 
-            // CONSTRUCTOR
+            // CONSTRUCT
             if (projectedPoints.length !== 0) {
-                _this.points = [new Point(projectedPoints[0])];
-                _this.cameraPoints = cameraPoints;
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
             } else {
-                _this.points = [null];
-                _this.cameraPoints = [[]];
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
             }
 
-            // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].draw(context, color);          
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            // Draws all the edges
+            _this.drawEdges = function(context, color) {
+                _this.drawEdge(context, color, _this.points[0], _this.points[1]);   // Nose -> Neck
+                _this.drawEdge(context, color, _this.points[0], _this.points[2]);   // Nose -> Head
+                _this.drawEdge(context, color, _this.points[1], _this.points[3]);   // Neck -> Left Shoulder
+                _this.drawEdge(context, color, _this.points[1], _this.points[4]);   // Neck -> Right Shoulder
+                _this.drawEdge(context, color, _this.points[3], _this.points[5]);   // Left Shoulder -> Left Elbow
+                _this.drawEdge(context, color, _this.points[5], _this.points[7]);   // Left Elbow - > Left Wrist
+                _this.drawEdge(context, color, _this.points[4], _this.points[6]);   // Right Shoulder -> Right Elbow
+                _this.drawEdge(context, color, _this.points[6], _this.points[8]);   // Right Elbow -> Right Wirst
+                _this.drawEdge(context, color, _this.points[3], _this.points[9]);   // Left Shoulder -> Left Hip
+                _this.drawEdge(context, color, _this.points[4], _this.points[10]);  // Right Shoulder -> Right Hip
+                _this.drawEdge(context, color, _this.points[9], _this.points[11]);  // Left Hip -> Left Knee
+                _this.drawEdge(context, color, _this.points[11], _this.points[13]); // Left Knee -> Left Ankle
+                _this.drawEdge(context, color, _this.points[10], _this.points[12]); // Right Hip -> Right Knee
+                _this.drawEdge(context, color, _this.points[12], _this.points[14]); // Right Knee -> Right Ankle
+            }
+
+            // Draw an edge between two points
+            _this.drawEdge = function(context, color, point1, point2) {
+                if (point1 == null || point2 == null) return;
+
+                context.beginPath();
+                context.moveTo(point1.center[0], point1.center[1]);
+                context.lineTo(point2.center[0], point2.center[1]);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
             }
 
             _this.drawWithUID = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].drawWithText(context, color, _this.uid); 
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
             }
 
             _this.drawWithLabel = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].drawWithText(context, color, _this.labels[0]);     
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
-                if (_this.points[0] === null) return false;
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
 
-                return _this.points[0].isInside(x,y);
+                return false;
             }
 
-            _this.move = function(dx,dy, index) {
-                if (_this.points[index] === null) return;
-                _this.points[index].move(dx,dy); 
+            _this.move = function(dx, dy, index) {
+                if (_this.points[index] == null) return;
+                _this.points[index].move(dx,dy);
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -2640,7 +2618,69 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                if (_this.points[0].isInside(x,y)) return 0;
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Polygon type for ignore regions
+        function IgnoreRegion(uid, projectedPoints, cameraPoints, labels) {
+            var _this = this;
+
+            _this.labels = labels; 
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+
+            // CONSTRUCT
+            if (projectedPoints.length !== 0) {
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
+            }
+
+            // FUNCTIONS
+            _this.draw  = function(context, color) {
+                // Draw the path and fill it with a color with reduced alpha
+                if (_this.points.length > 2) _this.drawPath(context, color);
+
+                // Draw the points
+                for (var i=0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
+                }
+
+            }
+
+            _this.drawPath = function(context, color) {
+                context.beginPath();
+                context.fillStyle = color;
+                for (var i=0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (i !== _this.points.length - 1) {
+                            context.moveTo(_this.points[i].center[0], _this.points[i].center[1])
+                            context.lineTo(_this.points[i + 1].center[0], _this.points[i + 1].center[1])
+                        } else {
+                            context.moveTo(_this.points[i].center[0], _this.points[i].center[1])
+                            context.lineTo(_this.points[0].center[0], _this.points[0].center[1])
+                        }
+                    }
+                }
+
+                context.closePath();
+                context.fill();
             }
         }
 
