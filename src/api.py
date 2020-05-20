@@ -412,14 +412,25 @@ def create_new_uid_object():
 def interpolate_annotation():
     req_data = request.get_json()
     start_frames = req_data['startFrames']
+    end_frame = int(req_data['endFrame'])
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
 
     # Check if all elements are the same and substitute by only one element
     if len(start_frames) > 1 and all(x == start_frames[0] for x in start_frames):
         start_frames = [start_frames[0]]
 
+    # Check if all are -1 or the difference between startFrame and endFrame is 1 --> not need to interpolate
+    interpolate = False
+    for frame in start_frames:
+        if frame != -1 and (end_frame - frame > 1):
+            interpolate = True
+            break
+
+    # If we don't need to interpolate, return ok
+    if not interpolate:
+        success, msg, status = True, 'ok', 200
     # Use old interpolate if there is only 1 keypoint to interpolate, use new one if it's a poseAIK (>1kp)
-    if len(start_frames) == 1:
+    elif len(start_frames) == 1:
         object1 = Object(req_data['uidObject'], req_data['objectType'], dataset_type=req_data['datasetType'],
                          track_id=req_data['track_id'])
         object2 = Object(req_data['uidObject2'], req_data['objectType'], dataset_type=req_data['datasetType'],
@@ -429,7 +440,7 @@ def interpolate_annotation():
         success, msg, status = annotationService.interpolate_annotation(dataset, start_annotation, end_annotation, object2)
     else:
         success, msg, status = annotationService.interpolate_annotation_labels_aik(dataset, req_data['scene'], req_data['user'],
-                                                                        req_data['uidObject'], req_data['objectType'],
+                                                                        int(req_data['uidObject']), req_data['objectType'],
                                                                         start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
