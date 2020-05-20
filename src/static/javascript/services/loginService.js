@@ -28,6 +28,17 @@ angular.module('CVGTool')
               }, function errorCallback(response) {
                   callbackError(response.data.msg);
               });
+            },
+            logout: function(userName, callback) {
+                $http({
+                    method: 'GET',
+                    url: '/api/user/logout',
+                    headers: {
+                        'username': userName
+                    }
+                }).then(function successCallback() {
+                    callback();
+                })
             }
         }
 });

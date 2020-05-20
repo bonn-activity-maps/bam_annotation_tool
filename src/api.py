@@ -121,8 +121,8 @@ def user_login():
 
 # TODO: add logout??
 @app.route("/api/user/logout", methods=['GET'])
-@flask_login.login_required
 def logout():
+    userService.user_logout(request.headers['username'])
     return json.dumps({'success': True, 'msg': "Logged out"}), 200, {'ContentType': 'application/json'}
 
 
