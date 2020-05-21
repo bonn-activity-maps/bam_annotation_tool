@@ -533,17 +533,20 @@ angular.module('CVGTool')
 /*
  * Controller of the dialog of batch delete
  */
-.controller('batchDeleteCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
-    function($scope, $mdDialog, toolSrvc, object, minFrame, maxFrame, dataset, scene, username) {
+.controller('batchDeleteCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'objectType', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, objectType, minFrame, maxFrame, dataset, scene, username) {
         $scope.object = object;
+        $scope.objectType = objectType;
         $scope.dataset = dataset;
         $scope.scene = scene;
         $scope.username = username;
         $scope.mode = "normal";
+        $scope.deleteType = "annotation";
 
         $scope.values = {
             deleteFrom: minFrame,
-            deleteTo: minFrame + 1
+            deleteTo: minFrame + 1,
+            label: $scope.objectType.labels[0]
         }
 
         $scope.minFrame = minFrame;
@@ -561,7 +564,8 @@ angular.module('CVGTool')
             if ($scope.values.deleteTo > $scope.maxFrame) $scope.values.deleteTo = $scope.maxFrame;
         }
 
-        $scope.delete = function() {
+        $scope.delete = function(type) {
+            $scope.deleteType = type;
             $scope.mode = "check";
         }
 
@@ -596,9 +600,18 @@ angular.module('CVGTool')
                 $scope.values.deleteFrom = $scope.values.deleteTo;
                 $scope.values.deleteTo = aux;
             }
-            toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene,
-                $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
-                $scope.object.type, successFunction, errorFunction);
+
+            if ($scope.deleteType.localeCompare("annotation") == 0) {
+                toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                    $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                    $scope.object.type, successFunction, errorFunction);
+            } else if ($scope.deleteType.localeCompare("label") == 0) {
+                var labelIndex = $scope.objectType.labels.indexOf($scope.values.label);
+                toolSrvc.batchDeleteLabel($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                    $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                    $scope.object.type, labelIndex,successFunction, errorFunction);
+            }
+            
         }
     }
 ])

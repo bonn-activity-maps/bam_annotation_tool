@@ -371,6 +371,34 @@ angular.module('CVGTool')
                 })
         },
 
+        autoComplete: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
+            uidObject2, callbackSuccess, callbackError, track_id) {
+            $http({
+                method: 'POST',
+                url: "/api/annotation/autocomplete",
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'startFrames': startFrames,
+                    'endFrame': endFrame,
+                    'uidObject': uidObject,
+                    'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
+                    'datasetType': datasetType,
+                    'objectType': objectType,
+                    'uidObject2': uidObject2 
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uidObject, objectType, startFrames, endFrame);
+            },
+            function errorCallback(response) {
+                callbackError('danger', response);
+            })
+        },
+
         // Get list of possible Actions
         getActivitiesList: function(dataset, callbackSuccess, callbackError) {
             $http({
@@ -547,6 +575,33 @@ angular.module('CVGTool')
             }, function errorCallback() {
                 callbackError();
             })
-        }
+        },
+
+        // Batch delete annotations
+        batchDeleteLabel: function(dataset, datasetType, scene, startFrame, endFrame, username, uidObject, objectType, labelIndex, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/removeAnnotation/object/label',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'uidObject': uidObject,
+                    'objectType': objectType,
+                    'label': labelIndex 
+                }
+            }).then(function successCallback() {
+                callbackSuccess();
+            }, function errorCallback() {
+                callbackError();
+            })
+        },
+
     }
 }]);

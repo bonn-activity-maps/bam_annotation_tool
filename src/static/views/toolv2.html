@@ -143,13 +143,19 @@
                 Point size:
                 <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.pointSize" min="1" max="12">
             </li>
+            <li class="dropdown-item">
+                Font size:
+                <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.fontSize" min="1" max="12">
+            </li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.abbreviateLabels"> Abbreviate labels</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.drawLimbLengths"> Draw limb lengths</li>
             </div>
         </div>
     </div>
@@ -158,21 +164,21 @@
             <span class="glyphicon glyphicon-list-alt"></span>
         </button>
         <div id="ShortcutsDropdown" class="dropdown-menu text-center" style="font-size: x-small;">
+            <select class="form-control" id="selLayout" ng-model="shortcutsManager.shortcuts.selectedShortcuts" ng-change="shortcutsManager.unbindKeys(); shortcutsManager.bindKeys();" ng-options="shortcut as shortcut.layout for shortcut in shortcutsManager.shortcuts.layouts" ></select>                     
+            <li class="divider"></li> 
             <li class="dropdown-header">Global shortcuts:</li>
-            <li class="dropdown-item">Next frame: <b>D</b></li>
-            <li class="dropdown-item">Previous frame: <b>A</b></li>
-            <li class="dropdown-item">Play/Pause: <b>Spacebar</b></li>
-            <li class="dropdown-item">Toggle zoom: <b>Ctrl</b></li>
+            <li class="dropdown-item">Next frame: <b>{{shortcutsManager.shortcuts.selectedShortcuts.nextFrame.label}}</b></li>
+            <li class="dropdown-item">Previous frame: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previousFrame.label}}</b></li>
+            <li class="dropdown-item">Play/Pause: <b>{{shortcutsManager.shortcuts.selectedShortcuts.playPause.label}}</b></li>
+            <li class="dropdown-item">Toggle zoom: <b>{{shortcutsManager.shortcuts.selectedShortcuts.toggleZoom.label}}</b></li>
             <li class="divider"></li> 
             <li class="dropdown-header">Editor shortcuts:</li>
-            <li class="dropdown-item">Next label: <b>S</b></li>
-            <li class="dropdown-item">Previous label: <b>W</b></li>
-            <li class="dropdown-item">Start annotating: <b>Shift + A</b></li>
-            <li class="dropdown-item">Save annotation: <b>Shift + S</b></li>
-            <li class="dropdown-item">Delete label: <b>Shift + D</b></li>
-            <li class="dropdown-item">Reset annotation: <b>Shift + R</b></li>
-            
-        
+            <li class="dropdown-item">Next label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.nextLabel.label}}</b></li>
+            <li class="dropdown-item">Previous label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previousLabel.label}}</b></li>
+            <li class="dropdown-item">Start annotating: <b>{{shortcutsManager.shortcuts.selectedShortcuts.startAnn.label}}</b></li>
+            <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
+            <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
+            <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>  
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -344,7 +350,9 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col col-md-6"></div>
+            <div class="col col-md-6">
+                <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack" ng-click="commonManager.autoComplete()">Auto-complete annotation<span class="glyphicon glyphicon-arrow-left"></button>
+            </div>
             <div class="col col-md-6">
                 <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
             </div>

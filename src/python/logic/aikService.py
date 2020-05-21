@@ -103,8 +103,11 @@ class AIKService:
                 else:
                     indexes_of_empty_points.append(i)
 
-            # Project all the points in the camera
-            points_2D = camera.project_points(np.asarray(points_to_interpolate)).tolist()
+            # Project all the points in the camera if points_to_interpolate is not empty
+            if points_to_interpolate:
+                points_2D = camera.project_points(np.asarray(points_to_interpolate)).tolist()
+            else:
+                points_2D = []
 
             # if the list is not empty (if there are some empty array) --> add it again
             if indexes_of_empty_points:

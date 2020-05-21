@@ -1139,6 +1139,47 @@ angular.module('CVGTool')
                 toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
+            // Autocompletes the annotation from previous annotations
+            _this.autoComplete = function() {
+                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+                    // First remove -1 values from the frame array
+                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+                        return value >= 0;
+                    })
+
+                    // Get the min used frame
+                    var minFrame = Math.min(...framesFromFiltered);
+
+                    var frameArray = [];
+                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                var objectUID = $scope.objectManager.selectedObject.uid;
+                var objectType = $scope.objectManager.selectedType.type;
+                var frameTo = $scope.timelineManager.slider.value;
+
+                // Create structure for the object to interpolate
+                var framesFrom = []
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
+                    framesFrom.push(-1);
+                }
+
+                // For each label find a possible frame to autocomplete
+                for (var i=0; i<framesFrom.length; i++) {
+                    for (var j= frameTo; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
+                        if ($scope.objectManager.hasAnnotationForLabel(objectUID, objectType, j, i)) {
+                            framesFrom[i] = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (framesFrom.length === 0) return; // Nothing found to autocomplete
+
+                toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
             // Updates the annotation being edited
             _this.updateAnnotation = function() {
                 var callbackSuccess = function(uid, type, frame) {
@@ -1212,6 +1253,7 @@ angular.module('CVGTool')
                     locals: {
                         toolSrvc: toolSrvc,
                         object: object,
+                        objectType: $scope.objectManager.selectedType,
                         minFrame: $scope.toolParameters.frameFrom,
                         maxFrame: $scope.toolParameters.frameTo,
                         dataset: $scope.toolParameters.activeDataset,
@@ -1632,26 +1674,6 @@ angular.module('CVGTool')
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
-            // Deprecated code beloging to original ID generation. Left just in case
-            // // Function that generates a legit poseTrack UID for new objects
-            // _this.generateNewOriginalUid_old = function(track_id, frame) {
-            //     // Convert num to String and add 0s to the left of size size.
-            //     function pad (num, size) {
-            //         let s = String(num);
-            //         while (s.length < size) { s = "0" + s; }
-            //         return s;
-            //     }
-            //     let video = "";
-            //     try{
-            //         video = $scope.canvasesManager.canvases[0].activeCamera.filename;
-            //     } catch (e) {
-            //         video = $scope.camerasManager.loadedCameras[0].filename;
-            //     }
-            //     frame = pad(frame, 4);
-            //     track_id = pad(track_id, 2);
-            //     return Number("1" + video + frame + track_id)
-            // };
-
             _this.callbackChangePersonID = function(msg, new_person_id) {
                 _this.retrieveObjects();
                 $scope.objectManager.selectedObject.person_id = new_person_id;
@@ -1695,6 +1717,7 @@ angular.module('CVGTool')
                     locals: {
                         toolSrvc: toolSrvc,
                         object: object,
+                        objectType: $scope.objectManager.selectedType,
                         minFrame: $scope.toolParameters.frameFrom,
                         maxFrame: $scope.toolParameters.frameTo,
                         dataset: $scope.toolParameters.activeDataset,
@@ -1928,6 +1951,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
             _this.previousLabel = function() {
@@ -1940,6 +1964,7 @@ angular.module('CVGTool')
                         $scope.toolsManager.switchSubTool("");
                     }
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
         
@@ -1999,9 +2024,8 @@ angular.module('CVGTool')
                     }
                 }
             }
-        }
-
-
+        }    
+       
         //// OBJECTS ////
         function Epiline (projectedPoint1, projectedPoint2, color) {
             var _this = this;
@@ -2025,15 +2049,31 @@ angular.module('CVGTool')
         function PoseAIK(uid, projectedPoints, cameraPoints, labels, skeleton) {
             var _this = this;
             _this.labels = labels;
+            _this.abbreviatedLabels = [];
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
             _this.skeleton = skeleton;
-
+            
             _this.rightSide = [2,3,4,8,9,10,14,16,21,22,23];
             _this.leftSide = [5,6,7,11,12,13,15,17,18,19,20];
 
             _this.secondaryJoints = [14,15,16,17,18,19,20,21,22,23];
+
+            _this.limbsToShowLengthConnections = {
+                "2": [3,5,8],
+                "3": [2,4],
+                "4": [3],
+                "5": [2,6,11],
+                "6": [5,7],
+                "7": [6],
+                "8": [2,9,11],
+                "9": [9,10],
+                "10": [9],
+                "11": [5,8,12],
+                "12": [11,13],
+                "13": [12]
+            }
 
             // CONSTRUCT
             if (projectedPoints.length === 0) {
@@ -2049,8 +2089,12 @@ angular.module('CVGTool')
                 }
                 _this.cameraPoints = cameraPoints; 
             }
-          
 
+            // ABBREVIATED LABELS. Temporal, it would be nice to generate them on the fly
+            _this.abbreviatedLabels = ["No", "Ne", "ShR", "ElR", "HaR", "ShL", "ElL", "HaL", "HiR", "KnR", "FoR", "HiL", "KnL",
+            "FoL", "EyR", "EyL", "EaR", "EaL", "STL", "LTL", "HeL", "STR", "LTR", "HeR"];
+
+            // FUNCTIONS
             _this.draw = function(context, color) {
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
@@ -2068,14 +2112,58 @@ angular.module('CVGTool')
 
                 // Then draw all the edges
                 _this.drawEdges(context, color);
+
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
+                    _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                        _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
+                    }
+                }
             }
 
             _this.drawEdges = function(context, color) {
                 for (var i = 0; i < _this.skeleton.length; i++) {
-                    if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
+                    if ((_this.secondaryJoints.includes(_this.skeleton[i][0]) || _this.secondaryJoints.includes(_this.skeleton[i][1])) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                     
                     _this.drawEdge(context, color, _this.points[_this.skeleton[i][0]], _this.points[_this.skeleton[i][1]]);
                 }
+            }
+
+            _this.drawEdgesWithLengths = function(context, index, indices) {
+                var point3D_1 = $scope.objectManager.selectedObject.frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints[index];
+                var point2D_1 = _this.points[index];
+
+                for (var i=0; i < indices.length; i++) {
+                    if (_this.points[indices[i]] !== null) {
+                        var point3D_2 = $scope.objectManager.selectedObject.frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints[indices[i]];
+                        var point2D_2 = _this.points[indices[i]];
+                        var distance = _this.getDistance3D(point3D_1, point3D_2)
+                        var position = [(point2D_1.center[0] + point2D_2.center[0]) / 2.0, (point2D_1.center[1] + point2D_2.center[1]) / 2.0]
+
+                        _this.drawEdge(context, "#FF8F3D", point2D_1, point2D_2)
+                        _this.drawLength(context, position, distance);
+                    }
+                }
+            }
+
+            _this.drawLength = function(context, position, length) {
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.strokeText(length.toFixed(2), position[0], position[1]);
+                context.fillStyle = "white";
+                context.fillText(length.toFixed(2), position[0], position[1]);
+                context.fill();
+                context.closePath();
+            }
+
+            _this.getDistance3D = function(p1, p2) {
+                var a = (p2[0] - p1[0])
+                var b = (p2[1] - p1[1])
+                var c = (p2[2] - p1[2])
+                return Math.sqrt((a*a) + (b*b) + (c*c))
             }
 
             _this.drawEdge = function(context, color, point1, point2) {
@@ -2116,7 +2204,9 @@ angular.module('CVGTool')
                 var lightColor = _this.updateColorLight(color);
                 var darkColor = _this.updateColorDark(color);
 
-                // Then draw all the edges
+                var labelsToUse = (($scope.optionsManager.options.abbreviateLabels) ? _this.abbreviatedLabels : _this.labels);
+
+                // Draw all the edges
                 _this.drawEdges(context, color);
                 
                 // Draw the points
@@ -2124,12 +2214,19 @@ angular.module('CVGTool')
                     if (_this.points[i] !== null) {
                         if (_this.secondaryJoints.includes(i) && !$scope.optionsManager.options.showSecondaryPoseJoints) break;
                         
-                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, _this.labels[i]);
-                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor, _this.labels[i]);
-                        else _this.points[i].drawWithText(context, color, _this.labels[i]); 
+                        if (_this.leftSide.includes(i)) _this.points[i].drawWithText(context, lightColor, labelsToUse[i]);
+                        else if (_this.rightSide.includes(i)) _this.points[i].drawWithText(context, darkColor,labelsToUse[i]);
+                        else _this.points[i].drawWithText(context, color, labelsToUse[i]);    
                     }
                 }
 
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                    _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                        _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
+                    }
+                }          
             }
 
             _this.isInside = function(x,y) {
@@ -2215,105 +2312,48 @@ angular.module('CVGTool')
             }
         }
 
-        function Person (uid, projectedPoints, cameraPoints, labels) {
+        function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
-            _this.labels = labels; 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
+            _this.labels = labels;
 
-            // CONSTRUCT
+            // CONSTRUCTOR
             if (projectedPoints.length !== 0) {
-                for (var i = 0; i < projectedPoints.length; i++) {
-                    if (projectedPoints[i].length !== 0) {
-                        _this.points.push(new Point(projectedPoints[i]));
-                    } else _this.points.push(null);
-                }
-                _this.cameraPoints = cameraPoints;    
+                _this.points = [new Point(projectedPoints[0])];
+                _this.cameraPoints = cameraPoints;
             } else {
-                for (var i = 0; i < _this.labels.length; i++) {
-                    _this.points.push(null);
-                    _this.cameraPoints.push([]);
-                }
+                _this.points = [null];
+                _this.cameraPoints = [[]];
             }
 
+            // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
-            }
-
-            // Draws all the edges
-            _this.drawEdges = function(context, color) {
-                _this.drawEdge(context, color, _this.points[0], _this.points[1]);   // Nose -> Neck
-                _this.drawEdge(context, color, _this.points[0], _this.points[2]);   // Nose -> Head
-                _this.drawEdge(context, color, _this.points[1], _this.points[3]);   // Neck -> Left Shoulder
-                _this.drawEdge(context, color, _this.points[1], _this.points[4]);   // Neck -> Right Shoulder
-                _this.drawEdge(context, color, _this.points[3], _this.points[5]);   // Left Shoulder -> Left Elbow
-                _this.drawEdge(context, color, _this.points[5], _this.points[7]);   // Left Elbow - > Left Wrist
-                _this.drawEdge(context, color, _this.points[4], _this.points[6]);   // Right Shoulder -> Right Elbow
-                _this.drawEdge(context, color, _this.points[6], _this.points[8]);   // Right Elbow -> Right Wirst
-                _this.drawEdge(context, color, _this.points[3], _this.points[9]);   // Left Shoulder -> Left Hip
-                _this.drawEdge(context, color, _this.points[4], _this.points[10]);  // Right Shoulder -> Right Hip
-                _this.drawEdge(context, color, _this.points[9], _this.points[11]);  // Left Hip -> Left Knee
-                _this.drawEdge(context, color, _this.points[11], _this.points[13]); // Left Knee -> Left Ankle
-                _this.drawEdge(context, color, _this.points[10], _this.points[12]); // Right Hip -> Right Knee
-                _this.drawEdge(context, color, _this.points[12], _this.points[14]); // Right Knee -> Right Ankle
-            }
-
-            // Draw an edge between two points
-            _this.drawEdge = function(context, color, point1, point2) {
-                if (point1 == null || point2 == null) return;
-
-                context.beginPath();
-                context.moveTo(point1.center[0], point1.center[1]);
-                context.lineTo(point2.center[0], point2.center[1]);
-                context.strokeStyle = color;
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
+                if (_this.points[0] === null) return;
+                _this.points[0].draw(context, color);          
             }
 
             _this.drawWithUID = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
+                if (_this.points[0] === null) return;
+                _this.points[0].drawWithText(context, color, _this.uid); 
             }
 
             _this.drawWithLabel = function(context, color) {
-                // First draw all points
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
-                }
-
-                // Then draw all the edges
-                _this.drawEdges(context, color);
+                if (_this.points[0] === null) return;
+                _this.points[0].drawWithText(context, color, _this.labels[0]);     
             }
 
             _this.isInside = function(x,y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return true;
-                        }
-                    }
-                }
+                if (_this.points[0] === null) return false;
 
-                return false;
+                return _this.points[0].isInside(x,y);
             }
 
-            _this.move = function(dx, dy, index) {
-                if (_this.points[index] == null) return;
-                _this.points[index].move(dx,dy);
+            _this.move = function(dx,dy, index) {
+                if (_this.points[index] === null) return;
+                _this.points[index].move(dx,dy); 
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -2327,15 +2367,11 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return i;
-                        }
-                    }
-                }
+                if (_this.points[0].isInside(x,y)) return 0;
             }
         }
+
+        
 
         function BBox (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
@@ -2468,48 +2504,107 @@ angular.module('CVGTool')
             }
         }
 
-        function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
+        
+
+        function Person (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
+            _this.labels = labels; 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
-            _this.labels = labels;
 
-            // CONSTRUCTOR
+            // CONSTRUCT
             if (projectedPoints.length !== 0) {
-                _this.points = [new Point(projectedPoints[0])];
-                _this.cameraPoints = cameraPoints;
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
             } else {
-                _this.points = [null];
-                _this.cameraPoints = [[]];
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
             }
 
-            // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].draw(context, color);          
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
+            }
+
+            // Draws all the edges
+            _this.drawEdges = function(context, color) {
+                _this.drawEdge(context, color, _this.points[0], _this.points[1]);   // Nose -> Neck
+                _this.drawEdge(context, color, _this.points[0], _this.points[2]);   // Nose -> Head
+                _this.drawEdge(context, color, _this.points[1], _this.points[3]);   // Neck -> Left Shoulder
+                _this.drawEdge(context, color, _this.points[1], _this.points[4]);   // Neck -> Right Shoulder
+                _this.drawEdge(context, color, _this.points[3], _this.points[5]);   // Left Shoulder -> Left Elbow
+                _this.drawEdge(context, color, _this.points[5], _this.points[7]);   // Left Elbow - > Left Wrist
+                _this.drawEdge(context, color, _this.points[4], _this.points[6]);   // Right Shoulder -> Right Elbow
+                _this.drawEdge(context, color, _this.points[6], _this.points[8]);   // Right Elbow -> Right Wirst
+                _this.drawEdge(context, color, _this.points[3], _this.points[9]);   // Left Shoulder -> Left Hip
+                _this.drawEdge(context, color, _this.points[4], _this.points[10]);  // Right Shoulder -> Right Hip
+                _this.drawEdge(context, color, _this.points[9], _this.points[11]);  // Left Hip -> Left Knee
+                _this.drawEdge(context, color, _this.points[11], _this.points[13]); // Left Knee -> Left Ankle
+                _this.drawEdge(context, color, _this.points[10], _this.points[12]); // Right Hip -> Right Knee
+                _this.drawEdge(context, color, _this.points[12], _this.points[14]); // Right Knee -> Right Ankle
+            }
+
+            // Draw an edge between two points
+            _this.drawEdge = function(context, color, point1, point2) {
+                if (point1 == null || point2 == null) return;
+
+                context.beginPath();
+                context.moveTo(point1.center[0], point1.center[1]);
+                context.lineTo(point2.center[0], point2.center[1]);
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
             }
 
             _this.drawWithUID = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].drawWithText(context, color, _this.uid); 
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
             }
 
             _this.drawWithLabel = function(context, color) {
-                if (_this.points[0] === null) return;
-                _this.points[0].drawWithText(context, color, _this.labels[0]);     
+                // First draw all points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+
+                // Then draw all the edges
+                _this.drawEdges(context, color);
             }
 
             _this.isInside = function(x,y) {
-                if (_this.points[0] === null) return false;
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
 
-                return _this.points[0].isInside(x,y);
+                return false;
             }
 
-            _this.move = function(dx,dy, index) {
-                if (_this.points[index] === null) return;
-                _this.points[index].move(dx,dy); 
+            _this.move = function(dx, dy, index) {
+                if (_this.points[index] == null) return;
+                _this.points[index].move(dx,dy);
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -2523,7 +2618,69 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                if (_this.points[0].isInside(x,y)) return 0;
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Polygon type for ignore regions
+        function IgnoreRegion(uid, projectedPoints, cameraPoints, labels) {
+            var _this = this;
+
+            _this.labels = labels; 
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+
+            // CONSTRUCT
+            if (projectedPoints.length !== 0) {
+                for (var i = 0; i < projectedPoints.length; i++) {
+                    if (projectedPoints[i].length !== 0) {
+                        _this.points.push(new Point(projectedPoints[i]));
+                    } else _this.points.push(null);
+                }
+                _this.cameraPoints = cameraPoints;    
+            } else {
+                for (var i = 0; i < _this.labels.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                }
+            }
+
+            // FUNCTIONS
+            _this.draw  = function(context, color) {
+                // Draw the path and fill it with a color with reduced alpha
+                if (_this.points.length > 2) _this.drawPath(context, color);
+
+                // Draw the points
+                for (var i=0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
+                }
+
+            }
+
+            _this.drawPath = function(context, color) {
+                context.beginPath();
+                context.fillStyle = color;
+                for (var i=0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (i !== _this.points.length - 1) {
+                            context.moveTo(_this.points[i].center[0], _this.points[i].center[1])
+                            context.lineTo(_this.points[i + 1].center[0], _this.points[i + 1].center[1])
+                        } else {
+                            context.moveTo(_this.points[i].center[0], _this.points[i].center[1])
+                            context.lineTo(_this.points[0].center[0], _this.points[0].center[1])
+                        }
+                    }
+                }
+
+                context.closePath();
+                context.fill();
             }
         }
 
@@ -2548,7 +2705,7 @@ angular.module('CVGTool')
                 context.fill();
                 context.closePath();
                 context.beginPath();
-                context.font = "12px sans-serif";
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
                 context.strokeText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
@@ -3377,10 +3534,13 @@ angular.module('CVGTool')
 
             _this.options = {
                 pointSize: 10,
+                fontSize: 10,
                 showLabels: true,
+                abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
-                showSecondaryPoseJoints: true
+                showSecondaryPoseJoints: true,
+                drawLimbLengths: false
             }
 
             navSrvc.setOptions(_this.options); // First set
@@ -3390,6 +3550,204 @@ angular.module('CVGTool')
                 $scope.canvasesManager.redrawCanvases();
             }
 
+        }
+
+        function ShortcutsManager() {
+            var _this = this;
+
+            _this.shortcuts = {
+                selectedShortcuts: null,
+                oldShortcuts: null,
+                layouts: [
+                    {
+                        layout: 'QWERTY/QWERTZ',
+                        nextFrame: {
+                            label: 'D',
+                            shortcut: 'd'
+                        },
+                        previousFrame: {
+                            label: 'A',
+                            shortcut: 'a'
+                        },
+                        playPause: {
+                            label: 'Space',
+                            shortcut: 'space'
+                        },
+                        toggleZoom: {
+                            label: 'Ctrl',
+                            shortcut: 'ctrl'
+                        },
+                        startAnn: {
+                            label: 'Shift + A',
+                            shortcut: 'shift+a'
+                        },
+                        saveAnn: {
+                            label: 'Shift + S',
+                            shortcut: 'shift+s'
+                        },
+                        resetAnn: {
+                            label: 'Shift + R',
+                            shortcut: 'shift+r'
+                        },
+                        deleteLabel: {
+                            label: 'Shift + D',
+                            shortcut: 'shift+d'
+                        },
+                        nextLabel: {
+                            label: 'S',
+                            shortcut: 's'
+                        },
+                        previousLabel: {
+                            label: 'W',
+                            shortcut: 'w'
+                        } 
+                    },
+                    {
+                        layout: 'DVORAK',
+                        nextFrame: {
+                            label: 'E',
+                            shortcut: 'e'
+                        },
+                        previousFrame: {
+                            label: 'A',
+                            shortcut: 'a'
+                        },
+                        playPause: {
+                            label: 'Space',
+                            shortcut: 'space'
+                        },
+                        toggleZoom: {
+                            label: 'Ctrl',
+                            shortcut: 'ctrl'
+                        },
+                        startAnn: {
+                            label: 'Shift + A',
+                            shortcut: 'shift+a'
+                        },
+                        saveAnn: {
+                            label: 'Shift + O',
+                            shortcut: 'shift+o'
+                        },
+                        resetAnn: {
+                            label: 'Shift + P',
+                            shortcut: 'shift+p'
+                        },
+                        deleteLabel: {
+                            label: 'Shift + E',
+                            shortcut: 'shift+e'
+                        },
+                        nextLabel: {
+                            label: 'O',
+                            shortcut: 'o'
+                        },
+                        previousLabel: {
+                            label: '<',
+                            shortcut: '<'
+                        }
+                    }
+                ]
+            }
+
+            _this.bindKeys = function() {
+                hotkeys.bindTo($scope).add({
+                    combo: _this.shortcuts.selectedShortcuts.nextFrame.shortcut,
+                    description: 'Go to the next frame',
+                    callback: function() { $scope.timelineManager.nextFrame() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.previousFrame.shortcut,
+                    description: 'Go to the previous frame',
+                    callback: function() { $scope.timelineManager.previousFrame() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.playPause.shortcut,
+                    description: 'Play/Pause',
+                    callback: function() { $scope.timelineManager.switchPlay() }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.saveAnn.shortcut,
+                    description: 'Save annotation',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.commonManager.updateAnnotation();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.toggleZoom.shortcut,
+                    description: 'Toggle zoom',
+                    callback: function() {
+                        $scope.canvasZoomManager.toggle();
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.resetAnn.shortcut,
+                    description: 'Delete annotation',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.commonManager.deleteAnnotation();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.deleteLabel.shortcut,
+                    description: 'Delete label',
+                    callback: function() { //check if the keypoint editor is open and then save
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.previousLabel.shortcut,
+                    description: 'Previous label',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.previousLabel();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.nextLabel.shortcut,
+                    description: 'Next label',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.nextLabel();
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.startAnn.shortcut,
+                    description: 'Annotate',
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
+                                $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
+                            } else {
+                                var tool = "";
+                                if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
+                                else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
+                                $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
+                            }
+                            
+                        }
+                    }
+                });
+            }
+
+            _this.unbindKeys = function() {
+                for (key in _this.shortcuts.oldShortcuts) {
+                    if (_this.shortcuts.oldShortcuts[key].hasOwnProperty('shortcut')) {
+                        hotkeys.del(_this.shortcuts.oldShortcuts[key].shortcut)
+                    }
+                }
+                _this.shortcuts.oldShortcuts = angular.copy(_this.shortcuts.selectedShortcuts);
+            }
+
+            // By default, the qwerty shortcuts are used
+            _this.shortcuts.selectedShortcuts = _this.shortcuts.layouts[0];
+            _this.shortcuts.oldShortcuts = angular.copy(_this.shortcuts.layouts[0]);
+            _this.bindKeys();
         }
 
         // Managers
@@ -3405,6 +3763,7 @@ angular.module('CVGTool')
         $scope.camerasManager = new CamerasManager();
 
         $scope.optionsManager = new OptionsManager();
+        $scope.shortcutsManager = new ShortcutsManager();
         
         $scope.commonManager = null;
         if ($scope.toolParameters.isPosetrack) {
@@ -3506,98 +3865,90 @@ angular.module('CVGTool')
         /////////
         // KEYBINDINGS
         /////////
-        hotkeys.bindTo($scope).add({
-                combo: 'd',
-                description: 'Go to the next frame',
-                callback: function() { $scope.timelineManager.nextFrame() }
-            })
-            .add({
-                combo: 'h',
-                description: 'Go to the previous frame',
-                callback: function() { 
-                    console.log($scope.keypointEditor.keypointEditorData.shapes) 
-                }
-            })
-            .add({
-                combo: 'a',
-                description: 'Go to the previous frame',
-                callback: function() { $scope.timelineManager.previousFrame() }
-            })
-            .add({
-                combo: 'space',
-                description: 'Play/Pause',
-                callback: function() { $scope.timelineManager.switchPlay() }
-            })
-            // TODO: Fix this when we have editor tab
-            .add({
-                combo: 'shift+s',
-                description: 'Save annotation',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.commonManager.updateAnnotation();
-                    }
-                }
-            })
-            .add({
-                combo: 'ctrl',
-                description: 'Toggle zoom',
-                callback: function() {
-                    $scope.canvasZoomManager.toggle();
-                }
-            })
-            .add({
-                combo: 'shift+r',
-                description: 'Delete annotation',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.commonManager.deleteAnnotation();
-                    }
-                }
-            })
-            .add({
-                combo: 'shift+d',
-                description: 'Delete label',
-                callback: function() { //check if the keypoint editor is open and then save
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
-                    }
-                }
-            })
-            .add({
-                combo: 'w',
-                description: 'Previous label',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.previousLabel();
-                    }
-                }
-            })
-            .add({
-                combo: 's',
-                description: 'Next label',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        $scope.keypointEditor.nextLabel();
-                    }
-                }
-            })
-            .add({
-                combo: 'shift+a',
-                description: 'Annotate',
-                callback: function() {
-                    if ($scope.keypointEditor.editorActive === true) {
-                        if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
-                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
-                        } else {
-                            var tool = "";
-                            if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
-                            else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
-                            $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
-                        }
+        // hotkeys.bindTo($scope).add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.nextFrame.shortcut,
+        //         description: 'Go to the next frame',
+        //         callback: function() { $scope.timelineManager.nextFrame() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.previousFrame.shortcut,
+        //         description: 'Go to the previous frame',
+        //         callback: function() { $scope.timelineManager.previousFrame() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.playPause.shortcut,
+        //         description: 'Play/Pause',
+        //         callback: function() { $scope.timelineManager.switchPlay() }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.saveAnn.shortcut,
+        //         description: 'Save annotation',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.commonManager.updateAnnotation();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.toggleZoom.shortcut,
+        //         description: 'Toggle zoom',
+        //         callback: function() {
+        //             $scope.canvasZoomManager.toggle();
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.resetAnn.shortcut,
+        //         description: 'Delete annotation',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.commonManager.deleteAnnotation();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.shortcut,
+        //         description: 'Delete label',
+        //         callback: function() { //check if the keypoint editor is open and then save
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.previousLabel.shortcut,
+        //         description: 'Previous label',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.previousLabel();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.nextLabel.shortcut,
+        //         description: 'Next label',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 $scope.keypointEditor.nextLabel();
+        //             }
+        //         }
+        //     })
+        //     .add({
+        //         combo: $scope.shortcutsManager.shortcuts.selectedShortcuts.startAnn.shortcut,
+        //         description: 'Annotate',
+        //         callback: function() {
+        //             if ($scope.keypointEditor.editorActive === true) {
+        //                 if ($scope.keypointEditor.keypointEditorData.indexBeingEdited == $scope.keypointEditor.selectedLabel) {
+        //                     $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, '');
+        //                 } else {
+        //                     var tool = "";
+        //                     if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('point') == 0) tool = "pointCreation";
+        //                     else if ($scope.keypointEditor.keypointEditorData.creationType.localeCompare('box') == 0) tool = "boxCreation";
+        //                     $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
+        //                 }
                         
-                    }
-                }
-            });
+        //             }
+        //         }
+        //     });
 
         /////////
         // END OF KEYBINDINGS 
