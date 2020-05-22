@@ -1,7 +1,7 @@
 angular.module('CVGTool')
 
-.controller('navbarCtrl', ['$scope', '$rootScope', '$state', 'navSrvc', 'adminDatasetsSrvc', '$mdDialog',
-    function($scope, $rootScope, $state, navSrvc, adminDatasetsSrvc, $mdDialog) {
+.controller('navbarCtrl', ['$scope', '$rootScope', '$state', 'navSrvc', 'adminDatasetsSrvc', 'loginSrvc', '$mdDialog',
+    function($scope, $rootScope, $state, navSrvc, adminDatasetsSrvc, loginSrvc, $mdDialog) {
         $scope.user = {
             name: "",
             email: "",
@@ -28,6 +28,12 @@ angular.module('CVGTool')
 
         $scope.activeState = $scope.user.assignedTo[0];
 
+        window.addEventListener('beforeunload', function (e) {
+            // e.preventDefault();
+            // e.returnValue = '';
+            loginSrvc.logout($scope.user.name, navSrvc.logout);
+        });
+
         // Auxiliar function to check if the actual dataset is posetrack
         $scope.isPosetrack = function() {
             return navSrvc.isPosetrack();
@@ -50,7 +56,8 @@ angular.module('CVGTool')
         };
 
         $scope.logOut = function() {
-            navSrvc.logout();
+            loginSrvc.logout($scope.user.name, navSrvc.logout);
+            // navSrvc.logout();
         };
 
         // Activated when clicked on dropdown

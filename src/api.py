@@ -121,8 +121,8 @@ def user_login():
 
 # TODO: add logout??
 @app.route("/api/user/logout", methods=['GET'])
-@flask_login.login_required
 def logout():
+    userService.user_logout(request.headers['username'])
     return json.dumps({'success': True, 'msg': "Logged out"}), 200, {'ContentType': 'application/json'}
 
 
@@ -518,7 +518,8 @@ def update_person_id():
     video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
     new_person_id = req_data["newPersonID"]
     track_id = req_data["trackID"]
-    success, msg, status = annotationService.update_person_id(video, track_id, new_person_id)
+    user = req_data["user"]
+    success, msg, status = annotationService.update_person_id(video, track_id, new_person_id, user)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
