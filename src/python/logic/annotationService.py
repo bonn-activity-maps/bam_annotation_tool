@@ -10,6 +10,7 @@ from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.user_action_manager import UserActionManager
+from python.infrastructure.pose_property_manager import PosePropertyManager
 
 from python.logic.aikService import AIKService
 
@@ -18,6 +19,7 @@ from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.user_action import UserAction
 from python.objects.object_type import Object_type
+from python.objects.pose_property import PoseProperty
 
 
 # AnnotationService logger
@@ -31,6 +33,7 @@ datasetManager = DatasetManager()
 aikService = AIKService()
 user_action_manager = UserActionManager()
 video_manager = VideoManager()
+pose_property_manager = PosePropertyManager()
 
 
 class AnnotationService:
@@ -284,19 +287,25 @@ class AnnotationService:
     # Return new uid for an object in annotations for a dataset to avoid duplicated uid objects
     def create_new_uid_object(self, annotation, object_type):
         max_uid = annotationManager.max_uid_object_dataset(annotation.dataset)
-
         if max_uid == 'Error':
             return False, 'Error getting max uid object for dataset in db', 400
-        else:
-            # Create new object with max_uid+1
-            new_uid = max_uid + 1
-            annotation.objects = [Object(new_uid, object_type, [], annotation.dataset.type)]
-            result = annotationManager.create_frame_object(annotation)
 
+        # Create new object with max_uid+1
+        new_uid = max_uid + 1
+        annotation.objects = [Object(new_uid, object_type, [], annotation.dataset.type)]
+        result = annotationManager.create_frame_object(annotation)
+
+        if result == 'Error':
+            return False, 'Error creating new object in annotation', 400
+
+        # Create new pose property for the new pose
+        if object_type == 'poseAIK':
+            pose_property = PoseProperty(annotation.dataset, annotation.scene, object_type, new_uid, -1, -1, -1, -1)
+            result = pose_property_manager.update_pose_property(pose_property)
             if result == 'Error':
-                return False, 'Error creating new object in annotation', 400
-            else:
-                return True, {'maxUid': new_uid}, 200
+                return False, 'Error creating new pose property', 400
+
+        return True, {'maxUid': new_uid}, 200
 
     # Get annotation of object in frame
     def get_annotation_frame_object(self, start_annotation, end_annotation):
