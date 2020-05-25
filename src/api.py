@@ -460,7 +460,6 @@ def autocomplete_annotation():
                                                                      start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
-
 # Interpolate between 2 points and store the interpolated 3d points
 # startFrame is an array with the frame of each label
 # @app.route('/api/annotation/interpolate/aik', methods=['POST'])
@@ -484,6 +483,18 @@ def autocomplete_annotation():
 #     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [obj])
 #     msg = annotationService.update_annotation_frame_object_label(annotation,
 #     return json.dumps({'success': True, 'msg': msg}), 200, {'ContentType': 'application/json'}
+
+# Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
+@app.route('/api/annotation/forceLimbLength', methods=['POST'])
+@flask_login.login_required
+def force_limb_length():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
+    success, msg, status = annotationService.force_limb_length(annotation, int(req_data['startLabel']),
+                                                               int(req_data['endLabel']), float(req_data['limbLength']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])

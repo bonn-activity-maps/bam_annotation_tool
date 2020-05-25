@@ -528,6 +528,34 @@ class AnnotationService:
             log.error('Error filling in keypoints')
             return False, final_result, 500
 
+    # Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
+    def force_limb_length(self, annotation, start_label, end_label, limb_length):
+        if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':
+            return False, 'Method not allowed', 500
+
+        # Get object
+        object = annotationManager.get_frame_object(annotation)
+        if object == 'Error':
+            return False, 'Error forcing length of limb', 500
+
+        annotation.objects[0] = object
+
+        # Force length in the correct direction
+        start_joint = np.array(object.keypoints[start_label])
+        end_joint = np.array(object.keypoints[end_label])
+
+        v = end_joint - start_joint
+        v = (v / np.linalg.norm(v)) * limb_length
+        end_kp = object.keypoints[start_label] + v
+
+        # Update forced keypoints
+        annotation.objects[0].keypoints[end_label] = end_kp.tolist()
+        result = annotationManager.update_frame_object(annotation)
+        if result == 'Error':
+            return False, 'Error forcing length of limb', 500
+
+        return True, 'ok', 200
+
     # Upload new annotations to an existing dataset
     def upload_annotations(self, dataset, folder):
         if dataset.is_aik():
