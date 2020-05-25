@@ -615,9 +615,9 @@ angular.module('CVGTool')
                     'uidObject': uid,
                     'objectType': objectType
                 }
-            }).then(function successCallback() {
+            }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
-            }, function errorCallback() {
+            }, function errorCallback(response) {
                 callbackError('danger', response)
             })
         },
@@ -640,12 +640,38 @@ angular.module('CVGTool')
                     'upperLegLength': limbs[2],
                     'lowerLegLength': limbs[3]  
                 }
-            }).then(function successCallback() {
+            }).then(function successCallback(response) {
                 callbackSuccess('success', 'Limbs updated!');
-            }, function errorCallback() {
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
+        },
+        forcePoseAIKLimbLength: function(dataset, datasetType, scene, objectType, uid, frame, startLabels, endLabels, limbLength, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/forceLimbLength',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    "frame": frame,
+                    "startLabels": startLabels,
+                    "endLabels": endLabels,
+                    "limbLength": limbLength
+                    
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uid, objecType, frame)
+            }, function errorCallback(response) {
                 callbackError('danger', response)
             })
         }
+
 
     }
 }]);

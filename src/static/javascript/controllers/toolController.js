@@ -1105,12 +1105,22 @@ angular.module('CVGTool')
                     var limbs = [msg.upperArmLength, msg.lowerArmLength, msg.upperLegLength, msg.lowerLegLength]
                     $scope.keypointEditor.fillPoseAIKLimbs(limbs);
                 }
-                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.dataset.name, $scope.toolParameters.dataset.type, $scope.toolParameters.dataset.name, $scope.objectManager.selectedObject.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
             _this.updatePoseAIKLimbsLengthForUID = function(limbs) {
-                toolSrvc.updatePoseAIKLimbsLength($scope.toolParameters.dataset.name, $scope.toolParameters.dataset.type, $scope.toolParameters.dataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, limbs, $scope.messagesManager.sendMessage, $scope.messagesManager.sendMessage);
+                toolSrvc.updatePoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, limbs, $scope.messagesManager.sendMessage, $scope.messagesManager.sendMessage);
             }
+
+            _this.forcePoseAIKLimbLength = function(startLabels, endLabels, limbLength) {
+                var callbackSuccess = function(uid, type, frame) {
+                    $scope.messagesManager.sendMessage("success", "Limb length forced!");
+                    _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
+                }
+                $scope.toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
+            }
+
+
 
             // Interpolate in AIK
             _this.interpolate = function (objectUID, objectType, frameTo) {
@@ -1876,8 +1886,9 @@ angular.module('CVGTool')
                 _this.editorActive = true;
                 $scope.objectManager.selectedObject = object;
                 $scope.timelineManager.slider.value = frame;
+
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
-                else if (object.type.localeCompare("poseAIK")) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
+                else if (object.type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
                 
                 _this.keypointEditorData = {
                     searchUID: null,
@@ -1985,7 +1996,7 @@ angular.module('CVGTool')
             }
 
             // Fill the pose AIK limb structure
-            _this.fillPoseAIKLimbs = function() {
+            _this.fillPoseAIKLimbs = function(limbs) {
                 _this.poseAIKLimbs.upperArm = limbs[0]
                 _this.poseAIKLimbs.lowerArm = limbs[1]
                 _this.poseAIKLimbs.upperLeg = limbs[2]
@@ -1999,7 +2010,42 @@ angular.module('CVGTool')
             }
 
             _this.forceLimbLength = function(number) {
-                // Call to the backend to force a limb length
+                var startLabels = [];
+                var endLabels = [];
+                var limbLength = -1;
+                
+                switch(number) {
+                    case 0:
+                        // Upper arm
+                        startLabels = [2,5];
+                        endLabels = [3,6];
+                        limbLength = _this.poseAIKLimbs.upperArm;
+                        break;
+                    case 1:
+                        // Lower arm
+                        startLabels = [3,6];
+                        endLabels = [4,7];
+                        limbLength = _this.poseAIKLimbs.lowerArm;
+                        break;
+                    case 2:
+                        // Upper leg
+                        startLabels = [8,11];
+                        endLabels = [9,12];
+                        limbLength = _this.poseAIKLimbs.upperLeg;
+                        break;
+                    case 3:
+                        // Lower leg
+                        startLabels = [9,12];
+                        endLabels = [10,13];
+                        limbLength = _this.poseAIKLimbs.lowerLeg;
+                        break;
+                    default:
+                      $scope.messagesManager.sendMessage('danger', 'Force limb length error!');
+                      return;
+                  }
+
+                  $scope.commonManager.forcePoseAIKLimbLength(startLabels, endLabels, limbLength);
+
             }
 
             _this.previousLabel = function() {
