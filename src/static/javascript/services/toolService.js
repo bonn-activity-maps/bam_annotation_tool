@@ -320,7 +320,7 @@ angular.module('CVGTool')
         },
 
         // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
-        updatePersonID: function(scene, dataset, datasetType, track_id, new_person_id, callbackSuccess, callbackError) {
+        updatePersonID: function(scene, dataset, datasetType, track_id, new_person_id, user, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updatePersonID',
@@ -332,7 +332,8 @@ angular.module('CVGTool')
                     'scene': scene,
                     'datasetType': datasetType,
                     "newPersonID": new_person_id,
-                    "trackID": track_id
+                    "trackID": track_id,
+                    "user": user
                 }
             }).then(function successCallback(response) {
                     callbackSuccess("Person ID changed!", new_person_id)
