@@ -303,7 +303,7 @@
     </div>
     <div class="panel-body" style="height: 530px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
-            <div class="col col-md-8">
+            <div class="col col-md-6">
                 <form class="form-horizontal">
                     <div class="form-group input-group-sm">
                         <label class="control-label col-sm-4">Object type:</label>
@@ -337,14 +337,79 @@
                     </div>
                 </form>
             </div>
-            <div class="col col-md-4">
+            <div class="col col-md-6">
                 <div ng-if="toolParameters.isPosetrack" uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
                     <div uib-slide ng-repeat="mugshot in mugshotsManager.mugshots" index="$index">
                         <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
                     </div>
                 </div>
                 <div ng-if="!toolParameters.isPosetrack">
-                    Mugshots are disabled for Action In Kitchen.
+                    <div ng-if="objectManager.selectedType.type.localeCompare('poseAIK') !== 0">
+                        Mugshots are disabled for Action In Kitchen.
+                    </div>
+                    <div ng-if="objectManager.selectedType.type.localeCompare('poseAIK') === 0">
+                        <div class="panel">
+                            <div class="panel-heading-limbs">
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <h4>Limb lenghts</h4>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <button class="btn-sm btn-success pull-right" ng-click=""><span class="glyphicon glyphicon-upload"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-body panel-body-limbs">
+                                <hr class="margin-0">
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Upper arm:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" ng-model="keypointEditor.poseAIKLimbs.upperArm" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(0)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Lower arm:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" ng-model="keypointEditor.poseAIKLimbs.lowerArm" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(0)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Upper leg:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" ng-model="keypointEditor.poseAIKLimbs.upperLeg" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(0)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Lower leg:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" ng-model="keypointEditor.poseAIKLimbs.lowerLeg" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(0)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                    </div>
                 </div>
             </div>
         </div>

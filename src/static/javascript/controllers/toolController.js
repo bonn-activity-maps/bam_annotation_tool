@@ -1100,6 +1100,18 @@ angular.module('CVGTool')
                 }
             } 
 
+            _this.getPoseAIKLimbsLengthForUID = function(uid) {
+                var callbackSuccess = function(msg) {
+                    var limbs = [msg.upperArmLength, msg.lowerArmLength, msg.upperLegLength, msg.lowerLegLength]
+                    $scope.keypointEditor.fillPoseAIKLimbs(limbs);
+                }
+                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.dataset.name, $scope.toolParameters.dataset.type, $scope.toolParameters.dataset.name, $scope.objectManager.selectedObject.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
+            _this.updatePoseAIKLimbsLengthForUID = function(limbs) {
+                toolSrvc.updatePoseAIKLimbsLength($scope.toolParameters.dataset.name, $scope.toolParameters.dataset.type, $scope.toolParameters.dataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, limbs, $scope.messagesManager.sendMessage, $scope.messagesManager.sendMessage);
+            }
+
             // Interpolate in AIK
             _this.interpolate = function (objectUID, objectType, frameTo) {
                 var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
@@ -1852,12 +1864,20 @@ angular.module('CVGTool')
 
             _this.keypointEditorData = {};
 
+            _this.poseAIKLimbs = {
+                upperArm: -1,
+                lowerArm: -1,
+                upperLeg: -1,
+                lowerLeg: -1
+            }
+
             // Opens the panel to edit keypoints
             _this.openEditor = function(object, frame) {
                 _this.editorActive = true;
                 $scope.objectManager.selectedObject = object;
                 $scope.timelineManager.slider.value = frame;
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
+                else if (object.type.localeCompare("poseAIK")) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
                 
                 _this.keypointEditorData = {
                     searchUID: null,
@@ -1952,6 +1972,34 @@ angular.module('CVGTool')
                     }
                 }
                 $scope.canvasesManager.redrawCanvases();
+            }
+
+            // Reset the pose AIK length structure
+            _this.resetPoseAIKLimbs = function() {
+                _this.poseAIKLimbs = {
+                    upperArm: -1,
+                    lowerArm: -1,
+                    upperLeg: -1,
+                    lowerLeg: -1
+                }
+            }
+
+            // Fill the pose AIK limb structure
+            _this.fillPoseAIKLimbs = function() {
+                _this.poseAIKLimbs.upperArm = limbs[0]
+                _this.poseAIKLimbs.lowerArm = limbs[1]
+                _this.poseAIKLimbs.upperLeg = limbs[2]
+                _this.poseAIKLimbs.lowerLeg = limbs[3]          
+            }
+
+            // Update the stored pose AIK limb values with the actual ones
+            _this.updatePoseAIKLimbs = function() {
+                var limbs = [_this.poseAIKLimbs.upperArm, _this.poseAIKLimbs.lowerArm, _this.poseAIKLimbs.upperLeg, _this.poseAIKLimbs.lowerLeg]
+                $scope.commonManager.updatePoseAIKLimbsLengthForUID(limbs);
+            }
+
+            _this.forceLimbLength = function(number) {
+                // Call to the backend to force a limb length
             }
 
             _this.previousLabel = function() {

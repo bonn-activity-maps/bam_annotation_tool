@@ -602,5 +602,49 @@ angular.module('CVGTool')
             })
         },
 
+        getPoseAIKLimbsLength: function(dataset, datasetType, scene, objectType, uid, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/poseProperty/getPoseProperty/uid',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'uidObject': uid,
+                    'objectType': objectType
+                }
+            }).then(function successCallback() {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback() {
+                callbackError('danger', response)
+            })
+        },
+
+        updatePoseAIKLimbsLength: function(dataset, datasetType, scene, objectType, uid, limbs, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/poseProperty/updatePoseProperty',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    'upperArmLength': limbs[0],
+                    'lowerArmLength': limbs[1],
+                    'upperLegLength': limbs[2],
+                    'lowerLegLength': limbs[3]  
+                }
+            }).then(function successCallback() {
+                callbackSuccess('success', 'Limbs updated!');
+            }, function errorCallback() {
+                callbackError('danger', response)
+            })
+        }
+
     }
 }]);
