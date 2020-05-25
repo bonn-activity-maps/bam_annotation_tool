@@ -646,7 +646,7 @@ angular.module('CVGTool')
                 callbackError('danger', response)
             })
         },
-        forcePoseAIKLimbLength: function(dataset, datasetType, scene, objectType, uid, frame, startLabels, endLabels, limbLength, callbackSuccess, callbackError) {
+        forcePoseAIKLimbLength: function(dataset, datasetType, scene, user, objectType, uid, frame, startLabels, endLabels, limbLength, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/forceLimbLength',
@@ -657,6 +657,7 @@ angular.module('CVGTool')
                     'dataset': dataset,
                     'datasetType': datasetType,
                     'scene': scene,
+                    'user': user,
                     'uidObject': uid,
                     'objectType': objectType,
                     "frame": frame,
@@ -666,7 +667,7 @@ angular.module('CVGTool')
                     
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(uid, objecType, frame)
+                callbackSuccess(uid, objectType, frame)
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })

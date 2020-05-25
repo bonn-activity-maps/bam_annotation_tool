@@ -1117,7 +1117,7 @@ angular.module('CVGTool')
                     $scope.messagesManager.sendMessage("success", "Limb length forced!");
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
                 }
-                $scope.toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
+                toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name,$scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
             }
 
 
@@ -2044,8 +2044,12 @@ angular.module('CVGTool')
                       return;
                   }
 
-                  $scope.commonManager.forcePoseAIKLimbLength(startLabels, endLabels, limbLength);
+                  if (limbLength == -1) {
+                    $scope.messagesManager.sendMessage('danger', 'Limb length has incorrect value!');
+                    return;
+                  }
 
+                  $scope.commonManager.forcePoseAIKLimbLength(startLabels, endLabels, limbLength);
             }
 
             _this.previousLabel = function() {
