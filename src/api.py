@@ -492,8 +492,8 @@ def force_limb_length():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
-    success, msg, status = annotationService.force_limb_length(annotation, int(req_data['startLabel']),
-                                                               int(req_data['endLabel']), float(req_data['limbLength']))
+    success, msg, status = annotationService.force_limb_length(annotation, req_data['startLabels'],
+                                                               req_data['endLabels'], float(req_data['limbLength']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation of one object in frame range for given frame, dataset, video and user
