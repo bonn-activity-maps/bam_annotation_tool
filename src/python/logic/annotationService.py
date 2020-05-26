@@ -528,6 +528,24 @@ class AnnotationService:
             log.error('Error filling in keypoints')
             return False, final_result, 500
 
+    # Replicate and store the annotation between start and enf frame
+    # Always a single object in "objects" so always objects[0] !!
+    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame):
+        obj = Object(uid_object, object_type, dataset_type=dataset.type)
+        obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
+        if obj == 'Error':
+            return False, 'Error replicating annotation', 400
+        annotation = Annotation(dataset, scene, start_frame, user, [obj])
+
+        # Update the annotation for each frame
+        for frame in range(start_frame, end_frame+1):
+            annotation.frame = frame
+            result = self.update_annotation_frame_object(annotation)
+            if result == 'Error':
+                log.error('Error replicating annotation in frame '+frame)
+                return False, 'Error replicating annotation in frame '+frame, 400
+        return True, 'ok', 200
+
     # Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
     def force_limb_length(self, annotation, start_labels, end_labels, limb_length):
         if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':
