@@ -461,7 +461,7 @@ def autocomplete_annotation():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Replicate object between start and end frame
-@app.route('/api/annotation/replicate', methods=['POST'])
+@app.route('/api/annotation/replicate/object', methods=['POST'])
 @flask_login.login_required
 def replicate_annotation():
     req_data = request.get_json()
