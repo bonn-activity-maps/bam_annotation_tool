@@ -13,11 +13,18 @@ db.objectType.insertOne({
 })
 
 db.objectType.insertOne({
-    "type": "box",
-    "datasetType": "actionInKitchen",
-    "numKeypoints": 8,
-    "labels": ["tfl", "tfr", "tbl", "tbr", "bfl", "bfr", "bbl", "bbr"]
+  "type": "box",
+  "datasetType": "actionInKitchen",
+  "numKeypoints": 3,
+  "labels": ["tfl", "tfr", "bbr"]
 })
+
+// db.objectType.insertOne({
+//     "type": "box",
+//     "datasetType": "actionInKitchen",
+//     "numKeypoints": 8,
+//     "labels": ["tfl", "tfr", "tbl", "tbr", "bfl", "bfr", "bbl", "bbr"]
+// })
 
 db.objectType.insertOne({
   "type": "poseAIK",
