@@ -173,9 +173,9 @@ class AnnotationService:
         keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
 
         # If the object is not a person -> we have to calculate 8 points for the box of object
-        if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
-            kp1, kp2, kp3 = np.asarray(keypoints_3d)
-            keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
+        # if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
+        #     kp1, kp2, kp3 = np.asarray(keypoints_3d)
+        #     keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
 
     # Return 'ok' if the annotation has been updated
@@ -421,7 +421,6 @@ class AnnotationService:
         # Search object in respective start and end frames
         if dataset.is_pt():
             start_annotation.objects = [object2]
-            # print("start annotation objects", object2)
             annotations_in_range = annotationManager.get_object_in_frames(start_annotation, end_annotation)
 
         obj1 = annotationManager.get_frame_object(start_annotation)
@@ -436,8 +435,7 @@ class AnnotationService:
 
         # Final keypoints
         final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2)
-        # print("annotations in range", len(annotations_in_range))
-        # print(annotations_in_range)
+
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():
@@ -448,7 +446,7 @@ class AnnotationService:
                 annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i,
                                         start_annotation.user, [obj])
             else:
-                obj = Object(start_annotation.objects[0].uid, type, final_kpts[i], dataset_type=dataset.type)
+                obj = Object(start_annotation.objects[0].uid, type, final_kpts[i], dataset_type=dataset.type, labels=obj1.labels)
                 annotation = Annotation(dataset, start_annotation.scene, start_annotation.frame + i,
                                         start_annotation.user, [obj])
             result = self.update_annotation_frame_object(annotation)

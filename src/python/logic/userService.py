@@ -38,7 +38,6 @@ class UserService:
         return bcrypt.checkpw(plain_text_password.encode('utf-8'), hashed_password)
 
     def user_logout(self, user):
-        print("LOGOUT RECEIVED")
         # Create user action in db
         user_action = UserAction(user, 'logout', "", Dataset("None"))
         user_action_manager.create_user_action(user_action)
