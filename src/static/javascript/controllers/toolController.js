@@ -1020,7 +1020,7 @@ angular.module('CVGTool')
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
                             uid: object.uid,
                             type: object.type,
-                            label: object.label ? object.label : "",    // If there is a label use the label, if not just place an empty string
+                            labels: object.labels,
                             frames: []
                         }
                         
