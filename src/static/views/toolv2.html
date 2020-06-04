@@ -129,7 +129,7 @@
           <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
           <li class="divider"></li> 
           <li class="dropdown-header">Object types</li>
-          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type.type)" style="width: 100%;">{{type.type}}</button></li>
+          <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -150,6 +150,7 @@
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li>
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
@@ -407,8 +408,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        
                     </div>
                 </div>
             </div>
@@ -479,14 +478,12 @@
             </div>
             <div class="col col-md-4"></div>
             <div class="col col-md-4">
-                <button class="btn-primary" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
+                <button class="btn-primary" ng-if="keypointEditor.keypointEditorData.editorMode === 'dynamic'" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
             </div>
             <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
         </div>
     </div>
 </div>
-
-
 
 <!-- ACTIONS EDITOR FLOATING PANEL -->
 <div id="ActionsEditor" class="panel panel-floating"  style="width: 450px;" ng-show="actionsEditor.active">
