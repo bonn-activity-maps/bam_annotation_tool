@@ -91,7 +91,7 @@ class AnnotationService:
             if start_annotation.dataset.is_aik():
                 for annotation in result:
                     for obj in annotation['objects']:
-                        if obj['type'] == 'boxAIK':
+                        if obj['type'] == 'boxAIK' and obj['keypoints']:
                             a, b, c = obj['keypoints']
                             obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
             return True, result, 200
