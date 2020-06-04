@@ -16,7 +16,7 @@ db.objectType.insertOne({
   "type": "box",
   "datasetType": "actionInKitchen",
   "numKeypoints": 3,
-  "labels": ["tfl", "tfr", "bbr"]
+  "labels": ["tfl", "tfr", "bbl"]
 })
 
 // db.objectType.insertOne({

@@ -87,13 +87,13 @@ class AnnotationService:
         if result == 'Error':
             return False, 'Error retrieving annotations', 400
         else:
-            # # Check if there are box type for aik and convert to complete box with 8 keypoints
-            # if start_annotation.dataset.is_aik():
-            #     for annotation in result:
-            #         for obj in annotation['objects']:
-            #             if obj['type'] == 'box':
-            #                 a, b, c = obj['keypoints']
-            #                 obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+            # Check if there are box type for aik and convert to complete box with 8 keypoints
+            if start_annotation.dataset.is_aik():
+                for annotation in result:
+                    for obj in annotation['objects']:
+                        if obj['type'] == 'box':
+                            a, b, c = obj['keypoints']
+                            obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
             return True, result, 200
 
     # Get annotations (all frames) for given dataset
@@ -178,14 +178,28 @@ class AnnotationService:
         #     keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
 
+    # Calculate mean in y between 0 and 1, and in x for 0 and 2 for boxes
+    def calculate_boxes_axis_aligned(self, keypoints_3d):
+        kp0, kp1, kp2 = keypoints_3d
+        x = (kp0[0] + kp2[0]) / 2
+        y = (kp0[1] + kp1[1]) / 2
+        kp0[0] = x
+        kp2[0] = x
+        kp0[1] = y
+        kp1[1] = y
+        return [kp0, kp1, kp2]
+
     # Return 'ok' if the annotation has been updated
     def update_annotation(self, annotation):
         # Triangulate points from 2D points to 3D if dataset is AIK
         if annotation.dataset.is_aik():
             keypoints_3d, error_flag = self.update_annotation_AIK(annotation)
-
             if error_flag:
                 return False, 'Error incorrect keypoints', 400
+
+            # Calculate mean height for the points if it's a box --> Boxes axis-aligned
+            if annotation.objects[0].type == 'box':
+                keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
 
             annotation.objects[0].keypoints = keypoints_3d
             # Update only one object (all keypoints) in the annotation for concrete frame
