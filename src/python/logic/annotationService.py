@@ -91,7 +91,7 @@ class AnnotationService:
             if start_annotation.dataset.is_aik():
                 for annotation in result:
                     for obj in annotation['objects']:
-                        if obj['type'] == 'box':
+                        if obj['type'] == 'boxAIK':
                             a, b, c = obj['keypoints']
                             obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
             return True, result, 200
@@ -198,7 +198,7 @@ class AnnotationService:
                 return False, 'Error incorrect keypoints', 400
 
             # Calculate mean height for the points if it's a box --> Boxes axis-aligned
-            if annotation.objects[0].type == 'box':
+            if annotation.objects[0].type == 'boxAIK':
                 keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
 
             annotation.objects[0].keypoints = keypoints_3d
