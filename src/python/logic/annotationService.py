@@ -334,6 +334,12 @@ class AnnotationService:
         if result == 'Error':
             return False, 'The object does not exist in frames', 400
         else:
+            if start_annotation.dataset.is_aik():
+                for annotation in result:
+                    for obj in annotation.objects:
+                        if obj.type == 'boxAIK' and obj.keypoints:
+                            a, b, c = obj.keypoints
+                            obj.keypoints = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
             return True, [r.to_json() for r in result], 200
 
     # Store annotation for an object for given frame, dataset, video and user
