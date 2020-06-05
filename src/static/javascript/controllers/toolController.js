@@ -1009,7 +1009,7 @@ angular.module('CVGTool')
                         $scope.loadingScreenManager.closeLoadingScreen();
                         return
                     };
-                    
+                   
                     for (obj in objects) {
                         var object = objects[obj].object;
                         var existsInit = [];
@@ -1021,7 +1021,7 @@ angular.module('CVGTool')
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
                             uid: object.uid,
                             type: object.type,
-                            labels: object.labels ? object.labels : [""],
+                            labels: [""],
                             frames: []
                         }
                         
@@ -1059,7 +1059,8 @@ angular.module('CVGTool')
                             annotation.objects[i].keypoints.slice();
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                 .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].frame = annotation.frame;
-                            
+                            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                                .objects[annotation.objects[i].uid.toString()].labels = annotation.objects[i].labels ? annotation.objects[i].labels.slice() : [""];
                             for (var k = 0; k < annotation.objects[i].keypoints.length; k++) {
                                 if (annotation.objects[i].keypoints[k].length != 0) {
                                     $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
@@ -1234,6 +1235,18 @@ angular.module('CVGTool')
                 toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
+            // Replicates the current annotation to all posterior frames in the active range
+            _this.replicate = function(uid, type, frame) {
+                var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    var frameArray = [];
+                    for (var i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, $scope.toolParameters.frameTo, uid, type,
+                    callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
             // Updates the annotation being edited
             _this.updateAnnotation = function() {
                 var callbackSuccess = function(uid, type, frame) {
@@ -1243,7 +1256,7 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
                     if ($scope.objectManager.isStaticType(type)) {
-                        // TODO: Call to replication
+                        _this.replicate(uid, type, frame);
                     } else {
                         if ($scope.optionsManager.options.autoInterpolate) {
                             _this.interpolate(uid, type, frame);
@@ -1268,6 +1281,7 @@ angular.module('CVGTool')
                     objects.keypoints.push(JSON.parse(JSON.stringify(pointStructure)));
                 }
 
+            
                 // For each canvas and for each label, fill the data
                 for (var i = 0; i < $scope.keypointEditor.keypointEditorData.shapes.length; i++) {
                     if ($scope.keypointEditor.keypointEditorData.shapes[i] !== null){
@@ -2451,7 +2465,7 @@ angular.module('CVGTool')
             }
         }
 
-        function Box(uid, projectedPoints, cameraPoints, labels) {
+        function BoxAIK(uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
             _this.uid = uid;
@@ -2475,11 +2489,12 @@ angular.module('CVGTool')
                 for (var i=0; i < _this.editableIndices.length; i++) {
                     if (projectedPoints[_this.editableIndices[i]].length !==0) {
                         _this.points.push(new Point(projectedPoints[_this.editableIndices[i]]))
+                        _this.cameraPoints.push(cameraPoints[_this.editableIndices[i]])
                     } else {
                         _this.points.push(null);
+                        _this.cameraPoints.push([])
                     }
                 }
-                _this.cameraPoints = cameraPoints;
                 _this.projectedPoints = projectedPoints;
             }
 
@@ -3727,7 +3742,7 @@ angular.module('CVGTool')
                 } else if (type.localeCompare("poseAIK") == 0) {
                     newObject = new PoseAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
                 } else if (type.localeCompare("boxAIK") == 0) {
-                    newObject = new Box(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
+                    newObject = new BoxAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
                 } else {
                     // Whatever other objects
                 }
