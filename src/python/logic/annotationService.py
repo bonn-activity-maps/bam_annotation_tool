@@ -197,8 +197,8 @@ class AnnotationService:
             if error_flag:
                 return False, 'Error incorrect keypoints', 400
 
-            # Calculate mean height for the points if it's a box --> Boxes axis-aligned
-            if annotation.objects[0].type == 'boxAIK':
+            # Calculate mean if it's a complete box --> Boxes axis-aligned
+            if annotation.objects[0].type == 'boxAIK' and len(keypoints_3d) == 3:
                 keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
 
             annotation.objects[0].keypoints = keypoints_3d
