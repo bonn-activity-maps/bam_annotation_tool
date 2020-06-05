@@ -423,6 +423,16 @@
                 <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
             </div>
         </div>
+
+        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0">
+            <hr>
+            <div class="form-group input-group-sm">
+                <label class="control-label col-sm-2">Labels:</label>
+                <div class="col-sm-10">
+                    <input class="form-control" type="text" ng-model="keypointEditor.keypointEditorData.annotationLabels[0]">
+                </div>
+            </div>
+        </div>
         
         <hr>
         <div class="container" style="overflow: auto; max-height: 150px; max-width: 350px;">

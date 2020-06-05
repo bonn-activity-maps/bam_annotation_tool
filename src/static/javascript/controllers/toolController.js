@@ -763,6 +763,7 @@ angular.module('CVGTool')
                     _this.objectTypes[type.toString()].objects[newUID.toString()] = {
                         uid: newUID,
                         type: type,
+                        labels: [""],
                         frames: []
                     }
 
@@ -1020,7 +1021,7 @@ angular.module('CVGTool')
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()] = {
                             uid: object.uid,
                             type: object.type,
-                            labels: object.labels,
+                            labels: object.labels ? object.labels : [""],
                             frames: []
                         }
                         
@@ -1241,8 +1242,12 @@ angular.module('CVGTool')
                     $scope.messagesManager.sendMessage("success", "Annotation updated!");
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
-                    if ($scope.optionsManager.options.autoInterpolate) {
-                        _this.interpolate(uid, type, frame);
+                    if ($scope.objectManager.isStaticType(type)) {
+                        // TODO: Call to replication
+                    } else {
+                        if ($scope.optionsManager.options.autoInterpolate) {
+                            _this.interpolate(uid, type, frame);
+                        }
                     }
                 }
 
@@ -1254,7 +1259,7 @@ angular.module('CVGTool')
                 var objects = {
                     uid: $scope.objectManager.selectedObject.uid,
                     type: $scope.objectManager.selectedObject.type,
-                    label: $scope.objectManager.selectedObject.label,
+                    labels: $scope.keypointEditor.keypointEditorData.annotationLabels.slice(),
                     keypoints: []
                 }
 
@@ -1930,7 +1935,8 @@ angular.module('CVGTool')
                     labels: $scope.objectManager.selectedType.labels.slice(),
                     realLabels: $scope.objectManager.selectedType.labels.slice(),
                     creationType: "point",
-                    editorMode: $scope.objectManager.isStaticType() ? "static" : "dynamic",
+                    editorMode: $scope.objectManager.isStaticType(object.type) ? "static" : "dynamic",
+                    annotationLabels: object.labels.length > 0 ? object.labels.slice() : [""],
                     indexBeingEdited: null,
                     modified: false
                 }
@@ -2479,10 +2485,7 @@ angular.module('CVGTool')
 
             // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                if (!_this.principalPointsExist()) return;
-
-                // First draw the faces
-                _this.drawFaces(context, color, false);
+                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);               
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -2497,10 +2500,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
-                if (!_this.principalPointsExist()) return;
-
-                // First draw the faces
-                _this.drawFaces(context, color, false);
+                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -2509,10 +2509,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                if (!_this.principalPointsExist()) return;
-
-                // First draw the faces
-                _this.drawFaces(context, color, false);
+                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -3307,6 +3304,7 @@ angular.module('CVGTool')
                 if ($scope.toolsManager.subTool.localeCompare('pointCreation') == 0) {
                     // If there is no point placed there yet
                     if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] === null){
+                        console.log("new point")
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = new Point([_this.mouse.pos.x, _this.mouse.pos.y]); 
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);   
                         if (!$scope.toolParameters.isPosetrack) $scope.keypointEditor.getEpilines();
@@ -3975,6 +3973,11 @@ angular.module('CVGTool')
                     combo: _this.shortcuts.selectedShortcuts.nextFrame.shortcut,
                     description: 'Go to the next frame',
                     callback: function() { $scope.timelineManager.nextFrame() }
+                })
+                .add({
+                    combo: "h",
+                    description: 'Test',
+                    callback: function() { console.log($scope.objectManager.selectedObject) }
                 })
                 .add({
                     combo: _this.shortcuts.selectedShortcuts.previousFrame.shortcut,
