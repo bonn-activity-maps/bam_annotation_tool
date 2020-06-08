@@ -253,7 +253,7 @@ angular.module('CVGTool')
                 }
                 
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.msg)
             })
         },
 

@@ -1313,21 +1313,9 @@ angular.module('CVGTool')
                     }
                 }
 
-                if (objects.type.localeCompare("boxAIK") == 0) {
-                    if (!_this.allBoxAIKPointsAnnotated()) {
-                        $scope.messagesManager.sendMessage("warning", "For AIK Boxes, all 3 labels must be annotated in order to update the box!");
-                        return;
-                    }
-                }
-
                 // If we get here, update the object
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
 
-            }
-
-            // Auxiliar function that checks if the box being updated has all points annotated
-            _this.allBoxAIKPointsAnnotated = function() {
-                return true;
             }
 
             // Opens the dialog for batch-deleting points
@@ -2016,8 +2004,8 @@ angular.module('CVGTool')
                     if ($scope.toolsManager.subTool.localeCompare(toolType) !== 0) $scope.toolsManager.switchSubTool(toolType);
                     
                     _this.keypointEditorData.indexBeingEdited = index;
+                    if (!toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
                
-
                     // Remove that point from the
                     _this.removeEditorDataPoint(index);               
                 }  
