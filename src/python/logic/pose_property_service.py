@@ -30,11 +30,15 @@ class PosePropertyService:
 
     # Return if pose property has been created/updated successfully
     def update_pose_property(self, pose_property):
-        result = pose_property_manager.update_pose_property(pose_property)
-        if result == 'Error':
-            return False, 'Error creating pose property', 400
+        # Check all lengths are distinct of 0
+        if pose_property.check_correct_lengths():
+            result = pose_property_manager.update_pose_property(pose_property)
+            if result == 'Error':
+                return False, 'Error creating pose property', 400
+            else:
+                return True, 'Pose property created successfully', 200
         else:
-            return True, 'Pose property created successfully', 200
+            return False, 'Error: limb length cannot be 0', 400
 
     # Return if the pose property has been removed
     def remove_pose_property(self, dataset, scene, type, uid):

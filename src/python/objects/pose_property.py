@@ -8,19 +8,19 @@ class PoseProperty:
         :param scene: str
         :param uid: int
         :param type: str
-        :param lower_leg_length: int
-        :param upper_leg_length: int
-        :param lower_arm_length: int
-        :param upper_arm_length: int
+        :param lower_leg_length: float
+        :param upper_leg_length: float
+        :param lower_arm_length: float
+        :param upper_arm_length: float
         """
         self.dataset = dataset
         self.scene = scene
         self.type = type
         self.uid = int(uid)
-        self.lower_leg_length = int(lower_leg_length)
-        self.upper_leg_length = int(upper_leg_length)
-        self.lower_arm_length = int(lower_arm_length)
-        self.upper_arm_length = int(upper_arm_length)
+        self.lower_leg_length = float(lower_leg_length)
+        self.upper_leg_length = float(upper_leg_length)
+        self.lower_arm_length = float(lower_arm_length)
+        self.upper_arm_length = float(upper_arm_length)
 
     def __repr__(self):
         return self.to_string()
@@ -54,3 +54,10 @@ class PoseProperty:
             format(self.dataset.to_json(), self.scene, self.type, self.uid, self.lower_leg_length,
                    self.upper_leg_length, self.lower_arm_length, self.upper_arm_length)
 
+    # Return True if none of the lengths is 0. False ow
+    def check_correct_lengths(self):
+        if self.lower_leg_length == 0.0 or self.upper_leg_length == 0.0 or self.lower_arm_length == 0.0 or \
+                self.upper_arm_length == 0.0:
+            return False
+        else:
+            return True
