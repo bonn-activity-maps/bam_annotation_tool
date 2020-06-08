@@ -2004,7 +2004,7 @@ angular.module('CVGTool')
                     if ($scope.toolsManager.subTool.localeCompare(toolType) !== 0) $scope.toolsManager.switchSubTool(toolType);
                     
                     _this.keypointEditorData.indexBeingEdited = index;
-                    if (!toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
+                    if (!$scope.toolParameters.isPosetrack) $scope.canvasesManager.resetEpilines();
                
                     // Remove that point from the
                     _this.removeEditorDataPoint(index);               
