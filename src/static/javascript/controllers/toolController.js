@@ -2605,6 +2605,14 @@ angular.module('CVGTool')
 
             // We dont want to be able to edit a point this way, so the only option will be to delete and create a new one
             _this.isInside = function(x,y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
+
                 return false;
             }
 
