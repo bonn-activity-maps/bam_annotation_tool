@@ -583,16 +583,17 @@ class AnnotationService:
 
         annotation.objects[0] = object
 
-        # Force length in the correct direction
+        # Force length in the correct direction if the limb is complete
         for i, start_label in enumerate(start_labels):
-            start_joint = np.array(object.keypoints[start_labels[i]])
-            end_joint = np.array(object.keypoints[end_labels[i]])
+            if object.keypoints[start_labels[i]] and object.keypoints[end_labels[i]]:
+                start_joint = np.array(object.keypoints[start_labels[i]])
+                end_joint = np.array(object.keypoints[end_labels[i]])
 
-            v = end_joint - start_joint
-            v = (v / np.linalg.norm(v)) * limb_length
-            end_kp = object.keypoints[start_labels[i]] + v
+                v = end_joint - start_joint
+                v = (v / np.linalg.norm(v)) * limb_length
+                end_kp = object.keypoints[start_labels[i]] + v
 
-            annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
+                annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
 
         # Update forced keypoints
         result = annotationManager.update_frame_object(annotation)
