@@ -1452,6 +1452,13 @@ angular.module('CVGTool')
                             skeleton: obj[i].skeleton,
                             objects: {}
                         }
+
+                        // Set the type in the dynamic or static category
+                        if (obj[i].type.localeCompare("ignore_region") == 0) {
+                            $scope.objectManager.staticTypes.push(obj[i].type);
+                        } else {
+                            $scope.objectManager.dynamicTypes.push(obj[i].type)
+                        }
                     }
                     $scope.loadingScreenManager.closeLoadingScreen();
                 }
@@ -1527,7 +1534,7 @@ angular.module('CVGTool')
                             uid: object.track_id,
                             person_id: object.person_id,
                             type: object.type,
-                            label: object.label ? object.label : "",    // If there is a label use the label, if not just place an empty string
+                            labels: [""],
                             frames: []
                         };
     
@@ -1585,6 +1592,8 @@ angular.module('CVGTool')
                                 .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
                                 annotation.objects[i].keypoints.slice();
                             }
+                            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                                .objects[annotation.objects[i].track_id.toString()].labels = annotation.objects[i].labels ? annotation.objects[i].labels.slice() : [""];
                             
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                                 .objects[annotation.objects[i].track_id.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].frame =
@@ -1631,7 +1640,9 @@ angular.module('CVGTool')
 								$scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = $scope.objectManager.prepareKeypointsForFrontend(objects[i].keypoints);
 							} else {
 								$scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints;
-							}
+                            }
+                            $scope.objectManager.objectTypes[objects[i].type.toString()]
+                                .objects[objects[i].track_id.toString()].labels = objects[i].labels ? objects[i].labels.slice() : [""];
 							$scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].original_uid = objects[i].uid;
 
 							for (var j = 0; j < objects[i].keypoints.length; j++) {
@@ -3998,7 +4009,7 @@ angular.module('CVGTool')
                 .add({
                     combo: "h",
                     description: 'Test',
-                    callback: function() { console.log($scope.objectManager.selectedObject) }
+                    callback: function() { console.log($scope.keypointEditor.poseAIKLimbs) }
                 })
                 .add({
                     combo: _this.shortcuts.selectedShortcuts.previousFrame.shortcut,
