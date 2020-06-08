@@ -181,9 +181,6 @@ class AnnotationService:
     # Calculate mean in z (heigth) between 0 and 1
     def calculate_boxes_axis_aligned(self, keypoints_3d):
         kp0, kp1, kp2 = keypoints_3d
-        # x = (kp0[1] + kp2[1]) / 2
-        # kp0[1] = x
-        # kp2[1] = x
         z = (kp0[2] + kp1[2]) / 2
         kp0[2] = z
         kp1[2] = z
@@ -199,9 +196,10 @@ class AnnotationService:
 
             # Calculate mean if it's a complete box --> Boxes axis-aligned
             if annotation.objects[0].type == 'boxAIK' and len(keypoints_3d) == 3:
-                # print(keypoints_3d)
-                keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
-                # print(keypoints_3d)
+                if keypoints_3d[0] and keypoints_3d[1] and keypoints_3d[2]:
+                    keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
+                else:
+                    return False, 'You have to annotate all keypoints', 400
 
             annotation.objects[0].keypoints = keypoints_3d
             # Update only one object (all keypoints) in the annotation for concrete frame
