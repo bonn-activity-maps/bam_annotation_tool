@@ -152,7 +152,7 @@
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
-            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li>
+            <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
@@ -304,7 +304,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 530px;" ng-show="!keypointEditor.editorMinimized">
+    <div class="panel-body" style="height: 600px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
             <div class="col col-md-6">
                 <form class="form-horizontal">
@@ -358,7 +358,7 @@
                                         <h4>Limb lenghts</h4>
                                     </div>
                                     <div class="col-sm-4">
-                                        <button class="btn-sm btn-success pull-right" ng-click="keypointEditor.updatePoseAIKLimbs()"><span class="glyphicon glyphicon-upload"></span></button>
+                                        <button class="btn-sm btn-success pull-right" ng-click="keypointEditor.updatePoseAIKLimbs()" data-toggle="tooltip" data-placement="right" title="Update length values"><span class="glyphicon glyphicon-upload"></span></button>
                                     </div>
                                 </div>
                             </div>
@@ -492,6 +492,9 @@
             <div class="col col-md-4">
                 <button class="btn-primary" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('dynamic')==0" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
             </div>
+        </div>
+        <div class="row">
+            <p ng-if="objectManager.selectedType.type.localeCompare('boxAIK') ==0"> Displayed full boxes will be updated after saving!</p>
             <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
         </div>
     </div>

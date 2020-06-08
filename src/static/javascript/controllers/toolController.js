@@ -1313,9 +1313,21 @@ angular.module('CVGTool')
                     }
                 }
 
+                if (objects.type.localeCompare("boxAIK") == 0) {
+                    if (!_this.allBoxAIKPointsAnnotated()) {
+                        $scope.messagesManager.sendMessage("warning", "For AIK Boxes, all 3 labels must be annotated in order to update the box!");
+                        return;
+                    }
+                }
+
                 // If we get here, update the object
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, objects, callbackSuccess, $scope.messagesManager.sendMessage);
 
+            }
+
+            // Auxiliar function that checks if the box being updated has all points annotated
+            _this.allBoxAIKPointsAnnotated = function() {
+                return true;
             }
 
             // Opens the dialog for batch-deleting points
@@ -3318,7 +3330,6 @@ angular.module('CVGTool')
                 if ($scope.toolsManager.subTool.localeCompare('pointCreation') == 0) {
                     // If there is no point placed there yet
                     if ($scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] === null){
-                        console.log("new point")
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = new Point([_this.mouse.pos.x, _this.mouse.pos.y]); 
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);   
                         if (!$scope.toolParameters.isPosetrack) $scope.keypointEditor.getEpilines();
