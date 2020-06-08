@@ -670,7 +670,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess('success', 'Limbs updated!');
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         },
         forcePoseAIKLimbLength: function(dataset, datasetType, scene, user, objectType, uid, frame, startLabels, endLabels, limbLength, callbackSuccess, callbackError) {
