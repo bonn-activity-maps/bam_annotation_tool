@@ -199,7 +199,7 @@ class AnnotationService:
                 if keypoints_3d[0] and keypoints_3d[1] and keypoints_3d[2]:
                     keypoints_3d = self.calculate_boxes_axis_aligned(keypoints_3d)
                 else:
-                    return False, 'You have to annotate all keypoints', 400
+                    return False, 'All labels must be annotated in order to update BoxAIK objects!', 400
 
             annotation.objects[0].keypoints = keypoints_3d
             # Update only one object (all keypoints) in the annotation for concrete frame
