@@ -1093,7 +1093,8 @@ angular.module('CVGTool')
                         var objects = annotations[j].objects;
                         for (var i=0; i< objects.length; i++) {
                             $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].uid.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints = objects[i].keypoints.slice();
-                            
+                            $scope.objectManager.objectTypes[objects[i].type.toString()]
+                                .objects[objects[i].uid.toString()].labels = objects[i].labels ? objects[i].labels.slice() : [""];
                             for (var k = 0; k < objects[i].keypoints.length; k++) {
                                 if (objects[i].keypoints[k] != 0) {
                                     $scope.objectManager.objectTypes[objects[i].type.toString()]
@@ -2477,7 +2478,7 @@ angular.module('CVGTool')
             // ["tfl", "tfr", "tbl", "tbr", "bfl", "bfr", "bbl", "bbr"]
             _this.editableIndices = [0, 1, 6];     // Fill with the indices of the corners that we want to be able to create
 
-            _this.faces = [[0,1,2,3],[1,5,7,3],[0,1,5,4],[2,3,7,6],[0,2,6,4],[4,5,6,7]];
+            _this.faces = [[0,1,3,2],[1,5,7,3],[0,1,5,4],[2,3,7,6],[0,2,6,4],[4,5,7,6]];
 
             // CONSTRUCT (Only the 3 main points)
             if (projectedPoints.length === 0) {
@@ -2500,7 +2501,7 @@ angular.module('CVGTool')
 
             // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);               
+                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);               
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -2515,7 +2516,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
-                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
+                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -2524,7 +2525,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                //if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
+                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -2537,7 +2538,7 @@ angular.module('CVGTool')
             _this.drawFaces = function(context, color, fill) {
                 for (var i=0; i<_this.faces.length; i++) {
                     if (fill) _this.drawFaceAndFill(_this.faces[i], context, color);
-                    else _this.drawFaceAndFill(_this.faces[i], context, color);
+                    else _this.drawFaceNoFill(_this.faces[i], context, color);
                 }
             }
 
@@ -2596,12 +2597,10 @@ angular.module('CVGTool')
             }
  
             _this.principalPointsExist = function() {
-                for (var i=0; i < _this.editableIndices.length; i++) {
-                    if (_this.points[_this.editableIndices[i]] === null) {
-                        return false;
-                    }
+                if (_this.projectedPoints.length >= 8) {
+                    return true;
                 }
-                return true;
+                return false;
             } 
 
             // We dont want to be able to edit a point this way, so the only option will be to delete and create a new one
