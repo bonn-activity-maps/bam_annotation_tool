@@ -637,7 +637,97 @@ class DatasetService:
             log.exception('Error deleting the dataset in file system')
             return False, 'Server error deleting the dataset', 500
 
+    def create_ignore_region(self, id_nr, track_id, ir, dataset, frame_nr):
+        ignore_region_obj = Object(id_nr * 100 + track_id, "ignore_region",
+                                   keypoints=ir.tolist(),
+                                   dataset_type=dataset.type,
+                                   track_id=track_id)
+        # Update existing annotation with new object
+        scene_nr = (id_nr % 10000000000) / 10000
+        scene = ptService.pad(str(int(scene_nr)), 6)    # Ignore this warning, it works
+        annotation = Annotation(dataset, scene, frame=frame_nr, user="root",
+                                objects=[ignore_region_obj])
+        return annotationManager.create_frame_object(annotation)
 
+    # Read Ignore Region information from annotations and load it into the db
+    def load_ignore_regions(self, dataset):
+        final_result = True
+        types = ["test", "train", "val"]
+        ir_obj_type = Object_type("ignore_region", "poseTrack", num_keypoints=0, is_polygon=True)
+        for data_type in types:
+            try:
+                dirpath = os.path.join(dataset.dir, "annotations/" + data_type)
+                listdir = os.listdir(dirpath)
+                for file in listdir:
+                    filename, filextension = os.path.splitext(file)
+                    if filextension == '.json':
+                        # Read annotation file and create the ignore regions
+                        print("Processing annotation file ", file)
+                        # Read data from file
+                        file_route = os.path.join(dirpath, file)
+                        try:
+                            with open(file_route) as json_file:
+                                annotation = json.load(json_file)
+                        except OSError:
+                            log.exception('Could not read from file')
+                            return False
+                        # Load ignore regions into db
+                        frames = ptService.safely_read_dictionary(annotation, "images")
+                        for frame in frames:
+                            id_nr = int(ptService.safely_read_dictionary(frame, "id"))
+                            frame_nr = id_nr % 10000
+                            # print("Processing frame: ", frame_nr)
+                            ignore_regions_x = ptService.safely_read_dictionary(frame, "ignore_regions_x")
+                            ignore_regions_x = np.array(ignore_regions_x) if ignore_regions_x is not None else np.array([])
+                            ignore_regions_y = ptService.safely_read_dictionary(frame, "ignore_regions_y")
+                            ignore_regions_y = np.array(ignore_regions_y) if ignore_regions_y is not None else np.array([])
+                            is_multiple = False
+
+                            # If only one Ignore Region, do normal dstack
+                            if len(ignore_regions_y.shape) > 1:
+                                ignore_regions = np.dstack((ignore_regions_x, ignore_regions_y))[0] if \
+                                    ignore_regions_y is not None else np.array([])
+                            # If multiple Ignore Regions, dstack each pair separately
+                            elif len(ignore_regions_y.shape) <= 1 and ignore_regions_y != []:
+                                is_multiple = True
+                                ir_temp = []
+                                for i in range(ignore_regions_y.shape[0]):
+                                    ir_temp.append(np.dstack((ignore_regions_x[i], ignore_regions_y[i]))[0] if
+                                                   ignore_regions_y[i] is not None else np.array([]))
+
+                                ignore_regions = np.array(ir_temp)
+                            # If no Ignore Regions, just create an empty array and ignore the rest
+                            else:
+                                ignore_regions = np.array([])
+
+                            # Initialise track_id as biggest possible and go downwards up to 40 ignore regions
+                            track_id = 99   # TODO maybe this is not the best solution, increase to 3 digits?
+                            # Do nothing if ignore regions is empty
+                            # If only one Ignore Region, create it in the database
+                            if not is_multiple and ignore_regions != []:
+                                result = self.create_ignore_region(id_nr, track_id, ignore_regions, dataset, frame_nr)
+                                if result == 'Error':
+                                    return False, 'Error creating Ignore Region', 400
+                                track_id -= 1
+                            # If there are multiple Ignore Regions, go through them and create them all
+                            elif is_multiple and ignore_regions != []:
+                                for ir in ignore_regions:
+                                    if len(ir) > 0:
+                                        # Allow only up to 40 ignore regions
+                                        if track_id < 60:
+                                            print("Max number of IR reached")
+                                            break
+                                        result = self.create_ignore_region(id_nr, track_id, ir, dataset, frame_nr)
+                                        if result == 'Error':
+                                            return False, 'Error creating Ignore Region', 400
+                                        track_id -= 1
+                    final_result = final_result
+            except FileNotFoundError:
+                log.exception("Folder called " + str(data_type) + " not found")
+        if final_result:
+            return True, 'ok', 200
+        else:
+            return False, 'Error loading Ignore Regions', 400
 
     ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES for AIK
     # Remove and insert new frames for one video and dataset
