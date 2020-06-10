@@ -14,6 +14,7 @@ from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
 from python.logic.activity_service import ActivityService
 from python.logic.user_action_service import UserActionService
+from python.logic.pose_property_service import PosePropertyService
 
 from python.objects.user import User
 from python.objects.dataset import Dataset
@@ -25,6 +26,7 @@ from python.objects.object import Object
 from python.objects.action import Action
 from python.objects.activity import Activity
 from python.objects.user_action import UserAction
+from python.objects.pose_property import PoseProperty
 
 import python.config as cfg
 
@@ -45,6 +47,7 @@ frameService = FrameService()
 actionService = ActionService()
 activity_service = ActivityService()
 user_action_service = UserActionService()
+pose_property_service = PosePropertyService()
 
 from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
 precompute = PrecomputeAnnotations()
@@ -465,6 +468,17 @@ def autocomplete_annotation():
                                                                      start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Replicate object between start and end frame
+@app.route('/api/annotation/replicate/object', methods=['POST'])
+@flask_login.login_required
+def replicate_annotation():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
+                                                                     int(req_data['uidObject']), req_data['objectType'],
+                                                                     req_data['startFrame'], req_data['endFrame'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Interpolate between 2 points and store the interpolated 3d points
 # startFrame is an array with the frame of each label
@@ -489,6 +503,18 @@ def autocomplete_annotation():
 #     annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [obj])
 #     msg = annotationService.update_annotation_frame_object_label(annotation,
 #     return json.dumps({'success': True, 'msg': msg}), 200, {'ContentType': 'application/json'}
+
+# Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
+@app.route('/api/annotation/forceLimbLength', methods=['POST'])
+@flask_login.login_required
+def force_limb_length():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
+    success, msg, status = annotationService.force_limb_length(annotation, req_data['startLabels'],
+                                                               req_data['endLabels'], float(req_data['limbLength']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
@@ -866,6 +892,56 @@ def remove_frame():
 def get_frames_info_of_dataset_group_by_video():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = frameService.get_frames_info_of_dataset_group_by_video(dataset)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+#### POSE PROPERTY ####
+
+# Get pose properties for specific dataset
+@app.route("/api/poseProperty/getPoseProperties/dataset", methods=['GET'])
+@flask_login.login_required
+def get_pose_properties_by_dataset():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = pose_property_service.get_pose_properties_by_dataset(dataset, request.headers['scene'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Get pose property for specific uid and dataset
+@app.route("/api/poseProperty/getPoseProperty/uid", methods=['GET'])
+@flask_login.login_required
+def get_pose_property_by_uid():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = pose_property_service.get_pose_property_by_uid(dataset, request.headers['scene'],
+                                                                          request.headers['objectType'], int(request.headers['uidObject']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Update/Create new pose property
+@app.route('/api/poseProperty/updatePoseProperty', methods=['POST'])
+@flask_login.login_required
+def update_pose_property():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    pose_property = PoseProperty(dataset, req_data['scene'], req_data['objectType'], req_data['uidObject'], req_data['lowerLegLength'],
+                                 req_data['upperLegLength'], req_data['lowerArmLength'], req_data['upperArmLength'])
+    success, msg, status = pose_property_service.update_pose_property(pose_property)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Remove a pose properties
+@app.route('/api/poseProperty/removePoseProperty', methods=['POST'])
+@flask_login.login_required
+def remove_pose_property():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = pose_property_service.remove_pose_property(dataset, req_data['scene'],
+                                                                      req_data['objectType'], int(req_data['uidObject']))
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+# Initialize pose properties to -1
+@app.route('/api/poseProperty/initializePoseProperties', methods=['POST'])
+@flask_login.login_required
+def initialize_pose_properties():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = pose_property_service.initialize_pose_properties(dataset, req_data['scene'], req_data['objectType'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

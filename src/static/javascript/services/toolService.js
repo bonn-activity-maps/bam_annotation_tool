@@ -253,7 +253,7 @@ angular.module('CVGTool')
                 }
                 
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         },
 
@@ -365,6 +365,33 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(uidObject, objectType, startFrames, endFrame);
+                },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
+        },
+
+        replicate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
+            callbackSuccess, callbackError, track_id) {
+            $http({
+                method: 'POST',
+                url: "/api/annotation/replicate/object",
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'uidObject': uidObject,
+                    'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
+                    'datasetType': datasetType,
+                    'objectType': objectType
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess(uidObject, objectType, startFrame, endFrame);
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);
@@ -602,6 +629,77 @@ angular.module('CVGTool')
                 callbackError();
             })
         },
+
+        getPoseAIKLimbsLength: function(dataset, datasetType, scene, objectType, uid, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/poseProperty/getPoseProperty/uid',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'uidObject': uid,
+                    'objectType': objectType
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
+        },
+
+        updatePoseAIKLimbsLength: function(dataset, datasetType, scene, objectType, uid, limbs, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/poseProperty/updatePoseProperty',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    'upperArmLength': limbs[0],
+                    'lowerArmLength': limbs[1],
+                    'upperLegLength': limbs[2],
+                    'lowerLegLength': limbs[3]  
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess('success', 'Limbs updated!');
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            })
+        },
+        forcePoseAIKLimbLength: function(dataset, datasetType, scene, user, objectType, uid, frame, startLabels, endLabels, limbLength, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/forceLimbLength',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'user': user,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    "frame": frame,
+                    "startLabels": startLabels,
+                    "endLabels": endLabels,
+                    "limbLength": limbLength
+                    
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uid, objectType, frame)
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
+        }
+
 
     }
 }]);
