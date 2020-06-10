@@ -31,12 +31,13 @@
                                                 <span class="glyphicon glyphicon-tags"></span></button>
                                             <button ng-click="getAnnotationFolders(dataset)" ng-if="dataset.type=='actionInKitchen'" class="btn btn-info">
                                                 <span class="glyphicon glyphicon-upload"></span></button>
-                                            <button ng-click="exportDataset(dataset)" class="btn btn-primary">
-                                                <span class="glyphicon glyphicon-download"></span></button>
-<!--                                            Button to load ignore regions-->
                                             <button ng-click="loadIgnoreRegions(dataset)" ng-if="dataset.type == 'poseTrack'"
                                                     title="Load Ignore Regions" class="btn btn-info">
                                                 <span class="glyphicon glyphicon-upload"></span></button>
+                                            <button ng-click="exportDataset(dataset)" class="btn btn-primary">
+                                                <span class="glyphicon glyphicon-download"></span></button>
+<!--                                            Button to load ignore regions-->
+
                                         </td>
                                         <td>
                                             <button disabled ng-click="removeDataset(dataset)" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span></button>
