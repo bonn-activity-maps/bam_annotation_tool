@@ -1143,6 +1143,12 @@ angular.module('CVGTool')
             }
 
             _this.updatePoseAIKLimbsLengthForUID = function(limbs) {
+                for(var i=0; i<limbs.length; i++) {
+                    if (limbs[i] == 0) {
+                        $scope.messagesManager.sendMessage("danger", "Limb length can't be 0!");
+                        return;
+                    }
+                }
                 toolSrvc.updatePoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, limbs, $scope.messagesManager.sendMessage, $scope.messagesManager.sendMessage);
             }
 
@@ -1151,7 +1157,13 @@ angular.module('CVGTool')
                     $scope.messagesManager.sendMessage("success", "Limb length forced!");
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
                 }
-                toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name,$scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
+
+                if (limbLength <= 0) {
+                    $scope.messagesManager.sendMessage("danger", "Limb length must be greater than 0!");
+                    return;
+                } else {
+                    toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name,$scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
+                }
             }
 
 
