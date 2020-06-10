@@ -27,3 +27,9 @@ class PTService:
         x1, y1 = points[0]
         x2, y2 = points[1]
         return [x1, y1, x2 - x1, y2 - y1]
+
+    # Add 0s to the left of a string so the final length of "string" is "number"
+    def pad(self, string, number):
+        while len(string) < number:
+            string = "0" + string
+        return string
