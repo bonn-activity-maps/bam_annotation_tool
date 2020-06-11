@@ -576,6 +576,9 @@ class AnnotationService:
         if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':
             return False, 'Method not allowed', 500
 
+        if limb_length <= 0:
+            return False, 'Limb length must be greater than 0!', 500
+
         # Get object
         object = annotationManager.get_frame_object(annotation)
         if object == 'Error':
