@@ -326,8 +326,11 @@
                         <div class="col-sm-8">
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
-                        <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Person:</label>
-                        <div ng-if="toolParameters.isPosetrack" class="col-sm-8">
+                        
+                    </div>
+                    <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Person:</label>
+                        <div class="col-sm-8">
                             <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
                             class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
                         </div>
