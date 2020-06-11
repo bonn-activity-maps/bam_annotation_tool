@@ -1538,9 +1538,11 @@ angular.module('CVGTool')
                         let object = objects[obj].object;
                         
                         var existsInit = [];
-                        for (var j = 0; j < $scope.objectManager.objectTypes[object.type.toString()].labels.length; j++) {
-                            existsInit.push(false);
-                        }
+                        if (!$scope.objectManager.isStaticType(object.type)) {
+                            for (var j = 0; j < $scope.objectManager.objectTypes[object.type.toString()].labels.length; j++) {
+                                existsInit.push(false);
+                            }
+                        } 
 
                         $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()] = {
                             uid: object.track_id,
