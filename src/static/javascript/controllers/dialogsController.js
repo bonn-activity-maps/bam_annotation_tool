@@ -281,6 +281,50 @@ angular.module('CVGTool')
     }
 ])
 
+    /**
+     * Controller of the dialog show load ignore regions
+     */
+    .controller('dialogShowLoadIgnoreRegionsCtrl', ['$scope', '$mdDialog', 'dataset', 'files', 'adminDatasetsSrvc',
+    function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
+        $scope.variables = {
+            dataset: dataset,
+            files: files
+        };
+
+        $scope.success = false;
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Load the ignore regions
+        $scope.load = function() {
+            $scope.mode = 'progress';
+            adminDatasetsSrvc.loadIgnoreRegions($scope.variables.dataset, showSuccess, showError);
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response;
+            $scope.success = true;
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response;
+            $scope.success = false;
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $scope.successData = {
+                success: $scope.success
+            };
+            $mdDialog.hide($scope.successData);
+        }
+    }
+])
+
 /*
 * Controller of the dialog of show zip files
 */

@@ -7,6 +7,10 @@ from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.annotationManager import AnnotationManager
+from python.infrastructure.user_action_manager import UserActionManager
+
+from python.objects.user_action import UserAction
+from python.objects.dataset import Dataset
 
 # UserService logger
 log = logging.getLogger('userService')
@@ -16,6 +20,8 @@ datasetManager = DatasetManager()
 videoManager = VideoManager()
 frameManager = FrameManager()
 annotationManager = AnnotationManager()
+user_action_manager = UserActionManager()
+
 
 class UserService:
 
@@ -31,6 +37,11 @@ class UserService:
         # Check hashed password. Using bcrypt, the salt is saved into the hash itself
         return bcrypt.checkpw(plain_text_password.encode('utf-8'), hashed_password)
 
+    def user_logout(self, user):
+        # Create user action in db
+        user_action = UserAction(user, 'logout', "", Dataset("None"))
+        user_action_manager.create_user_action(user_action)
+
     # Check if user exist and return user info
     def user_login(self, user, pwd):
         result = userManager.get_user_pwd(user)
@@ -38,6 +49,10 @@ class UserService:
             return False, 'Wrong credentials', 400
 
         if self.check_password(pwd, result.password):
+            # Create user action in db
+            user_action = UserAction(user, 'login', "", Dataset("None"))
+            user_action_manager.create_user_action(user_action)
+
             result.password = ''
             return True, result, 200
         else:
