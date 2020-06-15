@@ -54,7 +54,7 @@ angular.module('CVGTool')
         // Function to update the list of actions
         var showListOfActions = function (list) {
             $scope.listOfActions = list;
-            $scope.drawCharts();
+            // $scope.drawCharts();
         };
 
         // Send message to toast
