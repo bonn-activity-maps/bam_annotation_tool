@@ -38,6 +38,7 @@ angular.module('CVGTool')
                 name: 'none',
                 type: 'none'
             };
+            $scope.undrawCharts();
             $scope.getInfoOfActions();
         };
 
@@ -53,6 +54,7 @@ angular.module('CVGTool')
         // Function to update the list of actions
         var showListOfActions = function (list) {
             $scope.listOfActions = list;
+            $scope.drawCharts();
         };
 
         // Send message to toast
@@ -60,7 +62,57 @@ angular.module('CVGTool')
             $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg, 'finishType': finishType});
         };
 
+        /// CHART CODE ///
+        $scope.drawCharts = function() {
+            var ctx = document.getElementById("testChart").getContext('2d');
+            if ($scope.listOfActions.length > 0) {
+                var myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                        datasets: [{
+                            label: '# of Votes',
+                            data: [12, 19, 3, 5, 2, 3],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+        };
+
+        //TODO does not work
+        $scope.undrawCharts = function() {
+            var ctx = document.getElementById("testChart").getContext('2d');
+            if ($scope.listOfActions.length > 0) {
+                var myChart = new Chart(ctx, {});
+            }
+        };
+
         $scope.getListOfDatasets();
         $scope.getInfoOfActions();
-
     }]);
