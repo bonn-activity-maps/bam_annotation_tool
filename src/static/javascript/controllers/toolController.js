@@ -1202,9 +1202,20 @@ angular.module('CVGTool')
                     }
                 }
 
-                if (framesFrom.length === 0) return; // Nothing found to interpolate to
+                // Check if there is something to interpolate
+                var doit = false;   
+                for (var i=0; i < framesFrom.length; i++) {
+                    if (framesFrom[i] != -1) {
+                        doit = true;
+                        break;
+                    }
+                }
 
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+                if (doit) {
+                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+                } else {
+                    _this.retrieveAnnotation(objectUID, objectType, [frameTo])
+                }
             }
 
             // Autocompletes the annotation from previous annotations
@@ -1527,6 +1538,17 @@ angular.module('CVGTool')
                 var returnKeypoints = keypoints.slice();
                 returnKeypoints.splice(3,0, [], []);
                 return returnKeypoints;
+            }
+
+            // Gets the labels for the current ignore region in the current frame
+            _this.getIgnoreRegionLabels = function(frame) {
+                var keypoints = $scope.objectManager.selectedObject.frames[frame].keypoints;
+                var labels = [];
+
+                for (var i=0; i<keypoints.length; i++) {
+                    labels.push(i);
+                }
+                return labels;
             }
 
             // Retrieve objects
@@ -1968,12 +1990,12 @@ angular.module('CVGTool')
 
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
                 else if (object.type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
-                
+                                
                 _this.keypointEditorData = {
                     searchUID: null,
                     shapes: [].slice(),
-                    labels: $scope.objectManager.selectedType.labels.slice(),
-                    realLabels: $scope.objectManager.selectedType.labels.slice(),
+                    labels: (object.type.localeCompare("ignore_region") == 0) ?  $scope.commonManager.getIgnoreRegionLabels(frame).slice() : $scope.objectManager.selectedType.labels.slice(),
+                    realLabels: (object.type.localeCompare("ignore_region") == 0) ?  $scope.commonManager.getIgnoreRegionLabels(frame).slice() : $scope.objectManager.selectedType.labels.slice(),
                     creationType: "point",
                     editorMode: $scope.objectManager.isStaticType(object.type) ? "static" : "dynamic",
                     annotationLabels: object.labels.length > 0 ? object.labels.slice() : [""],
@@ -2985,10 +3007,10 @@ angular.module('CVGTool')
         }
 
         // Polygon type for ignore regions
-        function IgnoreRegion(uid, projectedPoints, cameraPoints, labels) {
+        function IgnoreRegion(uid, projectedPoints, cameraPoints) {
             var _this = this;
 
-            _this.labels = labels; 
+            _this.labels = []; 
             _this.uid = uid;
             _this.points = [];
             _this.cameraPoints = [];
@@ -3008,6 +3030,11 @@ angular.module('CVGTool')
                 }
             }
 
+            // Fill labels
+            for (var i=0; i< _this.points.length; i++) {
+                _this.labels.push(i);
+            }
+
             // FUNCTIONS
             _this.draw  = function(context, color) {
                 // Draw the path and fill it with a color with reduced alpha
@@ -3017,7 +3044,14 @@ angular.module('CVGTool')
                 for (var i=0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
                 }
+            }
 
+            _this.drawWithUID = function(context, color) {
+                _this.draw(context, color)
+            }
+
+            _this.drawWithLabel = function(context, color) {
+                _this.draw(context, color)
             }
 
             _this.drawPath = function(context, color) {
@@ -3762,18 +3796,19 @@ angular.module('CVGTool')
                         }
                     }
                 }
-                var labels = $scope.objectManager.objectTypes[type.toString()].labels.slice();
-
+            
                 if (type.localeCompare("personAIK") == 0) {
-                    newObject = new PersonAIK(uid, imgPoints, points, labels);         
+                    newObject = new PersonAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());         
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {
-                    newObject = new BBox(uid, imgPoints, points, labels);
+                    newObject = new BBox(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());
                 } else if (type.localeCompare("person") == 0) {
-                    newObject = new Person(uid, imgPoints, points, labels);
+                    newObject = new Person(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());
                 } else if (type.localeCompare("poseAIK") == 0) {
-                    newObject = new PoseAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
+                    newObject = new PoseAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
                 } else if (type.localeCompare("boxAIK") == 0) {
-                    newObject = new BoxAIK(uid, imgPoints, points, labels, $scope.objectManager.selectedType.skeleton);
+                    newObject = new BoxAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
+                } else if (type.localeCompare("ignore_region") == 0) {
+                    newObject = new IgnoreRegion(uid, imgPoints, points);
                 } else {
                     // Whatever other objects
                 }
