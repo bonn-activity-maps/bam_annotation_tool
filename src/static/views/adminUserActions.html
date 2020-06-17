@@ -9,45 +9,84 @@
                 <h2 class="col-md-8">User Actions</h2>
                 <hr/>
                 <div class="row">
-
                     <div class="col-md-4">
-                        <div style="overflow-y: auto; max-height: 800px;">
-                            <table class="table table-bordered table-responsive text-center">
-                                <thead>
-                                <tr>
-                                    <th class="col-md-3">Name</th>
-                                    <th class="col-md-3">Type</th>
-                                    <th class="col-md-3">Select</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr ng-if="listOfDatasets.length > 0" ng-repeat="dataset in listOfDatasets">
-                                    <td class="text-left">{{dataset.name}}</td>
-                                    <td>{{dataset.type}}</td>
-                                    <td ng-if="selectedDataset.name != dataset.name">
-                                        <button ng-click="selectDataset(dataset)" class="btn btn-primary"><span
-                                                class="glyphicon glyphicon-chevron-right"></span></button>
-                                    </td>
-                                    <td ng-if="selectedDataset.name == dataset.name">
-                                        <button ng-click="deselectDataset()" class="btn btn-danger"><span
-                                                class="glyphicon glyphicon-chevron-left"></span></button>
-                                    </td>
-                                </tr>
-                                <tr ng-if="listOfDatasets.length == 0">
-                                    <td class="text-left">No datasets</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
 
+                        <div class="row">
+                            <div style="overflow-y: auto; max-height: 800px;">
+                                <table class="table table-bordered table-responsive text-center">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-md-3">Name</th>
+                                        <th class="col-md-3">Type</th>
+                                        <th class="col-md-3">Select</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-if="listOfDatasets.length > 0" ng-repeat="dataset in listOfDatasets">
+                                        <td class="text-left">{{dataset.name}}</td>
+                                        <td>{{dataset.type}}</td>
+                                        <td ng-if="selectedItem.name != dataset.name">
+                                            <button ng-click="selectDataset(dataset)" class="btn btn-primary"><span
+                                                    class="glyphicon glyphicon-chevron-right"></span></button>
+                                        </td>
+                                        <td ng-if="selectedItem.name == dataset.name">
+                                            <button ng-click="deselectItem()" class="btn btn-danger"><span
+                                                    class="glyphicon glyphicon-chevron-left"></span></button>
+                                        </td>
+                                    </tr>
+                                    <tr ng-if="listOfDatasets.length == 0">
+                                        <td class="text-left">No datasets</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div style="overflow-y: auto; max-height: 800px;">
+                                <table class="table table-bordered table-responsive text-center">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-md-3">Name</th>
+                                        <th class="col-md-3">Assigned to</th>
+                                        <th class="col-md-3">Select</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
+                                        <td class="text-left">{{user.name}}</td>
+                                        <td>{{user.assignedTo}}</td>
+                                        <td ng-if="selectedItem.name != user.name">
+                                            <button ng-click="selectUser(user)" class="btn btn-primary"><span
+                                                    class="glyphicon glyphicon-chevron-right"></span></button>
+                                        </td>
+                                        <td ng-if="selectedItem.name == user.name">
+                                            <button ng-click="deselectItem()" class="btn btn-danger"><span
+                                                    class="glyphicon glyphicon-chevron-left"></span></button>
+                                        </td>
+                                    </tr>
+                                    <tr ng-if="listOfUsers.length == 0">
+                                        <td class="text-left">No users</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
                     <div class="col-md-8">
                         <div style="overflow-y: auto; max-height: 800px;">
-                            <table class="table table-bordered table-responsive text-center">
+                            <canvas id="bar" class="chart chart-bar" chart-data="data" chart-labels="labels"></canvas>
+
+                            <!-- <table class="table table-bordered table-responsive text-center">
                                 <thead>
                                 <tr>
                                     <th class="col-md-1">User</th>
@@ -74,7 +113,7 @@
                                     <td>-</td>
                                 </tr>
                                 </tbody>
-                            </table>
+                            </table>-->
 <!--                            <canvas id="testChart" width="400" height="400"></canvas>-->
                         </div>
                     </div>

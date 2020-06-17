@@ -21,6 +21,25 @@ angular.module('CVGTool')
                 }, function errorCallBack(response) {
                     callbackError('danger', response.data.msg);
                 });
+            },
+
+            getUserActionsByLogin: function (user, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/login',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'user': user,
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
             }
         }
     }]);
