@@ -65,7 +65,11 @@ class UserActionManager:
         try:
             result = self.collection.find({"user": user, "action": "logout", "timestamp": {"$gt": log_in_timestamp}},
                                               {"_id": 0}).sort("timestamp")
-            return [UserAction.from_json(r) for r in list(result)][0]
+            result = list(result)
+            if result:
+                return [UserAction.from_json(r) for r in result][0]
+            else:
+                return result
         except errors.PyMongoError as e:
             log.exception('Error finding user_action in db')
             return 'Error'
