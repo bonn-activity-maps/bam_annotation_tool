@@ -30,6 +30,13 @@
                                                 id="userSelect">
                                         </select>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="statSelect">Data selection</label>
+                                        <select class="form-control"
+                                                ng-options="stat as stat.display for stat in listOfStats"
+                                                ng-model="selectedStat"
+                                        id="statSelect"></select>
+                                    </div>
                                     <button type="submit" ng-click="loadStatistics()" class="btn btn-primary">Submit</button>
                                     <button type="reset" ng-click="resetSelections()" class="btn btn-danger">Reset</button>
                                 </form>

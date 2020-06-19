@@ -10,6 +10,19 @@ angular.module('CVGTool')
         $scope.filteredListOfDatasets = [];
         $scope.listOfUsers = [];
         $scope.filteredListOfUsers = [];
+
+        $scope.listOfStats = [
+            {
+                display: "Time worked per week",
+                name: "actionsWeek",
+                requires: ["user"]
+            },
+            {
+                display: "Actions per day",
+                name: "actionsDay",
+                requires: ["user"]
+            }];
+
         $scope.selectedItem = {
             name: 'none',
             type: 'none',
@@ -25,6 +38,10 @@ angular.module('CVGTool')
             name: "None",
             assignedTo: []
         }
+        $scope.selectedStat = {
+            display: "None",
+            name: "None"
+};
 
         $scope.labels = ["Download Sales", "In-Store Sales", "Mail-Order Sales"];
         $scope.data = [300, 500, 100];
@@ -39,8 +56,12 @@ angular.module('CVGTool')
         };
 
         // Update list of datasets variable
-        var updateListOfDatasets = function(datasets) {
-            $scope.listOfDatasets = datasets;
+        let updateListOfDatasets = function(datasets) {
+            $scope.listOfDatasets = datasets.sort(function(a, b) {
+                if(a.name < b.name) { return -1; }
+                if(a.name > b.name) { return 1; }
+                return 0;
+            });
             $scope.listOfDatasets.push({
                 name: "None",
                 type: "None"
@@ -54,8 +75,12 @@ angular.module('CVGTool')
         };
 
         // Update list of users variable
-        var updateListOfUsers = function(users) {
-            $scope.listOfUsers = users;
+        let updateListOfUsers = function(users) {
+            $scope.listOfUsers = users.sort(function(a, b) {
+                if(a.name < b.name) { return -1; }
+                if(a.name > b.name) { return 1; }
+                return 0;
+            });
             $scope.listOfUsers.push({
                 name: "None",
                 assignedTo: []
@@ -135,25 +160,44 @@ angular.module('CVGTool')
             $rootScope.$broadcast('sendMsg', {'type': type, 'msg': msg, 'finishType': finishType});
         };
 
+        let drawStatistics = function() {
+            switch ($scope.selectedStat.name) {
+                case "actionsDay":
+                    console.log("ACTIONS PER DAY");
+                    resetCharts();
+                    adminUserActionsSrvc.getUserActionsByLogin($scope.selectedUser.name, getActionsCallback, sendMessage);
+                    break;
+                case "actionsWeek":
+                    console.log("HOURS PER WEEK");
+                    resetCharts();
+                    adminUserActionsSrvc.getUserActionsTimeByWeek($scope.selectedUser.name, getActionsCallback, sendMessage);
+                    break;
+                case "None":
+                    sendMessage("loading", "Please select some data to visualize.")
+            }
+        }
+
         $scope.loadStatistics = function() {
             // Lookup data depending on selection
             // Both user and dataset selected
             if ($scope.selectedUser.name !== "None" && $scope.selectedDataset.name !== "None") {
-                console.log("User and dataset selected")
+                console.log("User and dataset selected");
+                drawStatistics();
             }
             // Only dataset selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name !== "None") {
-                console.log("Only dataset selected")
+                console.log("Only dataset selected");
+                drawStatistics();
             }
             // Only user selected
             else if($scope.selectedUser.name !== "None" && $scope.selectedDataset.name === "None") {
                 console.log("Only user selected");
-                adminUserActionsSrvc.getUserActionsByLogin($scope.selectedUser.name, getActionsCallback, sendMessage);
+                drawStatistics();
             }
             // None selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name === "None") {
                 console.log("Nothing selected");
-                sendMessage("Warning", "Please select some data to visualize.")
+                sendMessage("loading", "Please select some data to visualize.")
             }
         }
 
@@ -172,70 +216,22 @@ angular.module('CVGTool')
             }
             $scope.filteredListOfDatasets = $scope.listOfDatasets;
             $scope.filteredListOfUsers = $scope.listOfUsers;
+            resetCharts();
         }
-
-        /// CHART CODE ///
-        // $scope.drawCharts = function(labels, data) {
-        //     console.log(labels)
-        //     console.log(data)
-        //     var ctx = document.getElementById("testChart").getContext('2d');
-        //     if ($scope.listOfActions.length > 0) {
-        //         var myChart = new Chart(ctx, {
-        //             type: 'bar',
-        //             data: {
-        //                 labels: labels,
-        //                 datasets: [{
-        //                     label: '# of Votes',
-        //                     data: data,
-        //                     // backgroundColor: [
-        //                     //     'rgba(255, 99, 132, 0.2)',
-        //                     //     'rgba(54, 162, 235, 0.2)',
-        //                     //     'rgba(255, 206, 86, 0.2)',
-        //                     //     'rgba(75, 192, 192, 0.2)',
-        //                     //     'rgba(153, 102, 255, 0.2)',
-        //                     //     'rgba(255, 159, 64, 0.2)'
-        //                     // ],
-        //                     // borderColor: [
-        //                     //     'rgba(255, 99, 132, 1)',
-        //                     //     'rgba(54, 162, 235, 1)',
-        //                     //     'rgba(255, 206, 86, 1)',
-        //                     //     'rgba(75, 192, 192, 1)',
-        //                     //     'rgba(153, 102, 255, 1)',
-        //                     //     'rgba(255, 159, 64, 1)'
-        //                     // ],
-        //                     borderWidth: 1
-        //                 }]
-        //             },
-        //             options: {
-        //                 scales: {
-        //                     yAxes: [{
-        //                         ticks: {
-        //                             beginAtZero: true
-        //                         }
-        //                     }]
-        //                 }
-        //             }
-        //         });
-        //     }
-        // };
 
         $scope.drawCharts = function(labels, data) {
             console.log(labels)
+            console.log(data)
             $scope.labels = labels;
             $scope.data = data;
         };
 
-        //TODO does not work
-        // $scope.undrawCharts = function() {
-        //     var ctx = document.getElementById("testChart").getContext('2d');
-        //     if ($scope.listOfActions.length > 0) {
-        //         var myChart = new Chart(ctx, {});
-        //     }
-        // };
+        let resetCharts = function() {
+            $scope.labels = [];
+            $scope.data = [];
+        }
 
         $scope.getListOfDatasets();
         $scope.getListOfUsers();
-        $scope.getInfoOfActions();
-        // $scope.drawCharts($scope.labels, $scope.data);
 
     }]);
