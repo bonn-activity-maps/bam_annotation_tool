@@ -29,9 +29,9 @@ angular.module('CVGTool')
         $scope.activeState = $scope.user.assignedTo[0];
 
         window.addEventListener('beforeunload', function (e) {
-            // e.preventDefault();
-            // e.returnValue = '';
             loginSrvc.logout($scope.user.name, navSrvc.logout);
+            e.preventDefault();
+            e.returnValue = '';
         });
 
         // Auxiliar function to check if the actual dataset is posetrack
