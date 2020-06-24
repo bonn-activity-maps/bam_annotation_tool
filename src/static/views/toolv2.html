@@ -130,8 +130,8 @@
           <li class="divider"></li> 
           <li class="dropdown-header">Dynamic object types</li>
           <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
-          <li ng-if="!toolParameters.isPosetrack" class="dropdown-header">Static object types</li>
-          <li ng-if="!toolParameters.isPosetrack" ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
+          <li class="dropdown-header">Static object types</li>
+          <li ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -427,7 +427,7 @@
             </div>
         </div>
 
-        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0">
+        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0 && objectManager.selectedType.type.localeCompare('ignore_region') != 0">
             <hr>
             <div class="form-group input-group-sm">
                 <label class="control-label col-sm-2">Labels:</label>
@@ -466,7 +466,7 @@
                     </tr>
                     <tr ng-if="objectManager.selectedType.type.localeCompare('ignore_region')==0">
                         <td class="zui-sticky-col">
-                            <button class="btn btn-primary" ng-click=""><span
+                            <button class="btn btn-primary" ng-click="keypointEditor.addNewTag();"><span
                                 class="glyphicon glyphicon-plus"></span></button>
                         </td>
                     </tr>
