@@ -163,17 +163,15 @@ angular.module('CVGTool')
         let drawStatistics = function() {
             switch ($scope.selectedStat.name) {
                 case "actionsDay":
-                    console.log("ACTIONS PER DAY");
                     resetCharts();
                     adminUserActionsSrvc.getUserActionsByLogin($scope.selectedUser.name, getActionsCallback, sendMessage);
                     break;
                 case "actionsWeek":
-                    console.log("HOURS PER WEEK");
                     resetCharts();
                     adminUserActionsSrvc.getUserActionsTimeByWeek($scope.selectedUser.name, getActionsCallback, sendMessage);
                     break;
                 case "None":
-                    sendMessage("loading", "Please select some data to visualize.")
+                    sendMessage("warning", "Please select some data to visualize.")
             }
         }
 
@@ -197,7 +195,7 @@ angular.module('CVGTool')
             // None selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name === "None") {
                 console.log("Nothing selected");
-                sendMessage("loading", "Please select some data to visualize.")
+                sendMessage("warning", "Please select some data to visualize.")
             }
         }
 
@@ -220,8 +218,6 @@ angular.module('CVGTool')
         }
 
         $scope.drawCharts = function(labels, data) {
-            console.log(labels)
-            console.log(data)
             $scope.labels = labels;
             $scope.data = data;
         };
