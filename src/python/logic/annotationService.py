@@ -555,8 +555,8 @@ class AnnotationService:
 
     # Replicate and store the annotation between start and enf frame
     # Always a single object in "objects" so always objects[0] !!
-    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame):
-        obj = Object(uid_object, object_type, dataset_type=dataset.type)
+    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id):
+        obj = Object(uid_object, object_type, dataset_type=dataset.type, track_id=track_id)
         obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
         if obj == 'Error':
             return False, 'Error replicating annotation', 400
@@ -564,6 +564,11 @@ class AnnotationService:
 
         # Update the annotation for each frame
         for frame in range(start_frame, end_frame+1):
+            # For posetrack, update the object uid
+            if dataset.is_pt():
+                uid = "1" + scene + self.pad(str(frame), 4) + str(track_id)
+                obj.uid = int(uid)
+                annotation = Annotation(dataset, scene, start_frame, user, [obj])
             annotation.frame = frame
             result = self.update_annotation_frame_object(annotation)
             if result == 'Error':

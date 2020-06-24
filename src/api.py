@@ -468,6 +468,7 @@ def autocomplete_annotation():
                                                                      start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 # Replicate object between start and end frame
 @app.route('/api/annotation/replicate/object', methods=['POST'])
 @flask_login.login_required
@@ -475,8 +476,9 @@ def replicate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
-                                                                     int(req_data['uidObject']), req_data['objectType'],
-                                                                     req_data['startFrame'], req_data['endFrame'])
+                                                                  int(req_data['uidObject']), req_data['objectType'],
+                                                                  req_data['startFrame'], req_data['endFrame'],
+                                                                  req_data['track_id'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
