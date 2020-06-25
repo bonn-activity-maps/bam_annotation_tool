@@ -691,9 +691,23 @@ class AnnotationService:
                 old_object = annotationManager.get_frame_object(old_annotation)
                 new_object = annotationManager.get_frame_object(new_annotation)
 
-                # There is no object
+                # There is no object -> ignore that frame and continue with the others
                 if old_object == 'No annotation' and new_object == 'No annotation':
-                    return False, 'No object to transfer', 400
+                    continue
+
+                # If old uid doesn't have any data --> Remove new annotation and create the new one with old uid
+                elif old_object == 'No annotation':
+                    remove_result = annotationManager.remove_frame_object(new_annotation, new_annotation)
+                    if remove_result == 'Error':
+                        return False, 'Error transfering object', 400
+                    # Change uid for the old one and insert object in annotation to update/create it
+                    new_object.uid = old_annotation.objects[0].uid
+                    updated_annotation = copy.deepcopy(new_annotation)
+                    updated_annotation.objects[0] = new_object
+
+                    create_result = annotationManager.create_frame_object(updated_annotation)
+                    if create_result == 'Error':
+                        return False, 'Error transfering object, please check the annotations', 400
 
                 # If new uid doesn't have any data --> Remove old annotation and create the new one with new uid
                 elif new_object == 'No annotation':
@@ -723,6 +737,6 @@ class AnnotationService:
                     update_new_result = annotationManager.update_frame_object(updated_new_annotation)
                     if update_old_result == 'Error' or update_new_result == 'Error':
                         return False, 'Error transfering object, please check the annotations', 400
-            return True, 'Object transferred successfully', 200
+            return True, 'Objects transferred successfully!', 200
         else:
             return False, 'Operation not allowed', 400
