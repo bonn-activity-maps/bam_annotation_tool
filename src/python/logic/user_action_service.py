@@ -78,26 +78,33 @@ class UserActionService:
         if not log_in_results:
             next_week = datetime.now() - step
             labels.append(datetime.now().strftime(date_format) + '-' + next_week.strftime(date_format))
-            data.append(timedelta())
+            # data.append(timedelta())
+            data.append(0)
         else:
             next_week = log_in_results[index].date_dd_mm_yy() - step
 
             labels.append(log_in_results[index].date_dd_mm_yy().strftime(date_format) + '-' + next_week.strftime(date_format))
-            data.append(timedelta())
-
+            # data.append(timedelta())
+            data.append(0)
             for log_in in log_in_results:
                 # Change week if it's needed
                 if log_in.timestamp < next_week:
                     labels.append(next_week.strftime(date_format) + '-' + (next_week-step).strftime(date_format))
                     next_week -= step
                     index += 1
-                    data.append(timedelta())
+                    # data.append(timedelta())
+                    data.append(0)
 
                 # Get corresponding log out and actions in between
                 log_out_result = user_action_manager.get_user_action_by_logout(user, log_in.timestamp)
                 if log_out_result:
                     # Add time between login-logout
-                    data[index] += log_out_result.timestamp- log_in.timestamp
+                    duration = log_out_result.timestamp - log_in.timestamp
+                    seconds = duration.total_seconds()
+                    hours = seconds // 3600
+                    data[index] += hours
+                    print(data[index])
+                    print(type(data[index]))
 
         return True, {"labels": labels, "data": data}, 200
 

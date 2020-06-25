@@ -5,79 +5,41 @@
     <div class="row" style="height: 98%;">
         <div class="panel panel-default" style="height: 100%">
             <div class="panel-body">
-                <h2 class="col-md-4">Datasets</h2>
-                <h2 class="col-md-8">User Actions</h2>
+                <h2 class="col-md-4">Selection</h2>
+                <h2 class="col-md-8">User Activity</h2>
                 <hr/>
-                <div class="row">
+                <div class="panel">
                     <div class="col-md-4">
-
                         <div class="row">
                             <div style="overflow-y: auto; max-height: 800px;">
-                                <table class="table table-bordered table-responsive text-center">
-                                    <thead>
-                                    <tr>
-                                        <th class="col-md-3">Name</th>
-                                        <th class="col-md-3">Type</th>
-                                        <th class="col-md-3">Select</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-if="listOfDatasets.length > 0" ng-repeat="dataset in listOfDatasets">
-                                        <td class="text-left">{{dataset.name}}</td>
-                                        <td>{{dataset.type}}</td>
-                                        <td ng-if="selectedItem.name != dataset.name">
-                                            <button ng-click="selectDataset(dataset)" class="btn btn-primary"><span
-                                                    class="glyphicon glyphicon-chevron-right"></span></button>
-                                        </td>
-                                        <td ng-if="selectedItem.name == dataset.name">
-                                            <button ng-click="deselectItem()" class="btn btn-danger"><span
-                                                    class="glyphicon glyphicon-chevron-left"></span></button>
-                                        </td>
-                                    </tr>
-                                    <tr ng-if="listOfDatasets.length == 0">
-                                        <td class="text-left">No datasets</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div style="overflow-y: auto; max-height: 800px;">
-                                <table class="table table-bordered table-responsive text-center">
-                                    <thead>
-                                    <tr>
-                                        <th class="col-md-3">Name</th>
-                                        <th class="col-md-3">Assigned to</th>
-                                        <th class="col-md-3">Select</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr ng-if="listOfUsers.length > 0" ng-repeat="user in listOfUsers">
-                                        <td class="text-left">{{user.name}}</td>
-                                        <td>{{user.assignedTo}}</td>
-                                        <td ng-if="selectedItem.name != user.name">
-                                            <button ng-click="selectUser(user)" class="btn btn-primary"><span
-                                                    class="glyphicon glyphicon-chevron-right"></span></button>
-                                        </td>
-                                        <td ng-if="selectedItem.name == user.name">
-                                            <button ng-click="deselectItem()" class="btn btn-danger"><span
-                                                    class="glyphicon glyphicon-chevron-left"></span></button>
-                                        </td>
-                                    </tr>
-                                    <tr ng-if="listOfUsers.length == 0">
-                                        <td class="text-left">No users</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                <h4>Select Dataset, User, or both to see their statistics.</h4>
+                                <form>
+                                    <div class="form-group">
+                                        <label for="datasetSelect">Select Dataset</label>
+                                        <select class="form-control"
+                                                ng-options="dataset as dataset.name for dataset in filteredListOfDatasets"
+                                                ng-model="selectedDataset" ng-change="selectDataset(dataset)"
+                                                id="datasetSelect">
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="userSelect">Select User</label>
+                                        <select class="form-control"
+                                                ng-options="user as user.name for user in filteredListOfUsers"
+                                                ng-model="selectedUser" ng-change="selectUser(user)"
+                                                id="userSelect">
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="statSelect">Data selection</label>
+                                        <select class="form-control"
+                                                ng-options="stat as stat.display for stat in listOfStats"
+                                                ng-model="selectedStat"
+                                        id="statSelect"></select>
+                                    </div>
+                                    <button type="submit" ng-click="loadStatistics()" class="btn btn-primary">Submit</button>
+                                    <button type="reset" ng-click="resetSelections()" class="btn btn-danger">Reset</button>
+                                </form>
                             </div>
                         </div>
 
