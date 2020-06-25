@@ -997,7 +997,7 @@ def get_user_actions_time_by_week():
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 # Get number of user actions by day for each user
-# Filter by dataset if dataset is not null
+# Filter by dataset if dataset is not None
 @app.route("/api/userAction/getUserActions/user/day", methods=['GET'])
 @flask_login.login_required
 def get_user_actions_by_day():

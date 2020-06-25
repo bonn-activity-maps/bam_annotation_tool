@@ -111,13 +111,13 @@ class UserActionService:
         return True, {"labels": labels, "data": data}, 200
 
     # Return number of user actions for user by day
+    # Filter by dataset if dataset is not None
     def get_user_actions_by_day(self, user, dataset, dataset_type):
         if dataset != "None":
             dataset = Dataset(dataset, dataset_type)
             result = user_action_manager.get_user_actions_by_dataset_and_day(user, dataset)
         else:
             result = user_action_manager.get_user_actions_by_day(user)
-            print(result)
 
         if result == 'Error':
             return False, 'Error retrieving actions of user', 400
