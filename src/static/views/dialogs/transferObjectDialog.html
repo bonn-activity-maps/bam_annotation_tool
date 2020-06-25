@@ -1,0 +1,71 @@
+<md-dialog>
+    <div  ng-if="mode=='normal'">
+        <md-dialog-content>
+            <h2>Transfer object</h2>
+            <hr/>
+            <md-content >
+                <div class="form-group">
+                    <p><b>Old object ID: </b>{{object.uid}}</p>
+                </div>
+                <div class="form-group">
+                    <label>New object ID</label>
+                    <select class="form-control" ng-model="values.newUid">
+                        <option ng-repeat="object in objects" >{{object.uid}}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <p><b>Object type: </b>{{object.type}}</p>
+                </div>
+                <div class="form-group">
+                    <label>From</label>
+                    <input type="number" ng-model="values.deleteFrom" min="minFrame" max="maxFrame" ng-blur="checkSlider()"/>
+                </div>
+                <div class="form-group">
+                    <label>To</label>
+                    <input type="number" ng-model="values.deleteTo" min="minFrame" max="maxFrame" ng-blur="checkSlider()"/>
+                </div>
+                <div class="form-group">
+                    <p><b>Minimum frame: </b>{{minFrame}} | <b>Maximum frame: </b>{{maxFrame}}</p>
+                </div>
+            </md-content>
+            <md-dialog-actions>
+                <button ng-click="close()" class="btn btn-danger">Close</button>
+                <button ng-click="transferObject()" class="btn btn-primary">Transfer object</button>
+            </md-dialog-actions>
+
+        </md-dialog-content>  
+    </div>
+    <div ng-if="mode=='check'">
+        <md-dialog-content>
+            <h2>Confirmation</h2>
+            <hr/>
+            <p>You are going to transfer the uid <b>{{object.uid}}</b> to <b>{{values.newUid}}</b> in the range of
+                annotations from <b>{{values.deleteFrom}}</b> to <b>{{values.deleteTo}}</b> that has a type <b>{{object.type}}</b>.
+            </p>
+            <h3>Are you sure?</h3>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+            <button ng-click="confirm()" class="btn btn-primary">Confirm</button>
+        </md-dialog-actions>
+    </div>
+</md-dialog>        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+    

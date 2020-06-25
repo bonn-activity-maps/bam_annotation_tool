@@ -1373,6 +1373,40 @@ angular.module('CVGTool')
                 }) 
             }
 
+            // Transfer object
+            _this.openTransferObject = function(object) {
+                $mdDialog.show({
+                    templateUrl: '/static/views/dialogs/transferObjectDialog.html',
+                    controller: 'transferObjectCtrl',
+                    escapeToClose: false,
+                    locals: {
+                        toolSrvc: toolSrvc,
+                        object: object,
+                        objectType: $scope.objectManager.selectedType,
+                        objects: $scope.objectManager.selectedType.objects,
+                        minFrame: $scope.toolParameters.frameFrom,
+                        maxFrame: $scope.toolParameters.frameTo,
+                        dataset: $scope.toolParameters.activeDataset,
+                        scene: $scope.toolParameters.activeDataset.name,
+                        username: $scope.toolParameters.user.name
+                    }
+                }).then(function(data) { // When finished, update the frames
+                    if (data.msg.localeCompare("success") === 0) {
+                        $scope.messagesManager.sendMessage("success", data.successMsg)
+                        var frameArray = [];
+                        for (let i = data.deleteFrom; i <= data.deleteTo; i++) {
+                            frameArray.push(i);
+                        }
+
+                        _this.retrieveAnnotation(data.object.uid, data.object.type, frameArray);
+                        _this.retrieveAnnotation(data.newObjectUid, data.object.type, frameArray);
+
+                    } else if (data.msg.localeCompare("error") === 0) {
+                        $scope.messagesManager.sendMessage("warning", data.errorMsg)
+                    }
+                })
+            }
+
             // Deletes the actual object in the actual frame
             _this.deleteAnnotation = function() {
                 var successFunction = function() {

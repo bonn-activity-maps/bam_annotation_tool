@@ -660,6 +660,93 @@ angular.module('CVGTool')
     }
 ])
 
+/*
+ * Controller of the dialog of transfer object
+ */
+.controller('transferObjectCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'objectType', 'objects', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, objectType, objects, minFrame, maxFrame, dataset, scene, username) {
+        $scope.object = object;
+        $scope.objectType = objectType;
+        $scope.objects = objects;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+
+        $scope.values = {
+            newUid: '',
+            deleteFrom: minFrame,
+            deleteTo: minFrame + 1,
+        }
+
+        $scope.minFrame = minFrame;
+        $scope.maxFrame = maxFrame;
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        }
+
+        $scope.checkSlider = function() {
+            // Check that values are between range
+            if ($scope.values.deleteFrom < $scope.minFrame) $scope.values.deleteFrom = $scope.minFrame;
+            if ($scope.values.deleteFrom > $scope.maxFrame) $scope.values.deleteFrom = $scope.maxFrame;
+            if ($scope.values.deleteTo < $scope.minFrame) $scope.values.deleteTo = $scope.minFrame;
+            if ($scope.values.deleteTo > $scope.maxFrame) $scope.values.deleteTo = $scope.maxFrame;
+        }
+
+        // Check it's not empty
+        $scope.checkNewUid = function() {
+            if ($scope.values.newUid === '') errorFunction('You have to select a new uid');
+        }
+
+        $scope.transferObject = function() {
+            $scope.checkNewUid();
+            $scope.mode = "check";
+        }
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        }
+        var successFunction = function(successMsg) {
+            var successData = {
+                msg: "success",
+                successMsg: successMsg,
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object,
+                newObjectUid: $scope.values.newUid
+            }
+            $mdDialog.hide(successData);
+        }
+
+        var errorFunction = function(errorMsg) {
+            var successData = {
+                msg: "error",
+                errorMsg: errorMsg,
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object,
+                newObjectUid: $scope.values.newUid
+            }
+            $mdDialog.hide(successData)
+        }
+
+        $scope.confirm = function() {
+            $scope.checkSlider();
+            // Check and fix the order
+            if ($scope.values.deleteFrom > $scope.values.deleteTo) {
+                var aux = $scope.values.deleteFrom;
+                $scope.values.deleteFrom = $scope.values.deleteTo;
+                $scope.values.deleteTo = aux;
+            }
+
+            toolSrvc.transferObject($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                $scope.values.newUid, $scope.object.type, successFunction, errorFunction);
+        }
+    }
+])
+
 .controller('nextFrameRangeCtrl', ['$scope', '$rootScope', '$mdDialog', 'objects', 'range',
     function($scope, $rootScope, $mdDialog, objects, range) {
         $scope.objects = objects;
