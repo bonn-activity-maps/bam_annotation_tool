@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, time
 from python.infrastructure.user_action_manager import UserActionManager
 from python.objects.user_action import UserAction
 
+from python.objects.dataset import Dataset
+
 # user_action_service logger
 log = logging.getLogger('user_action_service')
 
@@ -103,10 +105,26 @@ class UserActionService:
                     seconds = duration.total_seconds()
                     hours = seconds // 3600
                     data[index] += hours
-                    print(data[index])
-                    print(type(data[index]))
+                    # print(data[index])
+                    # print(type(data[index]))
 
         return True, {"labels": labels, "data": data}, 200
+
+    # Return number of user actions for user by day
+    def get_user_actions_by_day(self, user, dataset, dataset_type):
+        if dataset != "None":
+            dataset = Dataset(dataset, dataset_type)
+            result = user_action_manager.get_user_actions_by_dataset_and_day(user, dataset)
+        else:
+            result = user_action_manager.get_user_actions_by_day(user)
+            print(result)
+
+        if result == 'Error':
+            return False, 'Error retrieving actions of user', 400
+        else:
+            labels = [r['date'] for r in result]
+            data = [r['actions'] for r in result]
+            return True, {"labels": labels, "data": data}, 200
 
     # Return if user action has been created successfully
     def create_user_action(self, user_action):

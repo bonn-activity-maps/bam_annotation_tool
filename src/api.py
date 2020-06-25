@@ -982,18 +982,27 @@ def get_user_actions():
     success, msg, status = user_action_service.get_user_actions(dataset)
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
-# Get user action group by log ins
+# Get number of user actions group by log ins
 @app.route("/api/userAction/getUserActions/login", methods=['GET'])
-# @flask_login.login_required
+@flask_login.login_required
 def get_user_actions_by_login():
     success, msg, status = user_action_service.get_user_actions_by_login(request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
-# Get user action time group by week
+# Get total time  of user action group by week
 @app.route("/api/userAction/getUserActions/time/week", methods=['GET'])
-# @flask_login.login_required
+@flask_login.login_required
 def get_user_actions_time_by_week():
     success, msg, status = user_action_service.get_user_actions_time_by_week(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Get number of user actions by day for each user
+# Filter by dataset if dataset is not null
+@app.route("/api/userAction/getUserActions/user/day", methods=['GET'])
+@flask_login.login_required
+def get_user_actions_by_day():
+    success, msg, status = user_action_service.get_user_actions_by_day(request.headers['user'], request.headers['dataset'],
+                                                                       request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 
