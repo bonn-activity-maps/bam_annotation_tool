@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta, time
 
 from python.infrastructure.user_action_manager import UserActionManager
 from python.objects.user_action import UserAction
@@ -42,6 +43,70 @@ class UserActionService:
             return False, 'Error retrieving actions of user', 400
         else:
             return True, [r.to_json() for r in result], 200
+
+    # Return number of updates in each interval where the user has been logged in
+    def get_user_actions_by_login(self, user):
+        labels = []
+        data = []
+        # Get all login actions
+        log_in_results = user_action_manager.get_user_actions_by_login(user)
+
+        for log_in in log_in_results:
+            # Get corresponding log out and actions in between
+            log_out_result = user_action_manager.get_user_action_by_logout(user, log_in.timestamp)
+            result = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, log_out_result.timestamp)
+
+            # Append data to labels and data
+            labels.append(str(log_in.timestamp) + " - " + str(log_out_result.timestamp))
+            data.append(result)
+
+        return True, {"labels": labels, "data": data}, 200
+
+    # Return number of updates in each interval where the user has been logged in
+    def get_user_actions_time_by_week(self, user):
+        labels = []
+        data = []
+        date_format = "%d/%m/%Y"
+
+        index = 0
+        step = timedelta(days=7)
+
+        # Get all login actions
+        log_in_results = user_action_manager.get_user_actions_by_login(user)
+
+        # If there are no log ins
+        if not log_in_results:
+            next_week = datetime.now() - step
+            labels.append(datetime.now().strftime(date_format) + '-' + next_week.strftime(date_format))
+            # data.append(timedelta())
+            data.append(0)
+        else:
+            next_week = log_in_results[index].date_dd_mm_yy() - step
+
+            labels.append(log_in_results[index].date_dd_mm_yy().strftime(date_format) + '-' + next_week.strftime(date_format))
+            # data.append(timedelta())
+            data.append(0)
+            for log_in in log_in_results:
+                # Change week if it's needed
+                if log_in.timestamp < next_week:
+                    labels.append(next_week.strftime(date_format) + '-' + (next_week-step).strftime(date_format))
+                    next_week -= step
+                    index += 1
+                    # data.append(timedelta())
+                    data.append(0)
+
+                # Get corresponding log out and actions in between
+                log_out_result = user_action_manager.get_user_action_by_logout(user, log_in.timestamp)
+                if log_out_result:
+                    # Add time between login-logout
+                    duration = log_out_result.timestamp - log_in.timestamp
+                    seconds = duration.total_seconds()
+                    hours = seconds // 3600
+                    data[index] += hours
+                    print(data[index])
+                    print(type(data[index]))
+
+        return True, {"labels": labels, "data": data}, 200
 
     # Return if user action has been created successfully
     def create_user_action(self, user_action):

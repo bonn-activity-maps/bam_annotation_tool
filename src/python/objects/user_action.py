@@ -48,3 +48,6 @@ class UserAction:
         return "(user: {0}, action: {1}, scene: {2}, dataset: {3}, timestamp: {4})".\
             format(self.user, self.action, self.scene, self.dataset.to_json(), self.timestamp)
 
+    def date_dd_mm_yy(self):
+        date_format = "%d/%m/%Y"
+        return datetime.strptime(self.timestamp.strftime(date_format), date_format)

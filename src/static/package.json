@@ -23,6 +23,8 @@
         "jquery": "^3.3.1",
         "ng-toast": "^2.0.0",
         "angular-hotkeys": "1.7.0",
-        "lodash": "4.17.15"
+        "lodash": "4.17.15",
+        "chart.js": "2.9.3",
+        "angular-chart.js": "1.1.1"
     }
 }

@@ -1,6 +1,6 @@
 angular.module("lodash", []).constant("_", window._);
 
-angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', 'ngToast', 'ui.bootstrap', 'cfp.hotkeys'])
+angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', 'ngToast', 'ui.bootstrap', 'cfp.hotkeys', 'chart.js'])
 
 .config(function($stateProvider, $urlRouterProvider) {
     $stateProvider
