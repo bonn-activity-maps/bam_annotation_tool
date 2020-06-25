@@ -32,7 +32,7 @@ angular.module('CVGTool')
         // Form variables to store selected dataset and user
         $scope.selectedDataset = {
             name: "None",
-            type: "None"
+            datasetType: "None"
         }
         $scope.selectedUser = {
             name: "None",
@@ -64,7 +64,7 @@ angular.module('CVGTool')
             });
             $scope.listOfDatasets.push({
                 name: "None",
-                type: "None"
+                datasetType: "None"
             })
             $scope.filteredListOfDatasets = $scope.listOfDatasets;
         };
@@ -206,7 +206,7 @@ angular.module('CVGTool')
         $scope.resetSelections = function() {
             $scope.selectedDataset = {
                 name: "None",
-                type: "None"
+                datasetType: "None"
             }
             $scope.selectedUser = {
                 name: "None",
