@@ -1005,6 +1005,13 @@ def get_user_actions_by_day():
                                                                        request.headers['datasetType'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
+# Return time between first and last annotation for each scene in posetrack
+@app.route("/api/userAction/getUserActions/scenes/time", methods=['GET'])
+@flask_login.login_required
+def get_user_actions_time_per_scene():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_actions_time_per_scene(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 # Create new action for specific user
 @app.route('/api/userAction/createUserAction', methods=['POST'])

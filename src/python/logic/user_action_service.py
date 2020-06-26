@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta, time
 
 from python.infrastructure.user_action_manager import UserActionManager
+from python.infrastructure.videoManager import VideoManager
 from python.objects.user_action import UserAction
 
 from python.objects.dataset import Dataset
@@ -10,6 +11,7 @@ from python.objects.dataset import Dataset
 log = logging.getLogger('user_action_service')
 
 user_action_manager = UserActionManager()
+video_manager = VideoManager()
 
 
 class UserActionService:
@@ -125,6 +127,29 @@ class UserActionService:
             labels = [r['date'] for r in result]
             data = [r['actions'] for r in result]
             return True, {"labels": labels, "data": data}, 200
+
+    # Return time between first and last annotation for a scene in posetrack
+    def get_user_actions_time_per_scene(self, dataset):
+        # Get all scenes
+        videos = video_manager.get_videos(dataset)
+        if videos == 'Error':
+            return False, 'Error retrieving actions of user', 400
+
+        labels = []
+        data = []
+        for video in videos:
+            result = user_action_manager.get_user_actions_for_scene(dataset, video.name)
+
+            # Calculate time between first and last annotation in that scene and append data
+            if result and result != 'Error':
+                last_time = result[0].timestamp
+                first_time = result[-1].timestamp
+                time = last_time - first_time
+
+                labels.append(video.name)
+                data.append(time)
+
+        return True, {"labels": labels, "data": data}, 200
 
     # Return if user action has been created successfully
     def create_user_action(self, user_action):

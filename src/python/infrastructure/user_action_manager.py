@@ -131,6 +131,15 @@ class UserActionManager:
             log.exception('Error finding user_action in db')
             return 'Error'
 
+    # Return all user actions for a dataset and scene
+    def get_user_actions_for_scene(self, dataset, scene):
+        try:
+            result = self.collection.find({"dataset": dataset.name, "scene": scene}, {"_id": 0}).sort("timestamp", -1)
+            return [UserAction.from_json(r) for r in list(result)]
+        except errors.PyMongoError as e:
+            log.exception('Error finding user_action in db')
+            return 'Error'
+
     # Return 'ok' if the user action has been created
     def create_user_action(self, user_action):
         try:
