@@ -1825,7 +1825,6 @@ angular.module('CVGTool')
                     object.keypoints = shape.cameraPoints;
                 }
                 
-                console.log(object)
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
@@ -4396,10 +4395,17 @@ angular.module('CVGTool')
             event.stopPropagation(); 
         }); 
 
+        // Prevents from closing when clicking inside
         document.getElementById("ActionCreationDropdown").addEventListener('click', function (event) { 
-            event.stopPropagation(); 
+             event.stopPropagation(); 
         });
-        
+
+        $('#ActionCreationDropdown').parent().on({  // Prevents from closing when clicking outside
+        "shown.bs.dropdown": function() { this.closable = false; },
+        "click":             function() { this.closable = true; },
+        "hide.bs.dropdown":  function() { return this.closable; }
+        });
+
         document.getElementById("NumberOfCanvasesDropdown").addEventListener('click', function (event) { 
             event.stopPropagation(); 
         });
