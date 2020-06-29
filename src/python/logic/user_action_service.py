@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, time
 from python.infrastructure.user_action_manager import UserActionManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.annotationManager import AnnotationManager
+from python.infrastructure.userManager import UserManager
 from python.objects.user_action import UserAction
 
 from python.objects.dataset import Dataset
@@ -15,6 +16,7 @@ log = logging.getLogger('user_action_service')
 user_action_manager = UserActionManager()
 video_manager = VideoManager()
 annotation_manager = AnnotationManager()
+user_manager = UserManager()
 
 
 class UserActionService:
@@ -66,6 +68,40 @@ class UserActionService:
             # Append data to labels and data
             labels.append(str(log_in.timestamp) + " - " + str(log_out_result.timestamp))
             data.append(result)
+
+        return True, {"labels": labels, "data": data}, 200
+
+    # Return actions per minute for each user
+    def get_user_actions_by_time(self, dataset, user):
+        # Get info only for specified user
+        if user != 'None':
+            users = [user_manager.get_user(user)]
+        else:
+            users = user_manager.get_users_by_dataset(dataset.name, 'user')
+        labels = []
+        data = []
+
+        for user in users:
+            total_num_actions = 0
+            total_logged_in_time = timedelta()
+
+            # Get all login actions
+            log_in_results = user_action_manager.get_user_actions_by_login(user.name)
+
+            # Get time and actions in each session
+            for log_in in log_in_results:
+                # Get corresponding log out and actions in between
+                log_out_result = user_action_manager.get_user_action_by_logout(user.name, log_in.timestamp)
+
+                if log_out_result:
+                    total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, log_out_result.timestamp)
+                    total_logged_in_time += log_out_result.timestamp - log_in.timestamp
+
+            # Append data to labels and data
+            total_logged_in_time_minutes = (total_logged_in_time.total_seconds() % 3600) // 60
+            if total_logged_in_time_minutes > 0.0:       # Ignore user if it has 0 minutes
+                labels.append(user.name)
+                data.append(total_num_actions / total_logged_in_time_minutes)
 
         return True, {"labels": labels, "data": data}, 200
 

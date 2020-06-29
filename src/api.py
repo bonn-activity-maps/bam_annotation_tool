@@ -989,6 +989,15 @@ def get_user_actions_by_login():
     success, msg, status = user_action_service.get_user_actions_by_login(request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
+# Return actions per minute for each user
+@app.route("/api/userAction/getUserActions/actions/time", methods=['GET'])
+@flask_login.login_required
+def get_user_actions_by_time():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_user_actions_by_time(dataset, request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+
 # Get total time  of user action group by week
 @app.route("/api/userAction/getUserActions/time/week", methods=['GET'])
 @flask_login.login_required
