@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 from datetime import datetime, timedelta, time
 
 from python.infrastructure.user_action_manager import UserActionManager
@@ -129,11 +130,11 @@ class UserActionService:
             return True, {"labels": labels, "data": data}, 200
 
     # Return time between first and last annotation for a scene in posetrack
-    def get_user_actions_time_per_scene(self, dataset):
+    def get_user_actions_time_per_scene_pt(self, dataset):
         # Get all scenes
         videos = video_manager.get_videos(dataset)
         if videos == 'Error':
-            return False, 'Error retrieving actions of user', 400
+            return 'Error'
 
         labels = []
         data = []
@@ -148,8 +149,31 @@ class UserActionService:
 
                 labels.append(video.name)
                 data.append(time)
+        return labels, data
 
-        return True, {"labels": labels, "data": data}, 200
+    # Return time between first and last annotation for a scene in posetrack
+    def get_user_actions_time_per_scene(self, dataset):
+        labels, data = self.get_user_actions_time_per_scene_pt(dataset)
+        if labels == 'Error':
+            return False, 'Error retrieving actions of user', 400
+        else:
+            return True, {"labels": labels, "data": data}, 200
+
+    # Return max, mix and average time to annotate the scenes in posetrack
+    def get_user_actions_max_min_avg_scenes(self, dataset):
+        labels, data = self.get_user_actions_time_per_scene_pt(dataset)
+        if labels == 'Error':
+            return False, 'Error retrieving actions of user', 400
+        else:
+            data = np.array(data)
+            max_index = np.argmax(data)
+            min_index = np.argmin(data)
+            avg = np.mean(data)
+
+            new_labels = ['max: ' + labels[max_index], 'min: ' + labels[min_index], 'mean']
+            new_data = [data[max_index], data[min_index], avg]
+
+            return True, {"labels": new_labels, "data": new_data}, 200
 
     # Return if user action has been created successfully
     def create_user_action(self, user_action):
