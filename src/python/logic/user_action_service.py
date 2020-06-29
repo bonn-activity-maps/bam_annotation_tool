@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, time
 
 from python.infrastructure.user_action_manager import UserActionManager
 from python.infrastructure.videoManager import VideoManager
+from python.infrastructure.annotationManager import AnnotationManager
 from python.objects.user_action import UserAction
 
 from python.objects.dataset import Dataset
@@ -13,6 +14,7 @@ log = logging.getLogger('user_action_service')
 
 user_action_manager = UserActionManager()
 video_manager = VideoManager()
+annotation_manager = AnnotationManager()
 
 
 class UserActionService:
@@ -165,6 +167,28 @@ class UserActionService:
         if labels == 'Error':
             return False, 'Error retrieving actions of user', 400
         else:
+            data = np.array(data)
+            max_index = np.argmax(data)
+            min_index = np.argmin(data)
+            avg = np.mean(data)
+
+            new_labels = ['max: ' + labels[max_index], 'min: ' + labels[min_index], 'mean']
+            new_data = [data[max_index], data[min_index], avg]
+
+            return True, {"labels": new_labels, "data": new_data}, 200
+
+    # Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
+    def get_user_actions_max_min_avg_persons_scenes(self, dataset):
+        labels, data = self.get_user_actions_time_per_scene_pt(dataset)
+        if labels == 'Error':
+            return False, 'Error retrieving actions of user', 400
+        else:
+
+            # Divide each scene between number of persons
+            for i, scene in enumerate(labels):
+                number_persons = annotation_manager.get_number_persons_pt(dataset, scene)
+                data[i] /= number_persons
+
             data = np.array(data)
             max_index = np.argmax(data)
             min_index = np.argmin(data)
