@@ -1,5 +1,6 @@
 from pymongo import MongoClient, errors
 import logging
+from bson.son import SON
 
 import python.config as cfg
 
@@ -90,6 +91,51 @@ class UserActionManager:
             result = self.collection.find({"user": user, "timestamp": {"$gt": log_in_timestamp, "$lt": log_out_timestamp}},
                                               {"_id": 0}).sort("timestamp").count()
             return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding user_action in db')
+            return 'Error'
+
+    # Return number of user actions for user by day (more recent first)
+    def get_user_actions_by_day(self, user):
+        try:
+            # Filter by user and exclude login/out actions
+            match = {"user": user, "$and": [{"action": {"$ne": "login"}}, {"action": {"$ne": "logout"}}]}
+            # Group by day using timestamp and count actions
+            group = {"_id": {"$dateToString": {"format": "%d/%m/%Y", "date": "$timestamp"}}, "actions": {"$sum": 1}}
+            # Project actions and change name from id to labels
+            project = {"_id": 0, "date": "$_id", "actions": 1}
+            # Sort by more recent day
+            sort = {"$sort": SON([("date", -1)])}
+
+            result = self.collection.aggregate([{"$match": match}, {"$group": group}, {"$project": project}, sort])
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding user_action in db')
+            return 'Error'
+
+    # Return number of user actions for user by day (more recent first)
+    def get_user_actions_by_dataset_and_day(self, user, dataset):
+        try:
+            # Filter by user and dataset, and exclude login/out actions
+            match = {"user": user, "dataset": dataset.name, "$and": [{"action": {"$ne": "login"}}, {"action": {"$ne": "logout"}}]}
+            # Group by day using timestamp and count actions
+            group = {"_id": {"$dateToString": {"format": "%d/%m/%Y", "date": "$timestamp"}}, "actions": {"$sum": 1}}
+            # Project actions and change name from id to labels
+            project = {"_id": 0, "date": "$_id", "actions": 1}
+            # Sort by more recent day
+            sort = {"$sort": SON([("date", -1)])}
+
+            result = self.collection.aggregate([{"$match": match}, {"$group": group}, {"$project": project}, sort])
+            return list(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding user_action in db')
+            return 'Error'
+
+    # Return all user actions for a dataset and scene
+    def get_user_actions_for_scene(self, dataset, scene):
+        try:
+            result = self.collection.find({"dataset": dataset.name, "scene": scene}, {"_id": 0}).sort("timestamp", -1)
+            return [UserAction.from_json(r) for r in list(result)]
         except errors.PyMongoError as e:
             log.exception('Error finding user_action in db')
             return 'Error'

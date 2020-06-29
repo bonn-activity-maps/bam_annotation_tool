@@ -185,6 +185,19 @@ class AnnotationManager:
             log.exception('Error finding object in annotation in db')
             return 'Error'
 
+    # Get number of different persons in a scene in pt
+    def get_number_persons_pt(self, dataset, scene):
+        try:
+            if dataset.is_pt():
+                result = self.collection.distinct("objects.person_id", {"dataset": dataset.name, "scene": scene})
+            else:
+                return 'Error'
+
+            return len(result)
+        except errors.PyMongoError as e:
+            log.exception('Error finding object in annotation in db')
+            return 'Error'
+
     # # Get all annotations except of people for the dataset.
     # def get_objects_by_dataset(self, dataset):
     #     try:
