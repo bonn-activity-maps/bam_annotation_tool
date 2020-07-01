@@ -630,6 +630,32 @@ angular.module('CVGTool')
             })
         },
 
+        // Transfer object
+        transferObject: function(dataset, datasetType, scene, startFrame, endFrame, username, oldUid, newUid, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/transferObject',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'user': username,
+                    'oldUid': oldUid,
+                    'newUid': newUid,
+                    'objectType': objectType
+                }
+            }).then(function successCallback(data) {
+                callbackSuccess(data.data.msg);
+            }, function errorCallback(data) {
+                callbackError(data.data.msg);
+            })
+        },
+
         getPoseAIKLimbsLength: function(dataset, datasetType, scene, objectType, uid, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
