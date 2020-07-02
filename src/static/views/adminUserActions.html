@@ -15,10 +15,21 @@
                                 <h4>Select Dataset, User, or both to see their statistics.</h4>
                                 <form>
                                     <div class="form-group">
+                                        <label for="statSelect">Data selection</label>
+                                        <select class="form-control"
+                                                ng-options="stat as stat.display for stat in listOfStats"
+                                                ng-model="selectedStat"
+                                                id="statSelect"></select>
+                                    </div>
+                                    <p>{{selectedStat.info}}</p>
+<!--                                    Code to only show the selector if the option requires it-->
+<!--                                    ng-if="selectedStat.requires.includes('dataset')"-->
+                                    <div class="form-group">
                                         <label for="datasetSelect">Select Dataset</label>
                                         <select class="form-control"
                                                 ng-options="dataset as dataset.name for dataset in filteredListOfDatasets"
-                                                ng-model="selectedDataset" ng-change="selectDataset(dataset)"
+                                                ng-model="selectedDataset"
+                                                ng-change="selectDataset(dataset)"
                                                 id="datasetSelect">
                                         </select>
                                     </div>
@@ -26,16 +37,10 @@
                                         <label for="userSelect">Select User</label>
                                         <select class="form-control"
                                                 ng-options="user as user.name for user in filteredListOfUsers"
-                                                ng-model="selectedUser" ng-change="selectUser(user)"
+                                                ng-model="selectedUser"
+                                                ng-change="selectUser(user)"
                                                 id="userSelect">
                                         </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="statSelect">Data selection</label>
-                                        <select class="form-control"
-                                                ng-options="stat as stat.display for stat in listOfStats"
-                                                ng-model="selectedStat"
-                                        id="statSelect"></select>
                                     </div>
                                     <button type="submit" ng-click="loadStatistics()" class="btn btn-primary">Submit</button>
                                     <button type="reset" ng-click="resetSelections()" class="btn btn-danger">Reset</button>
@@ -83,4 +88,19 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- LOADING PANEL -->
+<div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">
+    <div class="row">
+        <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
+            <div class="panel-body">
+                <img ng-if="toolParameters.user.name !== 'martin'" src="/static/resources/loading.gif" />
+                <img ng-if="toolParameters.user.name === 'martin'" src="/static/resources/pdro.gif" />
+                <h2>Loading content</h2>
+                <p>Please wait</p>
+            </div>
+        </div>
+    </div>
+</div>
 </div>

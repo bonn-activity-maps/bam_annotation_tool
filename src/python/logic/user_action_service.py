@@ -72,7 +72,7 @@ class UserActionService:
         return True, {"labels": labels, "data": data}, 200
 
     # Return actions per minute for each user
-    def get_user_actions_by_time(self, dataset, user):
+    def get_user_actions_per_minute(self, dataset, user):
         # Get info only for specified user
         if user != 'None':
             users = [user_manager.get_user(user)]

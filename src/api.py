@@ -992,9 +992,9 @@ def get_user_actions_by_login():
 # Return actions per minute for each user
 @app.route("/api/userAction/getUserActions/actions/time", methods=['GET'])
 @flask_login.login_required
-def get_user_actions_by_time():
+def get_user_actions_per_minute():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = user_action_service.get_user_actions_by_time(dataset, request.headers['user'])
+    success, msg, status = user_action_service.get_user_actions_per_minute(dataset, request.headers['user'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 
@@ -1027,13 +1027,14 @@ def get_user_actions_time_per_scene():
 @flask_login.login_required
 def get_user_actions_max_min_avg_scenes():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    print(dataset)
     success, msg, status = user_action_service.get_user_actions_max_min_avg_scenes(dataset)
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 # Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
 @app.route("/api/userAction/getUserActions/scenes/maxMinAvg/persons", methods=['GET'])
 @flask_login.login_required
-def get_user_actions_max_smin_avg_persons_scenes():
+def get_user_actions_max_min_avg_persons_scenes():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = user_action_service.get_user_actions_max_min_avg_persons_scenes(dataset)
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}

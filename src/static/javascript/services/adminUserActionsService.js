@@ -48,7 +48,7 @@ angular.module('CVGTool')
                     url: '/api/userAction/getUserActions/time/week',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
-                        'user': user,
+                        'user': user.name,
                     }
                 }).then(function successCallback(response) {
                     if (response.data.msg.length === 0) {
@@ -57,8 +57,105 @@ angular.module('CVGTool')
                         callbackSuccess(response.data.msg)
                     }
                 }, function errorCallBack(response) {
-                    callbackError('loading', response.data.msg);
+                    callbackError('danger', response.data.msg);
                 });
             },
+            getUserActionsByDay: function (user, dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/user/day',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'user': user.name,
+                        'dataset': dataset.name,
+                        'datasetType': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            },
+            getUserActionsPerMinute: function (user, dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/actions/time',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'user': user.name,
+                        'dataset': dataset.name,
+                        'datasetType': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            },
+            getUserActionsTimeSpentPerSequence: function (dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/scenes/time',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'dataset': dataset.name,
+                        'datasetType': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            },
+            getUserActionsSequenceTimeStats: function (dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/scenes/maxMinAvg',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'dataset': dataset.name,
+                        'datasetType': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            },
+            getUserActionsSequenceTimeStatsByPersons: function (dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/userAction/getUserActions/scenes/maxMinAvg/persons',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'dataset': dataset.name,
+                        'datasetType': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            }
         }
     }]);

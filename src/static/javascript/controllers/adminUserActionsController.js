@@ -11,17 +11,58 @@ angular.module('CVGTool')
         $scope.listOfUsers = [];
         $scope.filteredListOfUsers = [];
 
+        $scope.loadingScreenManager = new LoadingScreenManager();
+
         $scope.listOfStats = [
-            {
-                display: "Time worked per week",
-                name: "actionsWeek",
-                requires: ["user"]
-            },
-            {
-                display: "Actions per day",
-                name: "actionsDay",
-                requires: ["user"]
-            }];
+        {
+            display: "Hours worked per week",
+            name: "actionsWeek",
+            requires: ["user"],
+            info: "Select a user and dataset to see the total amount of hours they worked last week."
+        },
+        {
+            display: "Actions per day",
+            name: "actionsDay",
+            requires: ["user", "dataset"],
+            info: "Select a user and a dataset to see the total number of actions they did every day."
+        },
+        {
+            display: "Time spent per sequence",
+            name: "timePerSequence",
+            requires: ["dataset"],
+            info: "Select a dataset to see how much time users have spent on each sequence."
+        },
+        {
+            display: "Time stats per sequence",
+            name: "timeStatsPerSequence",
+            requires: ["dataset"],
+            info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence."
+        },
+        {
+            display: "Time stats per sequence div. by persons",
+            name: "timeStatsPerSequenceByPersons",
+            requires: ["dataset"],
+            info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence, " +
+                "divided by the number of persons in the sequence."
+        },
+        {
+            display: "Average actions per minute",
+            name: "avgUserActionsPerMinute",
+            requires: ["dataset", "user"],
+            info: "Select a user or dataset to see its average actions per minute. Select both to see the average" +
+                "actions per minute of the user in that dataset."
+        }
+        // {
+        //     display: "Average time between actions",
+        //     name: "avgTimeActions",
+        //     requires: ["user"]
+        // },
+        // {
+        //     display: "Annotations per minute",
+        //     name: "timePerSequence",
+        //     requires: ["dataset"]
+        // }
+        ];
 
         $scope.selectedItem = {
             name: 'none',
@@ -32,7 +73,7 @@ angular.module('CVGTool')
         // Form variables to store selected dataset and user
         $scope.selectedDataset = {
             name: "None",
-            datasetType: "None"
+            type: "None"
         }
         $scope.selectedUser = {
             name: "None",
@@ -40,7 +81,9 @@ angular.module('CVGTool')
         }
         $scope.selectedStat = {
             display: "None",
-            name: "None"
+            name: "None",
+            requires: [],
+            info: ""
 };
 
         $scope.labels = ["Download Sales", "In-Store Sales", "Mail-Order Sales"];
@@ -64,7 +107,7 @@ angular.module('CVGTool')
             });
             $scope.listOfDatasets.push({
                 name: "None",
-                datasetType: "None"
+                type: "None"
             })
             $scope.filteredListOfDatasets = $scope.listOfDatasets;
         };
@@ -164,11 +207,34 @@ angular.module('CVGTool')
             switch ($scope.selectedStat.name) {
                 case "actionsDay":
                     resetCharts();
-                    adminUserActionsSrvc.getUserActionsByLogin($scope.selectedUser.name, getActionsCallback, sendMessage);
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    adminUserActionsSrvc.getUserActionsByDay($scope.selectedUser, $scope.selectedDataset, drawCharts, sendMessage);
                     break;
                 case "actionsWeek":
                     resetCharts();
-                    adminUserActionsSrvc.getUserActionsTimeByWeek($scope.selectedUser.name, getActionsCallback, sendMessage);
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    adminUserActionsSrvc.getUserActionsTimeByWeek($scope.selectedUser, drawCharts, sendMessage);
+                    break;
+                case "timePerSequence":
+                    resetCharts();
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    adminUserActionsSrvc.getUserActionsTimeSpentPerSequence($scope.selectedDataset, drawTable, sendMessage)
+                    break;
+                case "timeStatsPerSequence":
+                    resetCharts();
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    console.log($scope.selectedDataset);
+                    adminUserActionsSrvc.getUserActionsSequenceTimeStats($scope.selectedDataset, drawTableStats, sendMessage)
+                    break;
+                case "timeStatsPerSequenceByPersons":
+                    resetCharts();
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    adminUserActionsSrvc.getUserActionsSequenceTimeStatsByPersons($scope.selectedDataset, drawTableStats, sendMessage)
+                    break;
+                case "avgUserActionsPerMinute":
+                    resetCharts();
+                    $scope.loadingScreenManager.setLoadingScreen();
+                    adminUserActionsSrvc.getUserActionsPerMinute($scope.selectedUser, $scope.selectedDataset, drawCharts, sendMessage)
                     break;
                 case "None":
                     sendMessage("warning", "Please select some data to visualize.")
@@ -199,14 +265,28 @@ angular.module('CVGTool')
             }
         }
 
-        let getActionsCallback = function(response) {
-            $scope.drawCharts(response.labels, response.data);
+        let drawTable = function(response) {
+            $scope.loadingScreenManager.closeLoadingScreen();
+            // $scope.listOfVideos = response.videos;
+            // $scope.listOfData
+            console.log(response);
         }
+
+        let drawTableStats = function(response) {
+            $scope.loadingScreenManager.closeLoadingScreen();
+            console.log(response);
+        }
+
+        let drawCharts = function(response) {
+            $scope.loadingScreenManager.closeLoadingScreen();
+            $scope.labels = response.labels;
+            $scope.data = response.data;
+        };
 
         $scope.resetSelections = function() {
             $scope.selectedDataset = {
                 name: "None",
-                datasetType: "None"
+                type: "None"
             }
             $scope.selectedUser = {
                 name: "None",
@@ -217,10 +297,6 @@ angular.module('CVGTool')
             resetCharts();
         }
 
-        $scope.drawCharts = function(labels, data) {
-            $scope.labels = labels;
-            $scope.data = data;
-        };
 
         let resetCharts = function() {
             $scope.labels = [];
@@ -229,5 +305,26 @@ angular.module('CVGTool')
 
         $scope.getListOfDatasets();
         $scope.getListOfUsers();
+
+
+        function LoadingScreenManager() {
+            var _this = this;
+            // VARIABLES //
+            _this.loading = false;
+            _this.loadingCounter = 0;
+
+            // FUNCTIONS //
+            // Sets the loading screen
+            _this.setLoadingScreen = function() {
+                _this.loading = true;
+                _this.loadingCounter++;
+            }
+
+            // Unsets the loading screen
+            _this.closeLoadingScreen = function() {
+                _this.loadingCounter--;
+                if (_this.loadingCounter <= 0) _this.loading = false;
+            }
+        }
 
     }]);
