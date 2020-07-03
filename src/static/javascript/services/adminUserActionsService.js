@@ -45,7 +45,7 @@ angular.module('CVGTool')
             getUserActionsTimeByWeek: function (user, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/time/week',
+                    url: '/api/userAction/getStatistic/hours/week',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'user': user.name,
@@ -63,7 +63,7 @@ angular.module('CVGTool')
             getUserActionsByDay: function (user, dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/user/day',
+                    url: 'api/userAction/getStatistic/actions/day',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'user': user.name,
@@ -83,7 +83,7 @@ angular.module('CVGTool')
             getUserActionsPerMinute: function (user, dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/actions/time',
+                    url: '/api/userAction/getStatistic/avg/actions/minute',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'user': user.name,
@@ -103,7 +103,7 @@ angular.module('CVGTool')
             getUserActionsTimeSpentPerSequence: function (dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/scenes/time',
+                    url: '/api/userAction/getStatistic/time/scene',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'dataset': dataset.name,
@@ -122,7 +122,7 @@ angular.module('CVGTool')
             getUserActionsSequenceTimeStats: function (dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/scenes/maxMinAvg',
+                    url: '/api/userAction/getStatistic/stats/time/scenes',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'dataset': dataset.name,
@@ -141,7 +141,7 @@ angular.module('CVGTool')
             getUserActionsSequenceTimeStatsByPersons: function (dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/userAction/getUserActions/scenes/maxMinAvg/persons',
+                    url: '/api/userAction/getStatistic/stats/time/scenes/persons',
                     headers: {
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
                         'dataset': dataset.name,

@@ -54,15 +54,15 @@ class UserActionService:
             return True, [r.to_json() for r in result], 200
 
     # Return number of updates in each interval where the user has been logged in
-    def get_user_actions_by_login(self, user):
+    def get_statistic_actions_per_session(self, user):
         labels = []
         data = []
         # Get all login actions
-        log_in_results = user_action_manager.get_user_actions_by_login(user)
+        log_in_results = user_action_manager.get_user_actions_login(user)
 
         for log_in in log_in_results:
             # Get corresponding log out and actions in between
-            log_out_result = user_action_manager.get_user_action_by_logout(user, log_in.timestamp)
+            log_out_result = user_action_manager.get_user_action_logout_after_login(user, log_in.timestamp)
             result = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, log_out_result.timestamp)
 
             # Append data to labels and data
@@ -72,7 +72,7 @@ class UserActionService:
         return True, {"labels": labels, "data": data}, 200
 
     # Return actions per minute for each user
-    def get_user_actions_per_minute(self, dataset, user):
+    def get_statistic_avg_actions_per_minute(self, dataset, user):
         # Get info only for specified user
         if user != 'None':
             users = [user_manager.get_user(user)]
@@ -86,12 +86,12 @@ class UserActionService:
             total_logged_in_time = timedelta()
 
             # Get all login actions
-            log_in_results = user_action_manager.get_user_actions_by_login(user.name)
+            log_in_results = user_action_manager.get_user_actions_login(user.name)
 
             # Get time and actions in each session
             for log_in in log_in_results:
                 # Get corresponding log out and actions in between
-                log_out_result = user_action_manager.get_user_action_by_logout(user.name, log_in.timestamp)
+                log_out_result = user_action_manager.get_user_action_logout_after_login(user.name, log_in.timestamp)
 
                 if log_out_result:
                     total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, log_out_result.timestamp)
@@ -107,7 +107,7 @@ class UserActionService:
         return True, {"labels": labels, "data": data}, 200
 
     # Return number of updates in each interval where the user has been logged in
-    def get_user_actions_time_by_week(self, user):
+    def get_statistic_hours_per_week(self, user):
         labels = []
         data = []
         date_format = "%d/%m/%Y"
@@ -116,7 +116,7 @@ class UserActionService:
         step = timedelta(days=7)
 
         # Get all login actions
-        log_in_results = user_action_manager.get_user_actions_by_login(user)
+        log_in_results = user_action_manager.get_user_actions_login(user)
 
         # If there are no log ins
         if not log_in_results:
@@ -140,7 +140,7 @@ class UserActionService:
                     data.append(0)
 
                 # Get corresponding log out and actions in between
-                log_out_result = user_action_manager.get_user_action_by_logout(user, log_in.timestamp)
+                log_out_result = user_action_manager.get_user_action_logout_after_login(user, log_in.timestamp)
                 if log_out_result:
                     # Add time between login-logout
                     duration = log_out_result.timestamp - log_in.timestamp
@@ -154,7 +154,7 @@ class UserActionService:
 
     # Return number of user actions for user by day
     # Filter by dataset if dataset is not None
-    def get_user_actions_by_day(self, user, dataset, dataset_type):
+    def get_statistic_actions_per_day(self, user, dataset, dataset_type):
         if dataset != "None":
             dataset = Dataset(dataset, dataset_type)
             result = user_action_manager.get_user_actions_by_dataset_and_day(user, dataset)
@@ -191,7 +191,7 @@ class UserActionService:
         return labels, data
 
     # Return time between first and last annotation for a scene in posetrack
-    def get_user_actions_time_per_scene(self, dataset):
+    def get_statistic_time_per_scene(self, dataset):
         labels, data = self.get_user_actions_time_per_scene_pt(dataset)
         if labels == 'Error':
             return False, 'Error retrieving actions of user', 400
@@ -199,7 +199,7 @@ class UserActionService:
             return True, {"labels": labels, "data": data}, 200
 
     # Return max, mix and average time to annotate the scenes in posetrack
-    def get_user_actions_max_min_avg_scenes(self, dataset):
+    def get_statistic_stats_per_scenes(self, dataset):
         labels, data = self.get_user_actions_time_per_scene_pt(dataset)
         if labels == 'Error':
             return False, 'Error retrieving actions of user', 400
@@ -215,7 +215,7 @@ class UserActionService:
             return True, {"labels": new_labels, "data": new_data}, 200
 
     # Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
-    def get_user_actions_max_min_avg_persons_scenes(self, dataset):
+    def get_statistic_stats_per_scenes_per_persons(self, dataset):
         labels, data = self.get_user_actions_time_per_scene_pt(dataset)
         if labels == 'Error':
             return False, 'Error retrieving actions of user', 400

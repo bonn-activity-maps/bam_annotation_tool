@@ -949,7 +949,7 @@ def initialize_pose_properties():
 
 #### USER ACTIONS ####
 
-# Get user action for specific user and dataset
+# Get user actions for specific user and dataset
 @app.route("/api/userAction/getUserActions/user", methods=['GET'])
 @flask_login.login_required
 def get_user_action_by_user():
@@ -974,71 +974,13 @@ def get_user_action_by_user_action():
                                                                               request.headers['action'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
-# Get user action for specific dataset
+# Get user actions for specific dataset
 @app.route("/api/userAction/getUserActions", methods=['GET'])
 @flask_login.login_required
 def get_user_actions():
     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
     success, msg, status = user_action_service.get_user_actions(dataset)
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Get number of user actions group by log ins
-@app.route("/api/userAction/getUserActions/login", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_by_login():
-    success, msg, status = user_action_service.get_user_actions_by_login(request.headers['user'])
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Return actions per minute for each user
-@app.route("/api/userAction/getUserActions/actions/time", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_per_minute():
-    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = user_action_service.get_user_actions_per_minute(dataset, request.headers['user'])
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-
-# Get total time  of user action group by week
-@app.route("/api/userAction/getUserActions/time/week", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_time_by_week():
-    success, msg, status = user_action_service.get_user_actions_time_by_week(request.headers['user'])
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Get number of user actions by day for each user
-# Filter by dataset if dataset is not None
-@app.route("/api/userAction/getUserActions/user/day", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_by_day():
-    success, msg, status = user_action_service.get_user_actions_by_day(request.headers['user'], request.headers['dataset'],
-                                                                       request.headers['datasetType'])
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Return time between first and last annotation for each scene in posetrack
-@app.route("/api/userAction/getUserActions/scenes/time", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_time_per_scene():
-    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = user_action_service.get_user_actions_time_per_scene(dataset)
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Return max, mix and average time to annotate the scenes in posetrack
-@app.route("/api/userAction/getUserActions/scenes/maxMinAvg", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_max_min_avg_scenes():
-    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    print(dataset)
-    success, msg, status = user_action_service.get_user_actions_max_min_avg_scenes(dataset)
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
-# Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
-@app.route("/api/userAction/getUserActions/scenes/maxMinAvg/persons", methods=['GET'])
-@flask_login.login_required
-def get_user_actions_max_min_avg_persons_scenes():
-    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-    success, msg, status = user_action_service.get_user_actions_max_min_avg_persons_scenes(dataset)
-    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
-
 
 # Create new action for specific user
 @app.route('/api/userAction/createUserAction', methods=['POST'])
@@ -1059,6 +1001,65 @@ def remove_user_action():
     user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset, req_data['timestamp'])
     success, msg, status = user_action_service.remove_user_action(user_action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+# Return number of actions per session (for one user)
+@app.route("/api/userAction/getStatistic/actions/session", methods=['GET'])
+@flask_login.login_required
+def get_statistic_actions_per_session():
+    success, msg, status = user_action_service.get_statistic_actions_per_session(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return number of actions per day (for one user)
+# Filter by dataset if dataset is not None
+@app.route("/api/userAction/getStatistic/actions/day", methods=['GET'])
+@flask_login.login_required
+def get_statistic_actions_per_day():
+    success, msg, status = user_action_service.get_statistic_actions_per_day(request.headers['user'], request.headers['dataset'],
+                                                                       request.headers['datasetType'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return average actions per minute (for one user)
+# If user == None --> return avg for each user associated to the dataset
+@app.route("/api/userAction/getStatistic/avg/actions/minute", methods=['GET'])
+@flask_login.login_required
+def get_statistic_avg_actions_per_minute():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_avg_actions_per_minute(dataset, request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return total hours worked per week (for one user)
+@app.route("/api/userAction/getStatistic/hours/week", methods=['GET'])
+@flask_login.login_required
+def get_statistic_hours_per_week():
+    success, msg, status = user_action_service.get_statistic_hours_per_week(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return time between first and last annotation for each scene (in posetrack)
+@app.route("/api/userAction/getStatistic/time/scene", methods=['GET'])
+@flask_login.login_required
+def get_statistic_time_per_scene():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_time_per_scene(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return max, mix and average time to annotate the scenes in the dataset (in posetrack)
+@app.route("/api/userAction/getStatistic/stats/time/scenes", methods=['GET'])
+@flask_login.login_required
+def get_statistic_stats_per_scenes():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_stats_per_scenes(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
+@app.route("/api/userAction/getStatistic/stats/time/scenes/persons", methods=['GET'])
+@flask_login.login_required
+def get_statistic_stats_per_scenes_per_persons():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_stats_per_scenes_per_persons(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+
 
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
