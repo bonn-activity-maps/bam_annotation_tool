@@ -98,7 +98,8 @@ class UserActionService:
                     total_logged_in_time += log_out_result.timestamp - log_in.timestamp
 
             # Append data to labels and data
-            total_logged_in_time_minutes = (total_logged_in_time.total_seconds() % 3600) // 60
+            total_logged_in_time_minutes = total_logged_in_time.total_seconds() / 60
+
             if total_logged_in_time_minutes > 0.0:       # Ignore user if it has 0 minutes
                 labels.append(user.name)
                 data.append(total_num_actions / total_logged_in_time_minutes)
