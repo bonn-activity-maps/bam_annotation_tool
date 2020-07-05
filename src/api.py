@@ -67,6 +67,10 @@ def precomputeAnnotations():
     success, msg, status = precompute.precomputeAnnotations()
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+@app.route("/precomputeIgnoreRegions", methods=['GET'])
+def precomputeIgnoreRegions():
+    success, msg, status = precompute.precomputeIgnoreRegions()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #### SESSION ####
 
