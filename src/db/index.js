@@ -32,3 +32,6 @@ db.poseProperty.createIndex( {"dataset":1, "scene": 1, "type": 1, "uid": 1});
 
 db.userAction.createIndex({"dataset": 1, "user": 1, "action": 1, "timestamp": 1});
 db.userAction.createIndex({"dataset": 1, "action": 1, "timestamp": 1});
+db.userAction.createIndex({"dataset": 1, "scene": 1});
+db.userAction.createIndex({"user": 1, "action": 1, "timestamp": 1});
+db.userAction.createIndex({"user": 1, "timestamp": 1});

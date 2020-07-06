@@ -117,7 +117,7 @@ class UserActionManager:
     def get_user_actions_by_dataset_and_day(self, user, dataset):
         try:
             # Filter by user and dataset, and exclude login/out actions
-            match = {"user": user, "dataset": dataset.name, "$and": [{"action": {"$ne": "login"}}, {"action": {"$ne": "logout"}}]}
+            match = {"dataset": dataset.name, "user": user, "$and": [{"action": {"$ne": "login"}}, {"action": {"$ne": "logout"}}]}
             # Group by day using timestamp and count actions
             group = {"_id": {"$dateToString": {"format": "%d/%m/%Y", "date": "$timestamp"}}, "actions": {"$sum": 1}}
             # Project actions and change name from id to labels
