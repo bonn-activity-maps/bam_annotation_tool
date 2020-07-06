@@ -1865,6 +1865,39 @@ angular.module('CVGTool')
                 })
             }
 
+            _this.openChangeTrackID = function(object) {
+                if (object.type === "ignore_region") {
+                    $mdDialog.show({
+                        templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
+                        controller: 'changeTrackIDCtrl',
+                        escapeToClose: false,
+                        locals: {
+                            toolSrvc: toolSrvc,
+                            object: object,
+                            dataset: $scope.toolParameters.activeDataset,
+                            scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
+                            username: $scope.toolParameters.user.name
+                        }
+                    }).then(function(data) { // When finished, update the frames
+                        if (data.msg.localeCompare("success") === 0) {
+                            //TODO
+                            toolSrvc.updateTrackID($scope.canvasesManager.canvases[0].activeCamera.filename,
+                                $scope.toolParameters.activeDataset.name,
+                                $scope.toolParameters.activeDataset.type,
+                                object.uid, data.new_track_id, $scope.toolParameters.user.name,
+                                _this.callbackChangeTrackID,
+                                $scope.messagesManager.sendMessage);
+                            _this.retrieveObjects();
+                        } else if (data.msg.localeCompare("error") === 0) {
+                            $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                        }
+                    })
+                } else {
+                    $scope.messagesManager.sendMessage("warning", "Action not avilable for this object type.")
+                }
+
+            }
+
             // Opens the dialog for batch-deleting points
             _this.openBatchDelete = function(object) {
                 $mdDialog.show({

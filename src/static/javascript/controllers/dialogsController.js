@@ -574,6 +574,72 @@ angular.module('CVGTool')
     }
 ])
 
+
+    /*
+ * Controller of the dialog of change track ID
+ */
+.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
+        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username) {
+            $scope.object = object;
+            $scope.dataset = dataset;
+            $scope.scene = scene;
+            $scope.username = username;
+            $scope.mode = "normal";
+            $scope.values = {
+                old_track_id: object.track_id,
+                new_track_id: Number(),
+                is_id_in_use: Boolean()
+            };
+            $scope.old_track_id = object.track_id;
+            $scope.new_track_id = Number();
+
+            $scope.close = function() {
+                $mdDialog.cancel();
+            };
+
+            $scope.change = function() {
+                let callback = function(response){
+                    $scope.values.is_id_in_use = response;
+                };
+
+                // Check if ID is previously used
+                // This isn't necessary anymore, check only on frontend, on list of object in the same frame TODO
+                !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction);
+                $scope.mode = "check";
+            };
+
+            $scope.cancel = function() {
+                $scope.mode = "normal";
+            };
+
+            let successFunction = function() {
+                let successData = {
+                    msg: "success",
+                    object: $scope.object
+                };
+                $mdDialog.hide(successData);
+            };
+
+            let errorFunction = function() {
+                let successData = {
+                    msg: "error",
+                    object: $scope.object
+                };
+                $mdDialog.hide(successData)
+            };
+
+            $scope.confirm = function() {
+                var successData = {
+                    msg: "success",
+                    new_person_id: $scope.values.new_person_id,
+                    old_person_id: $scope.values.old_person_id,
+                    object: $scope.object
+                };
+                $mdDialog.hide(successData);
+            }
+        }
+    ])
+
 /*
  * Controller of the dialog of batch delete
  */

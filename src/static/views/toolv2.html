@@ -325,7 +325,9 @@
                     </div>
                     <div class="form-group input-group-sm">
                         <label ng-if="!toolParameters.isPosetrack"  class="control-label col-sm-4">UID:</label>
-                        <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Track ID:</label>
+                        <label ng-if="toolParameters.isPosetrack"
+                               ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)"
+                               class="control-label col-sm-4">Track ID:</label>
                         <div class="col-sm-8">
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
