@@ -31,7 +31,7 @@ class PrecomputeAnnotations:
     c = MongoClient('172.18.0.2', 27017)
     db = c.cvg
 
-    datasetName = "posetrack_example_small"
+    datasetName = "posetrack_data"
 
     aik = 'actionInKitchen'
     pt = 'poseTrack'
@@ -132,4 +132,52 @@ class PrecomputeAnnotations:
                     print("ERROR")
                     exit()
             person_id = person_id + len(track_ids)
+        return True, "OK", 200
+
+
+    def precomputeIgnoreRegions(self):
+        # Get all videos of dataset
+        dataset = Dataset(self.datasetName, self.pt)
+        _, videos, _ = videoService.get_videos(dataset)
+        for video in videos:
+            video = Video.from_json(video)
+            print("Precomputing for ", video.name)
+            _, min_frame, _ = videoService.get_min_frame(video)
+            _, max_frame, _ = videoService.get_max_frame(video)
+            _, vid_annotations, _ = annotationService.get_annotations(Annotation(dataset, video.name))
+            track_ids = []          # list of track_id numbers during the video
+            # frame number
+            annotations = []        # list of every annotation
+            # Pass 1: Create annotation, track_ids arrays
+            for i in range(min_frame["frames"] - 1, max_frame["frames"]):
+                annotation = self.find(vid_annotations, "frame", i)
+                annotation = Annotation.from_json(annotation, self.pt)
+                annotations.append(annotation)
+                for obj in annotation.objects:
+                    if obj.type == "ignore_region":
+                        track_ids.append(obj.track_id) if obj.track_id not in track_ids else None
+            # Pass 2: Create empty IRs for every IR track id and frame and update the db
+            # print(track_ids)
+            for annotation in annotations:
+                objects = list(annotation.objects)
+                # For each track_id already in the video
+                for track_id in track_ids:
+                    # For each of the types
+                    # print("objectType: ", objectType)
+                    obj = self.find_pair(objects, "type", "ignore_region", "track_id", track_id)
+                    # If object does not exist, create empty one
+                    if obj == 0:
+                        uid = int("1" + video.name + self.pad(str(annotation.frame), 4) + self.pad(str(track_id), 2))
+                        new_obj = Object(uid, "ignore_region", keypoints=[], dataset_type=self.pt,
+                                         track_id=track_id)
+                        objects.append(new_obj)
+                annotation.objects = delete_duplicated_objects(objects)
+                # print(annotation)
+                # exit()
+                result = self.db.annotation.replace_one({"dataset": self.datasetName, "scene": video.name,
+                                                         "user": "root", "frame": annotation.frame},
+                                                        annotation.to_json(), upsert=True)
+                if not result:
+                    print("ERROR")
+                    exit()
         return True, "OK", 200

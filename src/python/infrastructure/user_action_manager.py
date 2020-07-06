@@ -53,7 +53,7 @@ class UserActionManager:
             return 'Error'
 
     # Return all log in actions (more recent first)
-    def get_user_actions_by_login(self, user):
+    def get_user_actions_login(self, user):
         try:
             result = self.collection.find({"user": user, "action": "login"}, {"_id": 0}).sort("timestamp", -1)
             return [UserAction.from_json(r) for r in list(result)]
@@ -62,7 +62,7 @@ class UserActionManager:
             return 'Error'
 
     # Return first log out action after log in timestamp (old ones first)
-    def get_user_action_by_logout(self, user, log_in_timestamp):
+    def get_user_action_logout_after_login(self, user, log_in_timestamp):
         try:
             result = self.collection.find({"user": user, "action": "logout", "timestamp": {"$gt": log_in_timestamp}},
                                               {"_id": 0}).sort("timestamp")
