@@ -60,6 +60,26 @@ angular.module('CVGTool')
                     callbackError('danger', response.data.msg);
                 });
             },
+
+            getUserActionsBySession: function(user, callbackSuccess, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: 'api/userAction/getStatistic/actions/session',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                        'user': user.name
+                    }
+                }).then(function successCallback(response) {
+                    if (response.data.msg.length === 0) {
+                        callbackSuccess([])
+                    } else {
+                        callbackSuccess(response.data.msg)
+                    }
+                }, function errorCallBack(response) {
+                    callbackError('danger', response.data.msg);
+                });
+            },
+
             getUserActionsByDay: function (user, dataset, callbackSuccess, callbackError) {
                 $http({
                     method: 'GET',

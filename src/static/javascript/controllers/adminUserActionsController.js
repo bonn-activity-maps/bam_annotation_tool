@@ -15,42 +15,62 @@ angular.module('CVGTool')
 
         $scope.listOfStats = [
         {
+            display: "Actions per session",
+            name: "actionsSession",
+            requires: ["user"],
+            info: "Select a user to see the total amount of actions made per session",
+            method: adminUserActionsSrvc.getUserActionsBySession,
+            callbackFunction: drawCharts
+        },
+        {
             display: "Hours worked per week",
             name: "actionsWeek",
             requires: ["user"],
-            info: "Select a user and dataset to see the total amount of hours they worked last week."
+            info: "Select a user and dataset to see the total amount of hours they worked last week.",
+            method: adminUserActionsSrvc.getUserActionsTimeByWeek,
+            callbackFunction: drawCharts
         },
         {
             display: "Actions per day",
             name: "actionsDay",
             requires: ["user", "dataset"],
-            info: "Select a user and a dataset to see the total number of actions they did every day."
+            info: "Select a user and a dataset to see the total number of actions they did every day.",
+            method: adminUserActionsSrvc.getUserActionsByDay,
+            callbackFunction: drawCharts
         },
         {
             display: "Time spent per sequence",
             name: "timePerSequence",
             requires: ["dataset"],
-            info: "Select a dataset to see how much time users have spent on each sequence."
+            info: "Select a dataset to see how much time users have spent on each sequence.",
+            method: adminUserActionsSrvc.getUserActionsTimeSpentPerSequence,
+            callbackFunction: drawTable
         },
         {
             display: "Time stats per sequence",
             name: "timeStatsPerSequence",
             requires: ["dataset"],
-            info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence."
+            info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence.",
+            method: adminUserActionsSrvc.getUserActionsSequenceTimeStats,
+            callbackFunction: drawCharts
         },
         {
             display: "Time stats per sequence div. by persons",
             name: "timeStatsPerSequenceByPersons",
             requires: ["dataset"],
             info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence, " +
-                "divided by the number of persons in the sequence."
+                "divided by the number of persons in the sequence.",
+            method: adminUserActionsSrvc.getUserActionsSequenceTimeStatsByPersons,
+            callbackFunction: drawCharts                
         },
         {
             display: "Average actions per minute",
             name: "avgUserActionsPerMinute",
             requires: ["dataset", "user"],
             info: "Select a user or dataset to see its average actions per minute. Select both to see the average" +
-                "actions per minute of the user in that dataset."
+                "actions per minute of the user in that dataset.",
+            method: adminUserActionsSrvc.getUserActionsPerMinute,
+            callbackFunction: drawCharts
         }
         // {
         //     display: "Average time between actions",
@@ -204,40 +224,22 @@ angular.module('CVGTool')
         };
 
         let drawStatistics = function() {
-            switch ($scope.selectedStat.name) {
-                case "actionsDay":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    adminUserActionsSrvc.getUserActionsByDay($scope.selectedUser, $scope.selectedDataset, drawCharts, sendMessage);
-                    break;
-                case "actionsWeek":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    adminUserActionsSrvc.getUserActionsTimeByWeek($scope.selectedUser, drawCharts, sendMessage);
-                    break;
-                case "timePerSequence":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    adminUserActionsSrvc.getUserActionsTimeSpentPerSequence($scope.selectedDataset, drawTable, sendMessage)
-                    break;
-                case "timeStatsPerSequence":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    console.log($scope.selectedDataset);
-                    adminUserActionsSrvc.getUserActionsSequenceTimeStats($scope.selectedDataset, drawTableStats, sendMessage)
-                    break;
-                case "timeStatsPerSequenceByPersons":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    adminUserActionsSrvc.getUserActionsSequenceTimeStatsByPersons($scope.selectedDataset, drawTableStats, sendMessage)
-                    break;
-                case "avgUserActionsPerMinute":
-                    resetCharts();
-                    $scope.loadingScreenManager.setLoadingScreen();
-                    adminUserActionsSrvc.getUserActionsPerMinute($scope.selectedUser, $scope.selectedDataset, drawCharts, sendMessage)
-                    break;
-                case "None":
-                    sendMessage("warning", "Please select some data to visualize.")
+            // Check if there is a stat selected
+            if ($scope.selectedStat.name.localeCompare("None") === 0) {
+                sendMessage("warning", "Please select some data to visualize.");
+                return;
+            }
+
+            // Reset previous charts
+            resetCharts();
+
+            // Call the asigned method with the correct number of parameters
+            if ($scope.selectedStat.requires.includes("user") && $scope.selectedStat.requires.includes("dataset")) {
+                $scope.selectedStat.method($scope.selectedUser, $scope.selectedDataset, $scope.selectedStat.callbackFunction, sendMessage);
+            } else if ($scope.selectedStat.requires.includes("user")) {
+                $scope.selectedStat.method($scope.selectedUser, $scope.selectedStat.callbackFunction, sendMessage);
+            } else if ($scope.selectedStat.requires.includes("dataset")) {
+                $scope.selectedStat.method($scope.selectedDataset, $scope.selectedStat.callbackFunction, sendMessage);
             }
         }
 
