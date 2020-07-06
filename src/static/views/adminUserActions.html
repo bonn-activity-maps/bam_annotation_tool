@@ -50,38 +50,23 @@
 
                     </div>
                     <div class="col-md-8">
-                        <div style="overflow-y: auto; max-height: 800px;">
-                            <canvas id="bar" class="chart chart-bar" chart-data="data" chart-labels="labels"></canvas>
+                        <div style="overflow-y: auto; max-height: 600px;">
+                            <canvas ng-if="statType.localeCompare('chart')===0" id="bar" class="chart chart-bar" chart-data="data" chart-labels="labels"></canvas>
 
-                            <!-- <table class="table table-bordered table-responsive text-center">
+                            <table ng-if="statType.localeCompare('table')===0" class="table table-bordered table-responsive text-center">
                                 <thead>
                                 <tr>
-                                    <th class="col-md-1">User</th>
-                                    <th class="col-md-1">Dataset</th>
-                                    <th ng-if="selectedDataset.type === 'poseTrack'" class="col-md-1">Scene</th>
-                                    <th class="col-md-2">Action</th>
-                                    <th class="col-md-5">Timestamp</th>
+                                    <th class="col-md-6">Sequence</th>
+                                    <th class="col-md-6">Time</th>    
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr ng-if="listOfActions.length > 0" ng-repeat="userAction in listOfActions">
-                                    <td class="text-left">{{userAction.user}}</td>
-                                    <td>{{userAction.dataset}}</td>
-                                    <td ng-if="selectedDataset.type === 'poseTrack'">{{userAction.scene}}</td>
-                                    <td>{{userAction.action}}</td>
-                                    <td>{{userAction.timestamp}}</td>
-                                </tr>
-                                <tr ng-if="listOfActions.length == 0 || selectedDataset.name == 'none'">
-                                    <td class="text-left" ng-if="selectedDataset.name != 'none'">No user actions in this dataset.
-                                    </td>
-                                    <td class="text-left" ng-if="selectedDataset.name == 'none'">Select a dataset.</td>
-                                    <td>-</td>
-                                    <td>-</td>
-                                    <td>-</td>
+                                <tr ng-repeat="sequence in labels">
+                                    <td class="text-left">{{labels[$index]}}</td>
+                                    <td class="text-left">{{data[$index]}}</td>
                                 </tr>
                                 </tbody>
-                            </table>-->
-<!--                            <canvas id="testChart" width="400" height="400"></canvas>-->
+                            </table>
                         </div>
                     </div>
                 </div>

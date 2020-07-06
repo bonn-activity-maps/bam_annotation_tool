@@ -11,7 +11,43 @@ angular.module('CVGTool')
         $scope.listOfUsers = [];
         $scope.filteredListOfUsers = [];
 
+        $scope.statType = "";
+
         $scope.loadingScreenManager = new LoadingScreenManager();
+
+        let drawTable = function(response) {
+            $scope.statType = "table";
+            $scope.labels = response.labels;
+            $scope.data = response.data;
+            $scope.loadingScreenManager.closeLoadingScreen();
+        }
+
+        let drawCharts = function(response) {
+            $scope.statType = "chart";
+            $scope.labels = response.labels;
+            $scope.data = response.data;
+            $scope.loadingScreenManager.closeLoadingScreen();
+        };
+
+        $scope.resetSelections = function() {
+            $scope.selectedDataset = {
+                name: "None",
+                type: "None"
+            }
+            $scope.selectedUser = {
+                name: "None",
+                assignedTo: []
+            }
+            $scope.filteredListOfDatasets = $scope.listOfDatasets;
+            $scope.filteredListOfUsers = $scope.listOfUsers;
+            resetCharts();
+        }
+
+        let resetCharts = function() {
+            $scope.statType = "";
+            $scope.labels = [];
+            $scope.data = [];
+        }
 
         $scope.listOfStats = [
         {
@@ -233,6 +269,8 @@ angular.module('CVGTool')
             // Reset previous charts
             resetCharts();
 
+            $scope.loadingScreenManager.setLoadingScreen();
+
             // Call the asigned method with the correct number of parameters
             if ($scope.selectedStat.requires.includes("user") && $scope.selectedStat.requires.includes("dataset")) {
                 $scope.selectedStat.method($scope.selectedUser, $scope.selectedDataset, $scope.selectedStat.callbackFunction, sendMessage);
@@ -267,43 +305,7 @@ angular.module('CVGTool')
             }
         }
 
-        let drawTable = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            // $scope.listOfVideos = response.videos;
-            // $scope.listOfData
-            console.log(response);
-        }
-
-        let drawTableStats = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            console.log(response);
-        }
-
-        let drawCharts = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            $scope.labels = response.labels;
-            $scope.data = response.data;
-        };
-
-        $scope.resetSelections = function() {
-            $scope.selectedDataset = {
-                name: "None",
-                type: "None"
-            }
-            $scope.selectedUser = {
-                name: "None",
-                assignedTo: []
-            }
-            $scope.filteredListOfDatasets = $scope.listOfDatasets;
-            $scope.filteredListOfUsers = $scope.listOfUsers;
-            resetCharts();
-        }
-
-
-        let resetCharts = function() {
-            $scope.labels = [];
-            $scope.data = [];
-        }
+        
 
         $scope.getListOfDatasets();
         $scope.getListOfUsers();
