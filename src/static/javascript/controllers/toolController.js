@@ -821,6 +821,12 @@ angular.module('CVGTool')
                 return -1;
             }
 
+            _this.isTypeSelected = function(type) {
+                if (!_this.selectedType.type) return false;
+                if (_this.selectedType.type.localeCompare(type) === 0) return true;
+                return false;
+            }
+
             // Auxiliar function to take care of the state of the poses, for AIK. (Takes into account optional joints)
             _this.poseAIKAnnotationsState = function(objectUID, type, frame) {
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
@@ -1513,6 +1519,7 @@ angular.module('CVGTool')
                         // Set the type in the dynamic or static category
                         if (obj[i].type.localeCompare("ignore_region") == 0) {
                             $scope.objectManager.staticTypes.push(obj[i].type);
+                            $scope.objectManager.objectTypes[obj[i].type].labels = [""] // No fixed labels
                         } else {
                             $scope.objectManager.dynamicTypes.push(obj[i].type)
                         }
@@ -1613,6 +1620,7 @@ angular.module('CVGTool')
                             $scope.objectManager.objectTypes[object.type.toString()].objects[object.track_id.toString()].frames.push({
                                 frame: $scope.toolParameters.frameFrom + j,
                                 annotationsExist: existsInit.slice(),
+                                visibility: existsInit.slice(),
                                 keypoints: []
                             })
                         }
@@ -1651,6 +1659,8 @@ angular.module('CVGTool')
                             // If the object is of type "person", fix the keypoint structure to ignore ears
                             if (annotation.objects[i].type.toString().localeCompare("person") === 0) {
                                 annotation.objects[i].keypoints = _this.fixPersonKeypoints(annotation.objects[i].keypoints);
+
+                                // TODO: here we will need to process the keypoints so that the third coordinate is the visibility
                             }
                             // In any case, store in that frame the keypoints, the frame number and the actions
                             if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
@@ -1928,6 +1938,11 @@ angular.module('CVGTool')
                 }) 
             }
 
+            // Transfer object
+            _this.openTransferObject = function(object) {
+                
+            }
+
             // Deletes the actual object in the actual frame
             _this.deleteAnnotation = function() {
                 var successFunction = function() {
@@ -2071,7 +2086,7 @@ angular.module('CVGTool')
                 }
 
                 // Just for AIK and poseAIK add * to the optional labels
-                if ($scope.objectManager.selectedType.type.localeCompare("poseAIK") == 0) {
+                if ($scope.objectManager.isTypeSelected("poseAIK")) {
                     var secondaryIndices = [14,15,16,17,18,19,20,21,22,23];
                     for (var i=0; i < secondaryIndices.length; i++) {
                         var index = secondaryIndices[i];
@@ -2080,7 +2095,7 @@ angular.module('CVGTool')
                 }
 
                 // In case of the object being of type box
-                if ($scope.objectManager.selectedType.type.localeCompare("bbox") == 0 || $scope.objectManager.selectedType.type.localeCompare("bbox_head") == 0) {
+                if ($scope.objectManager.isTypeSelected("bbox") || $scope.objectManager.isTypeSelected("bbox_head")) {
                     _this.keypointEditorData.labels = ["box"];
                     _this.keypointEditorData.creationType = "box";
                 }
@@ -2276,6 +2291,11 @@ angular.module('CVGTool')
             // Maximize/maximize the keypoint editor tab
             _this.minimizeMaximizeEditor = function() {
                 _this.editorMinimized = !_this.editorMinimized;
+            }
+
+            // Bridge function to open the object transfer dialog
+            _this.openTransferObject = function(object){
+                $scope.commonManager.openTransferObject(object);
             }
 
             // Calculates the needed epilines of the points being placed
@@ -3061,16 +3081,32 @@ angular.module('CVGTool')
             }
 
             _this.move = function(dx, dy, index) {
-                if (_this.points[index] == null) return;
-                _this.points[index].move(dx,dy);
+                if (index == -1) {
+                    for(var i=0; i<_this.points.length; i++) {
+                        if (_this.points[i] !== null) _this.points[i].move(dx,dy);
+                    }
+                } else {
+                    if (_this.points[index] == null) return;
+                    _this.points[index].move(dx,dy);
+                }        
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
-                _this.cameraPoints[index][0] += dxCamera;
-                _this.cameraPoints[index][1] += dyCamera;
+                if (index == -1) {
+                    for (var i=0; i<_this.points.length; i++) {
+                        if (_this.points[i] !== null) {
+                            _this.cameraPoints[i][0] += dxCamera;
+                            _this.cameraPoints[i][1] += dyCamera;
+                        }
+                    }  
+                } else {
+                    _this.cameraPoints[index][0] += dxCamera;
+                    _this.cameraPoints[index][1] += dyCamera;
+                }     
             }
 
             _this.removePoint = function(index) {
+                delete _this.points[index];
                 _this.points[index] = null;
                 _this.cameraPoints[index] = [];
             }
@@ -3552,7 +3588,7 @@ angular.module('CVGTool')
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].points[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = new Point([_this.mouse.pos.x, _this.mouse.pos.y]); 
                         $scope.keypointEditor.keypointEditorData.shapes[_this.canvasNumber - 1].cameraPoints[$scope.keypointEditor.keypointEditorData.indexBeingEdited] = _this.toCamera([_this.mouse.pos.x, _this.mouse.pos.y]);   
                         if (!$scope.toolParameters.isPosetrack) $scope.keypointEditor.getEpilines();
-                        if ($scope.objectManager.selectedType.type.localeCompare("person") == 0) $scope.toolsManager.switchSubTool(""); // In the case of creating persons this will be useful
+                        if ($scope.objectManager.isTypeSelected("person")) $scope.toolsManager.switchSubTool(""); // In the case of creating persons this will be useful
                         _this.setRedraw();
                     }
                 }
