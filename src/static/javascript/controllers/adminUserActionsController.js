@@ -11,7 +11,43 @@ angular.module('CVGTool')
         $scope.listOfUsers = [];
         $scope.filteredListOfUsers = [];
 
+        $scope.statType = "";
+
         $scope.loadingScreenManager = new LoadingScreenManager();
+
+        let drawTable = function(response) {
+            $scope.statType = "table";
+            $scope.labels = response.labels;
+            $scope.data = response.data;
+            $scope.loadingScreenManager.closeLoadingScreen();
+        }
+
+        let drawCharts = function(response) {
+            $scope.statType = "chart";
+            $scope.labels = response.labels;
+            $scope.data = response.data;
+            $scope.loadingScreenManager.closeLoadingScreen();
+        };
+
+        $scope.resetSelections = function() {
+            $scope.selectedDataset = {
+                name: "None",
+                type: "None"
+            }
+            $scope.selectedUser = {
+                name: "None",
+                assignedTo: []
+            }
+            $scope.filteredListOfDatasets = $scope.listOfDatasets;
+            $scope.filteredListOfUsers = $scope.listOfUsers;
+            resetCharts();
+        }
+
+        let resetCharts = function() {
+            $scope.statType = "";
+            $scope.labels = [];
+            $scope.data = [];
+        }
 
         $scope.listOfStats = [
         {
@@ -52,7 +88,7 @@ angular.module('CVGTool')
             requires: ["dataset"],
             info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence.",
             method: adminUserActionsSrvc.getUserActionsSequenceTimeStats,
-            callbackFunction: drawCharts
+            callbackFunction: drawTable
         },
         {
             display: "Time stats per sequence div. by persons",
@@ -61,7 +97,7 @@ angular.module('CVGTool')
             info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence, " +
                 "divided by the number of persons in the sequence.",
             method: adminUserActionsSrvc.getUserActionsSequenceTimeStatsByPersons,
-            callbackFunction: drawCharts                
+            callbackFunction: drawTable                
         },
         {
             display: "Average actions per minute",
@@ -72,16 +108,6 @@ angular.module('CVGTool')
             method: adminUserActionsSrvc.getUserActionsPerMinute,
             callbackFunction: drawCharts
         }
-        // {
-        //     display: "Average time between actions",
-        //     name: "avgTimeActions",
-        //     requires: ["user"]
-        // },
-        // {
-        //     display: "Annotations per minute",
-        //     name: "timePerSequence",
-        //     requires: ["dataset"]
-        // }
         ];
 
         $scope.selectedItem = {
@@ -233,6 +259,8 @@ angular.module('CVGTool')
             // Reset previous charts
             resetCharts();
 
+            $scope.loadingScreenManager.setLoadingScreen();
+
             // Call the asigned method with the correct number of parameters
             if ($scope.selectedStat.requires.includes("user") && $scope.selectedStat.requires.includes("dataset")) {
                 $scope.selectedStat.method($scope.selectedUser, $scope.selectedDataset, $scope.selectedStat.callbackFunction, sendMessage);
@@ -247,63 +275,23 @@ angular.module('CVGTool')
             // Lookup data depending on selection
             // Both user and dataset selected
             if ($scope.selectedUser.name !== "None" && $scope.selectedDataset.name !== "None") {
-                console.log("User and dataset selected");
                 drawStatistics();
             }
             // Only dataset selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name !== "None") {
-                console.log("Only dataset selected");
                 drawStatistics();
             }
             // Only user selected
             else if($scope.selectedUser.name !== "None" && $scope.selectedDataset.name === "None") {
-                console.log("Only user selected");
                 drawStatistics();
             }
             // None selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name === "None") {
-                console.log("Nothing selected");
                 sendMessage("warning", "Please select some data to visualize.")
             }
         }
 
-        let drawTable = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            // $scope.listOfVideos = response.videos;
-            // $scope.listOfData
-            console.log(response);
-        }
-
-        let drawTableStats = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            console.log(response);
-        }
-
-        let drawCharts = function(response) {
-            $scope.loadingScreenManager.closeLoadingScreen();
-            $scope.labels = response.labels;
-            $scope.data = response.data;
-        };
-
-        $scope.resetSelections = function() {
-            $scope.selectedDataset = {
-                name: "None",
-                type: "None"
-            }
-            $scope.selectedUser = {
-                name: "None",
-                assignedTo: []
-            }
-            $scope.filteredListOfDatasets = $scope.listOfDatasets;
-            $scope.filteredListOfUsers = $scope.listOfUsers;
-            resetCharts();
-        }
-
-
-        let resetCharts = function() {
-            $scope.labels = [];
-            $scope.data = [];
-        }
+        
 
         $scope.getListOfDatasets();
         $scope.getListOfUsers();
