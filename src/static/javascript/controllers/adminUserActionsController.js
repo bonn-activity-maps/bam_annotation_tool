@@ -108,16 +108,6 @@ angular.module('CVGTool')
             method: adminUserActionsSrvc.getUserActionsPerMinute,
             callbackFunction: drawCharts
         }
-        // {
-        //     display: "Average time between actions",
-        //     name: "avgTimeActions",
-        //     requires: ["user"]
-        // },
-        // {
-        //     display: "Annotations per minute",
-        //     name: "timePerSequence",
-        //     requires: ["dataset"]
-        // }
         ];
 
         $scope.selectedItem = {
