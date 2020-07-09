@@ -2,7 +2,7 @@ angular.module("lodash", []).constant("_", window._);
 
 angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', 'ngToast', 'ui.bootstrap', 'cfp.hotkeys', 'chart.js'])
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $stateProvider
 
         .state('tool', {
@@ -61,4 +61,15 @@ angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', '
     });
 
     $urlRouterProvider.otherwise('login');
+
+    $httpProvider.interceptors.push(function($q, $window) {
+        return {
+            'responseError': function(response){
+                if(response.status === 401){
+                    $window.location.href = "/#/login";
+                }
+                return $q.reject(response);
+            }
+        };
+    });
 });
