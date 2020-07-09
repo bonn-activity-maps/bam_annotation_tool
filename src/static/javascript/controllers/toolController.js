@@ -794,8 +794,7 @@ angular.module('CVGTool')
 
                 if (type.localeCompare("boxAIK") == 0) return _this.boxAIKAnnotationsState(objectUID, type, frame);
                 
-                var existAnnotation = existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
-                
+                var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist.slice();
                 var count = 0;
                 for (var i = 0; i < existAnnotation.length; i++) {
                     if (existAnnotation[i]) count++;
@@ -4145,7 +4144,8 @@ angular.module('CVGTool')
                 autoInterpolate: true,
                 showSecondaryPoseJoints: true,
                 drawLimbLengths: false,
-                showStaticObjects: false
+                showStaticObjects: false,
+                quickSaveAfterJointRemoval: false
             }
 
             navSrvc.setOptions(_this.options); // First set
@@ -4308,6 +4308,7 @@ angular.module('CVGTool')
                     callback: function() { //check if the keypoint editor is open and then save
                         if ($scope.keypointEditor.editorActive === true) {
                             $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+                            if ($scope.optionsManager.options.quickSaveAfterJointRemoval) $scope.commonManager.updateAnnotation();
                         }
                     }
                 })

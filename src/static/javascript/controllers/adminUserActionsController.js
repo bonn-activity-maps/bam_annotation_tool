@@ -108,16 +108,6 @@ angular.module('CVGTool')
             method: adminUserActionsSrvc.getUserActionsPerMinute,
             callbackFunction: drawCharts
         }
-        // {
-        //     display: "Average time between actions",
-        //     name: "avgTimeActions",
-        //     requires: ["user"]
-        // },
-        // {
-        //     display: "Annotations per minute",
-        //     name: "timePerSequence",
-        //     requires: ["dataset"]
-        // }
         ];
 
         $scope.selectedItem = {
@@ -285,22 +275,18 @@ angular.module('CVGTool')
             // Lookup data depending on selection
             // Both user and dataset selected
             if ($scope.selectedUser.name !== "None" && $scope.selectedDataset.name !== "None") {
-                console.log("User and dataset selected");
                 drawStatistics();
             }
             // Only dataset selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name !== "None") {
-                console.log("Only dataset selected");
                 drawStatistics();
             }
             // Only user selected
             else if($scope.selectedUser.name !== "None" && $scope.selectedDataset.name === "None") {
-                console.log("Only user selected");
                 drawStatistics();
             }
             // None selected
             else if($scope.selectedUser.name === "None" && $scope.selectedDataset.name === "None") {
-                console.log("Nothing selected");
                 sendMessage("warning", "Please select some data to visualize.")
             }
         }
