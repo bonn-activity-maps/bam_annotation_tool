@@ -4145,7 +4145,8 @@ angular.module('CVGTool')
                 autoInterpolate: true,
                 showSecondaryPoseJoints: true,
                 drawLimbLengths: false,
-                showStaticObjects: false
+                showStaticObjects: false,
+                quickSaveAfterJointRemoval: false
             }
 
             navSrvc.setOptions(_this.options); // First set
@@ -4308,6 +4309,7 @@ angular.module('CVGTool')
                     callback: function() { //check if the keypoint editor is open and then save
                         if ($scope.keypointEditor.editorActive === true) {
                             $scope.keypointEditor.removeEditorDataPoint($scope.keypointEditor.selectedLabel);
+                            if ($scope.optionsManager.options.quickSaveAfterJointRemoval) $scope.commonManager.updateAnnotation();
                         }
                     }
                 })

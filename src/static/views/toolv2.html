@@ -151,7 +151,8 @@
             </li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
-            <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
