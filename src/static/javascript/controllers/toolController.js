@@ -794,8 +794,7 @@ angular.module('CVGTool')
 
                 if (type.localeCompare("boxAIK") == 0) return _this.boxAIKAnnotationsState(objectUID, type, frame);
                 
-                var existAnnotation = existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
-                
+                var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist.slice();
                 var count = 0;
                 for (var i = 0; i < existAnnotation.length; i++) {
                     if (existAnnotation[i]) count++;
