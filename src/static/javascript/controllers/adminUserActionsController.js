@@ -88,7 +88,7 @@ angular.module('CVGTool')
             requires: ["dataset"],
             info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence.",
             method: adminUserActionsSrvc.getUserActionsSequenceTimeStats,
-            callbackFunction: drawCharts
+            callbackFunction: drawTable
         },
         {
             display: "Time stats per sequence div. by persons",
@@ -97,7 +97,7 @@ angular.module('CVGTool')
             info: "Select a dataset to see the average, minimum and maximum time users have spent annotating each sequence, " +
                 "divided by the number of persons in the sequence.",
             method: adminUserActionsSrvc.getUserActionsSequenceTimeStatsByPersons,
-            callbackFunction: drawCharts                
+            callbackFunction: drawTable                
         },
         {
             display: "Average actions per minute",
