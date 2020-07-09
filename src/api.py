@@ -115,7 +115,7 @@ def user_login():
         token = jwt.encode({
             'sub': user.name,
             'iat': datetime.utcnow(),
-            'exp': datetime.utcnow() + timedelta(hours=3)},
+            'exp': datetime.utcnow() + timedelta(hours=9)},
             cfg.secret_key)
 
         # flask_login.login_user(user)
