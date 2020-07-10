@@ -68,6 +68,11 @@ def precomputeAnnotations():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+@app.route("/precomputeIgnoreRegions", methods=['GET'])
+def precomputeIgnoreRegions():
+    success, msg, status = precompute.precomputeIgnoreRegions()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 #### SESSION ####
 
 # Check if token is valid for each request
@@ -110,7 +115,7 @@ def user_login():
         token = jwt.encode({
             'sub': user.name,
             'iat': datetime.utcnow(),
-            'exp': datetime.utcnow() + timedelta(hours=3)},
+            'exp': datetime.utcnow() + timedelta(hours=9)},
             cfg.secret_key)
 
         # flask_login.login_user(user)
@@ -468,6 +473,7 @@ def autocomplete_annotation():
                                                                      start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 # Replicate object between start and end frame
 @app.route('/api/annotation/replicate/object', methods=['POST'])
 @flask_login.login_required
@@ -475,8 +481,9 @@ def replicate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
-                                                                     int(req_data['uidObject']), req_data['objectType'],
-                                                                     req_data['startFrame'], req_data['endFrame'])
+                                                                  int(req_data['uidObject']), req_data['objectType'],
+                                                                  req_data['startFrame'], req_data['endFrame'],
+                                                                  req_data['track_id'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -947,7 +954,7 @@ def initialize_pose_properties():
 
 #### USER ACTIONS ####
 
-# Get user action for specific user and dataset
+# Get user actions for specific user and dataset
 @app.route("/api/userAction/getUserActions/user", methods=['GET'])
 @flask_login.login_required
 def get_user_action_by_user():
@@ -972,7 +979,7 @@ def get_user_action_by_user_action():
                                                                               request.headers['action'])
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
-# Get user action for specific dataset
+# Get user actions for specific dataset
 @app.route("/api/userAction/getUserActions", methods=['GET'])
 @flask_login.login_required
 def get_user_actions():
@@ -999,6 +1006,65 @@ def remove_user_action():
     user_action = UserAction(req_data['user'], req_data['action'], req_data['scene'], dataset, req_data['timestamp'])
     success, msg, status = user_action_service.remove_user_action(user_action)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+# Return number of actions per session (for one user)
+@app.route("/api/userAction/getStatistic/actions/session", methods=['GET'])
+@flask_login.login_required
+def get_statistic_actions_per_session():
+    success, msg, status = user_action_service.get_statistic_actions_per_session(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return number of actions per day (for one user)
+# Filter by dataset if dataset is not None
+@app.route("/api/userAction/getStatistic/actions/day", methods=['GET'])
+@flask_login.login_required
+def get_statistic_actions_per_day():
+    success, msg, status = user_action_service.get_statistic_actions_per_day(request.headers['user'], request.headers['dataset'],
+                                                                       request.headers['datasetType'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return average actions per minute (for one user)
+# If user == None --> return avg for each user associated to the dataset
+@app.route("/api/userAction/getStatistic/avg/actions/minute", methods=['GET'])
+@flask_login.login_required
+def get_statistic_avg_actions_per_minute():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_avg_actions_per_minute(dataset, request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return total hours worked per week (for one user)
+@app.route("/api/userAction/getStatistic/hours/week", methods=['GET'])
+@flask_login.login_required
+def get_statistic_hours_per_week():
+    success, msg, status = user_action_service.get_statistic_hours_per_week(request.headers['user'])
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return time between first and last annotation for each scene (in posetrack)
+@app.route("/api/userAction/getStatistic/time/scene", methods=['GET'])
+@flask_login.login_required
+def get_statistic_time_per_scene():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_time_per_scene(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return max, mix and average time to annotate the scenes in the dataset (in posetrack)
+@app.route("/api/userAction/getStatistic/stats/time/scenes", methods=['GET'])
+@flask_login.login_required
+def get_statistic_stats_per_scenes():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_stats_per_scenes(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+# Return max, mix and average time divided by the number of persons within a sequence to annotate the scenes in posetrack
+@app.route("/api/userAction/getStatistic/stats/time/scenes/persons", methods=['GET'])
+@flask_login.login_required
+def get_statistic_stats_per_scenes_per_persons():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = user_action_service.get_statistic_stats_per_scenes_per_persons(dataset)
+    return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
+
+
 
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES

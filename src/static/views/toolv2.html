@@ -130,7 +130,7 @@
           <li class="divider"></li> 
           <li class="dropdown-header">Dynamic object types</li>
           <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
-          <li ng-if="!toolParameters.isPosetrack" class="dropdown-header">Static object types</li>
+          <li class="dropdown-header">Static object types</li>
           <li ng-if="!toolParameters.isPosetrack" ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
@@ -151,7 +151,8 @@
             </li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
-            <li><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
             <div ng-if="!toolParameters.isPosetrack">
                 <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
@@ -247,6 +248,7 @@
                         <thead>
                             <tr>
                                 <th></th>
+                                <th ng-if="!toolParameters.isPosetrack"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
                             </tr>
@@ -256,6 +258,8 @@
                             <tr ng-repeat="object in objectManager.selectedType.objects">
                                 <th><button class="btn btn-danger" ng-click="commonManager.openBatchDelete(object)"><span
                                     class="glyphicon glyphicon-transfer"></span></button></th>
+                                <th ng-if="!toolParameters.isPosetrack"><button class="btn btn-danger" ng-click="keypointEditor.openTransferObject(object)"><span
+                                        class="glyphicon glyphicon-random"></span></button></th>
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
                                     <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
@@ -350,10 +354,10 @@
                     </div>
                 </div>
                 <div ng-if="!toolParameters.isPosetrack">
-                    <div ng-if="objectManager.selectedType.type.localeCompare('poseAIK') !== 0">
+                    <div ng-if="objectManager.isTypeSelected('poseAIK')">
                         Mugshots are disabled for Action In Kitchen.
                     </div>
-                    <div ng-if="objectManager.selectedType.type.localeCompare('poseAIK') === 0">
+                    <div ng-if="objectManager.isTypeSelected('poseAIK')">
                         <div class="panel">
                             <div class="panel-heading-limbs">
                                 <div class="row">
@@ -427,7 +431,7 @@
             </div>
         </div>
 
-        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0">
+        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0 && objectManager.isTypeSelected('ignore_region')">
             <hr>
             <div class="form-group input-group-sm">
                 <label class="control-label col-sm-2">Labels:</label>
@@ -464,9 +468,9 @@
                             <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>
                         </th>
                     </tr>
-                    <tr ng-if="objectManager.selectedType.type.localeCompare('ignore_region')==0">
+                    <tr ng-if="objectManager.isTypeSelected('ignore_region')">
                         <td class="zui-sticky-col">
-                            <button class="btn btn-primary" ng-click=""><span
+                            <button class="btn btn-primary" ng-click="keypointEditor.addNewTag();"><span
                                 class="glyphicon glyphicon-plus"></span></button>
                         </td>
                     </tr>
@@ -491,7 +495,7 @@
                 </tbody>
             </table>
         </div>
-        <p ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><b>(*): </b>optional keypoint</p>
+        <p ng-if="objectManager.isTypeSelected('poseAIK')"><b>(*): </b>optional keypoint</p>
         <hr>
         <div class="row">
             <div class="col col-md-4">
@@ -503,7 +507,7 @@
             </div>
         </div>
         <div class="row">
-            <p ng-if="objectManager.selectedType.type.localeCompare('boxAIK') ==0"> Displayed full boxes will be updated after saving!</p>
+            <p ng-if="objectManager.isTypeSelected('boxAIK')"> Displayed full boxes will be updated after saving!</p>
             <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
         </div>
     </div>
