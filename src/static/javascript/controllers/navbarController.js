@@ -98,22 +98,30 @@ angular.module('CVGTool')
         $scope.requestNextRange = function() {
             if ($scope.sessionData.frameEnd == $scope.sessionData.maxFrame) return; // Check if it is possible to advance
 
-            if ($scope.isPosetrack()) {
-                $scope.goNextRange();
-            } else{                              // show table with missing annotations
-                $scope.checkAnnotations('next');
-            }
+            if ($scope.sessionData.loadedCameras.length === 0) {
+                $scope.sendMessage("danger", "To go to the next range at least one camera must be loaded!");
+            } else {
+                if ($scope.isPosetrack()) {
+                    $scope.goNextRange();
+                } else{                              // show table with missing annotations
+                    $scope.checkAnnotations('next');
+                }
+            }            
         };
 
         // Function to move the tool to the previous range
         $scope.requestPreviousRange = function() {
-            if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // CHeck if it is possible to go backwards
+            if ($scope.sessionData.frameStart == $scope.sessionData.minFrame) return; // Check if it is possible to go backwards
 
-            if ($scope.isPosetrack()) {
-                $scope.goPreviousRange();
-            } else{                              // show table with missing annotations
-                $scope.checkAnnotations('previous');
-            }
+            if ($scope.sessionData.loadedCameras.length === 0) {
+                $scope.sendMessage("danger", "To return to the previous range at least one camera must be loaded!");
+            } else {
+                if ($scope.isPosetrack()) {
+                    $scope.goPreviousRange();
+                } else{                              // show table with missing annotations
+                    $scope.checkAnnotations('previous');
+                }
+            }              
         };
 
         // Send message to toolCtrl to check if all annotations are complete
@@ -150,6 +158,10 @@ angular.module('CVGTool')
                 $scope.goPreviousRange();
             }
         });
+
+        $scope.sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
+        };
 
         // Then, it updates the info about the sessionData
         $scope.$on('sessionDataMsg', function(evt, data) {
