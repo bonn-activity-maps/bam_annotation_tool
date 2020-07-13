@@ -821,27 +821,27 @@ def merge_actions():
 
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
-@app.route('/api/aik/projectToCamera', methods=['POST'])
-@flask_login.login_required
-def project_to_camera():
-    req_data = request.get_json()
-    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    success, msg, status = aikService.project_to_camera(int(req_data['startFrame']), int(req_data['endFrame']),
-                                                        int(req_data['cameraName']), dataset,
-                                                        req_data['objectType'], req_data['points'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# @app.route('/api/aik/projectToCamera', methods=['POST'])
+# @flask_login.login_required
+# def project_to_camera():
+#     req_data = request.get_json()
+#     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+#     success, msg, status = aikService.project_to_camera(int(req_data['startFrame']), int(req_data['endFrame']),
+#                                                         int(req_data['cameraName']), dataset,
+#                                                         req_data['objectType'], req_data['points'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Given uid and type object, video, dataset, user and range of frames -> Returns the proyected points
-# @app.route('/api/aik/projectToCamera', methods=['GET'])
-# @flask_login.login_required
-# def project_to_camera_2():
-#     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-#     object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=dataset.type)
-#     start_annotation = Annotation(dataset, dataset.name, request.headers['startFrame'], request.headers['user'], [object])
-#     end_annotation = Annotation(dataset, dataset.name, request.headers['endFrame'], request.headers['user'], [object])
-#     success, msg, status = aikService.project_to_camera_2(int(request.headers['cameraName']), request.headers['objectType'],
-#                                                           start_annotation, end_annotation)
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+@app.route('/api/aik/projectToCamera', methods=['GET'])
+@flask_login.login_required
+def project_to_camera_2():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=dataset.type)
+    start_annotation = Annotation(dataset, dataset.name, request.headers['startFrame'], request.headers['user'], [object])
+    end_annotation = Annotation(dataset, dataset.name, request.headers['endFrame'], request.headers['user'], [object])
+    success, msg, status = aikService.project_to_camera_2(int(request.headers['cameraName']), request.headers['objectType'],
+                                                          start_annotation, end_annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 @flask_login.login_required

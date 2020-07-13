@@ -139,15 +139,38 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
+        // projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
+        //     $http({
+        //         method: 'POST',
+        //         url: '/api/aik/projectToCamera',
+        //         headers: {
+        //             'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+        //         },
+        //         data: {
+        //             'points': JSON.stringify(points),
+        //             'startFrame': startFrame,
+        //             'endFrame': endFrame,
+        //             'cameraName': cameraName,
+        //             'dataset': dataset,
+        //             'datasetType': datasetType,
+        //             'objectType': type,
+        //         }
+        //     }).then(function successCallback(response) {
+        //         callbackSuccess(uid, type, startFrame, endFrame, response.data.msg)
+        //     }, function errorCallback(response) {
+        //         callbackError('danger', response.data.msg);
+        //     })
+        // },
+
+        // Projects "points" into the camera "cameraName" for the frame "frame"
+        projectToCamera: function(username, uid, type, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
-                method: 'POST',
+                method: 'GET',
                 url: '/api/aik/projectToCamera',
                 headers: {
-                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
-                },
-                data: {
-                    'points': JSON.stringify(points),
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    'uidObject': uid,
+                    'user': username,
                     'startFrame': startFrame,
                     'endFrame': endFrame,
                     'cameraName': cameraName,
@@ -161,6 +184,7 @@ angular.module('CVGTool')
                 callbackError('danger', response.data.msg);
             })
         },
+        
 
         // Get Epipolar line
         getEpiline: function(frame, dataset, datasetType, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
