@@ -1,0 +1,40 @@
+<div ng-controller="toastCtrl">
+</div>
+<div style="height: 98%">
+    <div class="row" style="height: 100%;">
+        <div class="col col-md-12">
+            <div class="panel panel-default" style="height: 100%">
+                <div class="panel-body">
+                    <h2>Notification</h2>
+                    <hr/>
+                    <p>To update the notification that will be displayed to all users write a message on the message field and then able/disable the "show notification" switch to activate/deactivate it. Don't forget to click on the "update" button to
+                    save your changes.</p>
+                    
+                    <div class="row">
+                        <div class="col col-md-6">
+                            <div class="form.group">
+                                <label for="message">Message:</label>
+                                <textarea ng-model=" notificationValues.notificationMessage"class="form-control" rows="5" id="message" style="resize: none;"></textarea>
+                            </div>
+                        </div>
+                        <div class="col col-md-6">
+                            <md-switch class="md-primary" ng-model="notificationValues.showNotification" aria-label="Switch 1">
+                                Show notification
+                            </md-switch>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 1%">
+                        <div class="col col-md-2">
+                            <button class="btn btn-primary" ng-click="updateNotificationState()">Update notification state</button>
+                        </div>
+                        <div class="col col-md-10">
+                            <div class="alert alert-warning">
+                                Be aware that changes in the notification state may take around <b>5 minutes</b> to be visible by the users using the Tool!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -43,7 +43,7 @@ angular.module('CVGTool')
                 $state.go('taskHome');
             } else {
                 // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
-                $state.go('adminStatistics');
+                $state.go('adminNotification');
             }
         };
 
