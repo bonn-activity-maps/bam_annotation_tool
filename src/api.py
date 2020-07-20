@@ -109,7 +109,7 @@ def unauthorized_handler():
 def user_login():
     success, msg, status = userService.user_login(request.headers['username'], request.headers['password'])
 
-    # Create jwt for 3h if user correctly authenticated
+    # Create jwt for 9h if user correctly authenticated
     if success:
         user = msg
         token = jwt.encode({
@@ -127,7 +127,7 @@ def user_login():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-# TODO: add logout??
+# Logout user
 @app.route("/api/user/logout", methods=['GET'])
 def logout():
     userService.user_logout(request.headers['username'])
