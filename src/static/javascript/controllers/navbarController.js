@@ -149,6 +149,27 @@ angular.module('CVGTool')
             }
         };
 
+        $scope.sendMessage = function(type, msg) {
+            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
+        };
+
+        // Structure to store the notification
+        $scope.notificationValues = {
+            notificationMessage: "",
+            showNotification: false
+        }
+
+        // Asks for the alert navbar updates
+        $scope.obtainNotificationState = function() {
+            var callbackSuccess = function(response) {
+                $scope.notificationValues.notificationMessage = response.notificationMessage;
+                $scope.notificationValues.showNotification = response.showNotification;
+            }
+    
+            navSrvc.obtainNotificationState(callbackSuccess, $scope.sendMessage);
+        }
+
+    
         // Functions that are executed when a message is received.
         $scope.$on('advanceFrames', function(evt, data) {
             if (data.range === 'next') {
@@ -159,13 +180,14 @@ angular.module('CVGTool')
             }
         });
 
-        $scope.sendMessage = function(type, msg) {
-            $rootScope.$broadcast('sendMsg', { 'type': type, 'msg': msg });
-        };
-
         // Then, it updates the info about the sessionData
         $scope.$on('sessionDataMsg', function(evt, data) {
             $scope.sessionData = navSrvc.getSessionData();
         });
+
+        // Call to update the notification system
+        setInterval(function() {
+            $scope.obtainNotificationState();
+        }, 60 * 5 * 1000); // Calls every 5 minutes
     }
 ]);

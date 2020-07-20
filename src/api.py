@@ -1065,6 +1065,31 @@ def get_statistic_stats_per_scenes_per_persons():
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 
+######## NOTIFICATION SYSTEM ########## (this could go to an independent file but since its not too much we will keep it here)
+# Global variable to store de notification data
+showNotification = False
+notificationMessage = ""
+
+@app.route("/api/notification/update", methods=['POST'])
+@flask_login.login_required
+def update_notification_state():
+    global showNotification, notificationMessage
+    request_data = request.get_json()
+    showNotification = request_data['showNotification']
+    notificationMessage = request_data['notificationMessage']
+
+    return json.dumps({'success': True, 'msg': ""}, default=str), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/notification/obtain", methods=['GET'])
+@flask_login.login_required
+def get_notification_state():
+    global showNotification, notificationMessage
+    return json.dumps({'success': True, 'msg': {'showNotification': showNotification, 'notificationMessage': notificationMessage}}, default=str), 200, {'ContentType': 'application/json'}
+
+
+
+##############################################################################################################################
 
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
