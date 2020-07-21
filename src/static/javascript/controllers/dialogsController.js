@@ -578,19 +578,20 @@ angular.module('CVGTool')
     /*
  * Controller of the dialog of change track ID
  */
-.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
-        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username) {
+.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username', 'ignoreRegions', 'frame',
+        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, frame) {
             $scope.object = object;
             $scope.dataset = dataset;
             $scope.scene = scene;
             $scope.username = username;
             $scope.mode = "normal";
             $scope.values = {
-                old_track_id: object.track_id,
+                old_track_id: object.uid,
                 new_track_id: Number(),
+                invalid_track_id: Boolean(),
                 is_id_in_use: Boolean()
             };
-            $scope.old_track_id = object.track_id;
+            $scope.old_track_id = object.uid;
             $scope.new_track_id = Number();
 
             $scope.close = function() {
@@ -598,34 +599,27 @@ angular.module('CVGTool')
             };
 
             $scope.change = function() {
-                let callback = function(response){
-                    $scope.values.is_id_in_use = response;
-                };
+                // Check if ID is in use in this frame
+                $scope.values.is_id_in_use = false;
+                $scope.values.invalid_track_id = false;
+                if ($scope.values.new_track_id >= 60) {
+                    for (let ir in ignoreRegions) {
+                        // If the current frame IR with same ID is not empty
+                        if (parseInt(ir, 10) === $scope.values.new_track_id &&
+                            ignoreRegions[ir].frames[frame].keypoints.length > 0) {
+                            $scope.values.is_id_in_use = true;
+                        }
+                    }
+                } else {
+                    $scope.values.is_id_in_use = true;
+                    $scope.values.invalid_track_id = true;
+                }
 
-                // Check if ID is previously used
-                // This isn't necessary anymore, check only on frontend, on list of object in the same frame TODO
-                !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction);
                 $scope.mode = "check";
             };
 
             $scope.cancel = function() {
                 $scope.mode = "normal";
-            };
-
-            let successFunction = function() {
-                let successData = {
-                    msg: "success",
-                    object: $scope.object
-                };
-                $mdDialog.hide(successData);
-            };
-
-            let errorFunction = function() {
-                let successData = {
-                    msg: "error",
-                    object: $scope.object
-                };
-                $mdDialog.hide(successData)
             };
 
             $scope.confirm = function() {

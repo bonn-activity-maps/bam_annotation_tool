@@ -131,7 +131,7 @@
           <li class="dropdown-header">Dynamic object types</li>
           <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
           <li class="dropdown-header">Static object types</li>
-          <li ng-if="!toolParameters.isPosetrack" ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
+          <li ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -327,12 +327,17 @@
                     <div class="form-group input-group-sm">
                         <label ng-if="!toolParameters.isPosetrack"  class="control-label col-sm-4">UID:</label>
                         <label ng-if="toolParameters.isPosetrack"
-                               ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)"
                                class="control-label col-sm-4">Track ID:</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-2">
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
-                        
+                        <div class="col-sm-2">
+                            <button ng-if="objectManager.selectedObject.type === 'ignore_region'"
+                                    ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)">
+                                <span style="rotation: 90deg" class="glyphicon glyphicon-random"></span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4"></div>
                     </div>
                     <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
                         <label class="control-label col-sm-4">Person:</label>

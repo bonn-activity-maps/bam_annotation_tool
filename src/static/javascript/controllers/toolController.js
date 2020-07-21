@@ -1905,8 +1905,16 @@ angular.module('CVGTool')
                 })
             }
 
+            _this.callbackChangeTrackID = function(msg, new_track_id) {
+                _this.retrieveObjects();
+                $scope.objectManager.selectedObject.uid = new_track_id;
+                $scope.messagesManager.sendMessage('success', msg);
+            }
+
             _this.openChangeTrackID = function(object) {
-                if (object.type === "ignore_region") {
+                console.log(object)
+                // if (object.type === "ignore_region") {
+                if (true) {
                     $mdDialog.show({
                         templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
                         controller: 'changeTrackIDCtrl',
@@ -1916,7 +1924,9 @@ angular.module('CVGTool')
                             object: object,
                             dataset: $scope.toolParameters.activeDataset,
                             scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
-                            username: $scope.toolParameters.user.name
+                            username: $scope.toolParameters.user.name,
+                            ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
+                            frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom
                         }
                     }).then(function(data) { // When finished, update the frames
                         if (data.msg.localeCompare("success") === 0) {
@@ -1933,7 +1943,7 @@ angular.module('CVGTool')
                         }
                     })
                 } else {
-                    $scope.messagesManager.sendMessage("warning", "Action not avilable for this object type.")
+                    $scope.messagesManager.sendMessage("warning", "Action not available for this object type.")
                 }
 
             }
