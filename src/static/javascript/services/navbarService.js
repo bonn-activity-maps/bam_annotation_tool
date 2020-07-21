@@ -241,6 +241,22 @@ angular.module('CVGTool')
             // Return true iff the type of the active dataset is posetrack
             isPosetrack: function() {
                 return activeDataset.type.localeCompare("poseTrack") === 0;
+            },
+
+            obtainNotificationState: function(callbackSucces, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/notification/obtain',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.getSessionToken()
+                    }
+                }).then(function successCallback(response) {
+                    callbackSucces(response.data.msg)
+                }, function errorCallBack(response) {
+                    callbackError("danger", "An error ocurred when requesting the notification state!")
+                });
             }
+
+
         }
     });
