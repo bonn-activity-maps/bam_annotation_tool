@@ -1828,7 +1828,7 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
 
-                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, $scope.toolParameters.frameTo, uid, type,
+                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frame, $scope.toolParameters.frameTo, uid, type,
                     callbackSuccess, $scope.messagesManager.sendMessage, uid);
             }
         
