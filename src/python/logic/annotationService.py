@@ -13,6 +13,7 @@ from python.infrastructure.user_action_manager import UserActionManager
 from python.infrastructure.pose_property_manager import PosePropertyManager
 
 from python.logic.aikService import AIKService
+from python.logic.ptService import PTService
 
 from python.objects.frame import Frame
 from python.objects.annotation import Annotation
@@ -31,6 +32,7 @@ frameManager = FrameManager()
 actionManager = ActionManager()
 datasetManager = DatasetManager()
 aikService = AIKService()
+ptService = PTService()
 user_action_manager = UserActionManager()
 video_manager = VideoManager()
 pose_property_manager = PosePropertyManager()
@@ -264,7 +266,7 @@ class AnnotationService:
         else:
             return True, result, 200
 
-    # Return True if the objects with track id specified for the given video is updated correctly
+    # Return True if the objects with track id specified for the given video is updated correctly with a new person id
     def update_person_id(self, video, track_id, new_person_id, user):
         # Create user action in db
         user_action = UserAction(user, 'person id', video.name, video.dataset)
@@ -275,6 +277,26 @@ class AnnotationService:
             return False, 'Error updating person id', 400
         else:
             return True, result, 200
+
+    # Return True if the object with track id specified for the given frame in the given video is updated correctly
+    def update_track_id(self, video, track_id, new_track_id, user, frame, swap):
+        # Create user action in db
+        user_action = UserAction(user, 'track id', video.name, video.dataset)
+        user_action_manager.create_user_action(user_action)
+        if swap:
+            result = annotationManager.update_track_id(video, track_id, 100, frame)
+            result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame)
+            result3 = annotationManager.update_track_id(video, 100, new_track_id, frame)
+            if result == 'Error' or result2 == 'Error' or result3 == 'Error':
+                return False, 'Error updating track id', 400
+            else:
+                return True, result, 200
+        else:
+            result = annotationManager.update_track_id(video, track_id, new_track_id, frame)
+            if result == 'Error':
+                return False, 'Error updating track id', 400
+            else:
+                return True, result, 200
 
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):

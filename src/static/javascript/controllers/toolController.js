@@ -1912,9 +1912,7 @@ angular.module('CVGTool')
             }
 
             _this.openChangeTrackID = function(object) {
-                console.log(object)
-                // if (object.type === "ignore_region") {
-                if (true) {
+                if (object.type === "ignore_region") {
                     $mdDialog.show({
                         templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
                         controller: 'changeTrackIDCtrl',
@@ -1935,6 +1933,7 @@ angular.module('CVGTool')
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,
                                 object.uid, data.new_track_id, $scope.toolParameters.user.name,
+                                $scope.timelineManager.slider.value, data.swap,
                                 _this.callbackChangeTrackID,
                                 $scope.messagesManager.sendMessage);
                             _this.retrieveObjects();

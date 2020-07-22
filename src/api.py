@@ -564,6 +564,20 @@ def update_person_id():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+# Update the track id for an object in a sequence frame
+@app.route('/api/annotation/updateTrackID', methods=['POST'])
+@flask_login.login_required
+def update_track_id():
+    req_data = request.get_json()
+    video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
+    new_track_id = req_data["newTrackID"]
+    track_id = req_data["trackID"]
+    user = req_data["user"]
+    frame = req_data["frame"]
+    swap = req_data["swap"]
+    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, frame, swap)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
 # @app.route('/api/annotation/updateAnnotation/object', methods=['POST'])

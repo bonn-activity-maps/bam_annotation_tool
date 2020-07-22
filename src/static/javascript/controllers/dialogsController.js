@@ -589,7 +589,8 @@ angular.module('CVGTool')
                 old_track_id: object.uid,
                 new_track_id: Number(),
                 invalid_track_id: Boolean(),
-                is_id_in_use: Boolean()
+                is_id_in_use: Boolean(),
+                ir_exists: Boolean()
             };
             $scope.old_track_id = object.uid;
             $scope.new_track_id = Number();
@@ -602,19 +603,23 @@ angular.module('CVGTool')
                 // Check if ID is in use in this frame
                 $scope.values.is_id_in_use = false;
                 $scope.values.invalid_track_id = false;
+                $scope.values.ir_exists = false;
                 if ($scope.values.new_track_id >= 60) {
                     for (let ir in ignoreRegions) {
                         // If the current frame IR with same ID is not empty
                         if (parseInt(ir, 10) === $scope.values.new_track_id &&
                             ignoreRegions[ir].frames[frame].keypoints.length > 0) {
                             $scope.values.is_id_in_use = true;
+                            $scope.values.ir_exists = true;
+                        }
+                        if (parseInt(ir, 10) === $scope.values.new_track_id){
+                            $scope.values.ir_exists = true;
                         }
                     }
                 } else {
                     $scope.values.is_id_in_use = true;
                     $scope.values.invalid_track_id = true;
                 }
-
                 $scope.mode = "check";
             };
 
@@ -623,11 +628,12 @@ angular.module('CVGTool')
             };
 
             $scope.confirm = function() {
-                var successData = {
+                let successData = {
                     msg: "success",
-                    new_person_id: $scope.values.new_person_id,
-                    old_person_id: $scope.values.old_person_id,
-                    object: $scope.object
+                    new_track_id: $scope.values.new_track_id,
+                    old_track_id: $scope.values.old_track_id,
+                    object: $scope.object,
+                    swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.ir_exists
                 };
                 $mdDialog.hide(successData);
             }
