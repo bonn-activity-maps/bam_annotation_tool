@@ -62,14 +62,38 @@ class UserActionService:
         # Get all login actions
         log_in_results = user_action_manager.get_user_actions_login(user)
 
-        for log_in in log_in_results:
-            # Get corresponding log out and actions in between
+        for i, log_in in enumerate(log_in_results):
+            # Get corresponding log out
             log_out_result = user_action_manager.get_user_action_logout_after_login(user, log_in.timestamp)
-            result = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, log_out_result.timestamp)
 
-            # Append data to labels and data
-            labels.append(str(log_in.timestamp) + " - " + str(log_out_result.timestamp))
-            data.append(result)
+            if log_out_result:
+                # Add time between login-logout only if it's smaller than 9h and it happened before the next login
+                # (if not, the logout has not been stored)
+                log_out_timestamp = log_out_result.timestamp
+                duration = log_out_timestamp - log_in.timestamp
+                if i == 0 and duration < self.SESSION_THRESHOLD:
+                    num_actions = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, log_out_timestamp)
+                elif i != 0 and duration < self.SESSION_THRESHOLD and log_out_result.timestamp < log_in_results[i-1].timestamp:
+                    num_actions = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, log_out_timestamp)
+                else:   # Look for last annotation in that session, before next login
+                    _, last_timestamp = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
+                    if last_timestamp is None:
+                        num_actions = 0
+                    else:
+                        num_actions = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, last_timestamp)
+                        log_out_timestamp = last_timestamp
+            else:   # Look for last annotation in that session, before next login
+                _, last_timestamp = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
+                if last_timestamp is None:
+                    num_actions = 0
+                else:
+                    num_actions = user_action_manager.get_user_actions_in_range_count(user, log_in.timestamp, last_timestamp)
+                    log_out_timestamp = last_timestamp
+
+            # Append data to labels and data if there has been actions in that session
+            if num_actions != 0:
+                labels.append(str(log_in.timestamp) + " - " + str(log_out_timestamp))
+                data.append(num_actions)
 
         return True, {"labels": labels, "data": data}, 200
 
@@ -91,13 +115,30 @@ class UserActionService:
             log_in_results = user_action_manager.get_user_actions_login(user.name)
 
             # Get time and actions in each session
-            for log_in in log_in_results:
+            for i, log_in in enumerate(log_in_results):
                 # Get corresponding log out and actions in between
                 log_out_result = user_action_manager.get_user_action_logout_after_login(user.name, log_in.timestamp)
 
                 if log_out_result:
-                    total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, log_out_result.timestamp)
-                    total_logged_in_time += log_out_result.timestamp - log_in.timestamp
+                    # Add time between login-logout only if it's smaller than 9h and it happened before the next login
+                    # (if not, the logout has not been stored)
+                    duration = log_out_result.timestamp - log_in.timestamp
+                    if i == 0 and duration < self.SESSION_THRESHOLD:
+                        total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, log_out_result.timestamp)
+                        total_logged_in_time += duration
+                    elif i != 0 and duration < self.SESSION_THRESHOLD and log_out_result.timestamp < log_in_results[i-1].timestamp:
+                        total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, log_out_result.timestamp)
+                        total_logged_in_time += duration
+                    else:   # Look for last annotation in that session, before next login
+                        duration, last_timestamp = self.get_duration_last_actions_between_logins(i, user.name, log_in.timestamp, log_in_results[i-1].timestamp)
+                        if last_timestamp is not None:
+                            total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, last_timestamp)
+                            total_logged_in_time += duration
+                else:   # Look for last annotation in that session, before next login
+                    duration, last_timestamp = self.get_duration_last_actions_between_logins(i, user.name, log_in.timestamp, log_in_results[i-1].timestamp)
+                    if last_timestamp is not None:
+                        total_num_actions += user_action_manager.get_user_actions_in_range_count(user.name, log_in.timestamp, last_timestamp)
+                        total_logged_in_time += duration
 
             # Append data to labels and data
             total_logged_in_time_minutes = total_logged_in_time.total_seconds() / 60
@@ -112,16 +153,16 @@ class UserActionService:
     def get_duration_last_actions_between_logins(self, i, user, log_in_timestamp, next_timestamp):
         if i == 0:
             next_timestamp = datetime.now()
+        # print('range: ',log_in_timestamp, ' - ', next_timestamp)
         annotation_result = user_action_manager.get_last_user_action_between_logins(user, log_in_timestamp,
                                                                                     next_timestamp)
-        # print('range: ',log_in.timestamp, ' - ', next_timestamp)
         if annotation_result:
             duration = annotation_result.timestamp - log_in_timestamp
             # print('last annotation: ', annotation_result.timestamp)
             # print('duration: ', duration)
-            return duration
+            return duration, annotation_result.timestamp
         else:
-            return timedelta()
+            return timedelta(), None
 
     # Return number of updates in each interval where the user has been logged in
     def get_statistic_hours_per_week(self, user):
@@ -165,10 +206,10 @@ class UserActionService:
                     elif i != 0 and duration < self.SESSION_THRESHOLD and log_out_result.timestamp < log_in_results[i-1].timestamp:
                         data[index] += duration
                     else:   # Look for last annotation in that session, before next login
-                        duration = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
+                        duration, _ = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
                         data[index] += duration
                 else:   # Look for last annotation in that session, before next login
-                    duration = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
+                    duration, _ = self.get_duration_last_actions_between_logins(i, user, log_in.timestamp, log_in_results[i-1].timestamp)
                     data[index] += duration
 
         # Transform timedelta to hours
