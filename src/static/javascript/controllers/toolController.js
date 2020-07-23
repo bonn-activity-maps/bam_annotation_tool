@@ -3201,6 +3201,12 @@ angular.module('CVGTool')
                 for (var i=0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
                 }
+                
+                if ($scope.keypointEditor.editorActive) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
+                        _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                    }
+                }   
             }
 
             _this.drawForVisualization = function(context, color) {
