@@ -185,6 +185,8 @@ angular.module('CVGTool')
             $scope.sessionData = navSrvc.getSessionData();
         });
 
+        $scope.obtainNotificationState();
+
         // Call to update the notification system
         setInterval(function() {
             $scope.obtainNotificationState();

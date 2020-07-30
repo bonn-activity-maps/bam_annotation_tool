@@ -247,9 +247,7 @@ angular.module('CVGTool')
                 $http({
                     method: 'GET',
                     url: '/api/notification/obtain',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.getSessionToken()
-                    }
+                    headers: {}
                 }).then(function successCallback(response) {
                     callbackSucces(response.data.msg)
                 }, function errorCallBack(response) {

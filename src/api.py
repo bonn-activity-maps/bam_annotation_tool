@@ -480,6 +480,7 @@ def autocomplete_annotation():
 def replicate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    print(req_data['uidObject'], " - ", req_data['track_id'])
     success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
                                                                   int(req_data['uidObject']), req_data['objectType'],
                                                                   req_data['startFrame'], req_data['endFrame'],
@@ -1108,7 +1109,6 @@ def update_notification_state():
 
 
 @app.route("/api/notification/obtain", methods=['GET'])
-@flask_login.login_required
 def get_notification_state():
     global showNotification, notificationMessage
     return json.dumps({'success': True, 'msg': {'showNotification': showNotification, 'notificationMessage': notificationMessage}}, default=str), 200, {'ContentType': 'application/json'}
