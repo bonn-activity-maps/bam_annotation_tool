@@ -274,7 +274,11 @@
                                 <td class="zui-sticky-col">
                                     <button ng-if="!toolParameters.isPosetrack" class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
                                                     class="glyphicon glyphicon-plus"></span></button>
-                                    <button ng-if="toolParameters.isPosetrack" class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type !== 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type === 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createIgnoreRegion()"><span
                                             class="glyphicon glyphicon-plus"></span></button>
                                 </td>
                             </tr>

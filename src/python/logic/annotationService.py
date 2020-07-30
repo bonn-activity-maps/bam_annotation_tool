@@ -283,20 +283,14 @@ class AnnotationService:
         # Create user action in db
         user_action = UserAction(user, 'track id', video.name, video.dataset)
         user_action_manager.create_user_action(user_action)
-        if swap:
-            result = annotationManager.update_track_id(video, track_id, 100, frame)
-            result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame)
-            result3 = annotationManager.update_track_id(video, 100, new_track_id, frame)
-            if result == 'Error' or result2 == 'Error' or result3 == 'Error':
-                return False, 'Error updating track id', 400
-            else:
-                return True, result, 200
+        # Swap track ids TODO swap uid too?
+        result = annotationManager.update_track_id(video, track_id, 100, frame)
+        result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame)
+        result3 = annotationManager.update_track_id(video, 100, new_track_id, frame)
+        if result == 'Error' or result2 == 'Error' or result3 == 'Error':
+            return False, 'Error updating track id', 400
         else:
-            result = annotationManager.update_track_id(video, track_id, new_track_id, frame)
-            if result == 'Error':
-                return False, 'Error updating track id', 400
-            else:
-                return True, result, 200
+            return True, result, 200
 
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):
@@ -304,7 +298,8 @@ class AnnotationService:
         max_track_id = 0
         # Find the highest track id in the video
         for obj in annotations[0].objects:
-            max_track_id = obj.track_id if obj.track_id > max_track_id else max_track_id
+            if obj.type != "ignore_region":
+                max_track_id = obj.track_id if obj.track_id > max_track_id else max_track_id
         # Increase it to create the new person
         track_id = max_track_id + 1
         # Find the highest person_id in the dataset and increase it to create the new one.
@@ -312,9 +307,9 @@ class AnnotationService:
         for annotation in annotations:
             nr_id = 0
             for obj in annotation.objects:
-                idobj = obj.uid % 100
-                # print("idobj: ", idobj, " nr_id: ", nr_id)
-                nr_id = idobj if idobj > nr_id else nr_id
+                if obj.type != "ignore_region":
+                    idobj = obj.uid % 100
+                    nr_id = idobj if idobj > nr_id else nr_id
             annotation.objects = [] # Reset objects to insert only new ones
             uid = "1" + annotation.scene + self.pad(str(annotation.frame), 4) + self.pad(str(nr_id + 1), 2)
             # For each of the types
@@ -322,6 +317,24 @@ class AnnotationService:
                 new_obj = Object(uid, objectType, keypoints=[], dataset_type=self.pt,
                                  track_id=track_id, person_id=person_id)
                 annotation.objects.append(new_obj)
+            result = annotationManager.update_annotation_insert_objects(annotation)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
+        return True, 'ok', 200
+
+    # Create a new person in a video for PT, precompute every annotation
+    def create_ignore_region(self, video, min_ir_track_id):
+        annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))
+        # Increase it to create the new person
+        track_id = min_ir_track_id - 1
+        # Find the highest person_id in the dataset and increase it to create the new one.
+        for annotation in annotations:
+            annotation.objects = [] # Reset objects to insert only new ones
+            uid = "1" + annotation.scene + self.pad(str(annotation.frame), 4) + self.pad(track_id, 2)
+            # For each of the types
+            new_obj = Object(uid, "ignore_region", keypoints=[], dataset_type=self.pt,
+                             track_id=track_id)
+            annotation.objects.append(new_obj)
             result = annotationManager.update_annotation_insert_objects(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
@@ -583,7 +596,8 @@ class AnnotationService:
         if obj == 'Error':
             return False, 'Error replicating annotation', 400
         annotation = Annotation(dataset, scene, start_frame, user, [obj])
-
+        print("REPLICATING")
+        print(obj)
         # Update the annotation for each frame
         for frame in range(start_frame, end_frame+1):
             # For posetrack, update the object uid

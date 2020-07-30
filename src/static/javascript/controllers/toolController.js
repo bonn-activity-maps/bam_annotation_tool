@@ -783,8 +783,10 @@ angular.module('CVGTool')
                     // Refresh the projection of canvases
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
-
-                toolSrvc.createNewObject(navSrvc.getUser().name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, _this.selectedType.type, $scope.timelineManager.slider.value, callback, $scope.messagesManager.sendMessage);
+                toolSrvc.createNewObject(navSrvc.getUser().name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name,
+                    _this.selectedType.type, $scope.timelineManager.slider.value, callback,
+                    $scope.messagesManager.sendMessage);
             }
 
             // Returns "complete" if the whole object is annotated, "incomplete" if the object is not completely annotated or "empty" is the object is not annotated at all
@@ -1820,6 +1822,32 @@ angular.module('CVGTool')
             };
 
 
+            // Creates a new person generating new UIDs in the database
+            _this.createIgnoreRegion = function() {
+                let callbackSuccess = function() {
+                    $scope.loadingScreenManager.closeLoadingScreen();
+                    _this.retrieveObjects();
+                };
+                $scope.loadingScreenManager.setLoadingScreen();
+                let ignore_regions = $scope.objectManager.objectTypes["ignore_region"].objects;
+                let minIRTrackID = 100
+                for (let ir in ignore_regions) {
+                    let irr = parseInt(ir, 10);
+                    minIRTrackID = irr < minIRTrackID ? irr : minIRTrackID
+                }
+                if (minIRTrackID > 60) {
+                    toolSrvc.createIgnoreRegion($scope.canvasesManager.canvases[0].activeCamera.filename,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        minIRTrackID,
+                        callbackSuccess, $scope.messagesManager.sendMessage)
+                } else {
+                    $scope.sendMessage('Warning', "No space for more Ignore Regions");
+                    $scope.loadingScreenManager.closeLoadingScreen();
+                }
+
+            };
+
+
             // Replicates the current annotation to all posterior frames in the active range
             _this.replicate = function(uid, type, frame) {
                 var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
@@ -1907,7 +1935,7 @@ angular.module('CVGTool')
 
             _this.callbackChangeTrackID = function(msg, new_track_id) {
                 _this.retrieveObjects();
-                $scope.objectManager.selectedObject.uid = new_track_id;
+                //$scope.objectManager.selectedObject.uid = new_track_id;
                 $scope.messagesManager.sendMessage('success', msg);
             }
 
@@ -1926,9 +1954,8 @@ angular.module('CVGTool')
                             ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
                             frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom
                         }
-                    }).then(function(data) { // When finished, update the frames
+                    }).then(function(data) { // When finished, update the object in the frame
                         if (data.msg.localeCompare("success") === 0) {
-                            //TODO
                             toolSrvc.updateTrackID($scope.canvasesManager.canvases[0].activeCamera.filename,
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,
@@ -1936,7 +1963,7 @@ angular.module('CVGTool')
                                 $scope.timelineManager.slider.value, data.swap,
                                 _this.callbackChangeTrackID,
                                 $scope.messagesManager.sendMessage);
-                            _this.retrieveObjects();
+                            // _this.retrieveObjects();
                         } else if (data.msg.localeCompare("error") === 0) {
                             $scope.messagesManager.sendMessage("warning", "Something went wrong")
                         }
