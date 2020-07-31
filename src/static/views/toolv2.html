@@ -249,6 +249,7 @@
                             <tr>
                                 <th></th>
                                 <th ng-if="!toolParameters.isPosetrack"></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
                             </tr>
@@ -260,6 +261,7 @@
                                     class="glyphicon glyphicon-transfer"></span></button></th>
                                 <th ng-if="!toolParameters.isPosetrack"><button class="btn btn-danger" ng-click="keypointEditor.openTransferObject(object)"><span
                                         class="glyphicon glyphicon-random"></span></button></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
                                     <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span

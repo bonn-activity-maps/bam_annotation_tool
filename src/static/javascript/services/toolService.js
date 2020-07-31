@@ -743,7 +743,7 @@ angular.module('CVGTool')
                     'objectType': objectType
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg);
+                callbackSuccess(response.data.msg, uid);
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
