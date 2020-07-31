@@ -470,8 +470,7 @@ def autocomplete_annotation():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     success, msg, status = annotationService.autocomplete_annotation(dataset, req_data['scene'], req_data['user'],
                                                                      int(req_data['uidObject']), req_data['objectType'],
-                                                                     start_frames, req_data['endFrame'],
-                                                                     req_data['track_id'])
+                                                                     start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

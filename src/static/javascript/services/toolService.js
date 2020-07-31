@@ -446,8 +446,6 @@ angular.module('CVGTool')
 
         replicate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
             callbackSuccess, callbackError, track_id, forward) {
-            console.log("FORWARD")
-            console.log(forward)
             $http({
                 method: 'POST',
                 url: "/api/annotation/replicate/object",
@@ -475,7 +473,7 @@ angular.module('CVGTool')
         },
 
         autoComplete: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
-            uidObject2, callbackSuccess, callbackError, track_id) {
+            uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/autocomplete",
