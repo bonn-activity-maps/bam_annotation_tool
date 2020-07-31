@@ -535,6 +535,7 @@ def get_annotation_frame_object():
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 # Create a new person for Posetrack. This implies computing a new ID and precomputing all annotations
 @app.route('/api/annotation/createPersonPT', methods=['POST'])
 @flask_login.login_required
@@ -543,6 +544,17 @@ def create_person_pt():
     video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
     success, msg, status = annotationService.create_person_pt(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+# Create a new person for Posetrack. This implies computing a new ID and precomputing all annotations
+@app.route('/api/annotation/createIgnoreRegion', methods=['POST'])
+@flask_login.login_required
+def create_ignore_region():
+    req_data = request.get_json()
+    video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
+    success, msg, status = annotationService.create_ignore_region(video, req_data['minIRTrackID'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Return True if the person id is in use, false otherwise
 @app.route('/api/annotation/isPersonIDInUse', methods=['GET'])

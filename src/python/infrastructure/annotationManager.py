@@ -134,7 +134,7 @@ class AnnotationManager:
             else:
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find_one({"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "frame": annotation.frame},
-                                                  {"objects": {"$elemMatch": {"uid": annotation.objects[0].uid, "type": annotation.objects[0].type}}, '_id': 0})
+                                                  {"objects": {"$elemMatch": {"track_id": annotation.objects[0].track_id, "type": annotation.objects[0].type}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
             else:

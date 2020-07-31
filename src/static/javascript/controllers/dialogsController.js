@@ -604,7 +604,7 @@ angular.module('CVGTool')
                 $scope.values.is_id_in_use = false;
                 $scope.values.invalid_track_id = false;
                 $scope.values.ir_exists = false;
-                if ($scope.values.new_track_id >= 60) {
+                if ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100) {
                     for (let ir in ignoreRegions) {
                         // If the current frame IR with same ID is not empty
                         if (parseInt(ir, 10) === $scope.values.new_track_id &&

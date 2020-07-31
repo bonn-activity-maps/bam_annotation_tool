@@ -19,7 +19,7 @@
         </div>
         <div class="panel" ng-if="mode=='check'">
             <md-dialog-content>
-                <div ng-if="values.is_id_in_use && !values.invalid_track_id && values.ir_exists" class="alert alert-danger">
+                <div ng-if="values.is_id_in_use && !values.invalid_track_id && values.ir_exists" class="alert alert-warning">
                     <strong>&#9888</strong> The ID: {{values.new_track_id}} is <b>already in use</b> for this frame.<br>
                     The track IDs will be swapped. Do you still wish to continue?
                 </div>
@@ -34,11 +34,13 @@
                 <div ng-if="!values.is_id_in_use && !values.invalid_track_id && values.ir_exists" class="alert alert-success">
                     <strong>&#10004</strong> The ID: {{values.new_track_id}} is <b>not in use</b> for this frame.
                 </div>
-                <h2>Confirmation</h2>
-                <hr/>
-                <p>You are going to change the track ID from <b>{{values.old_track_id}}</b> to <b>{{values.new_track_id}}</b>.
-                </p>
-                <h3>Are you sure?</h3>
+                <div ng-if="!values.invalid_track_id && values.ir_exists">
+                    <h2>Confirmation</h2>
+                    <hr/>
+                    <p>You are going to change the track ID from <b>{{values.old_track_id}}</b> to <b>{{values.new_track_id}}</b>.
+                    </p>
+                    <h3>Are you sure?</h3>
+                </div>
             </md-dialog-content>
             <md-dialog-actions>
                 <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
