@@ -446,6 +446,8 @@ angular.module('CVGTool')
 
         replicate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
             callbackSuccess, callbackError, track_id, forward) {
+            console.log("FORWARD")
+            console.log(forward)
             $http({
                 method: 'POST',
                 url: "/api/annotation/replicate/object",
@@ -462,7 +464,7 @@ angular.module('CVGTool')
                     'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
                     'datasetType': datasetType,
                     'objectType': objectType,
-                    'forward': forward || true  // If not specified, it's forwards
+                    'forward': forward === undefined ? true : forward  // If not specified, it's forwards
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(uidObject, objectType, startFrame, endFrame);

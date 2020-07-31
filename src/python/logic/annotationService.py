@@ -613,12 +613,17 @@ class AnnotationService:
     def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id,
                              forward):
         obj = Object(uid_object, object_type, dataset_type=dataset.type, track_id=track_id)
-        obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
+        print("FORWARD?? ", forward)
+        if forward:
+            obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
+        else:
+            obj = annotationManager.get_frame_object(Annotation(dataset, scene, end_frame, user, [obj]))
         if obj == 'Error':
             return False, 'Error replicating annotation', 400
         annotation = Annotation(dataset, scene, start_frame, user, [obj])
         # Update the annotation for each frame
-        frame_range = range(start_frame, end_frame+1) if forward else range(end_frame, start_frame, -1)
+        frame_range = range(start_frame, end_frame+1) if forward else range(start_frame, end_frame)
+        print("REPLICATING IN RANGE ", frame_range)
         for frame in frame_range:
             # For posetrack, update the object uid
             if dataset.is_pt():

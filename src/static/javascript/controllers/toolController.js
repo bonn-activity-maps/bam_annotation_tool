@@ -1894,7 +1894,7 @@ angular.module('CVGTool')
                     callbackSuccess, $scope.messagesManager.sendMessage, uid);
             }
 
-            // Replicates the current annotation to all posterior frames in the active range
+            // Finds the closest complete object in the forward range and replicates it backwards up to the selected frame.
             _this.replicate_backwards = function() {
                 let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
                     let frameArray = [];
@@ -1906,18 +1906,21 @@ angular.module('CVGTool')
                 let start_frame = $scope.timelineManager.slider.value;
                 // TODO find first complete ignore region and replicate it backwards up until frame_start
                 let end_frame = -1
-                for (let j = start_frame; j >= Math.max($scope.toolParameters.frameFrom,
-                    start_frame - $scope.toolParameters.interpolationRange); j--) {
-                            if ($scope.objectManager.hasAnnotationForLabel(track_id, objectType, j, 0)) {
-                                end_frame = j;
-                                break;
-                            }
-                        }
-                console.log(start_frame, end_frame)
-                // toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
-                //     $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
-                //     start_frame, end_frame, uid, type,
-                //     callbackSuccess, $scope.messagesManager.sendMessage, uid, false);
+                for (let j = start_frame + 1; j < $scope.toolParameters.frameTo; j++) {
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id].frames[j - $scope.toolParameters.frameFrom].keypoints.length > 0) {
+                        end_frame = j;
+                        break;
+                    }
+                }
+                if (end_frame !== -1) {
+                    toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        start_frame, end_frame, track_id, objectType,
+                        callbackSuccess, $scope.messagesManager.sendMessage, track_id, false);
+                } else {
+                    $scope.messagesManager.sendMessage("danger", "Error: No complete objects in range.")
+                }
+
             }
 
             // Autocompletes the annotation from previous annotations. Basically replication but backwards.
