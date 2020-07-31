@@ -752,6 +752,9 @@ angular.module('CVGTool')
                 $scope.canvasesManager.refreshProjectionOfCanvases();
                       
                 $scope.canvasesManager.redrawCanvases();
+                
+                console.log(type)
+                if (type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForAll();
 
                 navSrvc.setSelectedType(type);  // Update selected type in session
             };
@@ -1029,6 +1032,16 @@ angular.module('CVGTool')
                             labels: [""],
                             frames: []
                         }
+
+                        // If we have poses we need to store the limb lengths too
+                        if (object.type.localeCompare("poseAIK") == 0) {
+                            $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()].limbLengths = {
+                                upperArm: -1,
+                                lowerArm: -1,
+                                upperLeg: -1,
+                                lowerLeg: -1
+                            }
+                        }
                         
                         // Fill the frames array with an empty array for each frame
                         for (var j = 0; j <= $scope.toolParameters.numberOfFrames; j++) {
@@ -1040,7 +1053,6 @@ angular.module('CVGTool')
                         }
                         
                     }
-
                     _this.retrieveAnnotations();
                 }
 
@@ -1137,14 +1149,28 @@ angular.module('CVGTool')
                         frameArray[frameArray.length - 1],
                         callback, $scope.messagesManager.sendMessage);
                 }
-            } 
+            }
+            
+            _this.getPoseAIKLimbsLengthForAll = function() {
+                var objects = $scope.objectManager.objectTypes["poseAIK"].objects;
+                
+                for (obj in objects) {
+                    _this.getPoseAIKLimbsLengthForUID(objects[obj].uid);
+                }
+
+            }
 
             _this.getPoseAIKLimbsLengthForUID = function(uid) {
-                var callbackSuccess = function(msg) {
+                var callbackSuccess = function(msg, uid) {
                     var limbs = [msg.upperArmLength, msg.lowerArmLength, msg.upperLegLength, msg.lowerLegLength]
-                    $scope.keypointEditor.fillPoseAIKLimbs(limbs);
+                    $scope.objectManager.objectTypes["poseAIK"].objects[uid.toString()].limbLengths = {
+                        upperArm: limbs[0],
+                        lowerArm: limbs[1],
+                        upperLeg: limbs[2],
+                        lowerLeg: limbs[3]
+                    };
                 }
-                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedType.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
             _this.updatePoseAIKLimbsLengthForUID = function(limbs) {
@@ -1169,6 +1195,13 @@ angular.module('CVGTool')
                 } else {
                     toolSrvc.forcePoseAIKLimbLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name,$scope.objectManager.selectedObject.type, $scope.objectManager.selectedObject.uid, $scope.timelineManager.slider.value, startLabels, endLabels, limbLength, callbackSuccess, $scope.messagesManager.sendMessage)
                 }
+            }
+
+            _this.forcePoseAIKLimbLengthsForRange = function() {
+                // TODO: we need a new function for this
+                // 1- Get all the limbs that need to be update + the length of each limb
+                // 2- Make a backend request to update all in the actual range
+                // 3- Need a frontend button to do this
             }
 
 
@@ -2112,7 +2145,7 @@ angular.module('CVGTool')
                 $scope.timelineManager.slider.value = frame;
 
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
-                else if (object.type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
+                else if (object.type.localeCompare("poseAIK") == 0) _this.poseAIKLimbs = $scope.objectManager.selectedObject.limbLengths;
                                 
                 _this.keypointEditorData = {
                     searchUID: null,
@@ -2211,28 +2244,15 @@ angular.module('CVGTool')
                 $scope.canvasesManager.redrawCanvases();
             }
 
-            // Reset the pose AIK length structure
-            _this.resetPoseAIKLimbs = function() {
-                _this.poseAIKLimbs = {
-                    upperArm: -1,
-                    lowerArm: -1,
-                    upperLeg: -1,
-                    lowerLeg: -1
-                }
-            }
-
-            // Fill the pose AIK limb structure
-            _this.fillPoseAIKLimbs = function(limbs) {
-                _this.poseAIKLimbs.upperArm = limbs[0]
-                _this.poseAIKLimbs.lowerArm = limbs[1]
-                _this.poseAIKLimbs.upperLeg = limbs[2]
-                _this.poseAIKLimbs.lowerLeg = limbs[3]          
-            }
 
             // Update the stored pose AIK limb values with the actual ones
             _this.updatePoseAIKLimbs = function() {
                 var limbs = [_this.poseAIKLimbs.upperArm, _this.poseAIKLimbs.lowerArm, _this.poseAIKLimbs.upperLeg, _this.poseAIKLimbs.lowerLeg]
                 $scope.commonManager.updatePoseAIKLimbsLengthForUID(limbs);
+            }
+
+            _this.forceAllLimbLengthsInRange = function(object) {
+                console.log("TODO")
             }
 
             _this.forceLimbLength = function(number) {
