@@ -558,48 +558,68 @@ class AnnotationService:
     # Autocomplete and store the completed 3d points for each label depending on start frames
     # Always a single object in "objects" so always objects[0] !!
     # startFrame is an array with the frame of each label
-    def autocomplete_annotation(self, dataset, scene, user, uid_object, object_type, start_frames, end_frame):
-        object_type = objectTypeManager.get_object_type(Object_type(object_type, dataset.type))
-        empty_kpts = [[] for i in range(object_type.num_keypoints)]
-        empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
-        obj = Object(uid_object, object_type.type, dataset_type=dataset.type)
+    def autocomplete_annotation(self, dataset, scene, user, uid_object, object_type, start_frames, end_frame, track_id):
+        if dataset.is_aik():
+            object_type = objectTypeManager.get_object_type(Object_type(object_type, dataset.type))
+            empty_kpts = [[] for i in range(object_type.num_keypoints)]
+            empty_obj = Object(uid_object, object_type.type, empty_kpts, dataset_type=dataset.type)
+            obj = Object(uid_object, object_type.type, dataset_type=dataset.type)
 
-        # Check num start_frames == num keypoints in object type
-        # assert len(start_frames) == object_type.num_keypoints, "Number of start frames should be equal to the number of labels"
+            # Check num start_frames == num keypoints in object type
+            # assert len(start_frames) == object_type.num_keypoints, "Number of start frames should be equal to the number of labels"
 
-        # Copy the annotation for each label
-        final_result = 'ok'
-        for label, frame in enumerate(start_frames):
-            if frame != -1:         # if f=-1 --> no annotation available for that label
-                start_obj = annotationManager.get_frame_object(Annotation(dataset, scene, frame, user, [obj]))
-                num_frames = end_frame - frame
-                kp_to_copy = start_obj.keypoints[label]
+            # Copy the annotation for each label
+            final_result = 'ok'
+            for label, frame in enumerate(start_frames):
+                if frame != -1:         # if f=-1 --> no annotation available for that label
+                    start_obj = annotationManager.get_frame_object(Annotation(dataset, scene, frame, user, [obj]))
+                    num_frames = end_frame - frame
+                    kp_to_copy = start_obj.keypoints[label]
 
-                # Update keypoints in all range of frames for label
-                for i in range(1, num_frames+1):
-                    annotation = Annotation(dataset, scene, frame+i, user, [empty_obj])
-                    result = self.update_annotation_frame_object_label(copy.deepcopy(annotation), label, kp_to_copy)
-                    if result == 'Error':
-                        final_result = 'There was some error filling in the keypoints, please check them'
+                    # Update keypoints in all range of frames for label
+                    for i in range(1, num_frames+1):
+                        annotation = Annotation(dataset, scene, frame+i, user, [empty_obj])
+                        result = self.update_annotation_frame_object_label(copy.deepcopy(annotation), label, kp_to_copy)
+                        if result == 'Error':
+                            final_result = 'There was some error filling in the keypoints, please check them'
 
-        if final_result == 'ok':
-            return True, final_result, 200
-        else:
-            log.error('Error filling in keypoints')
-            return False, final_result, 500
+            if final_result == 'ok':
+                return True, final_result, 200
+            else:
+                log.error('Error filling in keypoints')
+                return False, final_result, 500
+        elif dataset.is_pt(): # TODO basically replicate backwards
+            obj = Object(uid_object, object_type, dataset_type=dataset.type, track_id=track_id)
+            obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frames, user, [obj]))
+            if obj == 'Error':
+                return False, 'Error replicating annotation', 400
+            annotation = Annotation(dataset, scene, start_frames, user, [obj])
+            # Update the annotation for each frame
+            for frame in range(start_frames, end_frame+1):
+                # For posetrack, update the object uid
+                if dataset.is_pt():
+                    uid = "1" + scene + self.pad(str(frame), 4) + str(track_id)
+                    obj.uid = int(uid)
+                    annotation = Annotation(dataset, scene, start_frames, user, [obj])
+                annotation.frame = frame
+                result = self.update_annotation_frame_object(annotation)
+                if result == 'Error':
+                    log.error('Error replicating annotation in frame '+frame)
+                    return False, 'Error replicating annotation in frame '+frame, 400
+            return True, 'ok', 200
 
     # Replicate and store the annotation between start and enf frame
     # Always a single object in "objects" so always objects[0] !!
-    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id):
+    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id,
+                             forward):
         obj = Object(uid_object, object_type, dataset_type=dataset.type, track_id=track_id)
         obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
         if obj == 'Error':
             return False, 'Error replicating annotation', 400
         annotation = Annotation(dataset, scene, start_frame, user, [obj])
-        print("REPLICATING")
-        print(obj)
         # Update the annotation for each frame
-        for frame in range(start_frame, end_frame+1):
+        frame_range = range(start_frame, end_frame+1) if forward else range(end_frame, start_frame, -1)
+        for frame in frame_range:
             # For posetrack, update the object uid
             if dataset.is_pt():
                 uid = "1" + scene + self.pad(str(frame), 4) + str(track_id)

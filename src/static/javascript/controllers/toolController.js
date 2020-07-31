@@ -1856,9 +1856,78 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
 
-                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frame, $scope.toolParameters.frameTo, uid, type,
+                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                    frame, $scope.toolParameters.frameTo, uid, type,
                     callbackSuccess, $scope.messagesManager.sendMessage, uid);
             }
+
+            // Replicates the current annotation to all posterior frames in the active range
+            _this.replicate_backwards = function() {
+                let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    let frameArray = [];
+                    for (let i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+                let track_id = $scope.objectManager.selectedObject.uid;
+                let objectType = $scope.objectManager.selectedType.type;
+                let start_frame = $scope.timelineManager.slider.value;
+                // TODO find first complete ignore region and replicate it backwards up until frame_start
+                let end_frame = -1
+                for (let j = start_frame; j >= Math.max($scope.toolParameters.frameFrom,
+                    start_frame - $scope.toolParameters.interpolationRange); j--) {
+                            if ($scope.objectManager.hasAnnotationForLabel(track_id, objectType, j, 0)) {
+                                end_frame = j;
+                                break;
+                            }
+                        }
+                console.log(start_frame, end_frame)
+                // toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                //     $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                //     start_frame, end_frame, uid, type,
+                //     callbackSuccess, $scope.messagesManager.sendMessage, uid, false);
+            }
+
+            // Autocompletes the annotation from previous annotations. Basically replication but backwards.
+            // _this.autoComplete = function() {
+            //     let callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+            //         // First remove -1 values from the frame array
+            //         let framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+            //             return value >= 0;
+            //         })
+            //
+            //         // Get the min used frame
+            //         let minFrame = Math.min(...framesFromFiltered);
+            //
+            //         let frameArray = [];
+            //         for (let i = minFrame; i <= frameTo; i++) frameArray.push(i);
+            //         _this.retrieveAnnotation(objectUID, objectType, frameArray);
+            //     }
+            //
+            //     let track_id = $scope.objectManager.selectedObject.uid;
+            //     let objectUID = $scope.objectManager.selectedObject.original_uid;
+            //     let objectType = $scope.objectManager.selectedType.type;
+            //     let frameTo = $scope.timelineManager.slider.value;
+            //
+            //     // Create structure for the object to interpolate
+            //     let frameFrom = null
+            //
+            //     // Find a possible frame to autocomplete
+            //     for (let j = frameTo; j >= Math.max($scope.toolParameters.frameFrom,
+            //         frameTo - $scope.toolParameters.interpolationRange); j--) {
+            //         if ($scope.objectManager.hasAnnotationForLabel(track_id, objectType, j, i)) {
+            //             frameFrom = j;
+            //             break;
+            //         }
+            //     }
+            //
+            //     if (frameFrom === null) return; // Nothing found to autocomplete
+            //
+            //     toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+            //         $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+            //         frameFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage,
+            //         track_id);
+            // }
         
             // Updates the annotation being edited
             _this.updateAnnotation = function() {

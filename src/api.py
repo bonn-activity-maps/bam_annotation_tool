@@ -470,7 +470,8 @@ def autocomplete_annotation():
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
     success, msg, status = annotationService.autocomplete_annotation(dataset, req_data['scene'], req_data['user'],
                                                                      int(req_data['uidObject']), req_data['objectType'],
-                                                                     start_frames, req_data['endFrame'])
+                                                                     start_frames, req_data['endFrame'],
+                                                                     req_data['track_id'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -480,11 +481,10 @@ def autocomplete_annotation():
 def replicate_annotation():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    print(req_data['uidObject'], " - ", req_data['track_id'])
     success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
                                                                   int(req_data['uidObject']), req_data['objectType'],
                                                                   req_data['startFrame'], req_data['endFrame'],
-                                                                  req_data['track_id'])
+                                                                  req_data['track_id'], req_data["forward"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

@@ -437,6 +437,7 @@
         <div class="row">
             <div class="col col-md-6">
                 <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack" ng-click="commonManager.autoComplete()">Auto-complete annotation<span class="glyphicon glyphicon-arrow-left"></button>
+                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack" ng-click="commonManager.replicate_backwards()">Auto-complete annotation<span class="glyphicon glyphicon-arrow-left"></button>
             </div>
             <div class="col col-md-6">
                 <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
