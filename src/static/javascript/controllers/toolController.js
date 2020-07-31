@@ -753,7 +753,6 @@ angular.module('CVGTool')
                       
                 $scope.canvasesManager.redrawCanvases();
                 
-                console.log(type)
                 if (type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForAll();
 
                 navSrvc.setSelectedType(type);  // Update selected type in session
@@ -3250,7 +3249,7 @@ angular.module('CVGTool')
                 }
                 
                 if ($scope.keypointEditor.editorActive) {
-                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
                         _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
                     }
                 }   
