@@ -441,7 +441,7 @@
                 <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack"
                         ng-click="commonManager.autoComplete()">Auto-complete annotation
                     <span class="glyphicon glyphicon-arrow-left"></span></button>
-                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack"
+                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
                         ng-click="commonManager.replicate_backwards()">Backwards replicate
                     <span class="glyphicon glyphicon-arrow-left"></span></button>
             </div>
