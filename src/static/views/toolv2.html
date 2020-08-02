@@ -131,7 +131,7 @@
           <li class="dropdown-header">Dynamic object types</li>
           <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
           <li class="dropdown-header">Static object types</li>
-          <li ng-if="!toolParameters.isPosetrack" ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
+          <li ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -249,6 +249,7 @@
                             <tr>
                                 <th></th>
                                 <th ng-if="!toolParameters.isPosetrack"></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
                             </tr>
@@ -260,6 +261,7 @@
                                     class="glyphicon glyphicon-transfer"></span></button></th>
                                 <th ng-if="!toolParameters.isPosetrack"><button class="btn btn-danger" ng-click="keypointEditor.openTransferObject(object)"><span
                                         class="glyphicon glyphicon-random"></span></button></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
                                     <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
@@ -274,7 +276,11 @@
                                 <td class="zui-sticky-col">
                                     <button ng-if="!toolParameters.isPosetrack" class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
                                                     class="glyphicon glyphicon-plus"></span></button>
-                                    <button ng-if="toolParameters.isPosetrack" class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type !== 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type === 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createIgnoreRegion()"><span
                                             class="glyphicon glyphicon-plus"></span></button>
                                 </td>
                             </tr>
@@ -326,13 +332,21 @@
                     </div>
                     <div class="form-group input-group-sm">
                         <label ng-if="!toolParameters.isPosetrack"  class="control-label col-sm-4">UID:</label>
-                        <label ng-if="toolParameters.isPosetrack"  class="control-label col-sm-4">Track ID:</label>
-                        <div class="col-sm-8">
+                        <label ng-if="toolParameters.isPosetrack"
+                               class="control-label col-sm-4">Track ID:</label>
+                        <div class="col-sm-2">
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
-                        
+                        <div class="col-sm-2">
+                            <button ng-if="objectManager.selectedObject.type === 'ignore_region'"
+                                    ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)">
+                                <span style="rotation: 90deg" class="glyphicon glyphicon-random"></span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4"></div>
                     </div>
-                    <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
+                    <div ng-if="toolParameters.isPosetrack && keypointEditor.keypointEditorData.editorMode.localeCompare('static') !== 0"
+                         class="form-group input-group-sm">
                         <label class="control-label col-sm-4">Person:</label>
                         <div class="col-sm-8">
                             <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
@@ -424,14 +438,19 @@
         <hr>
         <div class="row">
             <div class="col col-md-6">
-                <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack" ng-click="commonManager.autoComplete()">Auto-complete annotation<span class="glyphicon glyphicon-arrow-left"></button>
+                <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack"
+                        ng-click="commonManager.autoComplete()">Auto-complete annotation
+                    <span class="glyphicon glyphicon-arrow-left"></span></button>
+                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
+                        ng-click="commonManager.replicate_backwards()">Backwards replicate
+                    <span class="glyphicon glyphicon-arrow-left"></span></button>
             </div>
             <div class="col col-md-6">
                 <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
             </div>
         </div>
 
-        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0 && objectManager.isTypeSelected('ignore_region')">
+        <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0 && !objectManager.isTypeSelected('ignore_region')">
             <hr>
             <div class="form-group input-group-sm">
                 <label class="control-label col-sm-2">Labels:</label>
@@ -443,7 +462,7 @@
         
         <hr>
         <div class="container" style="overflow: auto; max-height: 150px; max-width: 350px;">
-            <table class="table table-hover table-bordered" style="height: 100px; width: 350;">
+            <table class="table table-hover table-bordered" style="height: 100px; width: 350px;">
                 <thead>
                     <tr>
                         <th>Tag</th>

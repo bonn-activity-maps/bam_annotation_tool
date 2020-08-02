@@ -1,0 +1,50 @@
+<md-dialog>
+        <div class="panel" ng-if="mode=='normal'">
+            <md-dialog-content>
+                <h2>Change Track ID</h2>
+                <hr/>
+                <div class="form-group">
+                        <label>Track ID</label>
+                        <p>{{values.old_track_id}}</p>
+                </div>
+                <div class="form-group">
+                    <label>New Track ID:</label>
+                    <input type="number" class="form-control" ng-model="values.new_track_id" required>
+                </div>
+            </md-dialog-content>
+            <md-dialog-actions>
+                <button ng-click="close()" class="btn btn-danger">Close</button>
+                <button ng-click="change()" class="btn btn-primary">Change</button>
+            </md-dialog-actions>
+        </div>
+        <div class="panel" ng-if="mode=='check'">
+            <md-dialog-content>
+                <div ng-if="values.is_id_in_use && !values.invalid_track_id && values.ir_exists" class="alert alert-warning">
+                    <strong>&#9888</strong> The ID: {{values.new_track_id}} is <b>already in use</b> for this frame.<br>
+                    The track IDs will be swapped. Do you still wish to continue?
+                </div>
+                <div ng-if="values.is_id_in_use && values.invalid_track_id" class="alert alert-danger">
+                    <strong>&#9888</strong> The ID: {{values.new_track_id}} is <b>invalid.</b> <br>
+                    The track ID for an Ignore Region must be <b>higher than 60 and lower than 100</b>.
+                </div>
+                <div ng-if="!values.is_id_in_use && !values.invalid_track_id && !values.ir_exists" class="alert alert-danger">
+                    <strong>&#9888</strong> The Ignore Region with track ID {{values.new_track_id}} <b>does not exist.</b> <br>
+                    Please create a new Ignore Region before assigning its track ID.
+                </div>
+                <div ng-if="!values.is_id_in_use && !values.invalid_track_id && values.ir_exists" class="alert alert-success">
+                    <strong>&#10004</strong> The ID: {{values.new_track_id}} is <b>not in use</b> for this frame.
+                </div>
+                <div ng-if="!values.invalid_track_id && values.ir_exists">
+                    <h2>Confirmation</h2>
+                    <hr/>
+                    <p>You are going to change the track ID from <b>{{values.old_track_id}}</b> to <b>{{values.new_track_id}}</b>.
+                    </p>
+                    <h3>Are you sure?</h3>
+                </div>
+            </md-dialog-content>
+            <md-dialog-actions>
+                <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+                <button ng-if="!values.invalid_track_id && values.ir_exists" ng-click="confirm()" class="btn btn-primary">Confirm</button>
+            </md-dialog-actions>
+        </div>
+    </md-dialog>

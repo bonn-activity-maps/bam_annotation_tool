@@ -109,7 +109,7 @@ def unauthorized_handler():
 def user_login():
     success, msg, status = userService.user_login(request.headers['username'], request.headers['password'])
 
-    # Create jwt for 3h if user correctly authenticated
+    # Create jwt for 9h if user correctly authenticated
     if success:
         user = msg
         token = jwt.encode({
@@ -127,7 +127,7 @@ def user_login():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
-# TODO: add logout??
+# Logout user
 @app.route("/api/user/logout", methods=['GET'])
 def logout():
     userService.user_logout(request.headers['username'])
@@ -483,7 +483,7 @@ def replicate_annotation():
     success, msg, status = annotationService.replicate_annotation(dataset, req_data['scene'], req_data['user'],
                                                                   int(req_data['uidObject']), req_data['objectType'],
                                                                   req_data['startFrame'], req_data['endFrame'],
-                                                                  req_data['track_id'])
+                                                                  req_data['track_id'], req_data["forward"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
@@ -523,6 +523,17 @@ def force_limb_length():
                                                                req_data['endLabels'], float(req_data['limbLength']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Force the size of the limbs and update annotations for range of frames, dataset, video and user
+@app.route('/api/annotation/forceLimbsLength', methods=['POST'])
+@flask_login.login_required
+def force_limbs_length():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
+    annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
+    success, msg, status = annotationService.force_limbs_length(annotation, req_data['startFrame'], req_data['endFrame'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 @flask_login.login_required
@@ -534,6 +545,7 @@ def get_annotation_frame_object():
     success, msg, status = annotationService.get_annotation_frame_object(annotation1, annotation2)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
 # Create a new person for Posetrack. This implies computing a new ID and precomputing all annotations
 @app.route('/api/annotation/createPersonPT', methods=['POST'])
 @flask_login.login_required
@@ -542,6 +554,17 @@ def create_person_pt():
     video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
     success, msg, status = annotationService.create_person_pt(video)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
+# Create a new person for Posetrack. This implies computing a new ID and precomputing all annotations
+@app.route('/api/annotation/createIgnoreRegion', methods=['POST'])
+@flask_login.login_required
+def create_ignore_region():
+    req_data = request.get_json()
+    video = Video(req_data['scene'], Dataset(req_data['dataset'], req_data['datasetType']))
+    success, msg, status = annotationService.create_ignore_region(video, req_data['minIRTrackID'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Return True if the person id is in use, false otherwise
 @app.route('/api/annotation/isPersonIDInUse', methods=['GET'])
@@ -563,6 +586,20 @@ def update_person_id():
     success, msg, status = annotationService.update_person_id(video, track_id, new_person_id, user)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+
+# Update the track id for an object in a sequence frame
+@app.route('/api/annotation/updateTrackID', methods=['POST'])
+@flask_login.login_required
+def update_track_id():
+    req_data = request.get_json()
+    video = Video(req_data["scene"], Dataset(req_data['dataset'], req_data['datasetType']))
+    new_track_id = req_data["newTrackID"]
+    track_id = req_data["trackID"]
+    user = req_data["user"]
+    frame = req_data["frame"]
+    swap = req_data["swap"]
+    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, frame, swap)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Update object in annotation for given frame, dataset, video and user
 # Create new one if the annotation for this objects does not exist
@@ -821,27 +858,27 @@ def merge_actions():
 
 #### AIK and OPENCV computations ####
 # Given 3D point coordinates (can be more than one), video, dataset and frame -> Returns the proyected points
-@app.route('/api/aik/projectToCamera', methods=['POST'])
-@flask_login.login_required
-def project_to_camera():
-    req_data = request.get_json()
-    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
-    success, msg, status = aikService.project_to_camera(int(req_data['startFrame']), int(req_data['endFrame']),
-                                                        int(req_data['cameraName']), dataset,
-                                                        req_data['objectType'], req_data['points'])
-    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+# @app.route('/api/aik/projectToCamera', methods=['POST'])
+# @flask_login.login_required
+# def project_to_camera():
+#     req_data = request.get_json()
+#     dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+#     success, msg, status = aikService.project_to_camera(int(req_data['startFrame']), int(req_data['endFrame']),
+#                                                         int(req_data['cameraName']), dataset,
+#                                                         req_data['objectType'], req_data['points'])
+#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Given uid and type object, video, dataset, user and range of frames -> Returns the proyected points
-# @app.route('/api/aik/projectToCamera', methods=['GET'])
-# @flask_login.login_required
-# def project_to_camera_2():
-#     dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
-#     object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=dataset.type)
-#     start_annotation = Annotation(dataset, dataset.name, request.headers['startFrame'], request.headers['user'], [object])
-#     end_annotation = Annotation(dataset, dataset.name, request.headers['endFrame'], request.headers['user'], [object])
-#     success, msg, status = aikService.project_to_camera_2(int(request.headers['cameraName']), request.headers['objectType'],
-#                                                           start_annotation, end_annotation)
-#     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+@app.route('/api/aik/projectToCamera', methods=['GET'])
+@flask_login.login_required
+def project_to_camera_2():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    object = Object(request.headers['uidObject'],  request.headers['objectType'], dataset_type=dataset.type)
+    start_annotation = Annotation(dataset, dataset.name, request.headers['startFrame'], request.headers['user'], [object])
+    end_annotation = Annotation(dataset, dataset.name, request.headers['endFrame'], request.headers['user'], [object])
+    success, msg, status = aikService.project_to_camera_2(int(request.headers['cameraName']), request.headers['objectType'],
+                                                          start_annotation, end_annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 @app.route('/api/aik/computeEpiline', methods=['GET'])
 @flask_login.login_required
@@ -1065,6 +1102,30 @@ def get_statistic_stats_per_scenes_per_persons():
     return json.dumps({'success': success, 'msg': msg}, default=str), status, {'ContentType': 'application/json'}
 
 
+######## NOTIFICATION SYSTEM ########## (this could go to an independent file but since its not too much we will keep it here)
+# Global variable to store de notification data
+showNotification = False
+notificationMessage = ""
+
+@app.route("/api/notification/update", methods=['POST'])
+@flask_login.login_required
+def update_notification_state():
+    global showNotification, notificationMessage
+    request_data = request.get_json()
+    showNotification = request_data['showNotification']
+    notificationMessage = request_data['notificationMessage']
+
+    return json.dumps({'success': True, 'msg': ""}, default=str), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/notification/obtain", methods=['GET'])
+def get_notification_state():
+    global showNotification, notificationMessage
+    return json.dumps({'success': True, 'msg': {'showNotification': showNotification, 'notificationMessage': notificationMessage}}, default=str), 200, {'ContentType': 'application/json'}
+
+
+
+##############################################################################################################################
 
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES

@@ -139,15 +139,38 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
+        // projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
+        //     $http({
+        //         method: 'POST',
+        //         url: '/api/aik/projectToCamera',
+        //         headers: {
+        //             'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+        //         },
+        //         data: {
+        //             'points': JSON.stringify(points),
+        //             'startFrame': startFrame,
+        //             'endFrame': endFrame,
+        //             'cameraName': cameraName,
+        //             'dataset': dataset,
+        //             'datasetType': datasetType,
+        //             'objectType': type,
+        //         }
+        //     }).then(function successCallback(response) {
+        //         callbackSuccess(uid, type, startFrame, endFrame, response.data.msg)
+        //     }, function errorCallback(response) {
+        //         callbackError('danger', response.data.msg);
+        //     })
+        // },
+
+        // Projects "points" into the camera "cameraName" for the frame "frame"
+        projectToCamera: function(username, uid, type, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
-                method: 'POST',
+                method: 'GET',
                 url: '/api/aik/projectToCamera',
                 headers: {
-                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
-                },
-                data: {
-                    'points': JSON.stringify(points),
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    'uidObject': uid,
+                    'user': username,
                     'startFrame': startFrame,
                     'endFrame': endFrame,
                     'cameraName': cameraName,
@@ -161,6 +184,7 @@ angular.module('CVGTool')
                 callbackError('danger', response.data.msg);
             })
         },
+        
 
         // Get Epipolar line
         getEpiline: function(frame, dataset, datasetType, point, camera1, camera2, camera1Index, camera2Index, pointNumber, callbackSuccess, callbackError) {
@@ -319,6 +343,28 @@ angular.module('CVGTool')
                 })
         },
 
+        // Create new poseTrack IgnoreRegion and precompute annotations
+        createIgnoreRegion: function(scene, dataset, datasetType, minIRTrackID, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/createIgnoreRegion',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'datasetType': datasetType,
+                    'minIRTrackID': minIRTrackID
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess()
+                },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
+        },
+
         // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
         updatePersonID: function(scene, dataset, datasetType, track_id, new_person_id, user, callbackSuccess, callbackError) {
             $http({
@@ -337,6 +383,33 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                     callbackSuccess("Person ID changed!", new_person_id)
+                },
+                function errorCallback(response) {
+                    callbackError('danger', response);
+                })
+        },
+
+        // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
+        updateTrackID: function(scene, dataset, datasetType, track_id, new_track_id, user, frame, swap,
+                                callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/updateTrackID',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'scene': scene,
+                    'datasetType': datasetType,
+                    "newTrackID": new_track_id,
+                    "trackID": track_id,
+                    "user": user,
+                    "frame": frame,
+                    "swap": swap
+                }
+            }).then(function successCallback(response) {
+                    callbackSuccess("Track ID changed!", new_track_id)
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);
@@ -372,7 +445,7 @@ angular.module('CVGTool')
         },
 
         replicate: function(user, dataset, datasetType, scene, startFrame, endFrame, uidObject, objectType,
-            callbackSuccess, callbackError, track_id) {
+            callbackSuccess, callbackError, track_id, forward) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/replicate/object",
@@ -388,7 +461,8 @@ angular.module('CVGTool')
                     'uidObject': uidObject,
                     'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
                     'datasetType': datasetType,
-                    'objectType': objectType
+                    'objectType': objectType,
+                    'forward': forward === undefined ? true : forward  // If not specified, it's forwards
                 }
             }).then(function successCallback(response) {
                     callbackSuccess(uidObject, objectType, startFrame, endFrame);
@@ -399,7 +473,7 @@ angular.module('CVGTool')
         },
 
         autoComplete: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
-            uidObject2, callbackSuccess, callbackError, track_id) {
+            uidObject2, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: "/api/annotation/autocomplete",
@@ -416,13 +490,13 @@ angular.module('CVGTool')
                     'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
                     'datasetType': datasetType,
                     'objectType': objectType,
-                    'uidObject2': uidObject2 
+                    'uidObject2': uidObject2
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(uidObject, objectType, startFrames, endFrame);
             },
             function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -669,7 +743,7 @@ angular.module('CVGTool')
                     'objectType': objectType
                 }
             }).then(function successCallback(response) {
-                callbackSuccess(response.data.msg);
+                callbackSuccess(response.data.msg, uid);
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
@@ -722,7 +796,31 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(uid, objectType, frame)
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
+            })
+        },
+        forcePoseAIKLimbLengthForRange: function(dataset, datasetType, scene, user, objectType, uid, startFrame, endFrame, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/forceLimbsLength',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'user': user,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    "startFrame": startFrame,
+                    "endFrame": endFrame
+                    
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uid, objectType, startFrame, endFrame)
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
             })
         }
 

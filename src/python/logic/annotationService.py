@@ -13,6 +13,7 @@ from python.infrastructure.user_action_manager import UserActionManager
 from python.infrastructure.pose_property_manager import PosePropertyManager
 
 from python.logic.aikService import AIKService
+from python.logic.ptService import PTService
 
 from python.objects.frame import Frame
 from python.objects.annotation import Annotation
@@ -31,6 +32,7 @@ frameManager = FrameManager()
 actionManager = ActionManager()
 datasetManager = DatasetManager()
 aikService = AIKService()
+ptService = PTService()
 user_action_manager = UserActionManager()
 video_manager = VideoManager()
 pose_property_manager = PosePropertyManager()
@@ -264,7 +266,7 @@ class AnnotationService:
         else:
             return True, result, 200
 
-    # Return True if the objects with track id specified for the given video is updated correctly
+    # Return True if the objects with track id specified for the given video is updated correctly with a new person id
     def update_person_id(self, video, track_id, new_person_id, user):
         # Create user action in db
         user_action = UserAction(user, 'person id', video.name, video.dataset)
@@ -276,13 +278,28 @@ class AnnotationService:
         else:
             return True, result, 200
 
+    # Return True if the object with track id specified for the given frame in the given video is updated correctly
+    def update_track_id(self, video, track_id, new_track_id, user, frame, swap):
+        # Create user action in db
+        user_action = UserAction(user, 'track id', video.name, video.dataset)
+        user_action_manager.create_user_action(user_action)
+        # Swap track ids TODO swap uid too?
+        result = annotationManager.update_track_id(video, track_id, 100, frame)
+        result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame)
+        result3 = annotationManager.update_track_id(video, 100, new_track_id, frame)
+        if result == 'Error' or result2 == 'Error' or result3 == 'Error':
+            return False, 'Error updating track id', 400
+        else:
+            return True, result, 200
+
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):
         annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))
         max_track_id = 0
         # Find the highest track id in the video
         for obj in annotations[0].objects:
-            max_track_id = obj.track_id if obj.track_id > max_track_id else max_track_id
+            if obj.type != "ignore_region":
+                max_track_id = obj.track_id if obj.track_id > max_track_id else max_track_id
         # Increase it to create the new person
         track_id = max_track_id + 1
         # Find the highest person_id in the dataset and increase it to create the new one.
@@ -290,9 +307,9 @@ class AnnotationService:
         for annotation in annotations:
             nr_id = 0
             for obj in annotation.objects:
-                idobj = obj.uid % 100
-                # print("idobj: ", idobj, " nr_id: ", nr_id)
-                nr_id = idobj if idobj > nr_id else nr_id
+                if obj.type != "ignore_region":
+                    idobj = obj.uid % 100
+                    nr_id = idobj if idobj > nr_id else nr_id
             annotation.objects = [] # Reset objects to insert only new ones
             uid = "1" + annotation.scene + self.pad(str(annotation.frame), 4) + self.pad(str(nr_id + 1), 2)
             # For each of the types
@@ -300,6 +317,24 @@ class AnnotationService:
                 new_obj = Object(uid, objectType, keypoints=[], dataset_type=self.pt,
                                  track_id=track_id, person_id=person_id)
                 annotation.objects.append(new_obj)
+            result = annotationManager.update_annotation_insert_objects(annotation)
+            if result == 'Error':
+                return False, 'Error updating annotation', 400
+        return True, 'ok', 200
+
+    # Create a new person in a video for PT, precompute every annotation
+    def create_ignore_region(self, video, min_ir_track_id):
+        annotations = annotationManager.get_annotations(Annotation(video.dataset, video.name))
+        # Increase it to create the new person
+        track_id = min_ir_track_id - 1
+        # Find the highest person_id in the dataset and increase it to create the new one.
+        for annotation in annotations:
+            annotation.objects = [] # Reset objects to insert only new ones
+            uid = "1" + annotation.scene + self.pad(str(annotation.frame), 4) + self.pad(track_id, 2)
+            # For each of the types
+            new_obj = Object(uid, "ignore_region", keypoints=[], dataset_type=self.pt,
+                             track_id=track_id)
+            annotation.objects.append(new_obj)
             result = annotationManager.update_annotation_insert_objects(annotation)
             if result == 'Error':
                 return False, 'Error updating annotation', 400
@@ -555,15 +590,19 @@ class AnnotationService:
 
     # Replicate and store the annotation between start and enf frame
     # Always a single object in "objects" so always objects[0] !!
-    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id):
+    def replicate_annotation(self, dataset, scene, user, uid_object, object_type, start_frame, end_frame, track_id,
+                             forward):
         obj = Object(uid_object, object_type, dataset_type=dataset.type, track_id=track_id)
-        obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
+        if forward:
+            obj = annotationManager.get_frame_object(Annotation(dataset, scene, start_frame, user, [obj]))
+        else:
+            obj = annotationManager.get_frame_object(Annotation(dataset, scene, end_frame, user, [obj]))
         if obj == 'Error':
             return False, 'Error replicating annotation', 400
         annotation = Annotation(dataset, scene, start_frame, user, [obj])
-
         # Update the annotation for each frame
-        for frame in range(start_frame, end_frame+1):
+        frame_range = range(start_frame, end_frame+1) if forward else range(start_frame, end_frame)
+        for frame in frame_range:
             # For posetrack, update the object uid
             if dataset.is_pt():
                 uid = "1" + scene + self.pad(str(frame), 4) + str(track_id)
@@ -609,6 +648,94 @@ class AnnotationService:
             return False, 'Error forcing length of limb', 500
 
         return True, 'ok', 200
+
+    # Force the size of the limbs and update annotations for range of frames, dataset, video and user
+    def force_limbs_length(self, annotation, start_frame, end_frame):
+        # Method only allowed for AIK and poseAIK type
+        if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':
+            return False, 'Method not allowed', 500
+
+        # Get limbs length
+        pose_property = pose_property_manager.get_pose_property_by_uid(annotation.dataset, annotation.scene, annotation.objects[0].type, annotation.objects[0].uid)
+
+        # If all limbs are -1
+        if not pose_property.is_initialized():
+            return False, 'Limbs are not initialized', 400
+
+        # Get lists of start and end labels if they are not -1
+        start_labels, end_labels = self.get_initialized_labels(pose_property)
+        # Update for all frames in range
+        for frame in range(start_frame, end_frame+1):
+            annotation.frame = frame
+
+            # Get object
+            object = annotationManager.get_frame_object(annotation)
+            if object == 'Error':
+                return False, 'Error forcing limb length', 500
+
+            if object != 'No annotation':
+                annotation.objects[0] = object
+
+                for i, start_label in enumerate(start_labels):
+                    if object.keypoints and object.keypoints[start_labels[i]] and object.keypoints[end_labels[i]]:
+                        start_joint = np.array(object.keypoints[start_labels[i]])
+                        end_joint = np.array(object.keypoints[end_labels[i]])
+
+                        # Get limb length depending on label
+                        limb_length = self.get_limb_length_by_start_label(start_label, pose_property)
+
+                        # Calculate end keypoint
+                        v = end_joint - start_joint
+                        v = (v / np.linalg.norm(v)) * limb_length
+                        end_kp = object.keypoints[start_labels[i]] + v
+
+                        annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
+
+                # Update forced keypoints
+                result = annotationManager.update_frame_object(annotation)
+                if result == 'Error':
+                    return False, 'Error forcing limb length', 500
+
+        return True, 'Limb length forced for the whole range!', 200
+
+    # Return length from pose property depending on the number of the label
+    def get_limb_length_by_start_label(self, start_label, pose_property):
+        if start_label == 2 or start_label == 5:
+            return pose_property.upper_arm_length
+        elif start_label == 3 or start_label == 6:
+            return pose_property.lower_arm_length
+        elif start_label == 8 or start_label == 11:
+            return pose_property.upper_leg_length
+        elif start_label == 9 or start_label == 12:
+            return pose_property.lower_leg_length
+        else:
+            return 'Error'
+
+    # Return lists of start and end labels if they are not -1
+    def get_initialized_labels(self, pose_property):
+        start_labels = []
+        end_labels = []
+        if pose_property.upper_arm_length > 0.0:
+            start_labels.append(2)
+            start_labels.append(5)
+            end_labels.append(3)
+            end_labels.append(6)
+        if pose_property.lower_arm_length > 0.0:
+            start_labels.append(3)
+            start_labels.append(6)
+            end_labels.append(4)
+            end_labels.append(7)
+        if pose_property.upper_leg_length > 0.0:
+            start_labels.append(8)
+            start_labels.append(11)
+            end_labels.append(9)
+            end_labels.append(12)
+        if pose_property.lower_leg_length > 0.0:
+            start_labels.append(9)
+            start_labels.append(12)
+            end_labels.append(10)
+            end_labels.append(13)
+        return start_labels, end_labels
 
     # Upload new annotations to an existing dataset
     def upload_annotations(self, dataset, folder):

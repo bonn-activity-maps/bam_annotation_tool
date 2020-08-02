@@ -574,6 +574,72 @@ angular.module('CVGTool')
     }
 ])
 
+
+    /*
+ * Controller of the dialog of change track ID
+ */
+.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username', 'ignoreRegions', 'frame',
+        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, frame) {
+            $scope.object = object;
+            $scope.dataset = dataset;
+            $scope.scene = scene;
+            $scope.username = username;
+            $scope.mode = "normal";
+            $scope.values = {
+                old_track_id: object.uid,
+                new_track_id: Number(),
+                invalid_track_id: Boolean(),
+                is_id_in_use: Boolean(),
+                ir_exists: Boolean()
+            };
+            $scope.old_track_id = object.uid;
+            $scope.new_track_id = Number();
+
+            $scope.close = function() {
+                $mdDialog.cancel();
+            };
+
+            $scope.change = function() {
+                // Check if ID is in use in this frame
+                $scope.values.is_id_in_use = false;
+                $scope.values.invalid_track_id = false;
+                $scope.values.ir_exists = false;
+                if ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100) {
+                    for (let ir in ignoreRegions) {
+                        // If the current frame IR with same ID is not empty
+                        if (parseInt(ir, 10) === $scope.values.new_track_id &&
+                            ignoreRegions[ir].frames[frame].keypoints.length > 0) {
+                            $scope.values.is_id_in_use = true;
+                            $scope.values.ir_exists = true;
+                        }
+                        if (parseInt(ir, 10) === $scope.values.new_track_id){
+                            $scope.values.ir_exists = true;
+                        }
+                    }
+                } else {
+                    $scope.values.is_id_in_use = true;
+                    $scope.values.invalid_track_id = true;
+                }
+                $scope.mode = "check";
+            };
+
+            $scope.cancel = function() {
+                $scope.mode = "normal";
+            };
+
+            $scope.confirm = function() {
+                let successData = {
+                    msg: "success",
+                    new_track_id: $scope.values.new_track_id,
+                    old_track_id: $scope.values.old_track_id,
+                    object: $scope.object,
+                    swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.ir_exists
+                };
+                $mdDialog.hide(successData);
+            }
+        }
+    ])
+
 /*
  * Controller of the dialog of batch delete
  */
@@ -760,6 +826,28 @@ angular.module('CVGTool')
         $scope.continue = function() {
             $rootScope.$broadcast('advanceFrames', {'range': range});
             $mdDialog.hide();
+        }
+    }
+])
+
+/*
+ * Controller of the dialog to confirm replication of object if the next one has a different number of keypoints.
+ */
+.controller('confirmReplicateCtrl', ['$scope', '$mdDialog', 'uid', 'type', 'frame',
+    function($scope, $mdDialog, uid, type, frame) {
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+        // Go back and continue
+        $scope.continue = function() {
+            let successData = {
+                msg: "success",
+                uid: uid,
+                frame: frame,
+                type: type
+            }
+            $mdDialog.hide(successData)
         }
     }
 ]);

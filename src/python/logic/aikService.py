@@ -56,6 +56,14 @@ class AIKService:
         if annotations == 'Error':
             return False, 'Error projecting points in cameras', 400
 
+        # If type boxAIK is projected, convert to complete box with 8 keypoints
+        if start_annotation.dataset.is_aik() and object_type == 'boxAIK':
+            for annotation in annotations:
+                for obj in annotation.objects:
+                    if obj.type == 'boxAIK' and obj.keypoints:
+                        a, b, c = obj.keypoints
+                        obj.keypoints = self.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+
         # Project points into the camera
         try:
             annotation_index = 0

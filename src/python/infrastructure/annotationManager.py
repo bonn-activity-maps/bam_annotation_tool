@@ -134,7 +134,7 @@ class AnnotationManager:
             else:
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find_one({"dataset": annotation.dataset.name, "scene": annotation.scene, "user": "root", "frame": annotation.frame},
-                                                  {"objects": {"$elemMatch": {"uid": annotation.objects[0].uid, "type": annotation.objects[0].type}}, '_id': 0})
+                                                  {"objects": {"$elemMatch": {"track_id": annotation.objects[0].track_id, "type": annotation.objects[0].type}}, '_id': 0})
             if not result:          # if empty json
                 return 'No annotation'
             else:
@@ -321,6 +321,25 @@ class AnnotationManager:
                 return 'Error'
         except errors.PyMongoError as e:
             log.exception('Error finding person id in annotation in db')
+            return 'Error'
+
+    # Update the track id for an object with given track id in given video frame
+    def update_track_id(self, video, track_id, new_track_id, frame):
+        query = {"dataset": video.dataset.name, "scene": video.name, "frame": frame, "objects.track_id": track_id}
+        array_filter = [{"elem.track_id": {"$eq": track_id}}]     # Filter by track id
+
+        # Update person id only when track id matches
+        new_values = {"$set": {"objects.$[elem].track_id": new_track_id}}
+
+        try:
+            result = self.collection.update_one(query, new_values, upsert=False, array_filters=array_filter)
+            # ok if no error
+            if result.acknowledged == 1:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error finding track id in annotation in db')
             return 'Error'
 
     # Return max uid of objects in dataset

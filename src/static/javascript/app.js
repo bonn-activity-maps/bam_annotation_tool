@@ -49,9 +49,10 @@ angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', '
         controller: "adminTasksCtrl"
     })
 
-    .state('adminStatistics', {
-        url: "/admin/statistics",
-        templateUrl: "static/views/adminStatistics.html"
+    .state('adminNotification', {
+        url: "/admin/notification",
+        templateUrl: "static/views/adminNotification.html",
+        controller: "adminNotificationCtrl"
     })
 
     .state('adminUserActions', {

@@ -17,9 +17,30 @@ def get_annotations():
         sys.exit()
 
 
+# Remove incorrect pose --> Update with empty pose
+def update_annotation(uid, obj_type, frame, keypoints):
+    query = {"dataset": dataset, "scene": dataset, "objects.uid": uid, "objects.type": obj_type, "frame": frame}
+    array_filter = [{"elem.uid": {"$eq": uid}, "elem.type": {"$eq": obj_type}}]     # Filter by object uid and type
+
+    new_values = {"$set": {"objects.$[elem].keypoints": keypoints}}
+
+    try:
+        result = collection.update_one(query, new_values, upsert=False, array_filters=array_filter)
+
+        # ok if no error (it doesn't matter if the keypoints have not been modified)
+        if result.acknowledged == 1:
+            return 'ok'
+        else:
+            print('ERROR updating object in annotation in db')
+            return 'Error'
+    except errors.PyMongoError as e:
+        print('ERROR updating object in annotation in db')
+        sys.exit()
+
 # Print info about incorrect poses
 def check_poses():
     obj_type = 'poseAIK'             # Type of objects
+    error_frames = []
 
     # Read annotations from dataset from db
     annotations = get_annotations()
@@ -35,10 +56,16 @@ def check_poses():
                     for kp in label:
                         if not isinstance(kp, float):
                             print('frame: ', a['frame'], ' - uid: ', o['uid'])
-                            print('pose: ', o['keypoints'])
-                            print("________________________________________________")
+                            # print('pose: ', o['keypoints'])
+                            # print("________________________________________________")
                             error = True
+                            # result = update_annotation(o['uid'], obj_type, a['frame'], [])
+                            # # Append frame to list of errors if there were an error when updating pose
+                            # if result == 'Error':
+                            #     error_frames.append(a['frame'])
                             break
+
+    print('Error in frames: ', error_frames)
 
 
 def help_info():
@@ -81,6 +108,7 @@ if __name__ == "__main__":
     print('dataset: ', dataset)
     print('frame_from: ', frame_from)
     print('frame_to: ', frame_to)
+    print("________________________________________________")
 
     check_poses()
 

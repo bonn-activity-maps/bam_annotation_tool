@@ -75,6 +75,25 @@ class UserActionManager:
             log.exception('Error finding user_action in db')
             return 'Error'
 
+    # Return last annotation/action before next log in (new ones first)
+    def get_last_user_action_between_logins(self, user, previous_log_in_timestamp, next_log_in_timestamp):
+        try:
+            result = self.collection.find({"user": user, "$or": [{"action": "annotation"}, {"action": "action"}],
+                                           "$and": [
+                                                {"timestamp": {"$gt": previous_log_in_timestamp}},
+                                                {"timestamp": {"$lt": next_log_in_timestamp}}]}, {"_id": 0}).sort("timestamp",-1)
+            result = list(result)
+            if result:
+                if result:
+                    return UserAction.from_json(result[0])
+                else:
+                    return result
+            else:
+                return result
+        except errors.PyMongoError as e:
+            log.exception('Error finding user_action in db')
+            return 'Error'
+
     # Return user actions between log in and out timestamps (more recent first)
     def get_user_actions_in_range(self, user, log_in_timestamp, log_out_timestamp):
         try:

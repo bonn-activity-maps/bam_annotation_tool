@@ -752,6 +752,8 @@ angular.module('CVGTool')
                 $scope.canvasesManager.refreshProjectionOfCanvases();
                       
                 $scope.canvasesManager.redrawCanvases();
+                
+                if (type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForAll();
 
                 navSrvc.setSelectedType(type);  // Update selected type in session
             };
@@ -783,8 +785,10 @@ angular.module('CVGTool')
                     // Refresh the projection of canvases
                     $scope.canvasesManager.refreshProjectionOfCanvases();
                 }
-
-                toolSrvc.createNewObject(navSrvc.getUser().name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, _this.selectedType.type, $scope.timelineManager.slider.value, callback, $scope.messagesManager.sendMessage);
+                toolSrvc.createNewObject(navSrvc.getUser().name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name,
+                    _this.selectedType.type, $scope.timelineManager.slider.value, callback,
+                    $scope.messagesManager.sendMessage);
             }
 
             // Returns "complete" if the whole object is annotated, "incomplete" if the object is not completely annotated or "empty" is the object is not annotated at all
@@ -1029,6 +1033,16 @@ angular.module('CVGTool')
                             labels: [""],
                             frames: []
                         }
+
+                        // If we have poses we need to store the limb lengths too
+                        if (object.type.localeCompare("poseAIK") == 0) {
+                            $scope.objectManager.objectTypes[object.type.toString()].objects[object.uid.toString()].limbLengths = {
+                                upperArm: -1,
+                                lowerArm: -1,
+                                upperLeg: -1,
+                                lowerLeg: -1
+                            }
+                        }
                         
                         // Fill the frames array with an empty array for each frame
                         for (var j = 0; j <= $scope.toolParameters.numberOfFrames; j++) {
@@ -1040,7 +1054,6 @@ angular.module('CVGTool')
                         }
                         
                     }
-
                     _this.retrieveAnnotations();
                 }
 
@@ -1059,7 +1072,7 @@ angular.module('CVGTool')
                         var annotation = annotations[j];
                         
                         for (var i = 0; i < annotation.objects.length; i++) {
-                            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                           $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                             .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
                             annotation.objects[i].keypoints.slice();
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
@@ -1137,14 +1150,28 @@ angular.module('CVGTool')
                         frameArray[frameArray.length - 1],
                         callback, $scope.messagesManager.sendMessage);
                 }
-            } 
+            }
+            
+            _this.getPoseAIKLimbsLengthForAll = function() {
+                var objects = $scope.objectManager.objectTypes["poseAIK"].objects;
+                
+                for (obj in objects) {
+                    _this.getPoseAIKLimbsLengthForUID(objects[obj].uid);
+                }
+
+            }
 
             _this.getPoseAIKLimbsLengthForUID = function(uid) {
-                var callbackSuccess = function(msg) {
+                var callbackSuccess = function(msg, uid) {
                     var limbs = [msg.upperArmLength, msg.lowerArmLength, msg.upperLegLength, msg.lowerLegLength]
-                    $scope.keypointEditor.fillPoseAIKLimbs(limbs);
+                    $scope.objectManager.objectTypes["poseAIK"].objects[uid.toString()].limbLengths = {
+                        upperArm: limbs[0],
+                        lowerArm: limbs[1],
+                        upperLeg: limbs[2],
+                        lowerLeg: limbs[3]
+                    };
                 }
-                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedObject.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.getPoseAIKLimbsLength($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.objectManager.selectedType.type, uid, callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
             _this.updatePoseAIKLimbsLengthForUID = function(limbs) {
@@ -1171,7 +1198,19 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.forcePoseAIKLimbLengthsForRange = function(object) {
+                var callbackSuccess = function(uid, objectType, startFrame, endFrame) {
+                    $scope.messagesManager.sendMessage("success", "Limb length forced for the whole range!");
+                    frameArray = []
+                    for (var i=startFrame; i <= endFrame; i++) {
+                        frameArray.push(i)
+                    }
+                    _this.retrieveAnnotation(uid, objectType, frameArray);
+                }
+                
 
+                toolSrvc.forcePoseAIKLimbLengthForRange($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, object.type, object.uid, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, callbackSuccess, $scope.messagesManager.sendMessage)
+            }
 
             // Interpolate in AIK
             _this.interpolate = function (objectUID, objectType, frameTo) {
@@ -1820,16 +1859,122 @@ angular.module('CVGTool')
             };
 
 
-            // Replicates the current annotation to all posterior frames in the active range
-            _this.replicate = function(uid, type, frame) {
-                var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
-                    var frameArray = [];
-                    for (var i = startFrame; i <= endFrame; i++) frameArray.push(i);
-                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+            // Creates a new person generating new UIDs in the database
+            _this.createIgnoreRegion = function() {
+                let callbackSuccess = function() {
+                    $scope.loadingScreenManager.closeLoadingScreen();
+                    _this.retrieveObjects();
+                };
+                $scope.loadingScreenManager.setLoadingScreen();
+                let ignore_regions = $scope.objectManager.objectTypes["ignore_region"].objects;
+                let minIRTrackID = 100
+                for (let ir in ignore_regions) {
+                    let irr = parseInt(ir, 10);
+                    minIRTrackID = irr < minIRTrackID ? irr : minIRTrackID
+                }
+                if (minIRTrackID > 60) {
+                    toolSrvc.createIgnoreRegion($scope.canvasesManager.canvases[0].activeCamera.filename,
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                        minIRTrackID,
+                        callbackSuccess, $scope.messagesManager.sendMessage)
+                } else {
+                    $scope.sendMessage('Warning', "No space for more Ignore Regions");
+                    $scope.loadingScreenManager.closeLoadingScreen();
                 }
 
-                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, $scope.toolParameters.frameTo, uid, type,
-                    callbackSuccess, $scope.messagesManager.sendMessage, uid);
+            };
+
+
+            // Replicates the current annotation to all posterior frames in the active range
+            _this.replicate = function(uid, type, frame) {
+                let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    let frameArray = [];
+                    for (let i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+                let track_id = $scope.objectManager.selectedObject.uid;
+                let objectType = $scope.objectManager.selectedType.type;
+                let start_frame = $scope.timelineManager.slider.value;
+                let end_frame = -1
+                // Find the closest complete annotation in forward range
+                for (let j = start_frame + 1; j < $scope.toolParameters.frameTo; j++) {
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id].frames[j - $scope.toolParameters.frameFrom].keypoints.length > 0) {
+                        end_frame = j;
+                        break;
+                    }
+                }
+                // If there is a future frame in range, check if it fits
+                if (end_frame !== -1) {
+                    // If it doesn't have the same number of keypoints as the next annotated object, show warning
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id]
+                            .frames[end_frame - $scope.toolParameters.frameFrom].keypoints.length ===
+                        $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].keypoints.length)
+                    {
+                        toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                            $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                            frame, $scope.toolParameters.frameTo, uid, type,
+                            callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                    }
+                    else {
+                        $mdDialog.show({
+                            templateUrl: '/static/views/dialogs/confirmReplicateDialog.html',
+                            controller: 'confirmReplicateCtrl',
+                            escapeToClose: false,
+                            locals: {
+                                uid: uid,
+                                type: type,
+                                frame: frame
+                            }
+                        }).then(function(data) { // When finished, update the frames
+                            if (data.msg.localeCompare("success") === 0)
+                            {
+                                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                                    frame, $scope.toolParameters.frameTo, uid, type,
+                                    callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                            }
+                            else if (data.msg.localeCompare("error") === 0) {
+                                $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                            }
+                        })
+                    }
+                } else { // If there isn't any in range, replicate away
+                    toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        frame, $scope.toolParameters.frameTo, uid, type,
+                        callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                }
+
+            }
+
+            // Finds the closest complete object in the forward range and replicates it backwards up to the selected frame.
+            _this.replicate_backwards = function() {
+                let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    let frameArray = [];
+                    for (let i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+                let track_id = $scope.objectManager.selectedObject.uid;
+                let objectType = $scope.objectManager.selectedType.type;
+                let start_frame = $scope.timelineManager.slider.value;
+                let end_frame = -1
+                // Find the closest complete annotation in forward range
+                for (let j = start_frame + 1; j < $scope.toolParameters.frameTo; j++) {
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id].frames[j - $scope.toolParameters.frameFrom].keypoints.length > 0) {
+                        end_frame = j;
+                        break;
+                    }
+                }
+                // If found, replicate that annotation backwards until the selected frame.
+                if (end_frame !== -1) {
+                    toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        start_frame, end_frame, track_id, objectType,
+                        callbackSuccess, $scope.messagesManager.sendMessage, track_id, false);
+                } else {
+                    $scope.messagesManager.sendMessage("danger", "Error: No complete objects in range.")
+                }
+
             }
         
             // Updates the annotation being edited
@@ -1903,6 +2048,47 @@ angular.module('CVGTool')
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }
                 })
+            }
+
+            _this.callbackChangeTrackID = function(msg, new_track_id) {
+                _this.retrieveObjects();
+                //$scope.objectManager.selectedObject.uid = new_track_id;
+                $scope.messagesManager.sendMessage('success', msg);
+            }
+
+            _this.openChangeTrackID = function(object) {
+                if (object.type === "ignore_region") {
+                    $mdDialog.show({
+                        templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
+                        controller: 'changeTrackIDCtrl',
+                        escapeToClose: false,
+                        locals: {
+                            toolSrvc: toolSrvc,
+                            object: object,
+                            dataset: $scope.toolParameters.activeDataset,
+                            scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
+                            username: $scope.toolParameters.user.name,
+                            ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
+                            frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom
+                        }
+                    }).then(function(data) { // When finished, update the object in the frame
+                        if (data.msg.localeCompare("success") === 0) {
+                            toolSrvc.updateTrackID($scope.canvasesManager.canvases[0].activeCamera.filename,
+                                $scope.toolParameters.activeDataset.name,
+                                $scope.toolParameters.activeDataset.type,
+                                object.uid, data.new_track_id, $scope.toolParameters.user.name,
+                                $scope.timelineManager.slider.value, data.swap,
+                                _this.callbackChangeTrackID,
+                                $scope.messagesManager.sendMessage);
+                            // _this.retrieveObjects();
+                        } else if (data.msg.localeCompare("error") === 0) {
+                            $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                        }
+                    })
+                } else {
+                    $scope.messagesManager.sendMessage("warning", "Action not available for this object type.")
+                }
+
             }
 
             // Opens the dialog for batch-deleting points
@@ -2070,7 +2256,7 @@ angular.module('CVGTool')
                 $scope.timelineManager.slider.value = frame;
 
                 if ($scope.toolParameters.isPosetrack) $scope.mugshotsManager.getMugshots(object.uid);
-                else if (object.type.localeCompare("poseAIK")==0) $scope.commonManager.getPoseAIKLimbsLengthForUID(object.uid);
+                else if (object.type.localeCompare("poseAIK") == 0) _this.poseAIKLimbs = $scope.objectManager.selectedObject.limbLengths;
                                 
                 _this.keypointEditorData = {
                     searchUID: null,
@@ -2169,28 +2355,15 @@ angular.module('CVGTool')
                 $scope.canvasesManager.redrawCanvases();
             }
 
-            // Reset the pose AIK length structure
-            _this.resetPoseAIKLimbs = function() {
-                _this.poseAIKLimbs = {
-                    upperArm: -1,
-                    lowerArm: -1,
-                    upperLeg: -1,
-                    lowerLeg: -1
-                }
-            }
-
-            // Fill the pose AIK limb structure
-            _this.fillPoseAIKLimbs = function(limbs) {
-                _this.poseAIKLimbs.upperArm = limbs[0]
-                _this.poseAIKLimbs.lowerArm = limbs[1]
-                _this.poseAIKLimbs.upperLeg = limbs[2]
-                _this.poseAIKLimbs.lowerLeg = limbs[3]          
-            }
 
             // Update the stored pose AIK limb values with the actual ones
             _this.updatePoseAIKLimbs = function() {
                 var limbs = [_this.poseAIKLimbs.upperArm, _this.poseAIKLimbs.lowerArm, _this.poseAIKLimbs.upperLeg, _this.poseAIKLimbs.lowerLeg]
                 $scope.commonManager.updatePoseAIKLimbsLengthForUID(limbs);
+            }
+
+            _this.forceAllLimbLengthsInRange = function(object) {
+                $scope.commonManager.forcePoseAIKLimbLengthsForRange(object);
             }
 
             _this.forceLimbLength = function(number) {
@@ -2595,7 +2768,6 @@ angular.module('CVGTool')
             _this.editableIndices = [0, 1, 6];     // Fill with the indices of the corners that we want to be able to create
 
             _this.faces = [[0,1,3,2],[1,5,7,3],[0,1,5,4],[2,3,7,6],[0,2,6,4],[4,5,7,6]];
-
             // CONSTRUCT (Only the 3 main points)
             if (projectedPoints.length === 0) {
                 for (var i=0; i < _this.editableIndices.length; i++) {
@@ -3159,6 +3331,12 @@ angular.module('CVGTool')
                 for (var i=0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
                 }
+                
+                if ($scope.keypointEditor.editorActive) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
+                        _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                    }
+                }   
             }
 
             _this.drawForVisualization = function(context, color) {
@@ -4042,20 +4220,24 @@ angular.module('CVGTool')
                             _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - $scope.toolParameters.frameFrom]));
                         }
                     }
-                }     
-
+                }    
+                
                 // Select only the active type, for the normal objects
                 var selectedType = $scope.objectManager.selectedType;
 
                 for (obj in selectedType.objects) {
                     var object = selectedType.objects[obj.toString()];
-                    var points = [];
+                    toolSrvc.projectToCamera($scope.toolParameters.user.name, object.uid, object.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+
+                    // OLD VERSION, REMOVE WHEN TESTED
+                    // var object = selectedType.objects[obj.toString()];
+                    // var points = [];
                     
-                    // Crate the structure to project
-                    for (var i=0; i < object.frames.length; i++) {
-                        points.push(object.frames[i].keypoints);
-                    }
-                    toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+                    // // Crate the structure to project
+                    // for (var i=0; i < object.frames.length; i++) {
+                    //     points.push(object.frames[i].keypoints);
+                    // }
+                    // toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }
             }
 
@@ -4066,16 +4248,21 @@ angular.module('CVGTool')
                         _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - startFrame]));
                     }          
                 }
-                
+
                 var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-                var points = [];
+                toolSrvc.projectToCamera($scope.toolParameters.user.name, object.uid, object.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
 
-                // Crate the structure to project
-                for (var i=frameFrom; i <= frameTo; i++) {
-                    points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
-                }
+                
+                // OLD VERSION, REMOVE WHEN TESTED
+                // var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
+                // var points = [];
 
-                toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
+                // // Crate the structure to project
+                // for (var i=frameFrom; i <= frameTo; i++) {
+                //     points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
+                // }
+
+                // toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                  
             }
 

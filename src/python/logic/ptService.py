@@ -33,3 +33,17 @@ class PTService:
         while len(string) < number:
             string = "0" + string
         return string
+
+    # Find an item with a key that has a value "value"
+    def find(self, list, key, value):
+        for item in list:
+            if item[key] == value:
+                return item
+        return 0
+
+    # Find an item with a key that has a value "value"
+    def find_two(self, list, key, value, key2, value2):
+        for item in list:
+            if item[key] == value and item[key2] == value2:
+                return item
+        return 0
