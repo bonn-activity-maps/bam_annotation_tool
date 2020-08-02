@@ -798,6 +798,30 @@ angular.module('CVGTool')
             }, function errorCallback(response) {
                 callbackError('danger', response)
             })
+        },
+        forcePoseAIKLimbLengthForRange: function(dataset, datasetType, scene, user, objectType, uid, startFrame, endFrame, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/forceLimbsLength',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'user': user,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    "startFrame": startFrame,
+                    "endFrame": endFrame
+                    
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uid, objectType, startFrame, endFrame)
+            }, function errorCallback(response) {
+                callbackError('danger', response)
+            })
         }
 
 
