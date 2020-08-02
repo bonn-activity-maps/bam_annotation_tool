@@ -523,6 +523,17 @@ def force_limb_length():
                                                                req_data['endLabels'], float(req_data['limbLength']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Force the size of the limbs and update annotations for range of frames, dataset, video and user
+@app.route('/api/annotation/forceLimbsLength', methods=['POST'])
+@flask_login.login_required
+def force_limbs_length():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
+    annotation = Annotation(dataset, req_data['scene'], req_data['startFrame'], req_data['user'], [object])
+    success, msg, status = annotationService.force_limbs_length(annotation, req_data['startFrame'], req_data['endFrame'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 # Get annotation of one object in frame range for given frame, dataset, video and user
 @app.route('/api/annotation/getAnnotation/object', methods=['GET'])
 @flask_login.login_required

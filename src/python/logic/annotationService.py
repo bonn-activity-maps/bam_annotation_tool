@@ -649,6 +649,93 @@ class AnnotationService:
 
         return True, 'ok', 200
 
+    # Force the size of the limbs and update annotations for range of frames, dataset, video and user
+    def force_limbs_length(self, annotation, start_frame, end_frame):
+        # Method only allowed for AIK and poseAIK type
+        if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':
+            return False, 'Method not allowed', 500
+
+        # Get limbs length
+        pose_property = pose_property_manager.get_pose_property_by_uid(annotation.dataset, annotation.scene, annotation.objects[0].type, annotation.objects[0].uid)
+
+        # If all limbs are -1
+        if not pose_property.is_initialized():
+            return False, 'Limbs are not initialized', 400
+
+        # Get lists of start and end labels if they are not -1
+        start_labels, end_labels = self.get_initialized_labels(pose_property)
+        # Update for all frames in range
+        for frame in range(start_frame, end_frame):
+            annotation.frame = frame
+
+            # Get object
+            object = annotationManager.get_frame_object(annotation)
+            if object == 'Error':
+                return False, 'Error forcing length of limb', 500
+
+            annotation.objects[0] = object
+
+            for i, start_label in enumerate(start_labels):
+                if object.keypoints and object.keypoints[start_labels[i]] and object.keypoints[end_labels[i]]:
+                    start_joint = np.array(object.keypoints[start_labels[i]])
+                    end_joint = np.array(object.keypoints[end_labels[i]])
+
+                    # Get limb length depending on label
+                    limb_length = self.get_limb_length_by_start_label(start_label, pose_property)
+
+                    # Calculate end keypoint
+                    v = end_joint - start_joint
+                    v = (v / np.linalg.norm(v)) * limb_length
+                    end_kp = object.keypoints[start_labels[i]] + v
+
+                    annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
+
+            # Update forced keypoints
+            result = annotationManager.update_frame_object(annotation)
+            if result == 'Error':
+                return False, 'Error forcing length of limb', 500
+
+        return True, 'ok', 200
+
+    # Return length from pose property depending on the number of the label
+    def get_limb_length_by_start_label(self, start_label, pose_property):
+        if start_label == 2 or start_label == 5:
+            return pose_property.upper_arm_length
+        elif start_label == 3 or start_label == 6:
+            return pose_property.lower_arm_length
+        elif start_label == 8 or start_label == 11:
+            return pose_property.upper_leg_length
+        elif start_label == 9 or start_label == 12:
+            return pose_property.lower_leg_length
+        else:
+            return 'Error'
+
+    # Return lists of start and end labels if they are not -1
+    def get_initialized_labels(self, pose_property):
+        start_labels = []
+        end_labels = []
+        if pose_property.upper_arm_length > 0.0:
+            start_labels.append(2)
+            start_labels.append(5)
+            end_labels.append(3)
+            end_labels.append(6)
+        if pose_property.lower_arm_length > 0.0:
+            start_labels.append(3)
+            start_labels.append(6)
+            end_labels.append(4)
+            end_labels.append(7)
+        if pose_property.upper_leg_length > 0.0:
+            start_labels.append(8)
+            start_labels.append(11)
+            end_labels.append(9)
+            end_labels.append(12)
+        if pose_property.lower_leg_length > 0.0:
+            start_labels.append(9)
+            start_labels.append(12)
+            end_labels.append(10)
+            end_labels.append(13)
+        return start_labels, end_labels
+
     # Upload new annotations to an existing dataset
     def upload_annotations(self, dataset, folder):
         if dataset.is_aik():
