@@ -1072,7 +1072,7 @@ angular.module('CVGTool')
                         var annotation = annotations[j];
                         
                         for (var i = 0; i < annotation.objects.length; i++) {
-                            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                           $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                             .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
                             annotation.objects[i].keypoints.slice();
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
@@ -1198,14 +1198,19 @@ angular.module('CVGTool')
                 }
             }
 
-            _this.forcePoseAIKLimbLengthsForRange = function() {
-                // TODO: we need a new function for this
-                // 1- Get all the limbs that need to be update + the length of each limb
-                // 2- Make a backend request to update all in the actual range
-                // 3- Need a frontend button to do this
+            _this.forcePoseAIKLimbLengthsForRange = function(object) {
+                var callbackSuccess = function(uid, objectType, startFrame, endFrame) {
+                    $scope.messagesManager.sendMessage("success", "Limb length forced for the whole range!");
+                    frameArray = []
+                    for (var i=startFrame; i <= endFrame; i++) {
+                        frameArray.push(i)
+                    }
+                    _this.retrieveAnnotation(uid, objectType, frameArray);
+                }
+                
+
+                toolSrvc.forcePoseAIKLimbLengthForRange($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, object.type, object.uid, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, callbackSuccess, $scope.messagesManager.sendMessage)
             }
-
-
 
             // Interpolate in AIK
             _this.interpolate = function (objectUID, objectType, frameTo) {
@@ -2358,7 +2363,7 @@ angular.module('CVGTool')
             }
 
             _this.forceAllLimbLengthsInRange = function(object) {
-                console.log("TODO")
+                $scope.commonManager.forcePoseAIKLimbLengthsForRange(object);
             }
 
             _this.forceLimbLength = function(number) {
@@ -2763,7 +2768,6 @@ angular.module('CVGTool')
             _this.editableIndices = [0, 1, 6];     // Fill with the indices of the corners that we want to be able to create
 
             _this.faces = [[0,1,3,2],[1,5,7,3],[0,1,5,4],[2,3,7,6],[0,2,6,4],[4,5,7,6]];
-
             // CONSTRUCT (Only the 3 main points)
             if (projectedPoints.length === 0) {
                 for (var i=0; i < _this.editableIndices.length; i++) {
