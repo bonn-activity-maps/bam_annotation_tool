@@ -61,3 +61,11 @@ class PoseProperty:
             return False
         else:
             return True
+
+    # Return True if none of the lengths is -1 (all limbs are initialized). False ow
+    def is_initialized(self):
+        if self.lower_leg_length == -1.0 and self.upper_leg_length == -1.0 and self.lower_arm_length == -1.0 and \
+                self.upper_arm_length == -1.0:
+            return False
+        else:
+            return True

@@ -828,4 +828,26 @@ angular.module('CVGTool')
             $mdDialog.hide();
         }
     }
+])
+
+/*
+ * Controller of the dialog to confirm replication of object if the next one has a different number of keypoints.
+ */
+.controller('confirmReplicateCtrl', ['$scope', '$mdDialog', 'uid', 'type', 'frame',
+    function($scope, $mdDialog, uid, type, frame) {
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+        // Go back and continue
+        $scope.continue = function() {
+            let successData = {
+                msg: "success",
+                uid: uid,
+                frame: frame,
+                type: type
+            }
+            $mdDialog.hide(successData)
+        }
+    }
 ]);

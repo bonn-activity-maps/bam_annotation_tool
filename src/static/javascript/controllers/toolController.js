@@ -1882,14 +1882,94 @@ angular.module('CVGTool')
 
             // Replicates the current annotation to all posterior frames in the active range
             _this.replicate = function(uid, type, frame) {
-                var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
-                    var frameArray = [];
-                    for (var i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    let frameArray = [];
+                    for (let i = startFrame; i <= endFrame; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
+                let track_id = $scope.objectManager.selectedObject.uid;
+                let objectType = $scope.objectManager.selectedType.type;
+                let start_frame = $scope.timelineManager.slider.value;
+                let end_frame = -1
+                // Find the closest complete annotation in forward range
+                for (let j = start_frame + 1; j < $scope.toolParameters.frameTo; j++) {
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id].frames[j - $scope.toolParameters.frameFrom].keypoints.length > 0) {
+                        end_frame = j;
+                        break;
+                    }
+                }
+                // If there is a future frame in range, check if it fits
+                if (end_frame !== -1) {
+                    // If it doesn't have the same number of keypoints as the next annotated object, show warning
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id]
+                            .frames[end_frame - $scope.toolParameters.frameFrom].keypoints.length ===
+                        $scope.objectManager.selectedObject.frames[frame - $scope.toolParameters.frameFrom].keypoints.length)
+                    {
+                        toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                            $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                            frame, $scope.toolParameters.frameTo, uid, type,
+                            callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                    }
+                    else {
+                        $mdDialog.show({
+                            templateUrl: '/static/views/dialogs/confirmReplicateDialog.html',
+                            controller: 'confirmReplicateCtrl',
+                            escapeToClose: false,
+                            locals: {
+                                uid: uid,
+                                type: type,
+                                frame: frame
+                            }
+                        }).then(function(data) { // When finished, update the frames
+                            if (data.msg.localeCompare("success") === 0)
+                            {
+                                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                                    frame, $scope.toolParameters.frameTo, uid, type,
+                                    callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                            }
+                            else if (data.msg.localeCompare("error") === 0) {
+                                $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                            }
+                        })
+                    }
+                } else { // If there isn't any in range, replicate away
+                    toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        frame, $scope.toolParameters.frameTo, uid, type,
+                        callbackSuccess, $scope.messagesManager.sendMessage, uid);
+                }
 
-                toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename, frame, $scope.toolParameters.frameTo, uid, type,
-                    callbackSuccess, $scope.messagesManager.sendMessage, uid);
+            }
+
+            // Finds the closest complete object in the forward range and replicates it backwards up to the selected frame.
+            _this.replicate_backwards = function() {
+                let callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    let frameArray = [];
+                    for (let i = startFrame; i <= endFrame; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+                let track_id = $scope.objectManager.selectedObject.uid;
+                let objectType = $scope.objectManager.selectedType.type;
+                let start_frame = $scope.timelineManager.slider.value;
+                let end_frame = -1
+                // Find the closest complete annotation in forward range
+                for (let j = start_frame + 1; j < $scope.toolParameters.frameTo; j++) {
+                    if ($scope.objectManager.objectTypes[objectType].objects[track_id].frames[j - $scope.toolParameters.frameFrom].keypoints.length > 0) {
+                        end_frame = j;
+                        break;
+                    }
+                }
+                // If found, replicate that annotation backwards until the selected frame.
+                if (end_frame !== -1) {
+                    toolSrvc.replicate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        start_frame, end_frame, track_id, objectType,
+                        callbackSuccess, $scope.messagesManager.sendMessage, track_id, false);
+                } else {
+                    $scope.messagesManager.sendMessage("danger", "Error: No complete objects in range.")
+                }
+
             }
         
             // Updates the annotation being edited
