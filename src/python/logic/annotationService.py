@@ -665,37 +665,38 @@ class AnnotationService:
         # Get lists of start and end labels if they are not -1
         start_labels, end_labels = self.get_initialized_labels(pose_property)
         # Update for all frames in range
-        for frame in range(start_frame, end_frame):
+        for frame in range(start_frame, end_frame+1):
             annotation.frame = frame
 
             # Get object
             object = annotationManager.get_frame_object(annotation)
             if object == 'Error':
-                return False, 'Error forcing length of limb', 500
+                return False, 'Error forcing limb length', 500
 
-            annotation.objects[0] = object
+            if object != 'No annotation':
+                annotation.objects[0] = object
 
-            for i, start_label in enumerate(start_labels):
-                if object.keypoints and object.keypoints[start_labels[i]] and object.keypoints[end_labels[i]]:
-                    start_joint = np.array(object.keypoints[start_labels[i]])
-                    end_joint = np.array(object.keypoints[end_labels[i]])
+                for i, start_label in enumerate(start_labels):
+                    if object.keypoints and object.keypoints[start_labels[i]] and object.keypoints[end_labels[i]]:
+                        start_joint = np.array(object.keypoints[start_labels[i]])
+                        end_joint = np.array(object.keypoints[end_labels[i]])
 
-                    # Get limb length depending on label
-                    limb_length = self.get_limb_length_by_start_label(start_label, pose_property)
+                        # Get limb length depending on label
+                        limb_length = self.get_limb_length_by_start_label(start_label, pose_property)
 
-                    # Calculate end keypoint
-                    v = end_joint - start_joint
-                    v = (v / np.linalg.norm(v)) * limb_length
-                    end_kp = object.keypoints[start_labels[i]] + v
+                        # Calculate end keypoint
+                        v = end_joint - start_joint
+                        v = (v / np.linalg.norm(v)) * limb_length
+                        end_kp = object.keypoints[start_labels[i]] + v
 
-                    annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
+                        annotation.objects[0].keypoints[end_labels[i]] = end_kp.tolist()
 
-            # Update forced keypoints
-            result = annotationManager.update_frame_object(annotation)
-            if result == 'Error':
-                return False, 'Error forcing length of limb', 500
+                # Update forced keypoints
+                result = annotationManager.update_frame_object(annotation)
+                if result == 'Error':
+                    return False, 'Error forcing limb length', 500
 
-        return True, 'ok', 200
+        return True, 'Limb length forced for the whole range!', 200
 
     # Return length from pose property depending on the number of the label
     def get_limb_length_by_start_label(self, start_label, pose_property):
