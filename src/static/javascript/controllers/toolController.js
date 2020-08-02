@@ -1072,7 +1072,7 @@ angular.module('CVGTool')
                         var annotation = annotations[j];
                         
                         for (var i = 0; i < annotation.objects.length; i++) {
-                            $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
+                           $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
                             .objects[annotation.objects[i].uid.toString()].frames[annotation.frame - $scope.toolParameters.frameFrom].keypoints =
                             annotation.objects[i].keypoints.slice();
                             $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]

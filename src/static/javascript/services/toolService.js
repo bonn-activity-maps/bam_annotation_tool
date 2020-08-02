@@ -796,7 +796,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(uid, objectType, frame)
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         },
         forcePoseAIKLimbLengthForRange: function(dataset, datasetType, scene, user, objectType, uid, startFrame, endFrame, callbackSuccess, callbackError) {
@@ -820,7 +820,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(uid, objectType, startFrame, endFrame)
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         }
 
