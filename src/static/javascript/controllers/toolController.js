@@ -2683,7 +2683,6 @@ angular.module('CVGTool')
             _this.editableIndices = [0, 1, 6];     // Fill with the indices of the corners that we want to be able to create
 
             _this.faces = [[0,1,3,2],[1,5,7,3],[0,1,5,4],[2,3,7,6],[0,2,6,4],[4,5,7,6]];
-
             // CONSTRUCT (Only the 3 main points)
             if (projectedPoints.length === 0) {
                 for (var i=0; i < _this.editableIndices.length; i++) {
