@@ -4228,16 +4228,6 @@ angular.module('CVGTool')
                 for (obj in selectedType.objects) {
                     var object = selectedType.objects[obj.toString()];
                     toolSrvc.projectToCamera($scope.toolParameters.user.name, object.uid, object.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-
-                    // OLD VERSION, REMOVE WHEN TESTED
-                    // var object = selectedType.objects[obj.toString()];
-                    // var points = [];
-                    
-                    // // Crate the structure to project
-                    // for (var i=0; i < object.frames.length; i++) {
-                    //     points.push(object.frames[i].keypoints);
-                    // }
-                    // toolSrvc.projectToCamera(object.uid, object.type, points, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
                 }
             }
 
@@ -4250,20 +4240,7 @@ angular.module('CVGTool')
                 }
 
                 var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-                toolSrvc.projectToCamera($scope.toolParameters.user.name, object.uid, object.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-
-                
-                // OLD VERSION, REMOVE WHEN TESTED
-                // var object = $scope.objectManager.selectedType.objects[objectUID.toString()]
-                // var points = [];
-
-                // // Crate the structure to project
-                // for (var i=frameFrom; i <= frameTo; i++) {
-                //     points.push(object.frames[i - $scope.toolParameters.frameFrom].keypoints);
-                // }
-
-                // toolSrvc.projectToCamera(object.uid, object.type, points, frameFrom, frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage);
-                 
+                toolSrvc.projectToCamera($scope.toolParameters.user.name, object.uid, object.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, _this.activeCamera.filename, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callbackProjection, $scope.messagesManager.sendMessage); 
             }
 
 
