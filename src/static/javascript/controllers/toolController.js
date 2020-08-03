@@ -4213,17 +4213,11 @@ angular.module('CVGTool')
                 _this.resetObjectStructure();
                 _this.prepareObjectStructure();
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
-                    if (points.length <= 0) return;
-
                     if (startFrame == endFrame) {
-                        if (points[0].length > 0) {
-                            _this.update2DObject(uid, type, startFrame, $scope.objectManager.prepareKeypointsForFrontend(points[0]))
-                        }
+                        _this.update2DObject(uid, type, startFrame, $scope.objectManager.prepareKeypointsForFrontend(points[0]))
                     } else {
                         for (var i= startFrame; i <= endFrame; i++) {
-                            if (points[i - $scope.toolParameters.frameFrom].length > 0) {
-                                _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - $scope.toolParameters.frameFrom]));
-                            }
+                            _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - $scope.toolParameters.frameFrom]));
                         }
                     }
                 }    
@@ -4241,9 +4235,7 @@ angular.module('CVGTool')
             _this.projectObject = function(objectUID, objectType, frameFrom, frameTo) {
                 var callbackProjection = function(uid, type, startFrame, endFrame, points) {
                     for (var i= startFrame; i <= endFrame; i++) {
-                        if (points[i - startFrame].length > 0) {
-                            _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - startFrame]));
-                        }
+                        _this.update2DObject(uid, type, i, $scope.objectManager.prepareKeypointsForFrontend(points[i - startFrame]));
                     }          
                 }
 
