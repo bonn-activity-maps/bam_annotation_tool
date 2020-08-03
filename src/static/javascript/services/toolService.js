@@ -139,30 +139,6 @@ angular.module('CVGTool')
         },
 
         // Projects "points" into the camera "cameraName" for the frame "frame"
-        // projectToCamera: function(uid, type, points, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
-        //     $http({
-        //         method: 'POST',
-        //         url: '/api/aik/projectToCamera',
-        //         headers: {
-        //             'Authorization': 'Bearer ' + navSrvc.getSessionToken()
-        //         },
-        //         data: {
-        //             'points': JSON.stringify(points),
-        //             'startFrame': startFrame,
-        //             'endFrame': endFrame,
-        //             'cameraName': cameraName,
-        //             'dataset': dataset,
-        //             'datasetType': datasetType,
-        //             'objectType': type,
-        //         }
-        //     }).then(function successCallback(response) {
-        //         callbackSuccess(uid, type, startFrame, endFrame, response.data.msg)
-        //     }, function errorCallback(response) {
-        //         callbackError('danger', response.data.msg);
-        //     })
-        // },
-
-        // Projects "points" into the camera "cameraName" for the frame "frame"
         projectToCamera: function(username, uid, type, startFrame, endFrame, cameraName, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
                 method: 'GET',
@@ -487,7 +463,6 @@ angular.module('CVGTool')
                     'startFrames': startFrames,
                     'endFrame': endFrame,
                     'uidObject': uidObject,
-                    'track_id': track_id || 0,  // if no track_id, set to 0. Only one track_id because it's constant
                     'datasetType': datasetType,
                     'objectType': objectType,
                     'uidObject2': uidObject2
