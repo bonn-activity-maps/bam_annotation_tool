@@ -842,7 +842,6 @@ angular.module('CVGTool')
                 if (count == 0) return 0;      // No annotation
                 if (count == 14) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
-
             }
 
             // Returns true if there is an annotation for the specific object for a specific label
@@ -926,6 +925,14 @@ angular.module('CVGTool')
                 }
                 toolSrvc.getActionsByUID($scope.toolParameters.user.name, _this.selectedObject.uid,
                     $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage)
+            }
+
+            _this.setActionFrameFrom = function(frame) {
+                _this.actionCreationData.startFrame = frame;
+            }
+
+            _this.setActionFrameTo = function(frame) {
+                _this.actionCreationData.endFrame = frame;
             }
 
 
@@ -2223,6 +2230,14 @@ angular.module('CVGTool')
             // Minimize/Maximize the editor
             _this.minimizeMaximize = function() {
                 _this.minimized = !_this.minimized;
+            }
+
+            _this.setActualFrameFrom = function() {
+                $scope.actionManager.setActionFrameFrom($scope.timelineManager.slider.value);
+            }
+
+            _this.setActualFrameTo = function() {
+                $scope.actionManager.setActionFrameTo($scope.timelineManager.slider.value);
             }
 
         }

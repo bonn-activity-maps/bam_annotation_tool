@@ -589,10 +589,24 @@
                         </li>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame from:</li>
-                        <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameFrom()"><span class="glyphicon glyphicon glyphicon-screenshot"></span></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame to:</li>
-                        <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameTo()"><span class="glyphicon glyphicon glyphicon-screenshot"></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li>
                             <button class="btn btn-sm btn-primary" ng-click="actionManager.createNewAction()">Add</button>

@@ -249,6 +249,10 @@ transition: all linear 0.2s;
     margin-top: 0px; 
     margin-bottom: 0px;
 }
+.margin-h-0 {
+    margin-left: 0px; 
+    margin-right: 0px;
+}
 
 .padding-0 {
     padding-right: 0;
