@@ -202,6 +202,42 @@
             </li>
         </div>
     </div>
+    <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span
+            class="glyphicon glyphicon-th-large"></span>
+            <span
+            class="glyphicon glyphicon-remove" style="position: absolute;"></span>
+        </button>
+        <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">Remove camera from canvas:</li>
+            <li class="divider"></li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 1">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+            </li>    
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(4)"><bold>4</bold></button>
+            </li>
+        </div>
+    </div>
     <hr class="tool panel-hr">
     <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
     <button ng-if="!toolParameters.isPosetrack" class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>

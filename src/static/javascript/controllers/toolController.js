@@ -403,6 +403,10 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.removeCameraFromCanvas = function(number) {
+                _this.canvases[number -1].removeCamera();
+            }
+
             // Auxiliar function to swith between number of canvases
             _this.cleanCanvasContainerElement = function() {
                 var canvasContainer = document.getElementById("canvas-container");
@@ -4152,6 +4156,14 @@ angular.module('CVGTool')
                 _this.setRedraw();
             }
 
+            _this.removeCamera = function() {
+                if (_this.activeCamera !== null) {
+                    $scope.camerasManager.loadedCameras.push(_this.activeCamera);
+                    _this.activeCamera = null;
+                    _this.setRedraw();
+                }
+            }
+
             // Projects the keypointCreationData if needed
             _this.projectKeypointEditorData = function(frame) {
                 var searchUID = $scope.keypointEditor.keypointEditorData.searchUID.toString();
@@ -4290,14 +4302,6 @@ angular.module('CVGTool')
                     objects: {}
                 };
 
-            }
-
-            // Puts the active camera in the array of cameras
-            _this.removeCamera = function() {
-                if (_this.activeCamera !== null) {
-                    $scope.loadedCameras.push(_this.activeCamera); // Store actual camera
-                    _this.activeCamera = null; // Set canvas camera to null
-                }
             }
 
             // Returns true if the canvas has an active camera
