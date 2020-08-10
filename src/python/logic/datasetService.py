@@ -351,6 +351,28 @@ class DatasetService:
                 return i
         return -1
 
+    # Process ignore regions to export for one frame
+    def export_ignore_regions(self, annotation):
+        ignore_regions_y = []
+        ignore_regions_x = []
+        # Get all annotations for 1 frame
+        annotation_result = annotationManager.get_annotations_by_frame_range(annotation, annotation)
+
+        if annotation_result:
+            for a in annotation_result:
+                for o in a['objects']:
+                    if o['type'] == 'ignore_region' and o['keypoints']:
+                        kp = np.array(o['keypoints'])
+                        ignore_regions_y.append(kp[:, 1].tolist())
+                        ignore_regions_x.append(kp[:, 0].tolist())
+
+        # If there is only 1 ignore region -> only 1 array with all coordinates
+        if len(ignore_regions_y) == 1:
+            ignore_regions_y = ignore_regions_y[0]
+            ignore_regions_x = ignore_regions_x[0]
+
+        return ignore_regions_y, ignore_regions_x
+
     # Export annotation file for PT datasets to a file for a given dataset
     def export_dataset_PT(self, dataset):
         videos = videoManager.get_videos(dataset)
@@ -358,15 +380,19 @@ class DatasetService:
             final_annotation = dict()
             # Process frame data
             _, frames, _ = frameService.get_frames(videos[j])
-            for i in range(0, len(frames)): #TODO ignore regions
+            for i in range(0, len(frames)):
                 frames[i]["vid_id"] = frames[i]["video"]
-                frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[4:-1])
+                frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[-4:])
                 del(frames[i]["number"])
                 del(frames[i]["dataset"])
                 del(frames[i]["video"])
                 del(frames[i]["path"])
                 del(frames[i]["has_ignore_regions"])
+                # Add ignore regions
+                annotation = Annotation(dataset, videos[j].name, frame=i)
+                frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
             final_annotation["images"] = frames
+
             # Process annotation data
             annotation = Annotation(dataset, videos[j].name)
             # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
@@ -378,33 +404,35 @@ class DatasetService:
                     index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
                     # If not already an annotation
                     try:
-                        if index == -1:
-                            if obj["type"] == "bbox":
-                                obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                del(obj["keypoints"])
-                            elif obj["type"] == "bbox_head":
-                                obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                del(obj["keypoints"])
-                            else:   # else is person , so flatten keypoints array
-                                obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                            # Always delete type field, as it is unnecessary
-                            del(obj["type"])
-                            obj["id"] = obj["uid"]
-                            del(obj["uid"])
-                            obj["image_id"] = int(obj["id"]/100)
-                            obj["scores"] = []
-                            annotations_file.append(obj)
-                        else:   # If already in annotation, just add what we want
-                            if obj["type"] == "bbox":
-                                annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                            elif obj["type"] == "bbox_head":
-                                annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                            elif obj["type"] == "person":
-                                annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                        if obj["keypoints"]:    # Ignore if keypoints are empty
+                            if index == -1:
+                                if obj["type"] == "bbox":
+                                    obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                    del(obj["keypoints"])
+                                elif obj["type"] == "bbox_head":
+                                    obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                    del(obj["keypoints"])
+                                else:   # else is person , so flatten keypoints array
+                                    obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                # Always delete type field, as it is unnecessary
+                                del(obj["type"])
+                                obj["id"] = obj["uid"]
+                                del(obj["uid"])
+                                obj["image_id"] = int(obj["id"]/100)
+                                obj["scores"] = []
+                                annotations_file.append(obj)
+                            else:   # If already in annotation, just add what we want
+                                if obj["type"] == "bbox":
+                                    annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                elif obj["type"] == "bbox_head":
+                                    annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                elif obj["type"] == "person":
+                                    annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
                     except ValueError:
                         print("No keypoints, invalid object")
                         break
             final_annotation["annotations"] = annotations_file
+
             # Hardcoded categories because they don't change and are a very special case...
             categories = [{
                 "supercategory": "person",
@@ -513,7 +541,7 @@ class DatasetService:
             path = os.path.join(dataset.STORAGE_DIR + dataset.name + "_export", videos[j].type)
             # Get file name from original path name
             try:
-                file = os.path.join(path, frames[0]["file_name"].split("/")[-1] + '.json')
+                file = os.path.join(path, frames[0]["file_name"].split("/")[-2] + '.json')
                 if not os.path.exists(path):
                     os.makedirs(path)
                 with open(file, 'w') as outfile:
