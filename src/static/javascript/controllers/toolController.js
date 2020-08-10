@@ -3348,12 +3348,12 @@ angular.module('CVGTool')
 
                 // Draw the points
                 for (var i=0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
+                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, i);                    
                 }
                 
                 if ($scope.keypointEditor.editorActive) {
                     if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
-                        _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", $scope.keypointEditor.selectedLabel);
                     }
                 }   
             }
@@ -3492,11 +3492,35 @@ angular.module('CVGTool')
                 context.closePath();
                 context.beginPath();
                 context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
-                context.strokeText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
+                context.strokeText(text.toString(), _this.center[0], _this.center[1]);
                 context.fillStyle = "white";
-                context.fillText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
+                context.fillText(text.toString(), _this.center[0], _this.center[1]);
+                context.fill();
+                context.closePath();
+            }
+
+            _this.drawWithOutlineAndText = function(context, color, text) {
+                context.beginPath();
+                context.arc(_this.center[0], _this.center[1], $scope.optionsManager.options.pointSize, 0, 2 * Math.PI, false);
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.fillStyle = color;
+                context.stroke();
+                context.fill();
+                context.closePath();
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.strokeText(text.toString(), _this.center[0], _this.center[1]);
+                context.fillStyle = "white";
+                context.fillText(text.toString(), _this.center[0], _this.center[1]);
                 context.fill();
                 context.closePath();
             }
