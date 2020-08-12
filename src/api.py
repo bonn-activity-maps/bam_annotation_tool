@@ -1127,6 +1127,14 @@ def get_notification_state():
 
 ##############################################################################################################################
 
+# Update camera calibration parameters
+@app.route('/api/frame/updateCameraCalibration', methods=['POST'])
+@flask_login.login_required
+def update_camera_calibration():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], 'actionInKitchen')
+    success, msg, status = frameService.update_camera_calibration(dataset)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES
 # Remove and insert new frames for one video and dataset
@@ -1135,7 +1143,7 @@ def get_notification_state():
 def insert_frames():
     req_data = request.get_json()
     dataset = Dataset(req_data['dataset'], 'actionInKitchen')
-    success, msg, status = datasetService.insertFrames(dataset, int(req_data['video']))
+    success, msg, status = datasetService.insert_frames(dataset, int(req_data['video']))
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
