@@ -98,7 +98,7 @@
                     </div>
                 </button>
                 <div id="MoveVideoToCameraDropdown" class="dropdown-menu text-center">
-                    <li class="dropdown-header">Selected the canvas to move the video</li>
+                    <li class="dropdown-header">Select the canvas to move the video</li>
                     <li class="divider"></li> 
                     <li class="text-center">
                         <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 1)"><bold>1</bold></button>
@@ -152,14 +152,19 @@
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
-            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
+            <div ng-if="toolParameters.isPosetrack">
+                <li class="divider"></li>
+                <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
+            </div>
             <div ng-if="!toolParameters.isPosetrack">
-                <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
+                <li class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.abbreviateLabels"> Abbreviate labels</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.drawLimbLengths"> Draw limb lengths</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             </div>
         </div>
     </div>
@@ -192,7 +197,7 @@
             class="glyphicon glyphicon-th-large"></span>
         </button>
         <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
-            <li class="dropdown-header">Selected number of canvases:</li>
+            <li class="dropdown-header">Select number of canvases:</li>
             <li class="divider"></li> 
             <li class="text-center">
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(1)"><bold>1</bold></button>

@@ -1996,11 +1996,9 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);
 
                     if ($scope.objectManager.isStaticType(type)) {
-                        _this.replicate(uid, type, frame);
+                        if ($scope.optionsManager.options.autoReplicate) _this.replicate(uid, type, frame);
                     } else {
-                        if ($scope.optionsManager.options.autoInterpolate) {
-                            _this.interpolate(uid, type, frame);
-                        }
+                        if ($scope.optionsManager.options.autoInterpolate) _this.interpolate(uid, type, frame);
                     }
                 }
 
@@ -4328,7 +4326,7 @@ angular.module('CVGTool')
 
             }
 
-            // Returns true if the canvas has an active camera
+            // Returns true if the canvas hasOptionsManager an active camera
             _this.hasActiveCamera = function() {
                 return _this.activeCamera !== null;
             }
@@ -4349,6 +4347,7 @@ angular.module('CVGTool')
                 abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
+                autoReplicate: false,
                 showSecondaryPoseJoints: true,
                 drawLimbLengths: false,
                 showStaticObjects: false,
