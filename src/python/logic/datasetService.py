@@ -361,10 +361,14 @@ class DatasetService:
         if annotation_result:
             for a in annotation_result:
                 for o in a['objects']:
+
                     if o['type'] == 'ignore_region' and o['keypoints']:
-                        kp = np.array(o['keypoints'])
-                        ignore_regions_y.append(kp[:, 1].tolist())
-                        ignore_regions_x.append(kp[:, 0].tolist())
+                        kps_without_empty_arrays = [kp for kp in o['keypoints'] if kp]
+                        if kps_without_empty_arrays:
+                            kp = np.array(kps_without_empty_arrays)
+                            if kp.shape[1] == 2:
+                                ignore_regions_y.append(kp[:, 1].tolist())
+                                ignore_regions_x.append(kp[:, 0].tolist())
 
         # If there is only 1 ignore region -> only 1 array with all coordinates
         if len(ignore_regions_y) == 1:
