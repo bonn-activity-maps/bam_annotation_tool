@@ -24,9 +24,15 @@ class PTService:
 
     # Transform point from XYXY to XYWH. w = width, h = height values from x1, y1. XYWH = posetrack XYXY = tool
     def transform_to_XYWH(self, points):
-        x1, y1 = points[0]
-        x2, y2 = points[1]
-        return [x1, y1, x2 - x1, y2 - y1]
+        try:
+            if points:
+                x1, y1 = points[0]
+                x2, y2 = points[1]
+                return [x1, y1, x2 - x1, y2 - y1]
+            else:
+                return []
+        except ValueError:  # Return empty array if the keypoints are empty
+            return []
 
     # Add 0s to the left of a string so the final length of "string" is "number"
     def pad(self, string, number):
