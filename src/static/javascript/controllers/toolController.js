@@ -855,6 +855,12 @@ angular.module('CVGTool')
                 else return false;
             }
 
+            _this.hasAnnotation = function(objectUID, type, frame) {
+                var state = _this.annotationsState(objectUID, type, frame);
+                if (state !== 0) return true;
+                return false;
+            }
+
             _this.prepareKeypointsForFrontend = function(keypoints) {
                 var prepared = keypoints.slice()
                 for (var i=0; i< keypoints.length; i++) {
@@ -1273,8 +1279,57 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.autoCompleteWholeAnnotation = function() {
+                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+                    // First remove -1 values from the frame array
+                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+                        return value >= 0;
+                    })
+
+                    // Get the min used frame
+                    var minFrame = Math.min(...framesFromFiltered);
+
+                    var frameArray = [];
+                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                var objectUID = $scope.objectManager.selectedObject.uid;
+                var objectType = $scope.objectManager.selectedType.type;
+                var frameTo = $scope.timelineManager.slider.value;
+
+                // Create structure for the object to interpolate
+                var framesFrom = []
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
+                    framesFrom.push(-1);
+                }
+                
+                var frameFound = -1;
+                // Find the closest previous annotated frame
+
+                
+                for (var j= frameTo; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
+                    if ($scope.objectManager.hasAnnotation(objectUID, objectType, j)) {
+                        frameFound = j;
+                        break;
+                    }
+                }
+                
+                if (frameFound == -1) {
+                    $scope.messagesManager.sendMessage("alert", "No frame available for replicating was found!")
+                    return
+                } 
+
+                // Set found frame to all labels
+                for (var i=0; i< framesFrom.length; i++) {
+                    framesFrom[i] = frameFound; 
+                }
+                
+                toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
             // Autocompletes the annotation from previous annotations
-            _this.autoComplete = function() {
+            _this.autoCompleteEachTag = function() {
                 var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
                     // First remove -1 values from the frame array
                     var framesFromFiltered = framesFrom.filter(function(value, index, arr) {

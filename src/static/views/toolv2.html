@@ -410,9 +410,6 @@
                 </div>
                 <div ng-if="!toolParameters.isPosetrack">
                     <div ng-if="objectManager.isTypeSelected('poseAIK')">
-                        Mugshots are disabled for Action In Kitchen.
-                    </div>
-                    <div ng-if="objectManager.isTypeSelected('poseAIK')">
                         <div class="panel">
                             <div class="panel-heading-limbs">
                                 <div class="row">
@@ -478,16 +475,26 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col col-md-6">
-                <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack"
-                        ng-click="commonManager.autoComplete()">Auto-complete annotation
-                    <span class="glyphicon glyphicon-arrow-left"></span></button>
-                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
+            <div class="col col-md-8">
+                <div ng-if="!toolParameters.isPosetrack">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label>Auto-complete:</label>
+                            <button class="btn-xs btn-primary small" ng-if="objectManager.isTypeSelected('poseAIK')"
+                            ng-click="commonManager.autoCompleteEachTag()">Tag-wise 
+                            <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                            <button class="btn-xs btn-primary small" ng-if="!toolParameters.isPosetrack"
+                            ng-click="commonManager.autoCompleteWholeAnnotation()">Full
+                            <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                        </div>
+                    </form>      
+                </div>
+                <button class="btn-xs btn-primary small" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
                         ng-click="commonManager.replicate_backwards()">Backwards replicate
-                    <span class="glyphicon glyphicon-arrow-left"></span></button>
+                    <span class="glyphicon glyphicon-arrow-left small"></span></button>
             </div>
-            <div class="col col-md-6">
-                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+            <div class="col col-md-4 text-center" style="padding-right: 0px;">
+                <button class="btn-xs btn-danger small" ng-click="commonManager.deleteAnnotation()"><span class="glyphicon glyphicon-trash small"></span> Annotation</button>
             </div>
         </div>
 
