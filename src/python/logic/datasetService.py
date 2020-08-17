@@ -405,36 +405,32 @@ class DatasetService:
             for i in range(0, len(annotations_db)):
                 objects = annotations_db[i]["objects"]
                 for obj in objects:
-                    index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
-                    # If not already an annotation
-                    try:
-                        if obj["keypoints"]:    # Ignore if keypoints are empty
-                            if index == -1:
-                                if obj["type"] == "bbox":
-                                    obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                    del(obj["keypoints"])
-                                elif obj["type"] == "bbox_head":
-                                    obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                    del(obj["keypoints"])
-                                else:   # else is person , so flatten keypoints array
-                                    obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                                # Always delete type field, as it is unnecessary
-                                del(obj["type"])
-                                obj["id"] = obj["uid"]
-                                del(obj["uid"])
-                                obj["image_id"] = int(obj["id"]/100)
-                                obj["scores"] = []
-                                annotations_file.append(obj)
-                            else:   # If already in annotation, just add what we want
-                                if obj["type"] == "bbox":
-                                    annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                elif obj["type"] == "bbox_head":
-                                    annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                elif obj["type"] == "person":
-                                    annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                    except ValueError:
-                        print("No keypoints, invalid object")
-                        break
+                    if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
+                        index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
+                        if index == -1:
+                            if obj["type"] == "bbox":
+                                obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                del(obj["keypoints"])
+                            elif obj["type"] == "bbox_head":
+                                obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                del(obj["keypoints"])
+                            elif obj["type"] == "person":   # flatten keypoints array
+                                obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                            # Always delete type field, as it is unnecessary
+                            del(obj["type"])
+                            obj["id"] = obj["uid"]
+                            del(obj["uid"])
+                            obj["image_id"] = int(obj["id"]/100)
+                            obj["scores"] = []
+                            annotations_file.append(obj)
+                        else:   # If already in annotation, just add what we want
+                            if obj["type"] == "bbox":
+                                annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                            elif obj["type"] == "bbox_head":
+                                annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                            elif obj["type"] == "person":
+                                annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+
             final_annotation["annotations"] = annotations_file
 
             # Hardcoded categories because they don't change and are a very special case...
