@@ -4,7 +4,7 @@ FROM nvidia/cuda:9.0-base
 # install python3.6, pip and other libraries
 RUN apt-get update
 RUN apt-get install -y software-properties-common
-RUN add-apt-repository ppa:jonathonf/python-3.6
+RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
 RUN apt-get install -y \
         curl \

@@ -403,6 +403,10 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.removeCameraFromCanvas = function(number) {
+                _this.canvases[number -1].removeCamera();
+            }
+
             // Auxiliar function to swith between number of canvases
             _this.cleanCanvasContainerElement = function() {
                 var canvasContainer = document.getElementById("canvas-container");
@@ -842,7 +846,6 @@ angular.module('CVGTool')
                 if (count == 0) return 0;      // No annotation
                 if (count == 14) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
-
             }
 
             // Returns true if there is an annotation for the specific object for a specific label
@@ -850,6 +853,12 @@ angular.module('CVGTool')
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
                 if (existAnnotation[labelIndex] === true) return true;
                 else return false;
+            }
+
+            _this.hasAnnotation = function(objectUID, type, frame) {
+                var state = _this.annotationsState(objectUID, type, frame);
+                if (state !== 0) return true;
+                return false;
             }
 
             _this.prepareKeypointsForFrontend = function(keypoints) {
@@ -926,6 +935,14 @@ angular.module('CVGTool')
                 }
                 toolSrvc.getActionsByUID($scope.toolParameters.user.name, _this.selectedObject.uid,
                     $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage)
+            }
+
+            _this.setActionFrameFrom = function(frame) {
+                _this.actionCreationData.startFrame = frame;
+            }
+
+            _this.setActionFrameTo = function(frame) {
+                _this.actionCreationData.endFrame = frame;
             }
 
 
@@ -1262,8 +1279,57 @@ angular.module('CVGTool')
                 }
             }
 
+            _this.autoCompleteWholeAnnotation = function() {
+                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+                    // First remove -1 values from the frame array
+                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+                        return value >= 0;
+                    })
+
+                    // Get the min used frame
+                    var minFrame = Math.min(...framesFromFiltered);
+
+                    var frameArray = [];
+                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                var objectUID = $scope.objectManager.selectedObject.uid;
+                var objectType = $scope.objectManager.selectedType.type;
+                var frameTo = $scope.timelineManager.slider.value;
+
+                // Create structure for the object to interpolate
+                var framesFrom = []
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
+                    framesFrom.push(-1);
+                }
+                
+                var frameFound = -1;
+                // Find the closest previous annotated frame
+
+                
+                for (var j= frameTo; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
+                    if ($scope.objectManager.hasAnnotation(objectUID, objectType, j)) {
+                        frameFound = j;
+                        break;
+                    }
+                }
+                
+                if (frameFound == -1) {
+                    $scope.messagesManager.sendMessage("alert", "No frame available for replicating was found!")
+                    return
+                } 
+
+                // Set found frame to all labels
+                for (var i=0; i< framesFrom.length; i++) {
+                    framesFrom[i] = frameFound; 
+                }
+                
+                toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
             // Autocompletes the annotation from previous annotations
-            _this.autoComplete = function() {
+            _this.autoCompleteEachTag = function() {
                 var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
                     // First remove -1 values from the frame array
                     var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
@@ -1985,11 +2051,9 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);
 
                     if ($scope.objectManager.isStaticType(type)) {
-                        _this.replicate(uid, type, frame);
+                        if ($scope.optionsManager.options.autoReplicate) _this.replicate(uid, type, frame);
                     } else {
-                        if ($scope.optionsManager.options.autoInterpolate) {
-                            _this.interpolate(uid, type, frame);
-                        }
+                        if ($scope.optionsManager.options.autoInterpolate) _this.interpolate(uid, type, frame);
                     }
                 }
 
@@ -2223,6 +2287,14 @@ angular.module('CVGTool')
             // Minimize/Maximize the editor
             _this.minimizeMaximize = function() {
                 _this.minimized = !_this.minimized;
+            }
+
+            _this.setActualFrameFrom = function() {
+                $scope.actionManager.setActionFrameFrom($scope.timelineManager.slider.value);
+            }
+
+            _this.setActualFrameTo = function() {
+                $scope.actionManager.setActionFrameTo($scope.timelineManager.slider.value);
             }
 
         }
@@ -3329,12 +3401,12 @@ angular.module('CVGTool')
 
                 // Draw the points
                 for (var i=0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);                    
+                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, i);                    
                 }
                 
                 if ($scope.keypointEditor.editorActive) {
                     if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
-                        _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", $scope.keypointEditor.selectedLabel);
                     }
                 }   
             }
@@ -3473,11 +3545,35 @@ angular.module('CVGTool')
                 context.closePath();
                 context.beginPath();
                 context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
                 context.strokeStyle = "black";
                 context.lineWidth = 3;
-                context.strokeText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
+                context.strokeText(text.toString(), _this.center[0], _this.center[1]);
                 context.fillStyle = "white";
-                context.fillText(text.toString(), _this.center[0] - 8, _this.center[1] + 5);
+                context.fillText(text.toString(), _this.center[0], _this.center[1]);
+                context.fill();
+                context.closePath();
+            }
+
+            _this.drawWithOutlineAndText = function(context, color, text) {
+                context.beginPath();
+                context.arc(_this.center[0], _this.center[1], $scope.optionsManager.options.pointSize, 0, 2 * Math.PI, false);
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.fillStyle = color;
+                context.stroke();
+                context.fill();
+                context.closePath();
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.strokeStyle = "black";
+                context.lineWidth = 3;
+                context.strokeText(text.toString(), _this.center[0], _this.center[1]);
+                context.fillStyle = "white";
+                context.fillText(text.toString(), _this.center[0], _this.center[1]);
                 context.fill();
                 context.closePath();
             }
@@ -4137,6 +4233,14 @@ angular.module('CVGTool')
                 _this.setRedraw();
             }
 
+            _this.removeCamera = function() {
+                if (_this.activeCamera !== null) {
+                    $scope.camerasManager.loadedCameras.push(_this.activeCamera);
+                    _this.activeCamera = null;
+                    _this.setRedraw();
+                }
+            }
+
             // Projects the keypointCreationData if needed
             _this.projectKeypointEditorData = function(frame) {
                 var searchUID = $scope.keypointEditor.keypointEditorData.searchUID.toString();
@@ -4277,15 +4381,7 @@ angular.module('CVGTool')
 
             }
 
-            // Puts the active camera in the array of cameras
-            _this.removeCamera = function() {
-                if (_this.activeCamera !== null) {
-                    $scope.loadedCameras.push(_this.activeCamera); // Store actual camera
-                    _this.activeCamera = null; // Set canvas camera to null
-                }
-            }
-
-            // Returns true if the canvas has an active camera
+            // Returns true if the canvas hasOptionsManager an active camera
             _this.hasActiveCamera = function() {
                 return _this.activeCamera !== null;
             }
@@ -4306,6 +4402,7 @@ angular.module('CVGTool')
                 abbreviateLabels: false,
                 showGuideLines: true,
                 autoInterpolate: true,
+                autoReplicate: false,
                 showSecondaryPoseJoints: true,
                 drawLimbLengths: false,
                 showStaticObjects: false,

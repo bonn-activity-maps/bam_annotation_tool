@@ -177,3 +177,59 @@ class FrameService:
             if result == 'error':
                 return False
         return True
+
+    # Update camera calibration parameters
+    def update_camera_calibration(self, dataset):
+        path = os.path.join(dataset.STORAGE_DIR, 'new_camera_calibration', dataset.name)
+
+        # Read files of cameras in path
+        for file in os.listdir(path):
+            print('file: ', file)
+            file = os.path.join(path, file)
+            if os.path.isfile(file):
+                try:
+                    with open(file) as json_file:
+                        camera_parameters = json.load(json_file)
+                except OSError:
+                    log.exception('Could not read from file')
+                    return False, 'Error reading camera calibration, please check the file '+file, 500
+
+                # Get video info
+                if dataset.name == '181129_unroll' and camera_parameters['name'] == '12':
+                    video = Video(12, dataset, frames=64862)
+                else:
+                    video = videoManager.get_video(Video(camera_parameters['name'], dataset))
+                    if video == 'Error':
+                        return False, 'Error updating camera calibration, please check the database', 500
+
+                print('video: ', video.name)
+                new_cam_params = {
+                    'K': camera_parameters['K'],
+                    'rvec': camera_parameters['R'],
+                    'tvec': camera_parameters['t'],
+                    'dist_coef': camera_parameters['distCoef'],
+                    'w': camera_parameters['imgSize'][0],
+                    'h': camera_parameters['imgSize'][1]
+                }
+                start_frame = 1
+                end_frame = video.frames
+
+                # 181129 dataset frames 0 until 25895 for camera03 use calibration from camera03.json,
+                if dataset.name == '181129_unroll' and video.name == 3:
+                    end_frame = 25895
+
+                # Update camera calibration parameters in database for all frames
+                result = frameManager.update_frames_camera_calibration(dataset, video, start_frame, end_frame+1, new_cam_params)
+                if result == 'Error':
+                    return False, 'Error updating camera calibration, please check the database', 500
+
+                # 181129 dataset frames after 25895 for camera03 use calibration from camera12.json
+                if dataset.name == '181129_unroll' and video.name == 12:
+                    start_frame = 25896
+                    video.name = 3
+                    result = frameManager.update_frames_camera_calibration(dataset, video, start_frame, end_frame+1, new_cam_params)
+                    if result == 'Error':
+                        return False, 'Error updating camera calibration, please check the database', 500
+
+        return True, 'Camera parameters updated successfully!', 200
+

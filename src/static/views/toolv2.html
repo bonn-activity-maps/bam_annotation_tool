@@ -98,7 +98,7 @@
                     </div>
                 </button>
                 <div id="MoveVideoToCameraDropdown" class="dropdown-menu text-center">
-                    <li class="dropdown-header">Selected the canvas to move the video</li>
+                    <li class="dropdown-header">Select the canvas to move the video</li>
                     <li class="divider"></li> 
                     <li class="text-center">
                         <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 1)"><bold>1</bold></button>
@@ -152,14 +152,19 @@
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
             <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
             <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
-            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
+            <div ng-if="toolParameters.isPosetrack">
+                <li class="divider"></li>
+                <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
+            </div>
             <div ng-if="!toolParameters.isPosetrack">
-                <li ng-if="!toolParameters.isPosetrack" class="divider"></li>
+                <li class="divider"></li>
                 <li class="dropdown-header">AIK options:</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.abbreviateLabels"> Abbreviate labels</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.drawLimbLengths"> Draw limb lengths</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
             </div>
         </div>
     </div>
@@ -192,13 +197,49 @@
             class="glyphicon glyphicon-th-large"></span>
         </button>
         <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
-            <li class="dropdown-header">Selected number of canvases:</li>
+            <li class="dropdown-header">Select number of canvases:</li>
             <li class="divider"></li> 
             <li class="text-center">
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(1)"><bold>1</bold></button>
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(2)"><bold>2</bold></button>
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(3)"><bold>3</bold></button>
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(4)"><bold>4</bold></button>
+            </li>
+        </div>
+    </div>
+    <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span
+            class="glyphicon glyphicon-th-large"></span>
+            <span
+            class="glyphicon glyphicon-remove" style="position: absolute;"></span>
+        </button>
+        <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">Remove camera from canvas:</li>
+            <li class="divider"></li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 1">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+            </li>    
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(4)"><bold>4</bold></button>
             </li>
         </div>
     </div>
@@ -369,9 +410,6 @@
                 </div>
                 <div ng-if="!toolParameters.isPosetrack">
                     <div ng-if="objectManager.isTypeSelected('poseAIK')">
-                        Mugshots are disabled for Action In Kitchen.
-                    </div>
-                    <div ng-if="objectManager.isTypeSelected('poseAIK')">
                         <div class="panel">
                             <div class="panel-heading-limbs">
                                 <div class="row">
@@ -437,16 +475,26 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col col-md-6">
-                <button class="btn-sm btn-primary" ng-if="!toolParameters.isPosetrack"
-                        ng-click="commonManager.autoComplete()">Auto-complete annotation
-                    <span class="glyphicon glyphicon-arrow-left"></span></button>
-                <button class="btn-sm btn-primary" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
+            <div class="col col-md-8">
+                <div ng-if="!toolParameters.isPosetrack">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label>Auto-complete:</label>
+                            <button class="btn-xs btn-primary small" ng-if="objectManager.isTypeSelected('poseAIK')"
+                            ng-click="commonManager.autoCompleteEachTag()">Tag-wise 
+                            <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                            <button class="btn-xs btn-primary small" ng-if="!toolParameters.isPosetrack"
+                            ng-click="commonManager.autoCompleteWholeAnnotation()">Full
+                            <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                        </div>
+                    </form>      
+                </div>
+                <button class="btn-xs btn-primary small" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
                         ng-click="commonManager.replicate_backwards()">Backwards replicate
-                    <span class="glyphicon glyphicon-arrow-left"></span></button>
+                    <span class="glyphicon glyphicon-arrow-left small"></span></button>
             </div>
-            <div class="col col-md-6">
-                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+            <div class="col col-md-4 text-center" style="padding-right: 0px;">
+                <button class="btn-xs btn-danger small" ng-click="commonManager.deleteAnnotation()"><span class="glyphicon glyphicon-trash small"></span> Annotation</button>
             </div>
         </div>
 
@@ -589,10 +637,24 @@
                         </li>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame from:</li>
-                        <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameFrom()"><span class="glyphicon glyphicon glyphicon-screenshot"></span></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame to:</li>
-                        <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameTo()"><span class="glyphicon glyphicon glyphicon-screenshot"></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li>
                             <button class="btn btn-sm btn-primary" ng-click="actionManager.createNewAction()">Add</button>

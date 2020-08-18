@@ -7,7 +7,7 @@ services:
     volumes:
       - "/usr/share/cvg/datasets:/usr/storage"
   db:
-    image: mongo
+    image: mongo:4.2.3
     restart: always
     volumes:
       - "/usr/share/cvg/mongodb:/data/db"
