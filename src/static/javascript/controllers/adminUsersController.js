@@ -168,9 +168,9 @@ angular.module('CVGTool')
             $scope.mode = "creation";
         };
 
-        // Function that resets the password, TODO
+        // Function that resets the password
         $scope.resetPassword = function() {
-            // pf pf pf prrr tututuu pap pap paap
+            adminUsersSrvc.resetPassword($scope.editUser.username, successCreation, sendMessage);
         };
 
         $scope.sortBy = function(element){

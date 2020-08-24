@@ -197,6 +197,14 @@ def update_user_password():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+# Reset existing user password
+@app.route('/api/user/resetUserPassword', methods=['POST'])
+@flask_login.login_required
+def reset_user_password():
+    req_data = request.get_json()
+    success, msg, status = userService.reset_user_password(req_data['username'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 #### DATASET ####
 
 # Get dataset info
