@@ -165,6 +165,7 @@
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.drawLimbLengths"> Draw limb lengths</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.visualizeActions"> Visualize actions</li>
             </div>
         </div>
     </div>
@@ -616,7 +617,7 @@
         <div ng-show="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
             <h4>Select object:</h4>
             <div class="row">
-                <select class="form-control" id="selObject" ng-change="actionManager.getActionsListByUID()" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
+                <select class="form-control" id="selObject" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
                 </select>
             </div> 
             <hr>
@@ -673,7 +674,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-if="actionManager.actionsList.length != 0" ng-repeat="action in actionManager.actionsList">
+                            <tr ng-if="actionManager.actionsList[actionManager.selectedObject.uid].length != 0" ng-repeat="action in actionManager.actionsList[actionManager.selectedObject.uid]">
                                 <td>
                                     <button class="btn-danger" ng-click="actionManager.removeAction(action)">
                                     <span class="glyphicon glyphicon-remove"></span>
@@ -683,7 +684,7 @@
                                 <th>{{action.startFrame}}</th>
                                 <th>{{action.endFrame}}</th>
                             </tr>
-                            <tr ng-if="actionManager.actionsList.length == 0">
+                            <tr ng-if="actionManager.actionsList[actionmanager.selectedObject.uid].length == 0">
                                 <td>No actions created</td>
                             </tr>
                         </tbody>
