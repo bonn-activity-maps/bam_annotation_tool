@@ -3559,11 +3559,10 @@ angular.module('CVGTool')
                         }
                     }
                 }
-
-                context.closePath();
                 context.stroke();
+                context.fillStyle= $scope.colorManager.makeTransparent(color);
                 context.fill();
-
+                context.closePath();
             }
 
             _this.getNotNullIndices = function() {
@@ -4761,6 +4760,10 @@ angular.module('CVGTool')
                 rgbColor.g = _this.colorChannelClamp(rgbColor.g + 30);
                 rgbColor.b = _this.colorChannelClamp(rgbColor.b + 30);
                 return _this.rgbToHex(rgbColor.r, rgbColor.g, rgbColor.b);
+            }
+
+            _this.makeTransparent = function(color) {
+                return color  + 'BF'
             }
 
             _this.componentToHex = function(c) {
