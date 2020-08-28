@@ -84,6 +84,24 @@ angular.module('CVGTool')
                 })
             },
 
+            resetPassword: function(userName, callbackSuccess, callbackMsg) {
+                $http({
+                    method: 'POST',
+                    url: 'api/user/resetUserPassword',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
+                    data: {
+                        'username': userName
+                    }
+                }).then(function successCallback(response) {
+                    callbackMsg('finish', 'Password updated succesfully', 'success');
+                    callbackSuccess(response.data.msg)
+                }, function errorCallback(response) {
+                    callbackMsg('finish', 'Error while updating password for user: ' + response.data.msg, 'danger');
+                })
+            },
+
             removeUser: function(userName, showSuccess, showError) {
                 $http({
                     method:'POST',

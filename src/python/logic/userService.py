@@ -151,3 +151,18 @@ class UserService:
             return False, 'Error updating password', 400
         else:
             return True, 'Password successfully updated', 200
+
+    # Return user's password if the password has been updated
+    def reset_user_password(self, user):
+        # Check if user exists
+        if userManager.get_user(user) != 'Error':
+            # Create random password of length 12 and update in db
+            pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
+            result = userManager.update_user_password(user, self.get_hashed_password(pwd))
+            if result == 'Error':
+                return False, 'Error updating password', 400
+            else:
+                return True, {'name': user, 'password': pwd}, 200
+        else:
+            return False, 'The user does not exist', 400
+

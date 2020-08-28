@@ -553,7 +553,7 @@ angular.module('CVGTool')
                     'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg)
+                    callbackSuccess(response.data.msg, objectUID)
                 },
                 function errorCallback(response) {
                     callbackError('danger', response);

@@ -95,7 +95,7 @@
                     <h2 ng-if="mode == 'creation'">Create User</h2>
                     <h2 ng-if="mode == 'edit'">Edit User</h2>
                     <hr/>
-                    <form role="form" ng-submit="createUser()">
+                    <form role="form">
                         <div ng-if="error" class="alert alert-danger feedbackMessages">
                             <strong>&#10008</strong> {{errorMsg}}
                         </div>
@@ -136,7 +136,7 @@
                         </div>
                         <hr/>
                         <p style="text-align:center">
-                            <button ng-if="mode == 'creation'" type="submit" class="btn btn-primary theme-accent">
+                            <button ng-if="mode == 'creation'" ng-click="createUser()" class="btn btn-primary theme-accent">
                                 Create
                             </button>
                             <button ng-if="mode == 'creation'" type="reset" class="btn btn-primary theme-accent">Reset

@@ -754,6 +754,8 @@ angular.module('CVGTool')
                 _this.selectedType = _this.objectTypes[type];
             
                 $scope.canvasesManager.refreshProjectionOfCanvases();
+
+                $scope.actionManager.initializeActions();
                       
                 $scope.canvasesManager.redrawCanvases();
                 
@@ -904,14 +906,15 @@ angular.module('CVGTool')
 
             // VARIABLES //
             _this.activitiesList = [];
-            _this.actionsList = [];
+            _this.actionsList = {};
+            _this.actionsForVisualization = {};
             _this.selectedObject = null;
             _this.actionCreationData = {
                 selectedType: null,
                 startFrame: $scope.timelineManager.frameFrom,
                 endFrame: $scope.timelineManager.frameTo
             }
-
+    
             // FUNCTIONS //
             // Clears te data stored to create a new action
             _this.clearActionCreationData = function() {
@@ -928,13 +931,26 @@ angular.module('CVGTool')
             }
 
             // Fetch all actions of an Object from database
-            _this.getActionsListByUID = function() {
-                _this.actionsList = [];
-                var callback = function(actionsList) {
-                    _this.actionsList = actionsList;
+            _this.getActionsListByUID = function(uid) {
+                var callback = function(actionsList, uid) {
+                    _this.actionsList[uid] = actionsList;
+                    _this.fillActionsForVisualization(uid, actionsList);
                 }
-                toolSrvc.getActionsByUID($scope.toolParameters.user.name, _this.selectedObject.uid,
+
+                toolSrvc.getActionsByUID($scope.toolParameters.user.name, uid,
                     $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, callback, $scope.messagesManager.sendMessage)
+            }
+
+            _this.fillActionsForVisualization = function(uid, actionsList) {
+                for (action in actionsList) {
+                    var startFrame = actionsList[action].startFrame - $scope.toolParameters.frameFrom;
+                    var endFrame = actionsList[action].endFrame - $scope.toolParameters.frameFrom;
+                    var actionName = actionsList[action].name;
+
+                    for (var i = startFrame; i <= endFrame; i++) {
+                        _this.actionsForVisualization[uid][i].push(actionName);
+                    }
+                }
             }
 
             _this.setActionFrameFrom = function(frame) {
@@ -945,6 +961,23 @@ angular.module('CVGTool')
                 _this.actionCreationData.endFrame = frame;
             }
 
+            _this.initializeActions = function() {
+                var frameArray = []
+                
+                for (var i=0; i <= $scope.toolParameters.numberOfFrames; i++) {
+                    frameArray.push([]);
+                }
+                // Initialize structure
+                for (obj in $scope.objectManager.selectedType.objects) {
+                    _this.actionsList[obj] = {}
+                    _this.actionsForVisualization[obj] = angular.copy(frameArray);
+                }
+
+                // Fill the objects actions
+                for (obj in _this.actionsList) {
+                    _this.getActionsListByUID(obj);
+                }
+            }
 
             // Create a new action
             _this.createNewAction = function() {
@@ -955,15 +988,8 @@ angular.module('CVGTool')
                 } else {
                     var callbackSuccess = function(data) {
                         $scope.messagesManager.sendMessage("success", "Action created!");
-                        _this.actionsList.push({
-                            name: _this.actionCreationData.selectedType,
-                            objectUID: _this.selectedObject.uid,
-                            startFrame: _this.actionCreationData.startFrame,
-                            endFrame: _this.actionCreationData.endFrame,
-                            dataset: $scope.toolParameters.activeDataset.name,
-                            user: $scope.toolParameters.user.name
-                        });
-
+                        _this.getActionsListByUID(_this.selectedObject.uid)
+                        $scope.canvasesManager.redrawCanvases();
                         _this.clearActionCreationData();
                     }
 
@@ -979,11 +1005,12 @@ angular.module('CVGTool')
             // Remove an existent action
             _this.removeAction = function(action) {
                 if (action.startFrame == null || action.endFrame == null) {
-                    _this.actionsList.pop();
+                    _this.actionsList[_this.selectedObject.uid].pop();
                 } else {
                     var callback = function() {
                         $scope.messagesManager.sendMessage("success", "Action deleted!");
                         _this.getActionsListByUID(_this.selectedObject.uid);
+                        $scope.canvasesManager.redrawCanvases();
                     }
                     toolSrvc.removeAction(action.name, action.user, action.objectUID, action.startFrame, action.endFrame, action.dataset, $scope.toolParameters.activeDataset.type,
                         callback, $scope.messagesManager.sendMessage)
@@ -2634,7 +2661,6 @@ angular.module('CVGTool')
                 _this.cameraPoints = cameraPoints; 
             }
 
-            // ABBREVIATED LABELS. Temporal, it would be nice to generate them on the fly
             _this.abbreviatedLabels = ["No", "Ne", "ShR", "ElR", "HaR", "ShL", "ElL", "HaL", "HiR", "KnR", "FoR", "HiL", "KnL",
             "FoL", "EyR", "EyL", "EaR", "EaL", "STL", "LTL", "HeL", "STR", "LTR", "HeR"];
 
@@ -2771,6 +2797,47 @@ angular.module('CVGTool')
                         _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
                     }
                 }          
+            }
+
+            _this.drawObjectActions = function(context, color) {
+                if (_this.points[0] === null) return;
+                // Get actions for current frame
+                var actions = angular.copy($scope.actionManager.actionsForVisualization[_this.uid][$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom]);
+
+                if (actions.length > 0) _this.drawActions(context, color, actions);
+            }
+
+            _this.drawActions = function(context, color, actions) {
+                // First get width and height of the bounding rectangle
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                var maxWidth = context.measureText(actions[0]).width;
+                for (var i=0; i < actions.length; i++) {
+                    var currentWidth = context.measureText(actions[i]).width;
+                    if (currentWidth > maxWidth) maxWidth = currentWidth;
+                }
+
+                var maxHeight = actions.length * $scope.optionsManager.options.fontSize;
+
+                context.closePath();
+                context.beginPath();
+                context.fillStyle = color;
+                context.fillRect(_this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0, maxWidth, maxHeight);
+                context.closePath();
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "start";
+                context.textBaseline = "top";
+                context.strokeStyle = "black";
+                context.lineWidth = 2;
+                context.fillStyle = "white";
+                var offsetY = 0.5;
+                for(var i=0; i<actions.length; i++) {
+                    context.strokeText(actions[i].toString(), _this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0 + offsetY);
+                    context.fillText(actions[i].toString(), _this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0 + offsetY);
+                    offsetY += $scope.optionsManager.options.fontSize;
+                }
+                context.closePath();
             }
 
             _this.isInside = function(x,y) {
@@ -3066,6 +3133,47 @@ angular.module('CVGTool')
                     if (_this.points[index] == null) return;
                     _this.points[index].move(dx,dy);
                 }       
+            }
+
+            _this.drawObjectActions = function(context, color) {
+                if (_this.points[0] === null) return;
+                // Get actions for current frame
+                var actions = angular.copy($scope.actionManager.actionsForVisualization[_this.uid][$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom]);
+
+                if (actions.length > 0) _this.drawActions(context, color, actions);
+            }
+
+            _this.drawActions = function(context, color, actions) {
+                // First get width and height of the bounding rectangle
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                var maxWidth = context.measureText(actions[0]).width;
+                for (var i=0; i < actions.length; i++) {
+                    var currentWidth = context.measureText(actions[i]).width;
+                    if (currentWidth > maxWidth) maxWidth = currentWidth;
+                }
+
+                var maxHeight = actions.length * $scope.optionsManager.options.fontSize;
+
+                context.closePath();
+                context.beginPath();
+                context.fillStyle = color;
+                context.fillRect(_this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0, maxWidth, maxHeight);
+                context.closePath();
+                context.beginPath();
+                context.font = $scope.optionsManager.options.fontSize.toString() + "px sans-serif";
+                context.textAlign = "start";
+                context.textBaseline = "top";
+                context.strokeStyle = "black";
+                context.lineWidth = 2;
+                context.fillStyle = "white";
+                var offsetY = 0.5;
+                for(var i=0; i<actions.length; i++) {
+                    context.strokeText(actions[i].toString(), _this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0 + offsetY);
+                    context.fillText(actions[i].toString(), _this.points[0].center[0] - maxWidth / 2.0, _this.points[0].center[1] + $scope.optionsManager.options.pointSize / 2.0 + offsetY);
+                    offsetY += $scope.optionsManager.options.fontSize;
+                }
+                context.closePath();
             }
 
             _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
@@ -3451,11 +3559,10 @@ angular.module('CVGTool')
                         }
                     }
                 }
-
-                context.closePath();
                 context.stroke();
+                context.fillStyle= $scope.colorManager.makeTransparent(color);
                 context.fill();
-
+                context.closePath();
             }
 
             _this.getNotNullIndices = function() {
@@ -3772,7 +3879,6 @@ angular.module('CVGTool')
 
             _this.epilinesManager = [null,null,null,null];
             _this.colors = [
-                "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177", "#0d5ac1",
                 "#f205e6", "#1c0365", "#14a9ad", "#4ca2f9", "#a4e43f", "#d298e2", "#6119d0",
                 "#d2737d", "#c0a43c", "#f2510e", "#651be6", "#79806e", "#61da5e", "#cd2f00",
                 "#9348af", "#01ac53", "#c5a4fb", "#996635", "#b11573", "#4bb473", "#75d89e",
@@ -4016,9 +4122,16 @@ angular.module('CVGTool')
                                 }
                             }
 
-                            // Draw static objects if the option is checked
-                            if ($scope.optionsManager.options.showStaticObjects) {
-                                // TODO
+                            // Draw actions under the nose if the option is checked
+                            if ($scope.optionsManager.options.visualizeActions) {
+                                // Draw all actions for objects
+                                var colorIndex = 0;
+                                for (obj in _this.objects2D.objects) {
+                                    if (_this.objects2D.objects[obj.toString()].frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].shape !== null) {
+                                        _this.objects2D.objects[obj.toString()].frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].shape.drawObjectActions(ctx, _this.colors[colorIndex]);
+                                        colorIndex++;
+                                    }
+                                }     
                             }
                         } else if ($scope.objectManager.selectedObject !== null) { // If there is one object selected, draw only its points
                             if ($scope.toolsManager.subTool.localeCompare("pointCreation") == 0) {
@@ -4406,7 +4519,8 @@ angular.module('CVGTool')
                 showSecondaryPoseJoints: true,
                 drawLimbLengths: false,
                 showStaticObjects: false,
-                quickSaveAfterJointRemoval: false
+                quickSaveAfterJointRemoval: false,
+                visualizeActions: false
             }
 
             navSrvc.setOptions(_this.options); // First set
@@ -4648,6 +4762,10 @@ angular.module('CVGTool')
                 return _this.rgbToHex(rgbColor.r, rgbColor.g, rgbColor.b);
             }
 
+            _this.makeTransparent = function(color) {
+                return color  + 'BF'
+            }
+
             _this.componentToHex = function(c) {
                 var hex = c.toString(16);
                 return hex.length == 1 ? "0" + hex: hex;
@@ -4682,6 +4800,7 @@ angular.module('CVGTool')
         $scope.loadingScreenManager = new LoadingScreenManager();
         $scope.objectManager = new ObjectManager();
         $scope.actionManager = new ActionManager();
+        
         $scope.colorManager = new ColorManager();
         $scope.actionManager.getActivitiesList();
         $scope.camerasManager = new CamerasManager();

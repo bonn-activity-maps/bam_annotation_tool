@@ -18,6 +18,7 @@ from python.logic.ptService import PTService
 from python.objects.object_type import Object_type
 from python.objects.object import Object
 from python.objects.annotation import Annotation
+from python.objects.video import Video
 
 # DatasetService logger
 log = logging.getLogger('datasetService')
@@ -401,37 +402,46 @@ class DatasetService:
             annotation = Annotation(dataset, videos[j].name)
             # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
             _, annotations_db, _ = annotationService.get_annotations(annotation)
-            annotations_file = list()
-            for i in range(0, len(annotations_db)):
-                objects = annotations_db[i]["objects"]
-                for obj in objects:
-                    if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
-                        index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
-                        if index == -1:
-                            if obj["type"] == "bbox":
-                                obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                del(obj["keypoints"])
-                            elif obj["type"] == "bbox_head":
-                                obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                del(obj["keypoints"])
-                            elif obj["type"] == "person":   # flatten keypoints array
-                                obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                            # Always delete type field, as it is unnecessary
-                            del(obj["type"])
-                            obj["id"] = obj["uid"]
-                            del(obj["uid"])
-                            obj["image_id"] = int(obj["id"]/100)
-                            obj["scores"] = []
-                            annotations_file.append(obj)
-                        else:   # If already in annotation, just add what we want
-                            if obj["type"] == "bbox":
-                                annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                            elif obj["type"] == "bbox_head":
-                                annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                            elif obj["type"] == "person":
-                                annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
 
-            final_annotation["annotations"] = annotations_file
+            # Export data only in the original range of annotations
+            video = Video(videos[j].name, dataset)
+            result, frames_info = frameService.get_frame_info_of_video(video)
+            if result:
+                min_frame, max_frame = frames_info[0].number, frames_info[1].number
+
+                annotations_file = list()
+                for i in range(0, len(annotations_db)):
+                    # Export only annotations in the original frame range
+                    if min_frame <= annotations_db[i]["frame"] <= max_frame:
+                        objects = annotations_db[i]["objects"]
+                        for obj in objects:
+                            if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
+                                index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
+                                if index == -1:
+                                    if obj["type"] == "bbox":
+                                        obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                        del(obj["keypoints"])
+                                    elif obj["type"] == "bbox_head":
+                                        obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                        del(obj["keypoints"])
+                                    elif obj["type"] == "person":   # flatten keypoints array
+                                        obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                    # Always delete type field, as it is unnecessary
+                                    del(obj["type"])
+                                    obj["id"] = obj["uid"]
+                                    del(obj["uid"])
+                                    obj["image_id"] = int(obj["id"]/100)
+                                    obj["scores"] = []
+                                    annotations_file.append(obj)
+                                else:   # If already in annotation, just add what we want
+                                    if obj["type"] == "bbox":
+                                        annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                    elif obj["type"] == "bbox_head":
+                                        annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                    elif obj["type"] == "person":
+                                        annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+
+                final_annotation["annotations"] = annotations_file
 
             # Hardcoded categories because they don't change and are a very special case...
             categories = [{
