@@ -952,6 +952,9 @@ angular.module('CVGTool')
                     var startFrame = actionsList[action].startFrame - $scope.toolParameters.frameFrom;
                     var endFrame = actionsList[action].endFrame - $scope.toolParameters.frameFrom;
                     var actionName = actionsList[action].name;
+                    
+                    if (startFrame < 0) startFrame = 0;
+                    if (endFrame >= frameArray.length) endFrame = frameArray.length -1;
 
                     for (var i = startFrame; i <= endFrame; i++) {
                         _this.actionsForVisualization[uid][i].push(actionName);
