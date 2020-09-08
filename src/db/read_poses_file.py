@@ -1,5 +1,6 @@
 import os, json, shutil
 
+
 def read_data():
     # folder_path = os.path.join(dataset.STORAGE_DIR, folder)
     # annotations_file = os.path.join(folder_path, 'persons2poses.json')
@@ -25,5 +26,6 @@ def read_data():
             # keypoints = [[] if kp is None else kp for kp in kps]
             # object = [Object(p['pid'], obj_type, keypoints, dataset.type)]
             # annotation = Annotation(dataset, dataset.name, p['frame'], 'root', object)
+
 
 read_data()

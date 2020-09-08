@@ -1,5 +1,6 @@
 from python.objects.dataset import Dataset
 
+
 class Action:
 
     def __init__(self, name, dataset, object_uid=None, user=None, start_frame=None, end_frame=None):

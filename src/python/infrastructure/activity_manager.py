@@ -4,7 +4,7 @@ import python.config as cfg
 
 from python.objects.activity import Activity
 
-# TaskManager logger
+# ActivityManager logger
 log = logging.getLogger('activity_manager')
 
 

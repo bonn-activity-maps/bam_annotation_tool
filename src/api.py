@@ -8,7 +8,6 @@ from python.logic.videoService import VideoService
 from python.logic.annotationService import AnnotationService
 from python.logic.objectTypeService import ObjectTypeService
 from python.logic.userService import UserService
-from python.logic.taskService import TaskService
 from python.logic.aikService import AIKService
 from python.logic.frameService import FrameService
 from python.logic.actionService import ActionService
@@ -41,7 +40,6 @@ videoService = VideoService()
 annotationService = AnnotationService()
 objectTypeService = ObjectTypeService()
 userService = UserService()
-taskService = TaskService()
 aikService = AIKService()
 frameService = FrameService()
 actionService = ActionService()

@@ -2,10 +2,9 @@ from pymongo import MongoClient, errors
 import logging
 
 from python.objects.action import Action
-from python.objects.activity import Activity
 import python.config as cfg
 
-# TaskManager logger
+# ActionManager logger
 log = logging.getLogger('actionManager')
 
 
@@ -147,26 +146,3 @@ class ActionManager:
         except errors.PyMongoError as e:
             log.exception('Error removing action in db')
             return 'Error'
-
-    # # Update an action identified by old attributes with the new attributes
-    # def updateAction(self, dataset, objectUID, user, oldName, oldStartFrame, oldEndFrame, newName, newStartFrame, newEndFrame):
-    #
-    #     # Ignore user param
-    #     query = {"dataset": dataset, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
-    #              "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
-    #
-    #
-    #     query = {"dataset": dataset, "user": user, "startFrame": int(oldStartFrame), "endFrame": int(oldEndFrame),
-    #              "objectUID": int(objectUID), "name": oldName}  # Search by old attributes
-    #     # Update all values
-    #     new_values = {"$set": {"name": newName, "startFrame": newStartFrame, "endFrame": newEndFrame}}
-    #     try:
-    #         result = self.collection.update_one(query, new_values, upsert=False)
-    #         if result.modified_count == 1:
-    #             return 'ok'
-    #         else:
-    #             return 'Error'
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error updating action in db')
-    #         return 'Error'
-

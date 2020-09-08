@@ -5,10 +5,9 @@ from python.infrastructure.actionManager import ActionManager
 from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.user_action_manager import UserActionManager
 
-from python.objects.activity import Activity
 from python.objects.user_action import UserAction
 
-# UserService logger
+# actionService logger
 log = logging.getLogger('actionService')
 
 actionManager = ActionManager()

@@ -69,16 +69,7 @@ class FrameService:
                     videos.append(videoFrames)
             return True, videos, 200
 
-    # Return camera parameters
-    # def get_camera_parameters(self, frame):
-    #     result = frameManager.get_frame(frame)
-    #     if result == 'Error':
-    #         return False, 'Incorrect frame', 400
-    #     else:
-    #         return True, result['cameraParameters'], 200
-
-
-     # Return 'ok' if the frame has been created
+    # Return 'ok' if the frame has been created
     def create_frame(self, frame):
         result = frameManager.create_frame(frame)
         if result == 'Error':
