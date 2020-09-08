@@ -3648,9 +3648,7 @@ angular.module('CVGTool')
                     }    
                 }
                 return -1;
-            }
-
-            
+            }     
         }
 
         // Basic point
@@ -3855,7 +3853,6 @@ angular.module('CVGTool')
                     context.restore();
             }
         }
-
 
         function CanvasObject(canvas, number) {
             //----- SETUP -----//
@@ -4447,7 +4444,6 @@ angular.module('CVGTool')
                 _this.setRedraw();
             }
 
-
             // Projects all objects of the selectedType in all frames to the actual active camera
             _this.projectObjects = function() {
                 _this.resetObjectStructure();
@@ -4503,8 +4499,7 @@ angular.module('CVGTool')
 
                         _this.update2DObject(objects[obj].uid, objects[obj].type, i + $scope.toolParameters.frameFrom, []);
                     }
-                }
-                
+                }     
             }
 
             // Resets object structure
@@ -4944,7 +4939,6 @@ angular.module('CVGTool')
                     // $scope.getInfoOfVideos();
                 }
             });
-
          });
     }
 ]);
