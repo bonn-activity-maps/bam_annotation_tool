@@ -3828,8 +3828,14 @@ angular.module('CVGTool')
                 if (_this.active) {
                     _this.ctx.fillStyle = "white"
                     _this.ctx.fillRect(0,0, _this.canvas.width,_this.canvas.height)
-                    _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /4.0) + 25, _this.mouse.y - (_this.canvas.width /4.0) + 25, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
-                    _this.drawGuideLines(_this.ctx)
+
+                    if (!$scope.toolParameters.isPosetrack) {
+                        _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /4.0) + 25, _this.mouse.y - (_this.canvas.width /4.0) + 25, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
+                        _this.drawGuideLines(_this.ctx)
+                    } else {
+                        _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /8.0) + 12.5, _this.mouse.y - (_this.canvas.width /8.0) + 12.5, _this.image.width/2.0, _this.image.height/2.0, 0, 0, _this.canvas.width, _this.canvas.height)
+                        _this.drawGuideLines(_this.ctx)
+                    }        
                 } 
             }
 
