@@ -3533,7 +3533,19 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
-                _this.draw(context, color)
+                // Draw the path and fill it with a color with reduced alpha
+                if (_this.points.length > 2) _this.drawPath(context, color);
+
+                // Draw the points
+                for (var i=0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, _this.uid);                    
+                }
+                
+                if ($scope.keypointEditor.editorActive) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
+                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", $scope.keypointEditor.selectedLabel);
+                    }
+                }  
             }
 
             _this.drawWithLabel = function(context, color) {
@@ -3631,12 +3643,12 @@ angular.module('CVGTool')
 
             _this.getPointIndex = function(x, y) {
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i].isInside(x,y)) return i;
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) return i;
+                    }    
                 }
                 return -1;
-            }
-
-            
+            }     
         }
 
         // Basic point
@@ -3816,8 +3828,14 @@ angular.module('CVGTool')
                 if (_this.active) {
                     _this.ctx.fillStyle = "white"
                     _this.ctx.fillRect(0,0, _this.canvas.width,_this.canvas.height)
-                    _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /4.0) + 25, _this.mouse.y - (_this.canvas.width /4.0) + 25, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
-                    _this.drawGuideLines(_this.ctx)
+
+                    if (!$scope.toolParameters.isPosetrack) {
+                        _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /4.0) + 25, _this.mouse.y - (_this.canvas.width /4.0) + 25, _this.image.width, _this.image.height, 0, 0, _this.canvas.width, _this.canvas.height)
+                        _this.drawGuideLines(_this.ctx)
+                    } else {
+                        _this.ctx.drawImage(_this.image, _this.mouse.x - (_this.canvas.width /8.0) + 12.5, _this.mouse.y - (_this.canvas.width /8.0) + 12.5, _this.image.width/2.0, _this.image.height/2.0, 0, 0, _this.canvas.width, _this.canvas.height)
+                        _this.drawGuideLines(_this.ctx)
+                    }        
                 } 
             }
 
@@ -3841,7 +3859,6 @@ angular.module('CVGTool')
                     context.restore();
             }
         }
-
 
         function CanvasObject(canvas, number) {
             //----- SETUP -----//
@@ -4433,7 +4450,6 @@ angular.module('CVGTool')
                 _this.setRedraw();
             }
 
-
             // Projects all objects of the selectedType in all frames to the actual active camera
             _this.projectObjects = function() {
                 _this.resetObjectStructure();
@@ -4489,8 +4505,7 @@ angular.module('CVGTool')
 
                         _this.update2DObject(objects[obj].uid, objects[obj].type, i + $scope.toolParameters.frameFrom, []);
                     }
-                }
-                
+                }     
             }
 
             // Resets object structure
@@ -4930,7 +4945,6 @@ angular.module('CVGTool')
                     // $scope.getInfoOfVideos();
                 }
             });
-
          });
     }
 ]);
