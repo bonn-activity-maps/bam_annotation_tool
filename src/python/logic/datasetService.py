@@ -383,6 +383,11 @@ class DatasetService:
         videos = videoManager.get_videos(dataset)
         for j in range(0, len(videos)):
             final_annotation = dict()
+
+            annotation = Annotation(dataset, videos[j].name)
+            # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
+            _, annotations_db, _ = annotationService.get_annotations(annotation)
+
             # Process frame data
             _, frames, _ = frameService.get_frames(videos[j])
             for i in range(0, len(frames)):
@@ -393,15 +398,15 @@ class DatasetService:
                 del(frames[i]["video"])
                 del(frames[i]["path"])
                 del(frames[i]["has_ignore_regions"])
+                frames[i]["has_no_densepose"] = True
+                frames[i]["nframes"] = len(frames)
+                frames[i]["is_labeled"] = True if annotations_db[i]["objects"] != [] else False
                 # Add ignore regions
                 annotation = Annotation(dataset, videos[j].name, frame=i)
                 frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
             final_annotation["images"] = frames
 
             # Process annotation data
-            annotation = Annotation(dataset, videos[j].name)
-            # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
-            _, annotations_db, _ = annotationService.get_annotations(annotation)
 
             # Export data only in the original range of annotations
             video = Video(videos[j].name, dataset)
