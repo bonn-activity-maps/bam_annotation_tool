@@ -772,6 +772,52 @@ class DatasetService:
         else:
             return False, 'Error loading Ignore Regions', 400
 
+    # Read Posetrack Pose information from annotations and load it into the db
+    def load_pt_poses(self, dataset):
+        final_result = True
+        types = ["test", "train", "val"]
+        for data_type in types:
+            try:
+                dirpath = os.path.join(dataset.dir + "_poses", data_type)
+                print("Looking for ", dirpath)
+                listdir = os.listdir(dirpath)
+                for file in listdir:
+                    filename, filextension = os.path.splitext(file)
+                    if filextension == '.json':
+                        # Read annotation file and create the ignore regions
+                        print("Processing annotation file ", file)
+                        # Read data from file
+                        file_route = os.path.join(dirpath, file)
+                        try:
+                            with open(file_route) as json_file:
+                                annotation = json.load(json_file)
+                        except OSError:
+                            log.exception('Could not read from file')
+                            return False
+                        # Load ignore regions into db
+                        annotations_from_file = ptService.safely_read_dictionary(annotation, "annotations")
+                        for obj in annotations_from_file:
+                            id = int(obj["id"])
+                            track_id = obj["track_id"]
+                            id = id // 100
+                            frame = id % 10000
+                            id = id // 10000
+                            video = ptService.pad(str(id % 1000000), 6)
+                            update_obj = Object(obj["id"], "person", keypoints=obj["keypoints"],
+                                                dataset_type= "poseTrack", track_id = track_id, person_id=obj["person_id"])
+                            update_annotation = Annotation(dataset, video, frame=frame,
+                                                           objects=[update_obj])
+                            # print(update_annotation)
+                            annotationService.update_annotation_frame_object(update_annotation)
+                            # exit()
+                    final_result = final_result
+            except FileNotFoundError:
+                log.exception("Folder called " + str(data_type) + " not found")
+        if final_result:
+            return True, 'ok', 200
+        else:
+            return False, 'Error loading Ignore Regions', 400
+
     ## USE ONLY IN CASE OF ERROR UPLOADING FRAMES for AIK
     # Remove and insert new frames for one video and dataset
     def insert_frames(self, dataset, video):
