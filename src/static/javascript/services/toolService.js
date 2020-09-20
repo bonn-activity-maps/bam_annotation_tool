@@ -96,11 +96,12 @@ angular.module('CVGTool')
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
+                    console.log(response.data.msg)
                     callbackSuccess(response.data.msg)
-                }),
+                },
                 function errorCallback(response) {
-                    callbackError('danger', response)
-                }
+                    callbackError('danger', response.data.msg)
+                })
         },
 
         // Gets all the available objects types: Person, microwave, etc

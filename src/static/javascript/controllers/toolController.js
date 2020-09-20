@@ -1798,6 +1798,7 @@ angular.module('CVGTool')
                         for (let i = 0; i < annotation.objects.length; i++) {
                             // If the object is of type "person", fix the keypoint structure to ignore ears
                             if (annotation.objects[i].type.toString().localeCompare("person") === 0) {
+                                // console.log(annotation.objects[i])
                                 annotation.objects[i].keypoints = _this.fixPersonKeypoints(annotation.objects[i].keypoints);
 
                                 // TODO: here we will need to process the keypoints so that the third coordinate is the visibility
@@ -1834,10 +1835,10 @@ angular.module('CVGTool')
 
                 if ($scope.camerasManager.loadedCameras.length > 0) {
                     toolSrvc.getAnnotationsByFrameRange($scope.camerasManager.loadedCameras[0].filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
-                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback);
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback, $scope.messagesManager.sendMessage);
                 } else {
                     toolSrvc.getAnnotationsByFrameRange($scope.canvasesManager.canvases[0].getActiveCamera().filename, $scope.toolParameters.activeDataset.type, $scope.toolParameters.frameFrom, $scope.toolParameters.frameTo,
-                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback);
+                        $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, callback, $scope.messagesManager.sendMessage);
                 }
             };
 
