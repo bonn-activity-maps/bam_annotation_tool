@@ -128,7 +128,8 @@
           <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
           <li class="divider"></li> 
           <li class="dropdown-header">Dynamic object types</li>
-          <li ng-repeat="type in objectManager.dynamicTypes"><button class="btn btn-default" ng-if="type.localeCompare('poseAIK')!==0" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
+          
+          <li ng-repeat="type in objectManager.dynamicTypes" ng-if="type.localeCompare('poseAIK')!==0"><button class="btn btn-default"  ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
           <li class="dropdown-header">Static object types</li>
           <li ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
