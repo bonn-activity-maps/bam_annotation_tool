@@ -376,10 +376,6 @@ def get_annotations_by_frame_range():
     start_annotation = Annotation(dataset, request.headers['scene'], request.headers['startFrame'], request.headers['user'])
     end_annotation = Annotation(dataset, request.headers['scene'], request.headers['endFrame'], request.headers['user'])
     success, msg, status = annotationService.get_annotations_by_frame_range(start_annotation, end_annotation)
-    for annotation in msg:
-        for obj in annotation["objects"]:
-            if obj["type"] == "person" and obj["uid"] == 1000002000000:
-                print(obj, "\n")
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Get annotations (all frames) for given dataset, video which are validated and ready to export (user = Root)

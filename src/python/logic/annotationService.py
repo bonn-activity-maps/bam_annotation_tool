@@ -96,7 +96,9 @@ class AnnotationService:
                         obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
                     if start_annotation.dataset.is_pt() and obj['type'] == 'person' and obj['keypoints']:
                         num_kp = len(obj["keypoints"])
-                        obj['keypoints'] = np.round(np.array(obj["keypoints"]).reshape((num_kp // 3, 3)), 2).tolist()
+                        obj_list = np.array(obj["keypoints"]).reshape((num_kp // 3, 3))
+                        obj_list = np.round(obj_list, 2).tolist()
+                        obj['keypoints'] = obj_list
 
             return True, result, 200
 
