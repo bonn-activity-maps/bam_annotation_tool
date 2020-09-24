@@ -805,8 +805,17 @@ class DatasetService:
                             frame = id % 10000
                             id = id // 10000
                             video = ptService.pad(str(id % 1000000), 6)
-                            update_obj = Object(obj["id"], "person", keypoints=obj["keypoints"],
-                                                dataset_type= "poseTrack", track_id = track_id, person_id=obj["person_id"])
+                            # Transform array from [XYZXYZ+] to [[XYZ],[XYZ]+]
+                            num_kp = len(obj["keypoints"])
+                            if num_kp % 3 == 0: # Unformatted array
+                                obj_list = np.array(obj["keypoints"]).reshape((num_kp // 3, 3))
+                                obj_list = np.round(obj_list, 2).tolist()
+                            elif num_kp == 17:  # Already formatted
+                                obj_list = obj["keypoints"]
+                            else:   # Invalid data
+                                obj_list = []
+                            update_obj = Object(obj["id"], "person", keypoints=obj_list,
+                                                dataset_type="poseTrack", track_id=track_id, person_id=obj["person_id"])
                             update_annotation = Annotation(dataset, video, frame=frame,
                                                            objects=[update_obj])
                             # print(update_annotation)

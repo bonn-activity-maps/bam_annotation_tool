@@ -2190,10 +2190,6 @@ angular.module('CVGTool')
                         object.keypoints[i].push(visibilities[i]);
                     }
                 }
-                
-                console.log(object)
-                
-                
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
