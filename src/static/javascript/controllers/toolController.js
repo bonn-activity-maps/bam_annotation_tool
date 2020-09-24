@@ -803,6 +803,8 @@ angular.module('CVGTool')
                 if (type.localeCompare("poseAIK") == 0) return _this.poseAIKAnnotationsState(objectUID, type, frame);
 
                 if (type.localeCompare("boxAIK") == 0) return _this.boxAIKAnnotationsState(objectUID, type, frame);
+
+                if (type.localeCompare("person") == 0) return _this.personAnnotationsState(objectUID, type, frame);
                 
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist.slice();
                 var count = 0;
@@ -813,6 +815,26 @@ angular.module('CVGTool')
                 if (count == 0) return 0;      // No annotation
                 if (count == existAnnotation.length) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
+            }
+
+            // Auxiliar function to take care of the state of the boxes, for AIK. (Takes into account only the main points)
+            _this.personAnnotationsState = function(objectUID, type, frame) {
+                var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
+                var keypoints = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].keypoints.slice();
+                var visibilities = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].visibility.slice();
+            
+                var count = 0;
+                for (var i=0; i< keypoints.length; i++) {
+                    if (existAnnotation[i]) {
+                        if (keypoints[i][0] < 0 && keypoints[i][1] < 0 && visibilities[i] == 0) {}
+                        else count++;        
+                    }
+                }
+
+                if (count == 0) return 0;
+                if (count == keypoints.length) return 1;
+                return -1;
+
             }
 
             // Auxiliar function to take care of the state of the boxes, for AIK. (Takes into account only the main points)
