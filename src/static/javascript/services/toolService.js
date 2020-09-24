@@ -96,7 +96,6 @@ angular.module('CVGTool')
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
-                    console.log(response.data.msg)
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
