@@ -54,6 +54,22 @@ angular.module('CVGTool')
 
         }
 
+        $scope.loadPTPoses = function(dataset) {
+            $scope.selectedDataset = dataset;
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/showLoadPTPoses.html',
+                locals: {
+                    dataset: $scope.selectedDataset
+                },
+                controller: 'dialogShowLoadPTPosesCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        }
+
         // Function to select a dataset and show its videos
         $scope.selectDataset = function(dataset) {
             $scope.selectedDataset = dataset;

@@ -1,0 +1,42 @@
+<md-dialog>
+    <div class="panel" ng-if="mode == 'normal'">
+        <h2>Load Ignore Regions</h2>
+        <md-dialog-content>
+            Poses will be loaded from the dataset_poses folder. It may take a long time. Do you wish to continue?
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="load()" class="btn btn-primary">Continue</button>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
+        </md-dialog-actions>
+    </div>
+    <div class="panel" ng-if="mode == 'progress'">
+        <md-dialog-content>
+            <div class="alert alert-secondary">
+                <i class="glyphicon glyphicon-refresh gly-spin col-md-2"></i>
+                <p class="col-md-10">
+                    Loading, please wait. <br/> This can take a while.
+                </p>
+            </div>
+        </md-dialog-content>
+    </div>
+    <div class="panel" ng-if="mode == 'error'">
+        <md-dialog-content>
+            <div class="alert alert-danger">
+                <strong>&#10008</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
+        </md-dialog-actions>
+    </div>
+    <div class="panel" ng-if="mode == 'success'">
+        <md-dialog-content>
+            <div class="alert alert-success">
+                <strong>&#10004</strong> {{msg}}
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Close</button>
+        </md-dialog-actions>
+    </div>
+</md-dialog>

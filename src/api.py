@@ -283,6 +283,13 @@ def load_ignore_regions():
     success, msg, status = datasetService.load_ignore_regions(dataset)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Read posetrack poses data from annotation files and load it into the db
+@app.route('/api/dataset/loadPTPoses', methods=['POST'])
+@flask_login.login_required
+def load_pt_poses():
+    dataset = Dataset.from_json(request.get_json())
+    success, msg, status = datasetService.load_pt_poses(dataset)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 #### VIDEO ####
 

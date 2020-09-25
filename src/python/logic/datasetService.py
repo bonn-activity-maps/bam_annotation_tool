@@ -382,187 +382,189 @@ class DatasetService:
     def export_dataset_PT(self, dataset):
         videos = videoManager.get_videos(dataset)
         for j in range(0, len(videos)):
-            final_annotation = dict()
+            # Ignore video 000048 since it's buggy
+            if videos[j].name != "000048":
+                final_annotation = dict()
 
-            annotation = Annotation(dataset, videos[j].name)
-            # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
-            _, annotations_db, _ = annotationService.get_annotations(annotation)
+                annotation = Annotation(dataset, videos[j].name)
+                # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
+                _, annotations_db, _ = annotationService.get_annotations(annotation)
 
-            # Process frame data
-            _, frames, _ = frameService.get_frames(videos[j])
-            for i in range(0, len(frames)):
-                frames[i]["vid_id"] = frames[i]["video"]
-                frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[-4:])
-                del(frames[i]["number"])
-                del(frames[i]["dataset"])
-                del(frames[i]["video"])
-                del(frames[i]["path"])
-                del(frames[i]["has_ignore_regions"])
-                frames[i]["has_no_densepose"] = True
-                frames[i]["nframes"] = len(frames)
-                frames[i]["is_labeled"] = True if annotations_db[i]["objects"] != [] else False
-                # Add ignore regions
-                annotation = Annotation(dataset, videos[j].name, frame=i)
-                frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
-            final_annotation["images"] = frames
+                # Process frame data
+                _, frames, _ = frameService.get_frames(videos[j])
+                for i in range(0, len(frames)):
+                    frames[i]["vid_id"] = frames[i]["video"]
+                    frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[-4:])
+                    del(frames[i]["number"])
+                    del(frames[i]["dataset"])
+                    del(frames[i]["video"])
+                    del(frames[i]["path"])
+                    del(frames[i]["has_ignore_regions"])
+                    frames[i]["has_no_densepose"] = True
+                    frames[i]["nframes"] = len(frames)
+                    frames[i]["is_labeled"] = True if annotations_db[i]["objects"] != [] else False
+                    # Add ignore regions
+                    annotation = Annotation(dataset, videos[j].name, frame=i)
+                    frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
+                final_annotation["images"] = frames
 
-            # Process annotation data
+                # Process annotation data
 
-            # Export data only in the original range of annotations
-            video = Video(videos[j].name, dataset)
-            result, frames_info = frameService.get_frame_info_of_video(video)
-            if result:
-                min_frame, max_frame = frames_info[0].number, frames_info[1].number
+                # Export data only in the original range of annotations
+                video = Video(videos[j].name, dataset)
+                result, frames_info = frameService.get_frame_info_of_video(video)
+                if result:
+                    min_frame, max_frame = frames_info[0].number, frames_info[1].number
 
-                annotations_file = list()
-                for i in range(0, len(annotations_db)):
-                    # Export only annotations in the original frame range
-                    if min_frame <= annotations_db[i]["frame"] <= max_frame:
-                        objects = annotations_db[i]["objects"]
-                        for obj in objects:
-                            if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
-                                index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
-                                if index == -1:
-                                    if obj["type"] == "bbox":
-                                        obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                        del(obj["keypoints"])
-                                    elif obj["type"] == "bbox_head":
-                                        obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                        del(obj["keypoints"])
-                                    elif obj["type"] == "person":   # flatten keypoints array
-                                        obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                                    # Always delete type field, as it is unnecessary
-                                    del(obj["type"])
-                                    obj["id"] = obj["uid"]
-                                    del(obj["uid"])
-                                    obj["image_id"] = int(obj["id"]/100)
-                                    obj["scores"] = []
-                                    annotations_file.append(obj)
-                                else:   # If already in annotation, just add what we want
-                                    if obj["type"] == "bbox":
-                                        annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                    elif obj["type"] == "bbox_head":
-                                        annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
-                                    elif obj["type"] == "person":
-                                        annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                    annotations_file = list()
+                    for i in range(0, len(annotations_db)):
+                        # Export only annotations in the original frame range
+                        if min_frame <= annotations_db[i]["frame"] <= max_frame:
+                            objects = annotations_db[i]["objects"]
+                            for obj in objects:
+                                if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
+                                    index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
+                                    if index == -1:
+                                        if obj["type"] == "bbox":
+                                            obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            del(obj["keypoints"])
+                                        elif obj["type"] == "bbox_head":
+                                            obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            del(obj["keypoints"])
+                                        elif obj["type"] == "person":   # flatten keypoints array
+                                            obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                        # Always delete type field, as it is unnecessary
+                                        del(obj["type"])
+                                        obj["id"] = obj["uid"]
+                                        del(obj["uid"])
+                                        obj["image_id"] = int(obj["id"]/100)
+                                        obj["scores"] = []
+                                        annotations_file.append(obj)
+                                    else:   # If already in annotation, just add what we want
+                                        if obj["type"] == "bbox":
+                                            annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                        elif obj["type"] == "bbox_head":
+                                            annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                        elif obj["type"] == "person":
+                                            annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
 
-                final_annotation["annotations"] = annotations_file
+                    final_annotation["annotations"] = annotations_file
 
-            # Hardcoded categories because they don't change and are a very special case...
-            categories = [{
-                "supercategory": "person",
-                "id": 1,
-                "name": "person",
-                "keypoints": [
-                    "nose",
-                    "head_bottom",
-                    "head_top",
-                    "left_ear",
-                    "right_ear",
-                    "left_shoulder",
-                    "right_shoulder",
-                    "left_elbow",
-                    "right_elbow",
-                    "left_wrist",
-                    "right_wrist",
-                    "left_hip",
-                    "right_hip",
-                    "left_knee",
-                    "right_knee",
-                    "left_ankle",
-                    "right_ankle"
-                ],
-                "skeleton": [
-                    [
-                        16,
-                        14
+                # Hardcoded categories because they don't change and are a very special case...
+                categories = [{
+                    "supercategory": "person",
+                    "id": 1,
+                    "name": "person",
+                    "keypoints": [
+                        "nose",
+                        "head_bottom",
+                        "head_top",
+                        "left_ear",
+                        "right_ear",
+                        "left_shoulder",
+                        "right_shoulder",
+                        "left_elbow",
+                        "right_elbow",
+                        "left_wrist",
+                        "right_wrist",
+                        "left_hip",
+                        "right_hip",
+                        "left_knee",
+                        "right_knee",
+                        "left_ankle",
+                        "right_ankle"
                     ],
-                    [
-                        14,
-                        12
-                    ],
-                    [
-                        17,
-                        15
-                    ],
-                    [
-                        15,
-                        13
-                    ],
-                    [
-                        12,
-                        13
-                    ],
-                    [
-                        6,
-                        12
-                    ],
-                    [
-                        7,
-                        13
-                    ],
-                    [
-                        6,
-                        7
-                    ],
-                    [
-                        6,
-                        8
-                    ],
-                    [
-                        7,
-                        9
-                    ],
-                    [
-                        8,
-                        10
-                    ],
-                    [
-                        9,
-                        11
-                    ],
-                    [
-                        2,
-                        3
-                    ],
-                    [
-                        1,
-                        2
-                    ],
-                    [
-                        1,
-                        3
-                    ],
-                    [
-                        2,
-                        4
-                    ],
-                    [
-                        3,
-                        5
-                    ],
-                    [
-                        4,
-                        6
-                    ],
-                    [
-                        5,
-                        7
+                    "skeleton": [
+                        [
+                            16,
+                            14
+                        ],
+                        [
+                            14,
+                            12
+                        ],
+                        [
+                            17,
+                            15
+                        ],
+                        [
+                            15,
+                            13
+                        ],
+                        [
+                            12,
+                            13
+                        ],
+                        [
+                            6,
+                            12
+                        ],
+                        [
+                            7,
+                            13
+                        ],
+                        [
+                            6,
+                            7
+                        ],
+                        [
+                            6,
+                            8
+                        ],
+                        [
+                            7,
+                            9
+                        ],
+                        [
+                            8,
+                            10
+                        ],
+                        [
+                            9,
+                            11
+                        ],
+                        [
+                            2,
+                            3
+                        ],
+                        [
+                            1,
+                            2
+                        ],
+                        [
+                            1,
+                            3
+                        ],
+                        [
+                            2,
+                            4
+                        ],
+                        [
+                            3,
+                            5
+                        ],
+                        [
+                            4,
+                            6
+                        ],
+                        [
+                            5,
+                            7
+                        ]
                     ]
-                ]
-            }]
-            final_annotation["categories"] = categories
-            # Write to file
-            path = os.path.join(dataset.STORAGE_DIR + dataset.name + "_export", videos[j].type)
-            # Get file name from original path name
-            try:
-                file = os.path.join(path, frames[0]["file_name"].split("/")[-2] + '.json')
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                with open(file, 'w') as outfile:
-                    json.dump(final_annotation, outfile)
-            except:
-                print("Empty video")
+                }]
+                final_annotation["categories"] = categories
+                # Write to file
+                path = os.path.join(dataset.STORAGE_DIR + dataset.name + "_export", videos[j].type)
+                # Get file name from original path name
+                try:
+                    file = os.path.join(path, frames[0]["file_name"].split("/")[-2] + '.json')
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    with open(file, 'w') as outfile:
+                        json.dump(final_annotation, outfile)
+                except:
+                    print("Empty video")
         return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
@@ -764,6 +766,61 @@ class DatasetService:
                                         if result == 'Error':
                                             return False, 'Error creating Ignore Region', 400
                                         track_id -= 1
+                    final_result = final_result
+            except FileNotFoundError:
+                log.exception("Folder called " + str(data_type) + " not found")
+        if final_result:
+            return True, 'ok', 200
+        else:
+            return False, 'Error loading Ignore Regions', 400
+
+    # Read Posetrack Pose information from annotations and load it into the db
+    def load_pt_poses(self, dataset):
+        final_result = True
+        types = ["test", "train", "val"]
+        for data_type in types:
+            try:
+                dirpath = os.path.join(dataset.dir + "_poses", data_type)
+                print("Looking for ", dirpath)
+                listdir = os.listdir(dirpath)
+                for file in listdir:
+                    filename, filextension = os.path.splitext(file)
+                    if filextension == '.json':
+                        # Read annotation file and create the ignore regions
+                        print("Processing annotation file ", file)
+                        # Read data from file
+                        file_route = os.path.join(dirpath, file)
+                        try:
+                            with open(file_route) as json_file:
+                                annotation = json.load(json_file)
+                        except OSError:
+                            log.exception('Could not read from file')
+                            return False
+                        # Load ignore regions into db
+                        annotations_from_file = ptService.safely_read_dictionary(annotation, "annotations")
+                        for obj in annotations_from_file:
+                            id = int(obj["id"])
+                            track_id = obj["track_id"]
+                            id = id // 100
+                            frame = id % 10000
+                            id = id // 10000
+                            video = ptService.pad(str(id % 1000000), 6)
+                            # Transform array from [XYZXYZ+] to [[XYZ],[XYZ]+]
+                            num_kp = len(obj["keypoints"])
+                            if num_kp % 3 == 0: # Unformatted array
+                                obj_list = np.array(obj["keypoints"]).reshape((num_kp // 3, 3))
+                                obj_list = np.round(obj_list, 2).tolist()
+                            elif num_kp == 17:  # Already formatted
+                                obj_list = obj["keypoints"]
+                            else:   # Invalid data
+                                obj_list = []
+                            update_obj = Object(obj["id"], "person", keypoints=obj_list,
+                                                dataset_type="poseTrack", track_id=track_id, person_id=obj["person_id"])
+                            update_annotation = Annotation(dataset, video, frame=frame,
+                                                           objects=[update_obj])
+                            # print(update_annotation)
+                            annotationService.update_annotation_frame_object(update_annotation)
+                            # exit()
                     final_result = final_result
             except FileNotFoundError:
                 log.exception("Folder called " + str(data_type) + " not found")
