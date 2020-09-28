@@ -2567,8 +2567,12 @@ angular.module('CVGTool')
             }
             
             // Only works in PT
-            _this.changeVisibility = function(index, visibility) {
-                _this.keypointEditorData.shapes[0].visibilities[index] = visibility;
+            _this.changeVisibility = function(index) {
+                if (_this.keypointEditorData.shapes[0].visibilities[index] == 0) {
+                    _this.keypointEditorData.shapes[0].visibilities[index] = 1;
+                } else {
+                    _this.keypointEditorData.shapes[0].visibilities[index] = 0;
+                }
             }
 
             // Update the stored pose AIK limb values with the actual ones
@@ -4718,6 +4722,10 @@ angular.module('CVGTool')
                         moveWholeShape: {
                             label: 'Shift',
                             shortcut: 'shift'
+                        },
+                        changeVisibility: {
+                            label: 'Shift + V',
+                            shortcut: 'shift+v'
                         }
                     },
                     {
@@ -4765,6 +4773,10 @@ angular.module('CVGTool')
                         moveWholeShape: {
                             label: 'Shift',
                             shortcut: 'shift'
+                        },
+                        changeVisibility: {
+                            label: 'Shift + X',
+                            shortcut: 'shift+x'
                         }
                     }
                 ]
@@ -4844,7 +4856,7 @@ angular.module('CVGTool')
                     description: 'Test',
                     callback: function() {
                         if ($scope.keypointEditor.editorActive === true) {
-                            console.log($scope.keypointEditor.keypointEditorData);
+                            // console.log($scope.keypointEditor.keypointEditorData);
                         }
                     }
                 })
@@ -4862,6 +4874,15 @@ angular.module('CVGTool')
                                 $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
                             }
                             
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.changeVisibility.shortcut,
+                    description: "Change selected label's visibility",
+                    callback: function() {
+                        if (($scope.toolParameters.isPosetrack) && ($scope.keypointEditor.editorActive === true) && ($scope.objectManager.isTypeSelected("person"))) {
+                            $scope.keypointEditor.changeVisibility($scope.keypointEditor.selectedLabel);
                         }
                     }
                 });

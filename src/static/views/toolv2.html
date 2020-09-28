@@ -188,7 +188,8 @@
             <li class="dropdown-item">Start annotating: <b>{{shortcutsManager.shortcuts.selectedShortcuts.startAnn.label}}</b></li>
             <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
             <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
-            <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>  
+            <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>  
         </div>
     </div>
     <hr class="tool-panel-hr">
@@ -539,8 +540,8 @@
                             <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="keypointEditor.startEditingSelectedLabel($index, '');"><span class="glyphicon glyphicon-edit"></span></button>
                         </th>
                         <th ng-if="toolParameters.isPosetrack && objectManager.selectedObject.type.localeCompare('person')==0">
-                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==1" ng-click="keypointEditor.changeVisibility($index, 0)"><span class="glyphicon glyphicon-eye-open"></span></button>
-                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==0" ng-click="keypointEditor.changeVisibility($index, 1)"><span class="glyphicon glyphicon-eye-close"></span></button>
+                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==1" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-open"></span></button>
+                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==0" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-close"></span></button>
                         </th>
                         <th>
                             <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>
