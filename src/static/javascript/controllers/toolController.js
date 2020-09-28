@@ -2174,22 +2174,31 @@ angular.module('CVGTool')
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
                 if (object.type.localeCompare("person") === 0) {
                     object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
-                }
-                
-                if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(shape.cameraPoints);
+
+                    for (var j=0; j< object.keypoints.length; j++){
+                        if (object.keypoints[j].length === 0) {
+                            object.keypoints[j] = [-1,-1,0]
+                        }
+                    }
                 } else {
                     object.keypoints = shape.cameraPoints;
                 }
+                
+                if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints);
+                } 
 
                 if (object.type.localeCompare("person") === 0) {
                     var visibilities = shape.visibilities.slice();
                     
                     // Add the visibility values again
                     for (var i=0; i<object.keypoints.length; i++){
-                        object.keypoints[i].push(visibilities[i]);
+                        if (object.keypoints[i].length == 2) {
+                            object.keypoints[i].push(visibilities[i]);
+                        }   
                     }
                 }
+
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
@@ -2539,10 +2548,41 @@ angular.module('CVGTool')
                 }
                 $scope.canvasesManager.redrawCanvases();
             }
+
+            _this.previousLabel = function() {
+                if (_this.selectedLabel - 1 < 0) {
+                    _this.selectedLabel = 0;
+                } else {
+                    _this.selectedLabel--;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+                $scope.canvasesManager.redrawCanvases();
+            }
+
+            _this.selectLabel = function(labelIndex) {
+                if (_this.selectedLabel == labelIndex){
+                    return
+                } else {
+                    _this.selectedLabel = labelIndex;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+                $scope.canvasesManager.redrawCanvases();
+            }
             
             // Only works in PT
-            _this.changeVisibility = function(index, visibility) {
-                _this.keypointEditorData.shapes[0].visibilities[index] = visibility;
+            _this.changeVisibility = function(index) {
+                if (_this.keypointEditorData.shapes[0].visibilities[index] == 0) {
+                    _this.keypointEditorData.shapes[0].visibilities[index] = 1;
+                } else {
+                    _this.keypointEditorData.shapes[0].visibilities[index] = 0;
+                }
+                $scope.canvasesManager.redrawCanvases();
             }
 
             // Update the stored pose AIK limb values with the actual ones
@@ -2604,19 +2644,6 @@ angular.module('CVGTool')
 
             _this.unsetMoveWholeShape = function() {
                 _this.moveWholeShape = false;
-            }
-
-            _this.previousLabel = function() {
-                if (_this.selectedLabel - 1 < 0) {
-                    _this.selectedLabel = 0;
-                } else {
-                    _this.selectedLabel--;
-                    // Reset the edition
-                    if (_this.keypointEditorData.indexBeingEdited !== null) {
-                        $scope.toolsManager.switchSubTool("");
-                    }
-                }
-                $scope.canvasesManager.redrawCanvases();
             }
 
             _this.addNewTag = function() {
@@ -3508,7 +3535,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                var lightColor = "#9FFFBF";
+                var lightColor = "#BDBBC9";
                 // Draw edges
                 _this.drawEdges(context, color);
 
@@ -4705,6 +4732,10 @@ angular.module('CVGTool')
                         moveWholeShape: {
                             label: 'Shift',
                             shortcut: 'shift'
+                        },
+                        changeVisibility: {
+                            label: 'Shift + V',
+                            shortcut: 'shift+v'
                         }
                     },
                     {
@@ -4752,6 +4783,10 @@ angular.module('CVGTool')
                         moveWholeShape: {
                             label: 'Shift',
                             shortcut: 'shift'
+                        },
+                        changeVisibility: {
+                            label: 'Shift + X',
+                            shortcut: 'shift+x'
                         }
                     }
                 ]
@@ -4831,7 +4866,7 @@ angular.module('CVGTool')
                     description: 'Test',
                     callback: function() {
                         if ($scope.keypointEditor.editorActive === true) {
-                            console.log($scope.keypointEditor.keypointEditorData);
+                            // console.log($scope.keypointEditor.keypointEditorData);
                         }
                     }
                 })
@@ -4849,6 +4884,15 @@ angular.module('CVGTool')
                                 $scope.keypointEditor.startEditingSelectedLabel($scope.keypointEditor.selectedLabel, tool);
                             }
                             
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.changeVisibility.shortcut,
+                    description: "Change selected label's visibility",
+                    callback: function() {
+                        if (($scope.toolParameters.isPosetrack) && ($scope.keypointEditor.editorActive === true) && ($scope.objectManager.isTypeSelected("person"))) {
+                            $scope.keypointEditor.changeVisibility($scope.keypointEditor.selectedLabel);
                         }
                     }
                 });
