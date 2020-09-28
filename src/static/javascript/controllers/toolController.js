@@ -2174,22 +2174,31 @@ angular.module('CVGTool')
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
                 if (object.type.localeCompare("person") === 0) {
                     object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
-                }
-                
-                if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(shape.cameraPoints);
+
+                    for (var j=0; j< object.keypoints.length; j++){
+                        if (object.keypoints[j].length === 0) {
+                            object.keypoints[j] = [-1,-1,0]
+                        }
+                    }
                 } else {
                     object.keypoints = shape.cameraPoints;
                 }
+                
+                if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints);
+                } 
 
                 if (object.type.localeCompare("person") === 0) {
                     var visibilities = shape.visibilities.slice();
                     
                     // Add the visibility values again
                     for (var i=0; i<object.keypoints.length; i++){
-                        object.keypoints[i].push(visibilities[i]);
+                        if (object.keypoints[i].length == 2) {
+                            object.keypoints[i].push(visibilities[i]);
+                        }   
                     }
                 }
+
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
