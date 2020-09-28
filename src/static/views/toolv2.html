@@ -531,8 +531,8 @@
                     <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
                         <td>
                             <span ng-if="keypointEditor.selectedLabel === $index" class="glyphicon glyphicon-arrow-right"></span>
-                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
-                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.selectLabel($index)" class="label label-primary">{{tag}}</span>
+                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.selectLabel($index)"class="label label-success">{{tag}}</span></td>
                         <th>  
                             <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>
                             <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>

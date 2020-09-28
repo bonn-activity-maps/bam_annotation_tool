@@ -2539,6 +2539,32 @@ angular.module('CVGTool')
                 }
                 $scope.canvasesManager.redrawCanvases();
             }
+
+            _this.previousLabel = function() {
+                if (_this.selectedLabel - 1 < 0) {
+                    _this.selectedLabel = 0;
+                } else {
+                    _this.selectedLabel--;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+                $scope.canvasesManager.redrawCanvases();
+            }
+
+            _this.selectLabel = function(labelIndex) {
+                if (_this.selectedLabel == labelIndex){
+                    return
+                } else {
+                    _this.selectedLabel = labelIndex;
+                    // Reset the edition
+                    if (_this.keypointEditorData.indexBeingEdited !== null) {
+                        $scope.toolsManager.switchSubTool("");
+                    }
+                }
+                $scope.canvasesManager.redrawCanvases();
+            }
             
             // Only works in PT
             _this.changeVisibility = function(index, visibility) {
@@ -2604,19 +2630,6 @@ angular.module('CVGTool')
 
             _this.unsetMoveWholeShape = function() {
                 _this.moveWholeShape = false;
-            }
-
-            _this.previousLabel = function() {
-                if (_this.selectedLabel - 1 < 0) {
-                    _this.selectedLabel = 0;
-                } else {
-                    _this.selectedLabel--;
-                    // Reset the edition
-                    if (_this.keypointEditorData.indexBeingEdited !== null) {
-                        $scope.toolsManager.switchSubTool("");
-                    }
-                }
-                $scope.canvasesManager.redrawCanvases();
             }
 
             _this.addNewTag = function() {
