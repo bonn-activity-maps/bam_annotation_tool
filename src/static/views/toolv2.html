@@ -540,8 +540,8 @@
                             <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="keypointEditor.startEditingSelectedLabel($index, '');"><span class="glyphicon glyphicon-edit"></span></button>
                         </th>
                         <th ng-if="toolParameters.isPosetrack && objectManager.selectedObject.type.localeCompare('person')==0">
-                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==1" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-open"></span></button>
-                            <button class="btn btn-default" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==0" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-close"></span></button>
+                            <button class="btn btn-success" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==1" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-open"></span></button>
+                            <button class="btn" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==0" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-close"></span></button>
                         </th>
                         <th>
                             <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>

@@ -2573,6 +2573,7 @@ angular.module('CVGTool')
                 } else {
                     _this.keypointEditorData.shapes[0].visibilities[index] = 0;
                 }
+                $scope.canvasesManager.redrawCanvases();
             }
 
             // Update the stored pose AIK limb values with the actual ones
@@ -3525,7 +3526,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                var lightColor = "#9FFFBF";
+                var lightColor = "#BDBBC9";
                 // Draw edges
                 _this.drawEdges(context, color);
 
