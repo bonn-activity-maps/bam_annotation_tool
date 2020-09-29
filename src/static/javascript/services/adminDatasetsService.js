@@ -222,6 +222,26 @@ angular.module('CVGTool')
                     function errorCallback(response) {
                         callbackError(response.data.msg);
                     })
+            },
+
+            // Load Ignore Regions of a local dataset
+            loadPTPoses: function(dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/dataset/loadPTPoses',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
+                    data: {
+                        'name': dataset.name,
+                        'type': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                        callbackSuccess(response.data.msg)
+                    },
+                    function errorCallback(response) {
+                        callbackError(response.data.msg);
+                    })
             }
         }
     }]);

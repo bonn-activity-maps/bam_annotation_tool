@@ -89,13 +89,13 @@ class AnnotationService:
         if result == 'Error':
             return False, 'Error retrieving annotations', 400
         else:
-            # Check if there are box type for aik and convert to complete box with 8 keypoints
             if start_annotation.dataset.is_aik():
                 for annotation in result:
                     for obj in annotation['objects']:
                         if obj['type'] == 'boxAIK' and obj['keypoints']:
                             a, b, c = obj['keypoints']
                             obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+
             return True, result, 200
 
     # Get annotations (all frames) for given dataset

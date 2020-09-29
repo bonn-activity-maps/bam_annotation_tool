@@ -34,6 +34,9 @@
                                             <button ng-click="loadIgnoreRegions(dataset)" ng-if="dataset.type == 'poseTrack'"
                                                     title="Load Ignore Regions" class="btn btn-info">
                                                 <span class="glyphicon glyphicon-upload"></span></button>
+                                            <button ng-click="loadPTPoses(dataset)" ng-if="dataset.type == 'poseTrack'"
+                                                    title="Upload Poses" class="btn btn-info">
+                                                <span class="glyphicon glyphicon-open-file"></span></button>
                                             <button ng-click="exportDataset(dataset)" class="btn btn-primary">
                                                 <span class="glyphicon glyphicon-download"></span></button>
 <!--                                            Button to load ignore regions-->

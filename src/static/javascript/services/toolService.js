@@ -97,10 +97,10 @@ angular.module('CVGTool')
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg)
-                }),
+                },
                 function errorCallback(response) {
-                    callbackError('danger', response)
-                }
+                    callbackError('danger', response.data.msg)
+                })
         },
 
         // Gets all the available objects types: Person, microwave, etc
