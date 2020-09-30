@@ -445,12 +445,17 @@ class AnnotationService:
             return True, 'ok', 200
 
     # Interpolate all keypoints between 2 points
-    def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
+    def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2, obj_type):
         # Interpolate for all keypoints in all frames in between
         interpolated_kps = []
         for i in range(num_kpts):
             if len(kps1[i]) != 0 and len(kps2[i]) != 0: # If one of the two points is empty -> Not interpolate
-                interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames).tolist()
+                interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames)
+                interpolated_coords = np.round(interpolated_coords, 2).tolist()
+                if obj_type == 'person':    # If it's person, set the third coordinate (visibility) to either 0 or 1
+                    # Round interpolated float to closest integer
+                    for frame in range(num_frames):
+                        interpolated_coords[frame][2] = np.rint(interpolated_coords[frame][2])
                 interpolated_kps.append(interpolated_coords)
             else:
                 empty = []
@@ -489,7 +494,7 @@ class AnnotationService:
         final_result = 'ok'
 
         # Final keypoints
-        final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2)
+        final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2, type)
 
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
