@@ -170,14 +170,8 @@ class AnnotationService:
     # Return the object with the 3d points for AIK datasets
     # Always a single object in "objects" so always objects[0] !!
     def update_annotation_AIK(self, annotation):
-
         # Triangulate points from 2D points to 3D if dataset is AIK
         keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
-
-        # If the object is not a person -> we have to calculate 8 points for the box of object
-        # if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
-        #     kp1, kp2, kp3 = np.asarray(keypoints_3d)
-        #     keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
 
     # Calculate mean in z (heigth) between 0 and 1
@@ -219,20 +213,6 @@ class AnnotationService:
         user_action = UserAction(annotation.user, 'annotation', annotation.scene, annotation.dataset)
         user_action_manager.create_user_action(user_action)
         return True, 'ok', 200
-
-    # Return 'ok' if the annotation has been updated
-    # Same as above but for PoseTrack
-
-    # def update_annotation_PT(self, annotation):
-    #     # keypoints = []
-    #     # for point in points:
-    #     #     keypoints.append(point["points"][0])
-    #     # object["keypoints"] = keypoints
-    #     # object["category_id"] = 1
-    #     result = self.update_annotation_frame_object(annotation)
-    #     if result == 'Error':
-    #         return False, 'Error updating annotation', 400
-    #     return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed
     def remove_annotation(self, annotation):
@@ -402,9 +382,7 @@ class AnnotationService:
     # The annotation.objects[0].keypoints should contain a list with empty keypoints
     def update_annotation_frame_object_label(self, annotation, label, final_kpts):
         # Check if exists object in frame
-        # print('annotation: ',annotation)
         found = annotationManager.get_frame_object(annotation)
-        # print("found: ",found)
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':  # Add new existing object in frame
@@ -785,8 +763,6 @@ class AnnotationService:
             if result == 'Error':
                 final_result = False   # finalResult False if there is some problem
 
-        # Remove folder with annotations
-        # shutil.rmtree(folder_path)
         return final_result
 
     # Add annotation of objects to database from annotations_file

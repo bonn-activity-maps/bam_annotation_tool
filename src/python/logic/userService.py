@@ -111,7 +111,6 @@ class UserService:
                 if not result:
                     return False, "Error duplicating annotations", 400
 
-                ## TODO: send password to email
                 return True, {'name': user.name, 'password': pwd}, 200
 
     # Check if the the user has annotations of his own for the assignated datasets and create a copy of root's otherwise
