@@ -424,20 +424,35 @@ class AnnotationService:
 
     # Interpolate all keypoints between 2 points
     def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2, obj_type):
+        kps1, kps2 = np.array(kps1), np.array(kps2)
         # Interpolate for all keypoints in all frames in between
         interpolated_kps = []
         for i in range(num_kpts):
-            if len(kps1[i]) != 0 and len(kps2[i]) != 0: # If one of the two points is empty -> Not interpolate
-                interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames)
+            # If one of the two points is empty -> Do not interpolate
+            # If not person, check if point is empty (size = 0).
+            if obj_type != 'person' and kps1[i].size != 0 and kps2[i].size != 0:
+                interpolated_coords = np.linspace(kps1[i], kps2[i], num=num_frames)
                 interpolated_coords = np.round(interpolated_coords, 2).tolist()
-                if obj_type == 'person':    # If it's person, set the third coordinate (visibility) to either 0 or 1
-                    # Round interpolated float to closest integer
-                    for frame in range(num_frames):
-                        interpolated_coords[frame][2] = np.rint(interpolated_coords[frame][2])
                 interpolated_kps.append(interpolated_coords)
+            # If person, interpolate only if both points are annotated.
+            elif obj_type == 'person' and (kps1[i] > 0).all() and (kps2[i] > 0).all():
+                interpolated_coords = np.linspace(kps1[i], kps2[i], num=num_frames)
+                interpolated_coords = np.round(interpolated_coords, 2).tolist()
+                # If it's person, set the third coordinate (visibility) to either 0 or 1
+                for frame in range(num_frames):
+                    # Round interpolated float to closest integer
+                    interpolated_coords[frame][2] = np.rint(interpolated_coords[frame][2])
+                interpolated_kps.append(interpolated_coords)
+            # If person and one of the points empty, insert [0, 0, 0].
+            elif obj_type == 'person' and not ((kps1 > 0).all() and (kps2 > 0).all()):
+                empty = []
+                for frame in range(num_frames):
+                    empty.append([0, 0, 0])
+                interpolated_kps.append(empty)
+            # If not person and one of the points empty, insert empty array [].
             else:
                 empty = []
-                for i in range(num_frames):
+                for frame in range(num_frames):
                     empty.append([])
                 interpolated_kps.append(empty)
 
