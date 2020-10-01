@@ -203,7 +203,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -225,7 +225,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, frame);
             }, function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -277,7 +277,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg.maxUid, type)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -313,10 +313,9 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                 callbackSuccess()
-            },
-                function errorCallback(response) {
-                    callbackError('danger', response);
-                })
+            }, function errorCallback(response) {
+                    callbackError('danger', response.data.msg);
+            })
         },
 
         // Create new poseTrack IgnoreRegion and precompute annotations
@@ -334,11 +333,10 @@ angular.module('CVGTool')
                     'minIRTrackID': minIRTrackID
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess()
-                },
-                function errorCallback(response) {
-                    callbackError('danger', response);
-                })
+                callbackSuccess()
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg);
+            })
         },
 
         // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
@@ -361,7 +359,7 @@ angular.module('CVGTool')
                     callbackSuccess("Person ID changed!", new_person_id)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -388,7 +386,7 @@ angular.module('CVGTool')
                     callbackSuccess("Track ID changed!", new_track_id)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -416,7 +414,7 @@ angular.module('CVGTool')
                     callbackSuccess(uidObject, objectType, startFrames, endFrame);
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -444,7 +442,7 @@ angular.module('CVGTool')
                     callbackSuccess(uidObject, objectType, startFrame, endFrame);
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -488,7 +486,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -534,7 +532,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -556,7 +554,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg, objectUID)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -581,7 +579,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -648,8 +646,8 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback() {
                 callbackSuccess();
-            }, function errorCallback() {
-                callbackError();
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -698,10 +696,10 @@ angular.module('CVGTool')
                     'newUid': newUid,
                     'objectType': objectType
                 }
-            }).then(function successCallback(data) {
-                callbackSuccess(data.data.msg);
-            }, function errorCallback(data) {
-                callbackError(data.data.msg);
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError(response.data.msg);
             })
         },
 
@@ -720,7 +718,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, uid);
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         },
 

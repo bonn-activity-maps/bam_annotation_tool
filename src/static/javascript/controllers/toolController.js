@@ -1582,7 +1582,11 @@ angular.module('CVGTool')
                     let object = $scope.objectManager.selectedObject;
                     _this.retrieveAnnotation(object.uid, object.type, [$scope.timelineManager.slider.value]);
                 }
-                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.timelineManager.slider.value, $scope.timelineManager.slider.value, $scope.toolParameters.user.name, $scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, successFunction, $scope.messagesManager.sendMessage);
+                toolSrvc.batchDeleteAnnotations($scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name,
+                    $scope.timelineManager.slider.value, $scope.timelineManager.slider.value,
+                    $scope.toolParameters.user.name, $scope.objectManager.selectedObject.uid,
+                    $scope.objectManager.selectedObject.type, successFunction, $scope.messagesManager.sendMessage);
             }
         }
 
