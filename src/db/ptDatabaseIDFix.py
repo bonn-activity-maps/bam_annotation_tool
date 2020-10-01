@@ -1,6 +1,5 @@
 from pymongo import MongoClient, errors
 import logging
-from bson.son import SON
 
 # AnnotationManager logger
 log = logging.getLogger('annotationManager')

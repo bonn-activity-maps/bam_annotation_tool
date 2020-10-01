@@ -26,8 +26,6 @@ db.action.createIndex({"dataset": 1, "user": 1, "startFrame": 1, "endFrame": 1, 
 db.action.createIndex({"dataset": 1, "startFrame": 1, "endFrame": 1, "objectUID": 1, "name": 1});
 db.action.createIndex({"dataset": 1, "startFrame": 1, "objectUID": 1, "name": 1});
 
-db.task.createIndex({"dataset": 1, "assignedUser": 1, "name": 1, "scene": 1});
-
 db.poseProperty.createIndex( {"dataset":1, "scene": 1, "type": 1, "uid": 1});
 
 db.userAction.createIndex({"dataset": 1, "user": 1, "action": 1, "timestamp": 1});
