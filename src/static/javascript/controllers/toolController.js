@@ -1974,32 +1974,66 @@ angular.module('CVGTool')
 
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
-                var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
+                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+                    // First remove -1 values from the frame array
+                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+                        return value >= 0;
+                    })
+
+                    // Get the min used frame
+                    var minFrame = Math.min(...framesFromFiltered);
+
                     var frameArray = [];
-                    for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
+                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
-                };
+                }
+                
+                
+                
+                // var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
+                //     var frameArray = [];
+                //     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
+                //     _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                // };
 
                 if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+                
+                // Create structure for the object to interpolate
+                var framesFrom = []
+                for (var i=0; i<$scope.objectManager.selectedType.realLabels.length; i++) {
+                    framesFrom.push(-1);
+                }
 
-                var frameFrom = null;
-                // Find the frame to interpolate to
-                for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
-                    if ($scope.objectManager.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
-                        frameFrom = i;
+                // For each label find a possible frame to interpolate
+                for (var i=0; i<framesFrom.length; i++) {
+                    for (var j= frameTo - 1; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
+                        if ($scope.objectManager.hasAnnotationForLabel(objectUID, objectType, j, i)) {
+                            framesFrom[i] = j;
+                            break;
+                        }
+                    }
+                }
+                
+                // Check if there is something to interpolate
+                var doit = false;   
+                for (var i=0; i < framesFrom.length; i++) {
+                    if (framesFrom[i] != -1) {
+                        doit = true;
                         break;
                     }
                 }
 
-                if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
-                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
-                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
-                    [frameFrom], frameTo,
-                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
-                    objectType,
-                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
-                    callbackSuccess, $scope.messagesManager.sendMessage,
-                    $scope.objectManager.selectedObject.uid);
+                if (doit) {
+                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                        [frameFrom], frameTo,
+                        $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
+                        objectType,
+                        $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
+                        callbackSuccess, $scope.messagesManager.sendMessage,
+                        $scope.objectManager.selectedObject.uid);                } else {
+                    _this.retrieveAnnotation(objectUID, objectType, [frameTo])
+                }
             };
 
             // For ignore regions, adds a new point at the end of the region
