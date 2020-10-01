@@ -1972,7 +1972,7 @@ angular.module('CVGTool')
                 }
             };
 
-            // Interpolate
+            // Interpolate in AIK
             _this.interpolate = function (objectUID, objectType, frameTo) {
                 var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
                     // First remove -1 values from the frame array
@@ -1987,20 +1987,12 @@ angular.module('CVGTool')
                     for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
-                
-                
-                
-                // var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
-                //     var frameArray = [];
-                //     for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
-                //     _this.retrieveAnnotation(objectUID, objectType, frameArray);
-                // };
 
-                if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
-                
+                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+
                 // Create structure for the object to interpolate
                 var framesFrom = []
-                for (var i=0; i<$scope.objectManager.selectedType.realLabels.length; i++) {
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
                     framesFrom.push(-1);
                 }
 
@@ -2013,7 +2005,7 @@ angular.module('CVGTool')
                         }
                     }
                 }
-                
+
                 // Check if there is something to interpolate
                 var doit = false;   
                 for (var i=0; i < framesFrom.length; i++) {
@@ -2024,16 +2016,40 @@ angular.module('CVGTool')
                 }
 
                 if (doit) {
-                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
-                        $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
-                        [frameFrom], frameTo,
-                        $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
-                        objectType,
-                        $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
-                        callbackSuccess, $scope.messagesManager.sendMessage,
-                        $scope.objectManager.selectedObject.uid);                } else {
+                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+                } else {
                     _this.retrieveAnnotation(objectUID, objectType, [frameTo])
                 }
+            }
+
+            // Interpolate
+            _this.interpolate = function (objectUID, objectType, frameTo) {
+                var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
+                    var frameArray = [];
+                    for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                };
+
+                if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+
+                var frameFrom = null;
+                // Find the frame to interpolate to
+                for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
+                    if ($scope.objectManager.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
+                        frameFrom = i;
+                        break;
+                    }
+                }
+
+                if (frameFrom === null || frameFrom + 1 === frameTo) return; // Nothing found to interpolate to
+                toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name,
+                    $scope.toolParameters.activeDataset.type, $scope.canvasesManager.canvases[0].activeCamera.filename,
+                    [frameFrom], frameTo,
+                    $scope.objectManager.selectedObject.frames[frameTo - $scope.toolParameters.frameFrom].original_uid,
+                    objectType,
+                    $scope.objectManager.selectedObject.frames[frameFrom - $scope.toolParameters.frameFrom].original_uid,
+                    callbackSuccess, $scope.messagesManager.sendMessage,
+                    $scope.objectManager.selectedObject.uid);
             };
 
             // For ignore regions, adds a new point at the end of the region
