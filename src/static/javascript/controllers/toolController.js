@@ -1976,6 +1976,56 @@ angular.module('CVGTool')
                 }
             };
 
+            // Interpolate in AIK
+            _this.interpolate = function (objectUID, objectType, frameTo) {
+                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
+                    // First remove -1 values from the frame array
+                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
+                        return value >= 0;
+                    })
+
+                    // Get the min used frame
+                    var minFrame = Math.min(...framesFromFiltered);
+
+                    var frameArray = [];
+                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
+
+                // Create structure for the object to interpolate
+                var framesFrom = []
+                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
+                    framesFrom.push(-1);
+                }
+
+                // For each label find a possible frame to interpolate
+                for (var i=0; i<framesFrom.length; i++) {
+                    for (var j= frameTo - 1; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
+                        if ($scope.objectManager.hasAnnotationForLabel(objectUID, objectType, j, i)) {
+                            framesFrom[i] = j;
+                            break;
+                        }
+                    }
+                }
+
+                // Check if there is something to interpolate
+                var doit = false;   
+                for (var i=0; i < framesFrom.length; i++) {
+                    if (framesFrom[i] != -1) {
+                        doit = true;
+                        break;
+                    }
+                }
+
+                if (doit) {
+                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
+                } else {
+                    _this.retrieveAnnotation(objectUID, objectType, [frameTo])
+                }
+            }
+
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
                 var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
