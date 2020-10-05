@@ -1447,7 +1447,7 @@ angular.module('CVGTool')
                     callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
-            _this.replicateStaticObject = function(uid, type, frame) {
+            _this.replicateStaticObject = function(uid, type, frame, frameTo) {
                 var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
                     var frameArray = [];
                     if (endFrame > $scope.toolParameters.frameTo) endFrame = $scope.toolParameters.frameTo;
@@ -1455,7 +1455,7 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
 
-                toolSrvc.replicateStaticObject($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, $scope.optionsManager.replicateOptions.replicateTo, $scope.toolParameters.maxVideoFrame ,uid, type,
+                toolSrvc.replicateStaticObject($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, frameTo, $scope.toolParameters.maxVideoFrame ,uid, type,
                     callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
@@ -1469,9 +1469,9 @@ angular.module('CVGTool')
 
                     if ($scope.objectManager.isStaticType(type)) {
                         if ($scope.optionsManager.replicateOptions.replicateToTheMaxFrame) {
-                            _this.replicate(uid, type, frame);
+                            _this.replicateStaticObject(uid, type, $scope.toolParameters.maxVideoFrame);
                         } else {
-                            _this.replicateStaticObject(uid, type, frame);
+                            _this.replicateStaticObject(uid, type, $scope.optionsManager.replicateOptions.replicateTo);
                         }
                     } else {
                         if ($scope.optionsManager.options.autoInterpolate) {
