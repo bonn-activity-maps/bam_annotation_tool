@@ -428,8 +428,12 @@ class AnnotationManager:
             # Filter each annotation and select only objects with uid and type
             array_filter = [{"elem.track_id": {"$eq": start_annotation.objects[0].track_id}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
 
-        # Update object to empty list
-        new_values = {"$set": {"objects.$[elem].keypoints": []}}
+        # Update object to empty list. If boxAIK remove also the labels
+        if start_annotation.objects[0].type == 'boxAIK':
+            new_values = {"$set": {"objects.$[elem].keypoints": [], "objects.$[elem].labels": []}}
+
+        else:
+            new_values = {"$set": {"objects.$[elem].keypoints": []}}
 
         try:
             result = self.collection.update_many(query, new_values, upsert=False, array_filters=array_filter)
