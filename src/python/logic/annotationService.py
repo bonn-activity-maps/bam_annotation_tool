@@ -613,6 +613,27 @@ class AnnotationService:
                 return False, 'Error replicating annotation in frame '+frame, 400
         return True, 'ok', 200
 
+    # Replicate and store the annotation for an static object between start and end frame
+    # and delete frames after end frame if it is different from last dataset frame
+    # Always a single object in "objects" so always objects[0] !!
+    def replicate_annotation_static_object(self, dataset, scene, user, uid_object, object_type,
+                                           start_frame, end_frame, last_dataset_frame):
+        success, msg, status = self.replicate_annotation(dataset, scene, user, uid_object, object_type, start_frame, end_frame, 0, True)
+
+        # Delete frames after end frame if it's not the last frame of the dataset
+        if end_frame+1 < last_dataset_frame:
+            obj = Object(uid_object, object_type, dataset_type=dataset.type)
+            start_annotation = Annotation(dataset, scene, end_frame+1, user, [obj])
+            end_annotation = Annotation(dataset, scene, last_dataset_frame, user, [obj])
+            result = annotationManager.remove_frame_object(start_annotation, end_annotation)
+            if result == 'ok' and success:
+                return True, result, 200
+            else:
+                return False, 'Error replicating annotation', 500
+
+        return success, msg, status
+
+
     # Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
     def force_limb_length(self, annotation, start_labels, end_labels, limb_length):
         if annotation.dataset.is_pt() or annotation.objects[0].type != 'poseAIK':

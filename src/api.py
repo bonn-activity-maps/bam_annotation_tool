@@ -498,6 +498,19 @@ def replicate_annotation():
                                                                   req_data['track_id'], req_data["forward"])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Replicate static object between start and end frame
+# and delete frames after last frame if is different from last frame of dataset
+@app.route('/api/annotation/replicate/staticobject', methods=['POST'])
+@flask_login.login_required
+def replicate_annotation_static_object():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    success, msg, status = annotationService.replicate_annotation_static_object(dataset, req_data['scene'], req_data['user'],
+                                                                  int(req_data['uidObject']), req_data['objectType'],
+                                                                  req_data['startFrame'], req_data['endFrame'],
+                                                                  req_data['lastDatasetFrame'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
 
 # Only to check that the method works
 # Update only one label in one object in one frame
