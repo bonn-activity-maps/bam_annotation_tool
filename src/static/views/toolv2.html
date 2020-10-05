@@ -364,7 +364,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 600px;" ng-show="!keypointEditor.editorMinimized">
+    <div class="panel-body" style="height: 620px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
             <div class="col col-md-6">
                 <form class="form-horizontal">
@@ -578,10 +578,39 @@
         <p style="font-size: 9px;"><b>Shift + drag point</b>: move the whole object</p>
         <hr>
         <div class="row">
-            <div class="col col-md-4">
+            <div class="col col-md-2">
                 <button class="btn-success" ng-click="commonManager.updateAnnotation();">Save</button>
             </div>
-            <div class="col col-md-4"></div>
+            <div class="col col-md-6">
+                <div ng-show="objectManager.isStaticType(objectManager.selectedObject.type)">
+                    <div class="row">
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <p style="font-size: 9px;">Auto-replicate</p>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" ng-change="optionsManager.replicateOptionchanged();" ng-model="optionsManager.replicateOptions.replicateToTheMaxFrame"></input>
+                            </div>
+                            <div class="form-group" ng-show="!optionsManager.replicateOptions.replicateToTheMaxFrame">
+                                <button class="btn btn-sm btn-primary" aria-haspopup="true" aria-expanded="false">
+                                    Replicate
+                                </button>
+                                <div class="btn-group dropup">
+                                    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="glyphicon glyphicon-cog"></span>
+                                    </button>
+                                    <div id="ReplicateDropdown" class="dropdown-menu dropup text-center">
+                                        <!-- Dropdown menu links -->
+                                        <li class="dropdown-header">Replicate to:</li>
+                                        <li class="dropdown-item"><input type="number"  ng-change="optionsManager.replicateOptionChanged();" ng-model="optionsManager.replicateOptions.replicateTo"></li>
+                                        <li class="dropdown-item"><p>Max frame: <b>{{toolParameters.maxVideoFrame}}</b></p></li>
+                                    </div>
+                                </div>        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="col col-md-4">
                 <button class="btn-primary" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('dynamic')==0" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
             </div>

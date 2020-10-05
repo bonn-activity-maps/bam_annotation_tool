@@ -146,6 +146,10 @@ angular.module('CVGTool')
                 });
             },
 
+            getMaxFrame: function() {
+                return sessionData.maxFrame;
+            },
+
             // Check the min number of frames for the video
             setMinFrame: function(dataset, datasetType, video) {
                 $http({

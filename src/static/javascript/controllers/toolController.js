@@ -68,6 +68,7 @@ angular.module('CVGTool')
                     $interval.cancel(_this.promise); // If we are in the last frame, stop the $interval
                 } else {
                     _this.slider.value += _this.frameJumpNumber;
+                    $scope.optionsManager.replicateOptionChanged();
                 }
             }
 
@@ -82,6 +83,7 @@ angular.module('CVGTool')
                     _this.slider.value = _this.slider.options.floor;
                 } else {
                     _this.slider.value -= _this.frameJumpNumber;
+                    $scope.optionsManager.replicateOptionChanged();
                 }
             }  
 
@@ -254,6 +256,7 @@ angular.module('CVGTool')
             _this.frameFrom = stateParams.obj.from;
             _this.frameTo = stateParams.obj.to;
             _this.numberOfFrames = _this.frameTo - _this.frameFrom;
+            _this.maxVideoFrame = 0;
             _this.frameList = [];
             _this.fromTaskHome = stateParams.obj.fromTaskHome;
             _this.showObjectTypeAlert = false;
@@ -271,6 +274,11 @@ angular.module('CVGTool')
                     frames.push(i);
                 }
                 _this.frameList = frames;
+            }
+            
+            // Gets the maximum frame of the video
+            _this.setMaxVideoFrame = function(frame) {
+                _this.maxVideoFrame = frame;
             }
 
             // Closes the alert to select an object type again
@@ -1448,7 +1456,11 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
                     if ($scope.objectManager.isStaticType(type)) {
-                        _this.replicate(uid, type, frame);
+                        if ($scope.OptionsManager.replicateOptions.replicateToTheMaxFrame()) {
+                            _this.replicate(uid, type, frame);
+                        } else {
+
+                        }
                     } else {
                         if ($scope.optionsManager.options.autoInterpolate) {
                             _this.interpolate(uid, type, frame);
@@ -2495,6 +2507,7 @@ angular.module('CVGTool')
 
             // Opens the panel to edit keypoints 
             _this.openEditor = function(object, frame) {
+                $scope.toolParameters.setMaxVideoFrame(navSrvc.getMaxFrame());
                 _this.editorActive = true;
                 $scope.objectManager.selectedObject = object;
                 $scope.timelineManager.slider.value = frame;
@@ -4721,11 +4734,21 @@ angular.module('CVGTool')
                 visualizeActions: false
             }
 
+            _this.replicateOptions = {
+                replicateToTheMaxFrame: true,
+                replicateTo: 0
+            }
+
             navSrvc.setOptions(_this.options); // First set
 
             _this.optionChanged = function() {
                 navSrvc.setOptions(_this.options);
                 $scope.canvasesManager.redrawCanvases();
+            }
+
+            _this.replicateOptionChanged = function() {
+                if (_this.replicateOptions.replicateTo < $scope.timelineManager.slider.value) _this.replicateOptions.replicateTo = $scope.timelineManager.slider.value;
+                if (_this.replicateOptions.replicateTo > $scope.toolParameters.maxVideoFrame) _this.replicateOptions.replicateTo = $scope.toolParameters.maxVideoFrame;
             }
 
         }
@@ -4915,9 +4938,7 @@ angular.module('CVGTool')
                     combo: "t",
                     description: 'Test',
                     callback: function() {
-                        if ($scope.keypointEditor.editorActive === true) {
-                            // console.log($scope.keypointEditor.keypointEditorData);
-                        }
+                        console.log($scope.toolParameters.maxVideoFrame);
                     }
                 })
                 .add({
@@ -5082,6 +5103,10 @@ angular.module('CVGTool')
         });
 
         document.getElementById("NumberOfCanvasesDropdown").addEventListener('click', function (event) { 
+            event.stopPropagation(); 
+        });
+
+        document.getElementById("ReplicateDropdown").addEventListener('click', function (event) { 
             event.stopPropagation(); 
         });
         

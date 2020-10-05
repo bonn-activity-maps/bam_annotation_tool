@@ -61,6 +61,23 @@ angular.module('CVGTool')
             });
         },
 
+        // getMaxVideoFrame: function(dataset, datasetType, video, callbackSuccess, callbackError) {
+        //     $http({
+        //         method: 'GET',
+        //         url: '/api/video/getMaxFrame',
+        //         headers: {
+        //             'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+        //             'video': video,
+        //             'dataset': dataset,
+        //             'datasetType': datasetType
+        //         }
+        //     }).then(function successCallback(response) {
+        //         callbackSuccess(response.data.msg)
+        //     }, function errorCallback(response) {
+        //         callbackError('danger', response.data.msg)
+        //     });
+        // },
+
         // Gets the image of a frame range, from a video and a dataset
         getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
