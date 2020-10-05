@@ -1447,6 +1447,18 @@ angular.module('CVGTool')
                     callbackSuccess, $scope.messagesManager.sendMessage);
             }
 
+            _this.replicateStaticObject = function(uid, type, frame) {
+                var callbackSuccess = function(objectUID, objectType, startFrame, endFrame) {
+                    var frameArray = [];
+                    if (endFrame > $scope.toolParameters.frameTo) endFrame = $scope.toolParameters.frameTo;
+                    for (var i = startFrame; i <= $scope.toolParameters.frameTo; i++) frameArray.push(i);
+                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
+                }
+
+                toolSrvc.replicateStaticObject($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, $scope.optionsManager.replicateOptions.replicateTo, $scope.toolParameters.maxVideoFrame ,uid, type,
+                    callbackSuccess, $scope.messagesManager.sendMessage);
+            }
+
             // Updates the annotation being edited
             _this.updateAnnotation = function() {
                 var callbackSuccess = function(uid, type, frame) {
@@ -1456,10 +1468,10 @@ angular.module('CVGTool')
                     _this.retrieveAnnotation(uid, type, [frame]);   // Retrieve the new annotated object
 
                     if ($scope.objectManager.isStaticType(type)) {
-                        if ($scope.OptionsManager.replicateOptions.replicateToTheMaxFrame()) {
+                        if ($scope.optionsManager.replicateOptions.replicateToTheMaxFrame) {
                             _this.replicate(uid, type, frame);
                         } else {
-
+                            _this.replicateStaticObject(uid, type, frame);
                         }
                     } else {
                         if ($scope.optionsManager.options.autoInterpolate) {

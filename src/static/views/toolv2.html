@@ -592,7 +592,7 @@
                                 <input type="checkbox" ng-change="optionsManager.replicateOptionchanged();" ng-model="optionsManager.replicateOptions.replicateToTheMaxFrame"></input>
                             </div>
                             <div class="form-group" ng-show="!optionsManager.replicateOptions.replicateToTheMaxFrame">
-                                <button class="btn btn-sm btn-primary" aria-haspopup="true" aria-expanded="false">
+                                <button class="btn btn-sm btn-primary" ng-click="commonManager.replicateStaticObject(objectManager.selectedObject.uid, objectManager.selectedObject.type, timelineManager.slider.value)">
                                     Replicate
                                 </button>
                                 <div class="btn-group dropup">

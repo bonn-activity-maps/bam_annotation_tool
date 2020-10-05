@@ -463,6 +463,31 @@ angular.module('CVGTool')
                 })
         },
 
+        replicateStaticObject: function(user, dataset, datasetType, scene, startFrame, endFrame, maxFrame, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/replicate/staticobject',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'lastDatasetFrame': maxFrame,
+                    'uidObject': uidObject,
+                    'datasetType': datasetType,
+                    'objectType': objectType,
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uidObject, objectType, startFrame, endFrame);
+            }, function errorCallback(response) {
+                callbackError("danger", response.data.msg);
+            })
+        },
+
         autoComplete: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
             uidObject2, callbackSuccess, callbackError) {
             $http({
