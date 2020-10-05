@@ -1454,7 +1454,6 @@ angular.module('CVGTool')
                     for (var i = startFrame; i <= $scope.toolParameters.frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 }
-
                 toolSrvc.replicateStaticObject($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, frame, frameTo, $scope.toolParameters.maxVideoFrame ,uid, type,
                     callbackSuccess, $scope.messagesManager.sendMessage);
             }
@@ -1469,10 +1468,8 @@ angular.module('CVGTool')
 
                     if ($scope.objectManager.isStaticType(type)) {
                         if ($scope.optionsManager.replicateOptions.replicateToTheMaxFrame) {
-                            _this.replicateStaticObject(uid, type, $scope.toolParameters.maxVideoFrame);
-                        } else {
-                            _this.replicateStaticObject(uid, type, $scope.optionsManager.replicateOptions.replicateTo);
-                        }
+                            _this.replicateStaticObject(uid, type, frame, $scope.toolParameters.maxVideoFrame);
+                        } 
                     } else {
                         if ($scope.optionsManager.options.autoInterpolate) {
                             _this.interpolate(uid, type, frame);
