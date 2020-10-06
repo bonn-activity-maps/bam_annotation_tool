@@ -14,6 +14,8 @@ from python.logic.actionService import ActionService
 from python.logic.activity_service import ActivityService
 from python.logic.user_action_service import UserActionService
 from python.logic.pose_property_service import PosePropertyService
+from python.logic.ptService import PTService
+
 
 from python.objects.user import User
 from python.objects.dataset import Dataset
@@ -46,6 +48,7 @@ actionService = ActionService()
 activity_service = ActivityService()
 user_action_service = UserActionService()
 pose_property_service = PosePropertyService()
+pt_service = PTService()
 
 from python.db_scripts.precomputeAnnotations import PrecomputeAnnotations
 precompute = PrecomputeAnnotations()
@@ -411,6 +414,13 @@ def update_annotation():
     success, msg, status = annotationService.update_annotation(annotation)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Get the numbers of the frames that can be annotated in a video for posetrack persons
+@app.route('/api/annotation/getFramesToAnnotatePersonsPT', methods=['GET'])
+@flask_login.login_required
+def get_frames_to_annotate_persons_pt():
+    req_data = request.get_json()
+    success, msg, status = pt_service.get_frames_to_annotate_per_video(req_data['video'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Validate frames for given dataset, video and user
 # frames: [[1, 2, ..],[3,..], ...], validated: ["correct", "incorrect", ..]

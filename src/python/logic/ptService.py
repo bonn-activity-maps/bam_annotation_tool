@@ -1,6 +1,13 @@
 
 class PTService:
 
+    frames_to_annotate_persons = {
+        "000002": [0, 4, 8]
+    }
+
+    def get_frames_to_annotate_per_video(self, video):
+        return self.frames_to_annotate_persons[video]
+
     # Method to read a dictionary key that may not exist.
     def safely_read_dictionary(self, dict, key):
         try:
