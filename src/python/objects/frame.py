@@ -1,5 +1,6 @@
 from python.objects.dataset import Dataset
 
+
 class Frame:
 
     def __init__(self, number, video, dataset, path=None, camera_parameters=None, has_ignore_regions=None,

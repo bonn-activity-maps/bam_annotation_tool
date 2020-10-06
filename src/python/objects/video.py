@@ -1,5 +1,6 @@
 from python.objects.dataset import Dataset
 
+
 class Video:
 
     def __init__(self, name, dataset, path=None, frames=0, type=None):

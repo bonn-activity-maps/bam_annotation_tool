@@ -170,14 +170,8 @@ class AnnotationService:
     # Return the object with the 3d points for AIK datasets
     # Always a single object in "objects" so always objects[0] !!
     def update_annotation_AIK(self, annotation):
-
         # Triangulate points from 2D points to 3D if dataset is AIK
         keypoints_3d, error_flag = self.obtain_3d_points_AIK(annotation)
-
-        # If the object is not a person -> we have to calculate 8 points for the box of object
-        # if annotation.objects[0].type != 'personAIK' and annotation.objects[0].type != 'poseAIK' and not error_flag:
-        #     kp1, kp2, kp3 = np.asarray(keypoints_3d)
-        #     keypoints_3d = aikService.create_box(kp1, kp2, kp3).tolist()
         return keypoints_3d, error_flag
 
     # Calculate mean in z (heigth) between 0 and 1
@@ -219,20 +213,6 @@ class AnnotationService:
         user_action = UserAction(annotation.user, 'annotation', annotation.scene, annotation.dataset)
         user_action_manager.create_user_action(user_action)
         return True, 'ok', 200
-
-    # Return 'ok' if the annotation has been updated
-    # Same as above but for PoseTrack
-
-    # def update_annotation_PT(self, annotation):
-    #     # keypoints = []
-    #     # for point in points:
-    #     #     keypoints.append(point["points"][0])
-    #     # object["keypoints"] = keypoints
-    #     # object["category_id"] = 1
-    #     result = self.update_annotation_frame_object(annotation)
-    #     if result == 'Error':
-    #         return False, 'Error updating annotation', 400
-    #     return True, 'Ok', 200
 
     # Return 'ok' if the annotation has been removed
     def remove_annotation(self, annotation):
@@ -402,9 +382,7 @@ class AnnotationService:
     # The annotation.objects[0].keypoints should contain a list with empty keypoints
     def update_annotation_frame_object_label(self, annotation, label, final_kpts):
         # Check if exists object in frame
-        # print('annotation: ',annotation)
         found = annotationManager.get_frame_object(annotation)
-        # print("found: ",found)
         if found == 'Error':
             return 'Error'
         elif found == 'No annotation':  # Add new existing object in frame
@@ -445,16 +423,36 @@ class AnnotationService:
             return True, 'ok', 200
 
     # Interpolate all keypoints between 2 points
-    def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2):
+    def interpolate(self, num_frames, num_kpts, kp_dim, kps1, kps2, obj_type):
+        kps1, kps2 = np.array(kps1), np.array(kps2)
         # Interpolate for all keypoints in all frames in between
         interpolated_kps = []
         for i in range(num_kpts):
-            if len(kps1[i]) != 0 and len(kps2[i]) != 0: # If one of the two points is empty -> Not interpolate
-                interpolated_coords = np.linspace(np.array(kps1[i]), np.array(kps2[i]), num=num_frames).tolist()
+            # If one of the two points is empty -> Do not interpolate
+            # If not person, check if point is empty (size = 0).
+            if obj_type != 'person' and kps1[i].size != 0 and kps2[i].size != 0:
+                interpolated_coords = np.linspace(kps1[i], kps2[i], num=num_frames)
+                interpolated_coords = np.round(interpolated_coords, 2).tolist()
                 interpolated_kps.append(interpolated_coords)
+            # If person, interpolate only if both points are annotated.
+            elif obj_type == 'person' and (kps1[i] > 0).all() and (kps2[i] > 0).all():
+                interpolated_coords = np.linspace(kps1[i], kps2[i], num=num_frames)
+                interpolated_coords = np.round(interpolated_coords, 2).tolist()
+                # If it's person, set the third coordinate (visibility) to either 0 or 1
+                for frame in range(num_frames):
+                    # Round interpolated float to closest integer
+                    interpolated_coords[frame][2] = np.rint(interpolated_coords[frame][2])
+                interpolated_kps.append(interpolated_coords)
+            # If person and one of the points empty, insert [0, 0, 0].
+            elif obj_type == 'person' and not ((kps1 > 0).all() and (kps2 > 0).all()):
+                empty = []
+                for frame in range(num_frames):
+                    empty.append([0, 0, 0])
+                interpolated_kps.append(empty)
+            # If not person and one of the points empty, insert empty array [].
             else:
                 empty = []
-                for i in range(num_frames):
+                for frame in range(num_frames):
                     empty.append([])
                 interpolated_kps.append(empty)
 
@@ -489,7 +487,7 @@ class AnnotationService:
         final_result = 'ok'
 
         # Final keypoints
-        final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2)
+        final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2, type)
 
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
@@ -614,6 +612,27 @@ class AnnotationService:
                 log.error('Error replicating annotation in frame '+frame)
                 return False, 'Error replicating annotation in frame '+frame, 400
         return True, 'ok', 200
+
+    # Replicate and store the annotation for an static object between start and end frame
+    # and delete frames after end frame if it is different from last dataset frame
+    # Always a single object in "objects" so always objects[0] !!
+    def replicate_annotation_static_object(self, dataset, scene, user, uid_object, object_type,
+                                           start_frame, end_frame, last_dataset_frame):
+        success, msg, status = self.replicate_annotation(dataset, scene, user, uid_object, object_type, start_frame, end_frame, 0, True)
+
+        # Delete frames after end frame if it's not the last frame of the dataset
+        if end_frame+1 < last_dataset_frame:
+            obj = Object(uid_object, object_type, dataset_type=dataset.type)
+            start_annotation = Annotation(dataset, scene, end_frame+1, user, [obj])
+            end_annotation = Annotation(dataset, scene, last_dataset_frame, user, [obj])
+            result = annotationManager.remove_frame_object(start_annotation, end_annotation)
+            if result == 'ok' and success:
+                return True, result, 200
+            else:
+                return False, 'Error replicating annotation', 500
+
+        return success, msg, status
+
 
     # Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
     def force_limb_length(self, annotation, start_labels, end_labels, limb_length):
@@ -780,8 +799,6 @@ class AnnotationService:
             if result == 'Error':
                 final_result = False   # finalResult False if there is some problem
 
-        # Remove folder with annotations
-        # shutil.rmtree(folder_path)
         return final_result
 
     # Add annotation of objects to database from annotations_file

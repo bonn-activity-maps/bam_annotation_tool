@@ -61,6 +61,23 @@ angular.module('CVGTool')
             });
         },
 
+        // getMaxVideoFrame: function(dataset, datasetType, video, callbackSuccess, callbackError) {
+        //     $http({
+        //         method: 'GET',
+        //         url: '/api/video/getMaxFrame',
+        //         headers: {
+        //             'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+        //             'video': video,
+        //             'dataset': dataset,
+        //             'datasetType': datasetType
+        //         }
+        //     }).then(function successCallback(response) {
+        //         callbackSuccess(response.data.msg)
+        //     }, function errorCallback(response) {
+        //         callbackError('danger', response.data.msg)
+        //     });
+        // },
+
         // Gets the image of a frame range, from a video and a dataset
         getFrames: function(fileName, frameStart, frameEnd, dataset, datasetType, callbackSuccess, callbackError) {
             $http({
@@ -203,7 +220,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg);
             }, function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -225,7 +242,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, frame);
             }, function errorCallback(response) {
-                callbackError('danger', response);
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -277,7 +294,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg.maxUid, type)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -313,10 +330,9 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback(response) {
                 callbackSuccess()
-            },
-                function errorCallback(response) {
-                    callbackError('danger', response);
-                })
+            }, function errorCallback(response) {
+                    callbackError('danger', response.data.msg);
+            })
         },
 
         // Create new poseTrack IgnoreRegion and precompute annotations
@@ -334,11 +350,10 @@ angular.module('CVGTool')
                     'minIRTrackID': minIRTrackID
                 }
             }).then(function successCallback(response) {
-                    callbackSuccess()
-                },
-                function errorCallback(response) {
-                    callbackError('danger', response);
-                })
+                callbackSuccess()
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg);
+            })
         },
 
         // Create new poseTrack person (bbox + bbox_head + person objects) and precompute annotations
@@ -361,7 +376,7 @@ angular.module('CVGTool')
                     callbackSuccess("Person ID changed!", new_person_id)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -388,7 +403,7 @@ angular.module('CVGTool')
                     callbackSuccess("Track ID changed!", new_track_id)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -416,7 +431,7 @@ angular.module('CVGTool')
                     callbackSuccess(uidObject, objectType, startFrames, endFrame);
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -444,8 +459,33 @@ angular.module('CVGTool')
                     callbackSuccess(uidObject, objectType, startFrame, endFrame);
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
+        },
+
+        replicateStaticObject: function(user, dataset, datasetType, scene, startFrame, endFrame, maxFrame, uidObject, objectType, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/replicate/staticobject',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'user': user,
+                    'dataset': dataset,
+                    'scene': scene,
+                    'startFrame': startFrame,
+                    'endFrame': endFrame,
+                    'lastDatasetFrame': maxFrame,
+                    'uidObject': uidObject,
+                    'datasetType': datasetType,
+                    'objectType': objectType,
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uidObject, objectType, startFrame, endFrame);
+            }, function errorCallback(response) {
+                callbackError("danger", response.data.msg);
+            })
         },
 
         autoComplete: function(user, dataset, datasetType, scene, startFrames, endFrame, uidObject, objectType,
@@ -488,7 +528,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -534,7 +574,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -556,7 +596,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg, objectUID)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -581,7 +621,7 @@ angular.module('CVGTool')
                     callbackSuccess(response.data.msg)
                 },
                 function errorCallback(response) {
-                    callbackError('danger', response);
+                    callbackError('danger', response.data.msg);
                 })
         },
 
@@ -648,8 +688,8 @@ angular.module('CVGTool')
                 }
             }).then(function successCallback() {
                 callbackSuccess();
-            }, function errorCallback() {
-                callbackError();
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg);
             })
         },
 
@@ -698,10 +738,10 @@ angular.module('CVGTool')
                     'newUid': newUid,
                     'objectType': objectType
                 }
-            }).then(function successCallback(data) {
-                callbackSuccess(data.data.msg);
-            }, function errorCallback(data) {
-                callbackError(data.data.msg);
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError(response.data.msg);
             })
         },
 
@@ -720,7 +760,7 @@ angular.module('CVGTool')
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg, uid);
             }, function errorCallback(response) {
-                callbackError('danger', response)
+                callbackError('danger', response.data.msg)
             })
         },
 

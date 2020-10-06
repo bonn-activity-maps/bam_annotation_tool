@@ -109,15 +109,7 @@ class AnnotationManager:
     # Return json for export
     def get_objects_by_dataset(self, dataset):
         try:
-            # result = self.collection.find({"dataset": dataset, "scene": dataset, "objects.type": "person"})
             result = self.collection.find({"dataset": dataset.name, "scene": dataset.name}, {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
-
-            # result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": "person"}},
-            #                          {"$group": {"_id": { "frame": "$frame"},
-            #                                       "persons": {"$push": {"pid": "$objects.uid", "location": "$objects.keypoints"}}}},
-            #                          {"$sort": {"_id.frame": 1}},
-            #                          {"$project": {"_id": 0, "frame": "$_id.frame", "persons": "$persons"}}
-            #                          ])
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
@@ -153,8 +145,6 @@ class AnnotationManager:
                                                "objects.uid": start_annotation.objects[0].uid, "objects.type": start_annotation.objects[0].type},
                                                 {"objects": {"$elemMatch": {"uid": start_annotation.objects[0].uid, "type": start_annotation.objects[0].type}}, "dataset": 1, "scene": 1, "frame": 1,  '_id': 0}).sort("frame", 1)
             else:
-                # print("dataset", start_annotation.dataset.name, "scene", start_annotation.scene, "user", "root", "frame >=:",  start_annotation.frame, "<=:", end_annotation.frame,
-                # "objects.track_id", start_annotation.objects[0].track_id, "objects.type", start_annotation.objects[0].type)
                 # result = self.collection.find_one({"dataset": dataset, "scene": scene, "user": user, "frame": frame}, # User instead of root
                 result = self.collection.find({"dataset": start_annotation.dataset.name, "scene": start_annotation.scene, "user": "root", "frame": {"$gte": start_annotation.frame, "$lte": end_annotation.frame},
                                                "objects.track_id": start_annotation.objects[0].track_id, "objects.type": start_annotation.objects[0].type},
@@ -197,19 +187,6 @@ class AnnotationManager:
         except errors.PyMongoError as e:
             log.exception('Error finding object in annotation in db')
             return 'Error'
-
-    # # Get all annotations except of people for the dataset.
-    # def get_objects_by_dataset(self, dataset):
-    #     try:
-    #         result = self.collection.aggregate([{"$match": {"dataset": dataset, "scene": dataset, "objects.type": {"$not": {"$regex": "/person/"}}}},
-    #                                 {"$group": {"_id": { "frame": "$frame"},
-    #                                              "objects": {"$push": { "labels": "$objects.labels", "location": "$objects.keypoints", "oid": "$objects.uid"}}}},
-    #                                 {"$sort": {"_id.frame":1}},
-    #                                 {"$project": {"_id": 0, "frame": "$_id.frame", "objects": "$objects"}}])
-    #         return list(result)
-    #     except errors.PyMongoError as e:
-    #         log.exception('Error finding annotation in db')
-    #         return 'Error'
 
     # Add new objects to the annotation. It is created if it doesn't exist
     # Return 'ok' if the annotation has been updated.
@@ -451,8 +428,12 @@ class AnnotationManager:
             # Filter each annotation and select only objects with uid and type
             array_filter = [{"elem.track_id": {"$eq": start_annotation.objects[0].track_id}, "elem.type": {"$eq": start_annotation.objects[0].type}}]
 
-        # Update object to empty list
-        new_values = {"$set": {"objects.$[elem].keypoints": []}}
+        # Update object to empty list. If boxAIK remove also the labels
+        if start_annotation.objects[0].type == 'boxAIK':
+            new_values = {"$set": {"objects.$[elem].keypoints": [], "objects.$[elem].labels": []}}
+
+        else:
+            new_values = {"$set": {"objects.$[elem].keypoints": []}}
 
         try:
             result = self.collection.update_many(query, new_values, upsert=False, array_filters=array_filter)

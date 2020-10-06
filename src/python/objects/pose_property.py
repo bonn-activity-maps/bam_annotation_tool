@@ -1,5 +1,6 @@
 from python.objects.dataset import Dataset
 
+
 class PoseProperty:
 
     def __init__(self, dataset, scene, type, uid, lower_leg_length, upper_leg_length, lower_arm_length, upper_arm_length):

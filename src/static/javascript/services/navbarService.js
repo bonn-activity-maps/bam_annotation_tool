@@ -2,7 +2,7 @@ angular.module('CVGTool')
     .factory('navSrvc', function($state, $rootScope, $http, $httpParamSerializer) {
 
         // Actual version of the tool, THIS IS THE MAIN VARIABLE
-        var toolVersion = "2.0";
+        var toolVersion = "2.1";
 
         // Function to send message to tell the controller to update
         var updateSessionData = function() {
@@ -144,6 +144,10 @@ angular.module('CVGTool')
                 }, function errorCallback(response) {
                     console.log(response.data.msg)
                 });
+            },
+
+            getMaxFrame: function() {
+                return sessionData.maxFrame;
             },
 
             // Check the min number of frames for the video

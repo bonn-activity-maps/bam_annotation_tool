@@ -7,6 +7,7 @@ dataset = ''
 frame_from = ''
 frame_to = ''
 
+
 # Get all annotations for given dataset and scene
 def get_annotations():
     try:
@@ -36,6 +37,7 @@ def update_annotation(uid, obj_type, frame, keypoints):
     except errors.PyMongoError as e:
         print('ERROR updating object in annotation in db')
         sys.exit()
+
 
 # Print info about incorrect poses
 def check_poses():
