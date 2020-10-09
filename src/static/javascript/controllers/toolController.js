@@ -185,6 +185,9 @@ angular.module('CVGTool')
                         navSrvc.setMinFrame($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, cameraNames.videos[i]);
                     }
 
+                    // Call to obtain the frames to annotate (for AIK it does nothing)
+                    $scope.commonManager.getVideoFramesToAnnotate(cameraNames.videos[i]);
+
                     // Push empty frame spaces
                     for (var j = 0; j < $scope.toolParameters.numberOfFrames; j++) {
                         _this.loadedCameras[i].frames.push({})
@@ -1234,6 +1237,9 @@ angular.module('CVGTool')
                         callback, $scope.messagesManager.sendMessage);
                 }
             }
+
+            // This is here because PT has it, but it does nothing for AIK
+            _this.getVideoFramesToAnnotate = function(video) {}
             
             _this.getPoseAIKLimbsLengthForAll = function() {
                 var objects = $scope.objectManager.objectTypes["poseAIK"].objects;
@@ -1614,6 +1620,8 @@ angular.module('CVGTool')
         function PTManager() {
             var _this = this;
 
+            _this.videoFramesToAnnotate = []
+
             _this.resizedVideos=["007467","014335","002786","015537","008884","013924","024817","024788","015306","014663","021139","000048","003730","014235",
                                  "020868","012746","007536","000866","013523","013519","009993","014334","002839","016442","024722","023416","013952","017184",
                                  "018651","008835","016501","013908","002357","013560","008880","022948","015822","014665","020928","020573","007876","016461",
@@ -1766,6 +1774,19 @@ angular.module('CVGTool')
                 var returnKeypoints = keypoints.slice();
                 returnKeypoints.splice(3,0, [-1, -1, 0], [-1, -1, 0]);
                 return returnKeypoints;
+            }
+
+            // Function that returns the list of frames to annotate
+            _this.getVideoFramesToAnnotate = function(video) {
+                var callback = function(frames) {
+                    _this.videoFramesToAnnotate = frames;
+                }
+                toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
+            }
+
+            // Checks if frame has to be annotated
+            _this.isFrameAnnotable = function(frame) {
+                return _this.videoFramesToAnnotate.includes(frame);
             }
 
             // Gets the labels for the current ignore region in the current frame
@@ -4742,6 +4763,7 @@ angular.module('CVGTool')
         function OptionsManager() {
             var _this = this;
 
+            // General options of the tool
             _this.options = {
                 pointSize: 10,
                 fontSize: 10,
@@ -4757,6 +4779,10 @@ angular.module('CVGTool')
                 visualizeActions: false
             }
 
+            // Hidden option to change it manually. When True, the frames that can be annotated in PT with Persons will be restricted
+            _this.restrictPTFrames = true;
+            
+            // Specific options for AIK object replication
             _this.replicateOptions = {
                 replicateToTheMaxFrame: true,
                 replicateTo: 0
