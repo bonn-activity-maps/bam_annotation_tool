@@ -416,10 +416,8 @@ def update_annotation():
 
 # Get the numbers of the frames that can be annotated in a video for posetrack persons
 @app.route('/api/annotation/getFramesToAnnotatePersonsPT', methods=['GET'])
-@flask_login.login_required
 def get_frames_to_annotate_persons_pt():
-    req_data = request.get_json()
-    success, msg, status = pt_service.get_frames_to_annotate_per_video(req_data['video'])
+    success, msg, status = pt_service.get_frames_to_annotate_per_video(request.headers['video'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Validate frames for given dataset, video and user
