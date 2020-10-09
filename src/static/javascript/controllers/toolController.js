@@ -3558,13 +3558,23 @@ angular.module('CVGTool')
 
 
             _this.draw = function(context, color) {
-                // Draw all the edges
+                var lightColor = "#BDBBC9";
+                var lightColorSelected = "#FFB37D";
+                // Draw edges
                 _this.drawEdges(context, color);
 
-                // Draw all points
+                // Draw points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                    if (_this.points[i] !== null) {
+                        if (_this.visibilities[i] == 0) _this.points[i].draw(context, lightColor);
+                        else _this.points[i].draw(context, color);
+                    }
                 }
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].draw(context, lightColorSelected);
+                    else _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                } 
             }
 
             // Draws all the edges
@@ -3610,6 +3620,7 @@ angular.module('CVGTool')
 
             _this.drawWithLabel = function(context, color) {
                 var lightColor = "#BDBBC9";
+                var lightColorSelected = "#FFB37D";
                 // Draw edges
                 _this.drawEdges(context, color);
 
@@ -3622,7 +3633,8 @@ angular.module('CVGTool')
                 }
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
-                    _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
+                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, lightColorSelected, _this.labels[$scope.keypointEditor.selectedLabel]);
+                    else _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
                 } 
             }
 
