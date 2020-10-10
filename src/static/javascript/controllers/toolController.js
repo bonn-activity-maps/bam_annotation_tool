@@ -185,6 +185,9 @@ angular.module('CVGTool')
                         navSrvc.setMinFrame($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, cameraNames.videos[i]);
                     }
 
+                    // Call to obtain the frames to annotate (for AIK it does nothing)
+                    $scope.commonManager.getVideoFramesToAnnotate(cameraNames.videos[i]);
+
                     // Push empty frame spaces
                     for (var j = 0; j < $scope.toolParameters.numberOfFrames; j++) {
                         _this.loadedCameras[i].frames.push({})
@@ -1234,6 +1237,9 @@ angular.module('CVGTool')
                         callback, $scope.messagesManager.sendMessage);
                 }
             }
+
+            // This is here because PT has it, but it does nothing for AIK
+            _this.getVideoFramesToAnnotate = function(video) {}
             
             _this.getPoseAIKLimbsLengthForAll = function() {
                 var objects = $scope.objectManager.objectTypes["poseAIK"].objects;
@@ -1614,6 +1620,8 @@ angular.module('CVGTool')
         function PTManager() {
             var _this = this;
 
+            _this.videoFramesToAnnotate = []
+
             _this.resizedVideos=["007467","014335","002786","015537","008884","013924","024817","024788","015306","014663","021139","000048","003730","014235",
                                  "020868","012746","007536","000866","013523","013519","009993","014334","002839","016442","024722","023416","013952","017184",
                                  "018651","008835","016501","013908","002357","013560","008880","022948","015822","014665","020928","020573","007876","016461",
@@ -1745,15 +1753,15 @@ angular.module('CVGTool')
 
                 for (var i = 0; i < returnKeypoints.length; i++) {
                     if (returnKeypoints[i].length == 0) {
-                        finalReturnKeypoints.push([]);
+                        finalReturnKeypoints.push([-1, -1, 0]);
                     } else if (returnKeypoints[i].length == 2) {
-                        finalReturnKeypoints.push(returnKeypoints[i]);
+                        finalReturnKeypoints.push([returnKeypoints[i][0], returnKeypoints[i][1], 0]);
                     } else if (returnKeypoints[i].length == 3) {
-                        if (returnKeypoints[i][2] == 1) {
-                            finalReturnKeypoints.push([returnKeypoints[i][0], returnKeypoints[i][1]])
+                        if (returnKeypoints[i][2] === null) {
+                            finalReturnKeypoints.push([returnKeypoints[i][0], returnKeypoints[i][1], 0]);
                         } else {
-                            finalReturnKeypoints.push([]);
-                        }
+                            finalReturnKeypoints.push(returnKeypoints[i]); 
+                        }            
                     }
                 }
 
@@ -1764,8 +1772,21 @@ angular.module('CVGTool')
             // Function that restores the two person labels from posetrack person
             _this.restorePersonKeypoints = function(keypoints) {
                 var returnKeypoints = keypoints.slice();
-                returnKeypoints.splice(3,0, [], []);
+                returnKeypoints.splice(3,0, [-1, -1, 0], [-1, -1, 0]);
                 return returnKeypoints;
+            }
+
+            // Function that returns the list of frames to annotate
+            _this.getVideoFramesToAnnotate = function(video) {
+                var callback = function(frames) {
+                    _this.videoFramesToAnnotate = frames;
+                }
+                toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
+            }
+
+            // Checks if frame has to be annotated
+            _this.isFrameAnnotable = function(frame) {
+                return _this.videoFramesToAnnotate.includes(frame);
             }
 
             // Gets the labels for the current ignore region in the current frame
@@ -1845,28 +1866,26 @@ angular.module('CVGTool')
                         for (let i = 0; i < annotation.objects.length; i++) {
                             // If the object is of type "person", fix the keypoint structure to ignore ears
                             if (annotation.objects[i].type.toString().localeCompare("person") === 0) {
-                                var keypoints = annotation.objects[i].keypoints.slice();
+                                var keypoints = _this.fixPersonKeypoints(annotation.objects[i].keypoints.slice());
                                 var coordinates = []
                                 var visibilities = []
 
+                                
                                 // Separate coordinates from visibility
                                 for (var k=0; k< keypoints.length; k++){
                                     coordinates.push([keypoints[k][0], keypoints[k][1]]);
                                     visibilities.push(keypoints[k][2]);
                                 }
-                                                        
-                                // Process coordinates
-                                var fixedCoordinates= _this.fixPersonKeypoints(coordinates);
                                 
                                 // Post process the out-of-image points
-                                for (var k=0; k< fixedCoordinates.length; k++){
-                                    if (JSON.stringify(fixedCoordinates[k]) === JSON.stringify([0,0])) {
-                                        fixedCoordinates[k] = [-1,-1].slice();
+                                for (var k=0; k< coordinates.length; k++){
+                                    if (JSON.stringify(coordinates[k]) === JSON.stringify([0,0])) {
+                                        coordinates[k] = [-1,-1].slice();
                                         visibilities[k] = 0;
                                     }
                                 }
 
-                                annotation.objects[i].keypoints = fixedCoordinates.slice();
+                                annotation.objects[i].keypoints = coordinates.slice();
 
                                 // Set the visibility directly
                                 $scope.objectManager.objectTypes[annotation.objects[i].type.toString()]
@@ -1924,7 +1943,7 @@ angular.module('CVGTool')
 						for (let i= 0; i< objects.length; i++) {
 							// If the object is of type "person", fix the keypoint structure to ignore ears
 							if (objects[i].type.toString().localeCompare("person") === 0) {
-                                var keypoints = objects[i].keypoints.slice();
+                                var keypoints = _this.fixPersonKeypoints(objects[i].keypoints.slice());
                                 var coordinates = []
                                 var visibilities = []
 
@@ -1933,19 +1952,16 @@ angular.module('CVGTool')
                                     coordinates.push([keypoints[j][0], keypoints[j][1]]);
                                     visibilities.push(keypoints[j][2]);
                                 }
-                                
-                                // Process coordinates
-                                var fixedCoordinates= _this.fixPersonKeypoints(coordinates);
 
                                 // Post process the out-of-image points
-                                for (var j=0; j< fixedCoordinates.length; j++){
-                                    if (JSON.stringify(fixedCoordinates[j]) === JSON.stringify([0,0])) {
-                                        fixedCoordinates[j] = [-1,-1].slice();
+                                for (var j=0; j< coordinates.length; j++){
+                                    if (JSON.stringify(coordinates[j]) === JSON.stringify([0,0])) {
+                                        coordinates[j] = [-1,-1].slice();
                                         visibilities[j] = 0;
                                     }
                                 }
 
-                                objects[i].keypoints = fixedCoordinates.slice();
+                                objects[i].keypoints = coordinates.slice();
 
                                 // Set the visibility directly
                                 $scope.objectManager.objectTypes[objects[i].type.toString()].objects[objects[i].track_id.toString()].frames[frame - $scope.toolParameters.frameFrom].visibility = visibilities.slice();
@@ -2248,7 +2264,7 @@ angular.module('CVGTool')
 
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
                 if (object.type.localeCompare("person") === 0) {
-                    object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
+                    object.keypoints = shape.cameraPoints;
 
                     for (var j=0; j< object.keypoints.length; j++){
                         if (object.keypoints[j].length === 0) {
@@ -2272,7 +2288,10 @@ angular.module('CVGTool')
                             object.keypoints[i].push(visibilities[i]);
                         }   
                     }
+
+                    object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
                 }
+
 
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
@@ -3560,13 +3579,23 @@ angular.module('CVGTool')
 
 
             _this.draw = function(context, color) {
-                // Draw all the edges
+                var lightColor = "#BDBBC9";
+                var lightColorSelected = "#FFB37D";
+                // Draw edges
                 _this.drawEdges(context, color);
 
-                // Draw all points
+                // Draw points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                    if (_this.points[i] !== null) {
+                        if (_this.visibilities[i] == 0) _this.points[i].draw(context, lightColor);
+                        else _this.points[i].draw(context, color);
+                    }
                 }
+                // Lastly draw the selected point, to be on top of the rest
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].draw(context, lightColorSelected);
+                    else _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                } 
             }
 
             // Draws all the edges
@@ -3612,6 +3641,7 @@ angular.module('CVGTool')
 
             _this.drawWithLabel = function(context, color) {
                 var lightColor = "#BDBBC9";
+                var lightColorSelected = "#FFB37D";
                 // Draw edges
                 _this.drawEdges(context, color);
 
@@ -3624,7 +3654,8 @@ angular.module('CVGTool')
                 }
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
-                    _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
+                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, lightColorSelected, _this.labels[$scope.keypointEditor.selectedLabel]);
+                    else _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
                 } 
             }
 
@@ -4608,7 +4639,7 @@ angular.module('CVGTool')
             // Creates/updates the object into the object structure
             _this.update2DObject = function(uid, type, frame, points) {
                 var newObject = null;
-        
+                
                 var imgPoints = [];                
                 // Project if points exist
                 if (points.length != 0) {
@@ -4620,7 +4651,7 @@ angular.module('CVGTool')
                         }
                     }
                 }
-            
+
                 if (type.localeCompare("personAIK") == 0) {
                     newObject = new PersonAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());         
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {
@@ -4732,6 +4763,7 @@ angular.module('CVGTool')
         function OptionsManager() {
             var _this = this;
 
+            // General options of the tool
             _this.options = {
                 pointSize: 10,
                 fontSize: 10,
@@ -4747,6 +4779,10 @@ angular.module('CVGTool')
                 visualizeActions: false
             }
 
+            // Hidden option to change it manually. When True, the frames that can be annotated in PT with Persons will be restricted
+            _this.restrictPTFrames = true;
+            
+            // Specific options for AIK object replication
             _this.replicateOptions = {
                 replicateToTheMaxFrame: true,
                 replicateTo: 0
@@ -4951,7 +4987,7 @@ angular.module('CVGTool')
                     combo: "t",
                     description: 'Test',
                     callback: function() {
-                        console.log($scope.toolParameters.maxVideoFrame);
+                        console.log($scope.keypointEditor.keypointEditorData.shapes[0]);
                     }
                 })
                 .add({

@@ -463,6 +463,21 @@ angular.module('CVGTool')
                 })
         },
 
+        getVideoFramesToAnnotate: function(video, callbackSuccess, callbackError) {
+            $http({
+                method: 'GET',
+                url: '/api/annotation/getFramesToAnnotatePersonsPT',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    'video': video
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError("danger", response.data.msg);
+            })
+        },
+
         replicateStaticObject: function(user, dataset, datasetType, scene, startFrame, endFrame, maxFrame, uidObject, objectType, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
