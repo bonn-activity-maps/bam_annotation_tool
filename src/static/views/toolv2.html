@@ -157,6 +157,7 @@
                 <li class="divider"></li>
                 <li class="dropdown-header">PT options:</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
+                <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person')"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSelectedPointOnly"> Draw sel. point only</li>  
             </div>
             <div ng-if="!toolParameters.isPosetrack">
                 <li class="divider"></li>
@@ -189,7 +190,8 @@
             <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
             <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
             <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>
-            <li class="dropdown-item" ng-if="toolParameters.isPosetrack">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>  
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
         </div>
     </div>
     <hr class="tool-panel-hr">
