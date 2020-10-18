@@ -362,7 +362,6 @@ class DatasetService:
         if annotation_result:
             for a in annotation_result:
                 for o in a['objects']:
-
                     if o['type'] == 'ignore_region' and o['keypoints']:
                         kps_without_empty_arrays = [kp for kp in o['keypoints'] if kp]
                         if kps_without_empty_arrays:
@@ -377,6 +376,97 @@ class DatasetService:
             ignore_regions_x = ignore_regions_x[0]
 
         return ignore_regions_y, ignore_regions_x
+
+    # Process keypoints of a person to ensure everything's right
+    def process_keypoints_person(self, keypoints):
+        for idx, kp in enumerate(keypoints):
+            if not kp:
+                keypoints[idx] = [0, 0, 0]
+        final_kps = np.array(keypoints).flatten().tolist()
+        is_correct = True
+        reason = ""
+        if len(final_kps) != 51:
+            is_correct = False
+            reason = reason + " Incorrect length of " + str(len(final_kps)) + ";"
+        for kp in final_kps:
+            if kp is None:
+                is_correct = False
+                reason = reason + " Incorrect value of keypoint " + str(kp) + ";"
+        #  TODO what to do with is_correct
+        if final_kps != [] and not is_correct:
+            print("Error in keypoints formatting")
+            print(reason)
+            print("-----------------")
+            print(keypoints)
+            print(len(keypoints))
+            print(type(keypoints))
+            print(type(keypoints[3]))
+            print(type(keypoints[3][0]))
+            print("-----------------")
+            print(final_kps)
+            print(len(final_kps))
+            print(type(final_kps))
+            print(type(final_kps[3]))
+            print(type(final_kps[3][0]))
+            print("-----------------")
+        return final_kps
+
+    def check_annotations_file(self, annotations_file, videoname):
+        is_correct = True
+        reason = ""
+        for idx, annotation in enumerate(annotations_file):
+            try:
+                # Assert that points are in the correct format
+                reason = "Incorrect bbox"
+                # If there's no bbox add an empty list
+                if "bbox" not in annotation:
+                    annotations_file[idx]["bbox"] = []
+                    annotation = annotations_file[idx]
+                assert len(annotation["bbox"]) == 4 \
+                    if annotation["bbox"] != [] else len(annotation["bbox"]) == 0
+                reason = "Incorrect bbox_head"
+                if "bbox_head" not in annotation:
+                    annotations_file[idx]["bbox_head"] = []
+                    annotation = annotations_file[idx]
+                assert len(annotation["bbox_head"]) == 4 \
+                    if annotation["bbox_head"] != [] else len(annotation["bbox_head"]) == 0
+                reason = "Incorrect keypoints"
+                assert len(annotation["keypoints"]) == 51 \
+                    if annotation["keypoints"] != [] else len(annotation["keypoints"]) == 0
+                # Assert the rest of the parameters
+                reason = "Incorrect category_id"
+                assert annotation["category_id"] == 1
+                reason = "Incorrect track_id"
+                assert 0 <= annotation["track_id"] < 100
+                reason = "Incorrect person_id"
+                assert 0 <= annotation["person_id"]
+                reason = "Incorrect id"
+                assert len(str(annotation["id"])) == 13
+                reason = "Incorrect image_id"
+                assert len(str(annotation["image_id"])) == 11
+                # TODO check whether image_id is correct. Probably correct image_id that start with 2.
+            except AssertionError:
+                print(videoname, "ERROR: Annotation incorrect: " + reason)
+                print("-----------------")
+                print(annotation)
+                print("-----------------")
+                return False
+            except KeyError:
+                print(videoname, "ERROR: Annotation incorrect: Missing keyword: " + reason)
+                print("-----------------")
+                print(annotation)
+                print("-----------------")
+                return False
+        return is_correct
+
+    def create_missing_params_pt(self, obj):
+        if "bbox" not in obj:
+            obj["bbox"] = []
+        if "bbox_head" not in obj:
+            obj["bbox_head"] = []
+        if "keypoints" not in obj:
+            obj["keypoints"] = []
+        return obj
 
     # Export annotation file for PT datasets to a file for a given dataset
     def export_dataset_PT(self, dataset):
@@ -395,17 +485,22 @@ class DatasetService:
                 for i in range(0, len(frames)):
                     frames[i]["vid_id"] = frames[i]["video"]
                     frames[i]["file_name"] = '/'.join((frames[i]["path"]).split("/")[-4:])
+                    frames[i]["has_no_densepose"] = True
+                    frames[i]["nframes"] = len(frames)
+                    frames[i]["is_labeled"] = True if annotations_db[i]["objects"] != [] else False
+                    # True if the pose has been modified. Meaning it has to be in the frames to annotate array.
+                    _, list_of_frames_to_annotate, _ = ptService.get_frames_to_annotate_per_video(frames[i]["video"])
+                    frames[i]["has_labeled_pose"] = True \
+                        if frames[i]["number"] in list_of_frames_to_annotate \
+                        else False
+                    # Add ignore regions
+                    annotation = Annotation(dataset, videos[j].name, frame=i)
+                    frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
                     del(frames[i]["number"])
                     del(frames[i]["dataset"])
                     del(frames[i]["video"])
                     del(frames[i]["path"])
                     del(frames[i]["has_ignore_regions"])
-                    frames[i]["has_no_densepose"] = True
-                    frames[i]["nframes"] = len(frames)
-                    frames[i]["is_labeled"] = True if annotations_db[i]["objects"] != [] else False
-                    # Add ignore regions
-                    annotation = Annotation(dataset, videos[j].name, frame=i)
-                    frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = self.export_ignore_regions(annotation)
                 final_annotation["images"] = frames
 
                 # Process annotation data
@@ -432,13 +527,17 @@ class DatasetService:
                                             obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
                                             del(obj["keypoints"])
                                         elif obj["type"] == "person":   # flatten keypoints array
-                                            obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                            # obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                            kps = list(obj["keypoints"])
+                                            del(obj["keypoints"])
+                                            obj["keypoints"] = self.process_keypoints_person(kps)
                                         # Always delete type field, as it is unnecessary
                                         del(obj["type"])
                                         obj["id"] = obj["uid"]
                                         del(obj["uid"])
                                         obj["image_id"] = int(obj["id"]/100)
                                         obj["scores"] = []
+                                        obj = self.create_missing_params_pt(obj)
                                         annotations_file.append(obj)
                                     else:   # If already in annotation, just add what we want
                                         if obj["type"] == "bbox":
@@ -446,8 +545,11 @@ class DatasetService:
                                         elif obj["type"] == "bbox_head":
                                             annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
                                         elif obj["type"] == "person":
-                                            annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-
+                                            # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                                            kps = list(obj["keypoints"])
+                                            del(obj["keypoints"])
+                                            annotations_file[index]["keypoints"] = self.process_keypoints_person(kps)
+                    annotations_correct = self.check_annotations_file(annotations_file, videos[j].name)
                     final_annotation["annotations"] = annotations_file
 
                 # Hardcoded categories because they don't change and are a very special case...
@@ -564,7 +666,7 @@ class DatasetService:
                     with open(file, 'w') as outfile:
                         json.dump(final_annotation, outfile)
                 except:
-                    print("Empty video")
+                    print("Empty video ", videos[j].name)
         return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
