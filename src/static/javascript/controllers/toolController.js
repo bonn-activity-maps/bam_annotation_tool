@@ -3581,9 +3581,19 @@ angular.module('CVGTool')
             _this.draw = function(context, color) {
                 var lightColor = "#BDBBC9";
                 var lightColorSelected = "#FFB37D";
+                
+                // If the option is active, draw only the selected point and return
+                if ($scope.optionsManager.options.showSelectedPointOnly) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                        if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].draw(context, lightColorSelected);
+                        else _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
+                    } 
+                    return
+                }
+                
                 // Draw edges
                 _this.drawEdges(context, color);
-
+                
                 // Draw points
                 for (var i = 0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) {
@@ -3642,6 +3652,16 @@ angular.module('CVGTool')
             _this.drawWithLabel = function(context, color) {
                 var lightColor = "#BDBBC9";
                 var lightColorSelected = "#FFB37D";
+
+                // If the option is active, draw only the selected point and return
+                if ($scope.optionsManager.options.showSelectedPointOnly) {
+                    if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
+                        if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, lightColorSelected, _this.labels[$scope.keypointEditor.selectedLabel]);
+                        else _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
+                    }
+                    return
+                }
+
                 // Draw edges
                 _this.drawEdges(context, color);
 
@@ -3660,14 +3680,8 @@ angular.module('CVGTool')
             }
 
             _this.isInside = function(x,y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return true;
-                        }
-                    }
-                }
-
+                // Let only the selected label to be moved
+                if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel].isInside(x,y)) return true;
                 return false;
             }
 
@@ -4776,7 +4790,8 @@ angular.module('CVGTool')
                 drawLimbLengths: false,
                 showStaticObjects: false,
                 quickSaveAfterJointRemoval: false,
-                visualizeActions: false
+                visualizeActions: false,
+                showSelectedPointOnly: false
             }
 
             // Hidden option to change it manually. When True, the frames that can be annotated in PT with Persons will be restricted
@@ -4858,6 +4873,10 @@ angular.module('CVGTool')
                         changeVisibility: {
                             label: 'Shift + V',
                             shortcut: 'shift+v'
+                        },
+                        showSelectedPointOnly: {
+                            label: 'Q',
+                            shortcut: 'q'
                         }
                     },
                     {
@@ -4909,6 +4928,10 @@ angular.module('CVGTool')
                         changeVisibility: {
                             label: 'Shift + X',
                             shortcut: 'shift+x'
+                        },
+                        showSelectedPointOnly: {
+                            label: '\'',
+                            shortcut: '\''
                         }
                     }
                 ]
@@ -5013,6 +5036,15 @@ angular.module('CVGTool')
                     callback: function() {
                         if (($scope.toolParameters.isPosetrack) && ($scope.keypointEditor.editorActive === true) && ($scope.objectManager.isTypeSelected("person"))) {
                             $scope.keypointEditor.changeVisibility($scope.keypointEditor.selectedLabel);
+                        }
+                    }
+                }).add({
+                    combo: _this.shortcuts.selectedShortcuts.showSelectedPointOnly.shortcut,
+                    description: "Draw only the selected keypoint",
+                    callback: function() {
+                        if (($scope.toolParameters.isPosetrack) && ($scope.keypointEditor.editorActive === true) && ($scope.objectManager.isTypeSelected("person"))) {
+                            $scope.optionsManager.options.showSelectedPointOnly = !$scope.optionsManager.options.showSelectedPointOnly;
+                            $scope.canvasesManager.redrawCanvases();
                         }
                     }
                 });
