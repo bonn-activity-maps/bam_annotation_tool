@@ -23,6 +23,7 @@ The tool allows different types of objects; "Persons", "Poses" and "Boxes". Each
 
 ![Poses image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot3.jpg)
 
+##### Visualization
 In the Keypoint editor you can visualize which frames (top row) have annotations for each object (first column). There are also special operations that can be perfomed at an object level and for a range of frames(red buttons):
   1. Batch delete annotations.
   2. Swap the UIDs of two objects.
@@ -30,6 +31,7 @@ In the Keypoint editor you can visualize which frames (top row) have annotations
 
 ![KeypointEditor image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot4.png)
 
+##### Modification
 Each object can be individually edited for each individual frame: 
   1. Each position of the keypoints can be modified by clicking or dragging.
   2. The length of the limbs can be changed and enforced, so that the involved keypoints always respect that length constraints.
@@ -43,4 +45,28 @@ Saving the annotation interpolates automatically (this option can be disabled in
 
 ![KeypointEditor Editor image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot5.jpg)
 
+##### Boxes
+The objects of type "Box" are considered static and their behaviour is different. They represent entities whose position and orientation barely change during the whole recording, for example, chairs, tables, fridges, etc.
+
+Each "Box" object has a *label* field to mark them as specific real-world objects (chair, table, fridge, etc.). When creating/editing a static object, changes will be replicated forward in the timeline, so all following frames will be also updated.
+
+![Boxes image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot8.jpg)
+
+#### 3D process
+Since the datasets expect the annotations to be in 3D, the tool provides some aid to ease the process. When a keypoint is placed in one of the views, *epipolar* lines will appear on the other views. This lines can be used as a reference of where should the keypoint lie in that view.
+
+![Epipolar image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot7.jpg)
+
+#### Actions 
+TODO
+
+### Options and shortcuts
+The tool lets the user change some options so that everything fits his/her specific preferences.
+
+![Options image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot11.png)
+
+Almost every action that the user can perform has a keyboard shortcut to speed up the annotation process. This shortcuts are available for different keyboard layouts to fit everyone.
+
+![Shortcuts 1 image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot9.png)
+![Shortcuts 2 image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot10.png)
 
