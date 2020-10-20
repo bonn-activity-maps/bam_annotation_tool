@@ -3,21 +3,25 @@
 TODO: general description of the tool
 
 ## Screenshots
-#### User 
+### User 
 The tool has a user management system and is therefore protected by a login. This system allows two different types of user:
   - **Annotators**: have access to the datasets that have been assigned to them. They can create, modify and delete annotations.
   - **Superusers**: have access to all the management functionalities of the tool. They can create/modify/delete users, upload/remove datasets, modify the datasets assigned to each user and create real-time notifications for all the users using the tool.
 
 ![Login image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot2.png)
 
-#### Multiple views of the scene at the same time
+---
+
+### Multiple views of the scene at the same time
 The tool allows to have up to 4 camera views simultaneously to interact with. This views can be switched at all times with the ones stored in the views storage panel situated on the right of the tool. 
 The storage panel hides when not being used.
 
 Since all the views are synchronized, moving through the timeline will update all the views to match the actual frame.
 ![Mutiple views image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot1.jpg)
 
-#### Annotations
+---
+
+### Annotations
 The tool allows different types of objects; "Persons", "Poses" and "Boxes". Each object has an individual and unique UID for fast identification. Multiple objects can be visualized at the same time.
 (TODO: maybe show the process focusing in a single person and show all assigned object types and actions to that UID)
 
@@ -52,13 +56,15 @@ Each "Box" object has a *label* field to mark them as specific real-world object
 
 ![Boxes image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot8.jpg)
 
-#### 3D process
+##### 3D process
 Since the datasets expect the annotations to be in 3D, the tool provides some aid to ease the process. When a keypoint is placed in one of the views, *epipolar* lines will appear on the other views. This lines can be used as a reference of where should the keypoint lie in that view.
 
 ![Epipolar image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot7.jpg)
 
-#### Actions 
+##### Actions 
 TODO
+
+---
 
 ### Options and shortcuts
 The tool lets the user change some options so that everything fits his/her specific preferences.
