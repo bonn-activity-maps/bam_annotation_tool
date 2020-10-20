@@ -17,6 +17,7 @@ The tool allows to have up to 4 camera views simultaneously to interact with. Th
 The storage panel hides when not being used.
 
 Since all the views are synchronized, moving through the timeline will update all the views to match the actual frame.
+
 ![Mutiple views image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot1.jpg)
 
 ---
@@ -62,7 +63,14 @@ Since the datasets expect the annotations to be in 3D, the tool provides some ai
 ![Epipolar image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot7.jpg)
 
 ##### Actions 
-TODO
+Users can also annotate the actions being performed by each "Person". This actions can be visualized directly on the views.
+
+![Actions 1 image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot13.jpg)
+
+In the Actions Editor Panel, new actions can be created, specifying *action type*, *start frame* and *end frame*, and deleted.
+
+![Actions 2 image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot12.jpg)
+
 
 ---
 
