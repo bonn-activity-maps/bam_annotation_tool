@@ -4671,7 +4671,7 @@ angular.module('CVGTool')
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {
                     newObject = new BBox(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());
                 } else if (type.localeCompare("person") == 0) {
-                    newObject = new Person(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.objectTypes[type.toString()].objects[uid.toString()].frames[frame].visibility.slice());
+                    newObject = new Person(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.objectTypes[type.toString()].objects[uid.toString()].frames[frame - $scope.toolParameters.frameFrom].visibility.slice());
                 } else if (type.localeCompare("poseAIK") == 0) {
                     newObject = new PoseAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
                 } else if (type.localeCompare("boxAIK") == 0) {
