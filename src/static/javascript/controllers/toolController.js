@@ -3717,13 +3717,14 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return i;
-                        }
-                    }
-                }
+                return $scope.keypointEditor.selectedLabel;
+                // for (var i = 0; i < _this.points.length; i++) {
+                //     if (_this.points[i] !== null) {
+                //         if (_this.points[i].isInside(x,y)) {
+                //             return i;
+                //         }
+                //     }
+                // }
             }
         }
 
