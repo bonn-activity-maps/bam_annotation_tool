@@ -2288,7 +2288,6 @@ angular.module('CVGTool')
 
                     object.keypoints = _this.restorePersonKeypoints(object.keypoints);
                 } 
-                console.log(object.keypoints)                
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
