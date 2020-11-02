@@ -2263,23 +2263,20 @@ angular.module('CVGTool')
                 }
 
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
-                if (object.type.localeCompare("person") === 0) {
-                    object.keypoints = shape.cameraPoints;
 
-                    for (var j=0; j< object.keypoints.length; j++){
-                        if (object.keypoints[j].length === 0) {
-                            object.keypoints[j] = [-1,-1,0]
-                        }
-                    }
-                } else {
-                    object.keypoints = shape.cameraPoints;
-                }
+                object.keypoints = shape.cameraPoints;
                 
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
                     object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints);
                 } 
 
                 if (object.type.localeCompare("person") === 0) {
+                    for (var j=0; j< object.keypoints.length; j++){
+                        if (object.keypoints[j].length === 0) {
+                            object.keypoints[j] = [-1,-1,0]
+                        }
+                    }
+
                     var visibilities = shape.visibilities.slice();
                     
                     // Add the visibility values again
@@ -2289,10 +2286,8 @@ angular.module('CVGTool')
                         }   
                     }
 
-                    object.keypoints = _this.restorePersonKeypoints(shape.cameraPoints);
-                }
-
-
+                    object.keypoints = _this.restorePersonKeypoints(object.keypoints);
+                } 
                 toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
@@ -3717,13 +3712,14 @@ angular.module('CVGTool')
             }
 
             _this.getPointIndex = function(x, y) {
-                for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) {
-                        if (_this.points[i].isInside(x,y)) {
-                            return i;
-                        }
-                    }
-                }
+                return $scope.keypointEditor.selectedLabel;
+                // for (var i = 0; i < _this.points.length; i++) {
+                //     if (_this.points[i] !== null) {
+                //         if (_this.points[i].isInside(x,y)) {
+                //             return i;
+                //         }
+                //     }
+                // }
             }
         }
 
