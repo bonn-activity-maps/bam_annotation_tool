@@ -394,21 +394,24 @@ class DatasetService:
                 reason = reason + " Incorrect value of keypoint " + str(kp) + ";"
         #  TODO what to do with is_correct
         if final_kps != [] and not is_correct:
-            print("Error in keypoints formatting")
-            print(reason)
-            print("-----------------")
-            print(keypoints)
-            print(len(keypoints))
-            print(type(keypoints))
-            print(type(keypoints[3]))
-            print(type(keypoints[3][0]))
-            print("-----------------")
-            print(final_kps)
-            print(len(final_kps))
-            print(type(final_kps))
-            print(type(final_kps[3]))
-            print(type(final_kps[3][0]))
-            print("-----------------")
+            try:
+                print("Error in keypoints formatting")
+                print(reason)
+                print("-----------------")
+                print(keypoints)
+                print(len(keypoints))
+                print(type(keypoints))
+                print(type(keypoints[3]))
+                print(type(keypoints[3][0]))
+                print("-----------------")
+                print(final_kps)
+                print(len(final_kps))
+                print(type(final_kps))
+                print(type(final_kps[3]))
+                print(type(final_kps[3][0]))
+                print("-----------------")
+            except:
+                print("")
         return final_kps
 
     def check_annotations_file(self, annotations_file, videoname):
