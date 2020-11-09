@@ -1,6 +1,5 @@
 # Annotation Tool
-
-TODO: general description of the tool
+This tool was created to interact (visualize, create, modify, remove) with **Bonn Activity Maps**[[1]](https://github.com/bonn-activity-maps/aikapi) datasets. Additionally, the tool supports interactions with **Posetrack**[[2]](https://posetrack.net/) datasets. The following sections contain the explanations of the main functionalities of the tool.
 
 ## Screenshots
 ### User 
@@ -58,7 +57,7 @@ Each "Box" object has a *label* field to mark them as specific real-world object
 ![Boxes image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot8.jpg)
 
 ##### 3D process
-Since the datasets expect the annotations to be in 3D, the tool provides some aid to ease the process. When a keypoint is placed in one of the views, *epipolar* lines will appear on the other views. This lines can be used as a reference of where should the keypoint lie in that view.
+Since the datasets expect the annotations to be in 3D, the tool provides some aid to ease the process. When a keypoint is placed in one of the views, *epipolar* lines will appear on the other views. This lines can be used as a reference of where should the keypoint lie in that view. Once a point is placed in at least 2 different views, we can save it. The tool will then triangulate those points and generate the final 3D point.
 
 ![Epipolar image](https://github.com/Belberus/ThanosDidNothingWrong/blob/develop/images/screenshot7.jpg)
 
