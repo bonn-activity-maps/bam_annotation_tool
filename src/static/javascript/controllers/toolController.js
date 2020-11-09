@@ -1771,6 +1771,8 @@ angular.module('CVGTool')
 
             // Function that restores the two person labels from posetrack person
             _this.restorePersonKeypoints = function(keypoints) {
+                if (keypoints.length == 17) return keypoints;
+
                 var returnKeypoints = keypoints.slice();
                 returnKeypoints.splice(3,0, [-1, -1, 0], [-1, -1, 0]);
                 return returnKeypoints;
@@ -2267,7 +2269,7 @@ angular.module('CVGTool')
                 object.keypoints = shape.cameraPoints;
                 
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints);
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints.slice());
                 } 
 
                 if (object.type.localeCompare("person") === 0) {
