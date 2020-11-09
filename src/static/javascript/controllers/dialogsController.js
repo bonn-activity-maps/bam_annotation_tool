@@ -621,8 +621,8 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
     /*
  * Controller of the dialog of change track ID
  */
-.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username', 'ignoreRegions', 'frame',
-        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, frame) {
+.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username', 'ignoreRegions', 'bbox_heads', 'persons', 'frame',
+        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, bbox_heads, persons, frame) {
             $scope.object = object;
             $scope.dataset = dataset;
             $scope.scene = scene;
@@ -633,7 +633,7 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
                 new_track_id: Number(),
                 invalid_track_id: Boolean(),
                 is_id_in_use: Boolean(),
-                ir_exists: Boolean()
+                obj_exists: Boolean()
             };
             $scope.old_track_id = object.uid;
             $scope.new_track_id = Number();
@@ -642,23 +642,56 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
                 $mdDialog.cancel();
             };
 
+            let check_array = function(array){
+                for (let index in array) {
+                    // If the current frame IR with same ID is not empty
+                    if (parseInt(index, 10) === $scope.values.new_track_id &&
+                        array[index].frames[frame].keypoints.length > 0) {
+                        $scope.values.is_id_in_use = true;
+                        $scope.values.obj_exists = true;
+                    }
+                    if (parseInt(index, 10) === $scope.values.new_track_id){
+                        $scope.values.obj_exists = true;
+                    }
+                }
+            }
+
             $scope.change = function() {
                 // Check if ID is in use in this frame
                 $scope.values.is_id_in_use = false;
                 $scope.values.invalid_track_id = false;
-                $scope.values.ir_exists = false;
-                if ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100) {
-                    for (let ir in ignoreRegions) {
-                        // If the current frame IR with same ID is not empty
-                        if (parseInt(ir, 10) === $scope.values.new_track_id &&
-                            ignoreRegions[ir].frames[frame].keypoints.length > 0) {
-                            $scope.values.is_id_in_use = true;
-                            $scope.values.ir_exists = true;
-                        }
-                        if (parseInt(ir, 10) === $scope.values.new_track_id){
-                            $scope.values.ir_exists = true;
-                        }
+                $scope.values.obj_exists = false;
+                if (
+                    ($scope.object.type === 'ignore_region' &&
+                    ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100)) ||
+                    ($scope.object.type === 'bbox_head' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
+                    ($scope.object.type === 'person' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0))) {
+                    switch ($scope.object.type) {
+                        case "ignore_region":
+                            check_array(ignoreRegions);
+                            break
+                        case "bbox_head":
+                            check_array(bbox_heads);
+                            break
+                        case "person":
+                            check_array(persons);
+                            break
+                        default:
+                            break
                     }
+                    // for (let ir in ignoreRegions) {
+                    //     // If the current frame IR with same ID is not empty
+                    //     if (parseInt(ir, 10) === $scope.values.new_track_id &&
+                    //         ignoreRegions[ir].frames[frame].keypoints.length > 0) {
+                    //         $scope.values.is_id_in_use = true;
+                    //         $scope.values.exists = true;
+                    //     }
+                    //     if (parseInt(ir, 10) === $scope.values.new_track_id){
+                    //         $scope.values.exists = true;
+                    //     }
+                    // }
                 } else {
                     $scope.values.is_id_in_use = true;
                     $scope.values.invalid_track_id = true;
@@ -676,7 +709,7 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
                     new_track_id: $scope.values.new_track_id,
                     old_track_id: $scope.values.old_track_id,
                     object: $scope.object,
-                    swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.ir_exists
+                    swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.obj_exists
                 };
                 $mdDialog.hide(successData);
             }

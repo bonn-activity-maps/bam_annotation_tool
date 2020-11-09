@@ -2332,7 +2332,9 @@ angular.module('CVGTool')
             }
 
             _this.openChangeTrackID = function(object) {
-                if (object.type === "ignore_region") {
+                if (object.type === "ignore_region" ||
+                    object.type === "bbox_head" ||
+                    object.type === "person" ) {
                     $mdDialog.show({
                         templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
                         controller: 'changeTrackIDCtrl',
@@ -2344,6 +2346,8 @@ angular.module('CVGTool')
                             scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
                             username: $scope.toolParameters.user.name,
                             ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
+                            bbox_heads: $scope.objectManager.objectTypes["bbox_head"].objects,
+                            persons: $scope.objectManager.objectTypes["person"].objects,
                             frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom
                         }
                     }).then(function(data) { // When finished, update the object in the frame
@@ -2352,7 +2356,7 @@ angular.module('CVGTool')
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,
                                 object.uid, data.new_track_id, $scope.toolParameters.user.name,
-                                $scope.timelineManager.slider.value, data.swap,
+                                $scope.timelineManager.slider.value, data.swap, object.type,
                                 _this.callbackChangeTrackID,
                                 $scope.messagesManager.sendMessage);
                             // _this.retrieveObjects();

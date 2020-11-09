@@ -167,7 +167,7 @@ class AnnotationManager:
                 # result = self.collection.find({"dataset": dataset, "scene": scene, "user": user, # User instead of root
                 result = self.collection.find({"dataset": dataset.name, "scene": scene, "user": "root",
                                                "objects.track_id": uid, "objects.type": "bbox_head", # todo this is for mugshots
-                                               "objects.keypoints": {"$ne": []}}, #TODO why the fuck is this giving no results only SOMETIMES
+                                               "objects.keypoints": {"$ne": []}},
                                               {"objects": {"$elemMatch": {"track_id": uid, "type": "bbox_head"}},
                                                "frame": 1, "scene":1, "dataset": 1, '_id': 0}).limit(10)
             return list(result)
@@ -301,9 +301,9 @@ class AnnotationManager:
             return 'Error'
 
     # Update the track id for an object with given track id in given video frame
-    def update_track_id(self, video, track_id, new_track_id, frame):
+    def update_track_id(self, video, track_id, new_track_id, frame, obj_type):
         query = {"dataset": video.dataset.name, "scene": video.name, "frame": frame, "objects.track_id": track_id}
-        array_filter = [{"elem.track_id": {"$eq": track_id}}]     # Filter by track id
+        array_filter = [{"elem.track_id": {"$eq": track_id}, "elem.type": {"$eq": obj_type}}]     # Filter by track id
 
         # Update person id only when track id matches
         new_values = {"$set": {"objects.$[elem].track_id": new_track_id}}

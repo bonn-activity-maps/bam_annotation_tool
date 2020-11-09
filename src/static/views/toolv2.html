@@ -395,7 +395,9 @@
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
                         <div class="col-sm-2">
-                            <button ng-if="objectManager.selectedObject.type === 'ignore_region'"
+                            <button ng-if="objectManager.selectedObject.type === 'ignore_region' ||
+                                           objectManager.selectedObject.type === 'bbox_head' ||
+                                           objectManager.selectedObject.type === 'person'"
                                     ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)">
                                 <span style="rotation: 90deg" class="glyphicon glyphicon-random"></span>
                             </button>
