@@ -25,8 +25,8 @@ for v in videos:
                 if obj["type"] == "person":
                     if obj["keypoints"]:
                         if len(obj["keypoints"]) != 17:
-                            annotation["objects"][nr_obj]["keypoints"].insert(3, [0., 0., 0.])
-                            annotation["objects"][nr_obj]["keypoints"].insert(4, [0., 0., 0.])
+                            annotation["objects"][nr_obj]["keypoints"].insert(3, [-1., -1., 0.])
+                            annotation["objects"][nr_obj]["keypoints"].insert(4, [-1., -1., 0.])
                             modified = True
                         for nr_kp, kp in enumerate(obj["keypoints"]):
                             if not (len(kp) == 3 and kp[2] in [0, 1] and None not in kp):
@@ -36,13 +36,13 @@ for v in videos:
                                 print(kp)
                                 if not kp or len(kp) < 3:
                                     modified = True
-                                    annotation["objects"][nr_obj]["keypoints"][nr_kp] = [0., 0., 0.]
+                                    annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
                                 if len(kp) > 1 and kp[2] is None:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 0.
                                     if kp[1] is None:
-                                        annotation["objects"][nr_obj]["keypoints"][nr_kp] = [0., 0., 0.]
+                                        annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
                                 if len(kp) > 1 and kp[2] < 0:
                                     modified = True
