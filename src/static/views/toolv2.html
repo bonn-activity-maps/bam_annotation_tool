@@ -309,11 +309,11 @@
                                 <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
-                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame)"><span
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame)"><span
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame)"><span
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
                                         class="glyphicon glyphicon-pushpin"></span></button>
                                 </th>
                                 <th ng-if="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person')" ng-repeat="f in object.frames">
@@ -492,10 +492,10 @@
             </div>
         </div>
         <hr>
-        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value)) || (objectManager.isTypeSelected('bbox'))">
+        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox'))">
             <p>This frame is not editable!</p>
         </div>
-        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value)) || (objectManager.isTypeSelected('bbox')))">
+        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox')))">
             <div class="row">
                 <div class="col col-md-8">
                     <div ng-if="!toolParameters.isPosetrack">

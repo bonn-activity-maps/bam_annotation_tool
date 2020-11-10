@@ -100,7 +100,6 @@ class UserService:
         else:
             # Create random password of length 12
             pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
-            # pwd = u"test"
             user.password = self.get_hashed_password(pwd)
 
             result = userManager.create_user(user)
