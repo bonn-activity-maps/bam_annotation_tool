@@ -32,8 +32,10 @@ def pad(string, number):
 
 # Get all videos of dataset
 dataset = {
-    "name": "posetrack_data",
+    # "name": "posetrack_data",
+    "name": "posetrack_intro_4",
     "type": pt}
+
 videos = list(db.video.find({"dataset": dataset["name"]}, {"_id": 0}).sort("name"))
 for video in videos:
     print("Recomputing UID for ", video["name"])

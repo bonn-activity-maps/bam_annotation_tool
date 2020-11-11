@@ -28,10 +28,12 @@ def delete_duplicated_objects(lst):
 
 
 class PrecomputeAnnotations:
-    c = MongoClient('172.18.0.2', 27017)
+    # c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient('127.0.0.1', 27017)
     db = c.cvg
 
-    datasetName = "posetrack_data"
+    # datasetName = "posetrack_data"
+    datasetName = "posetrack_intro_4"
 
     aik = 'actionInKitchen'
     pt = 'poseTrack'

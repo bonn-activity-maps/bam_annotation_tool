@@ -1771,6 +1771,8 @@ angular.module('CVGTool')
 
             // Function that restores the two person labels from posetrack person
             _this.restorePersonKeypoints = function(keypoints) {
+                if (keypoints.length == 17) return keypoints;
+
                 var returnKeypoints = keypoints.slice();
                 returnKeypoints.splice(3,0, [-1, -1, 0], [-1, -1, 0]);
                 return returnKeypoints;
@@ -1778,15 +1780,31 @@ angular.module('CVGTool')
 
             // Function that returns the list of frames to annotate
             _this.getVideoFramesToAnnotate = function(video) {
-                var callback = function(frames) {
-                    _this.videoFramesToAnnotate = frames;
+                if(navSrvc.getActiveDataset().name.includes('posetrack_intro')){
+                    _this.videoFramesToAnnotate = [];
+                } else{
+                    let callback = function(frames) {
+                        _this.videoFramesToAnnotate = frames;
+                    }
+                    toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
                 }
-                toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
             }
 
             // Checks if frame has to be annotated
-            _this.isFrameAnnotable = function(frame) {
-                return _this.videoFramesToAnnotate.includes(frame);
+            _this.isFrameAnnotable = function(frame, object) {
+                if(navSrvc.getActiveDataset().name.includes('posetrack_intro')){
+                    return true
+                }
+                if(!_this.videoFramesToAnnotate.includes(frame)) {
+                    return false
+                } else {
+                    // Check if we have BBox
+                    if (object === null) return false;
+                    
+                    if ($scope.objectManager.hasAnnotation(object.uid, "bbox", frame)) {
+                        return true
+                    } else return false
+                }
             }
 
             // Gets the labels for the current ignore region in the current frame
@@ -2267,7 +2285,7 @@ angular.module('CVGTool')
                 object.keypoints = shape.cameraPoints;
                 
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints);
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints.slice());
                 } 
 
                 if (object.type.localeCompare("person") === 0) {
@@ -2332,7 +2350,9 @@ angular.module('CVGTool')
             }
 
             _this.openChangeTrackID = function(object) {
-                if (object.type === "ignore_region") {
+                if (object.type === "ignore_region" ||
+                    object.type === "bbox_head" ||
+                    object.type === "person" ) {
                     $mdDialog.show({
                         templateUrl: '/static/views/dialogs/changeTrackIDDialog.html',
                         controller: 'changeTrackIDCtrl',
@@ -2344,6 +2364,8 @@ angular.module('CVGTool')
                             scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
                             username: $scope.toolParameters.user.name,
                             ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
+                            bbox_heads: $scope.objectManager.objectTypes["bbox_head"].objects,
+                            persons: $scope.objectManager.objectTypes["person"].objects,
                             frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom
                         }
                     }).then(function(data) { // When finished, update the object in the frame
@@ -2352,7 +2374,7 @@ angular.module('CVGTool')
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,
                                 object.uid, data.new_track_id, $scope.toolParameters.user.name,
-                                $scope.timelineManager.slider.value, data.swap,
+                                $scope.timelineManager.slider.value, data.swap, object.type,
                                 _this.callbackChangeTrackID,
                                 $scope.messagesManager.sendMessage);
                             // _this.retrieveObjects();

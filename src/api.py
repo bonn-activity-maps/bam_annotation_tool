@@ -622,7 +622,8 @@ def update_track_id():
     user = req_data["user"]
     frame = req_data["frame"]
     swap = req_data["swap"]
-    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, frame, swap)
+    obj_type = req_data["obj_type"]
+    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, frame, swap, obj_type)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
