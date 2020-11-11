@@ -1780,14 +1780,21 @@ angular.module('CVGTool')
 
             // Function that returns the list of frames to annotate
             _this.getVideoFramesToAnnotate = function(video) {
-                var callback = function(frames) {
-                    _this.videoFramesToAnnotate = frames;
+                if(navSrvc.getActiveDataset().name.includes('posetrack_intro')){
+                    _this.videoFramesToAnnotate = [];
+                } else{
+                    let callback = function(frames) {
+                        _this.videoFramesToAnnotate = frames;
+                    }
+                    toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
                 }
-                toolSrvc.getVideoFramesToAnnotate(video, callback, $scope.messagesManager.sendMessage);
             }
 
             // Checks if frame has to be annotated
             _this.isFrameAnnotable = function(frame, object) {
+                if(navSrvc.getActiveDataset().name.includes('posetrack_intro')){
+                    return true
+                }
                 if(!_this.videoFramesToAnnotate.includes(frame)) {
                     return false
                 } else {

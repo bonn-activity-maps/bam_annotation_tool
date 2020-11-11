@@ -492,10 +492,10 @@
             </div>
         </div>
         <hr>
-        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox'))">
+        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro'))">
             <p>This frame is not editable!</p>
         </div>
-        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox')))">
+        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro')))">
             <div class="row">
                 <div class="col col-md-8">
                     <div ng-if="!toolParameters.isPosetrack">
