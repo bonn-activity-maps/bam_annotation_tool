@@ -24,6 +24,10 @@ for v in videos:
             for nr_obj, obj in enumerate(annotation["objects"]):
                 if obj["type"] == "person":
                     if obj["keypoints"]:
+                        if len(obj["keypoints"]) != 17:
+                            annotation["objects"][nr_obj]["keypoints"].insert(3, [-1., -1., 0.])
+                            annotation["objects"][nr_obj]["keypoints"].insert(4, [-1., -1., 0.])
+                            modified = True
                         for nr_kp, kp in enumerate(obj["keypoints"]):
                             if not (len(kp) == 3 and kp[2] in [0, 1] and None not in kp):
                                 print("Found incorrect value in Video", v["name"], "track_id", obj["track_id"],
@@ -34,17 +38,17 @@ for v in videos:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
-                                elif kp[2] is None:
+                                if len(kp) > 1 and kp[2] is None:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 0.
                                     if kp[1] is None:
                                         annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
-                                elif kp[2] < 0:
+                                if len(kp) > 1 and kp[2] < 0:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 0.
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
-                                elif kp[2] > 0:
+                                if len(kp) > 1 and kp[2] > 0:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 1.
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")

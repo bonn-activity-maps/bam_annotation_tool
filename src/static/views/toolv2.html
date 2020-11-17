@@ -395,7 +395,9 @@
                             <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
                         </div>
                         <div class="col-sm-2">
-                            <button ng-if="objectManager.selectedObject.type === 'ignore_region'"
+                            <button ng-if="objectManager.selectedObject.type === 'ignore_region' ||
+                                           objectManager.selectedObject.type === 'bbox_head' ||
+                                           objectManager.selectedObject.type === 'person'"
                                     ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)">
                                 <span style="rotation: 90deg" class="glyphicon glyphicon-random"></span>
                             </button>
@@ -490,10 +492,17 @@
             </div>
         </div>
         <hr>
+<<<<<<< HEAD
         <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0)">
             <p>This frame is not editable!</p>
         </div>
         <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
+=======
+        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro'))">
+            <p>This frame is not editable!</p>
+        </div>
+        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro')))">
+>>>>>>> 1898756ad28cede629462cc49d6521baadef17dc
             <div class="row">
                 <div class="col col-md-8">
                     <div ng-if="!toolParameters.isPosetrack">

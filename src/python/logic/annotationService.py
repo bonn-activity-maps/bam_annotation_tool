@@ -259,14 +259,14 @@ class AnnotationService:
             return True, result, 200
 
     # Return True if the object with track id specified for the given frame in the given video is updated correctly
-    def update_track_id(self, video, track_id, new_track_id, user, frame, swap):
+    def update_track_id(self, video, track_id, new_track_id, user, frame, swap, obj_type):
         # Create user action in db
         user_action = UserAction(user, 'track id', video.name, video.dataset)
         user_action_manager.create_user_action(user_action)
         # Swap track ids TODO swap uid too?
-        result = annotationManager.update_track_id(video, track_id, 100, frame)
-        result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame)
-        result3 = annotationManager.update_track_id(video, 100, new_track_id, frame)
+        result = annotationManager.update_track_id(video, track_id, 100, frame, obj_type)
+        result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame, obj_type)
+        result3 = annotationManager.update_track_id(video, 100, new_track_id, frame, obj_type)
         if result == 'Error' or result2 == 'Error' or result3 == 'Error':
             return False, 'Error updating track id', 400
         else:
