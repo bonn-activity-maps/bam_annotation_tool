@@ -309,11 +309,11 @@
                                 <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
-                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object)"><span
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                         class="glyphicon glyphicon-pushpin"></span></button>
                                 </th>
                                 <th ng-if="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person')" ng-repeat="f in object.frames">
@@ -492,17 +492,10 @@
             </div>
         </div>
         <hr>
-<<<<<<< HEAD
-        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0)">
+        <div ng-show="!toolParameters.activeDataset.name.includes('posetrack_intro') && ((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
             <p>This frame is not editable!</p>
         </div>
-        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
-=======
-        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro'))">
-            <p>This frame is not editable!</p>
-        </div>
-        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && !toolParameters.activeDataset.name.includes('posetrack_intro')))">
->>>>>>> 1898756ad28cede629462cc49d6521baadef17dc
+        <div ng-show="toolParameters.activeDataset.name.includes('posetrack_intro') || !((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
             <div class="row">
                 <div class="col col-md-8">
                     <div ng-if="!toolParameters.isPosetrack">
