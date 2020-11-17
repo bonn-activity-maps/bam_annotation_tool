@@ -1788,12 +1788,12 @@ angular.module('CVGTool')
 
             // Checks if frame has to be annotated
             _this.isFrameAnnotable = function(frame, object) {
+                if (object === null) return false;
+                
                 if(!_this.videoFramesToAnnotate.includes(frame)) {
                     return false
                 } else {
                     // Check if we have BBox
-                    if (object === null) return false;
-                    
                     if ($scope.objectManager.hasAnnotation(object.uid, "bbox", frame)) {
                         return true
                     } else return false

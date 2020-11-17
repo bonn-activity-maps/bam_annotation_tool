@@ -490,10 +490,10 @@
             </div>
         </div>
         <hr>
-        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox'))">
+        <div ng-show="(optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0)">
             <p>This frame is not editable!</p>
         </div>
-        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox')))">
+        <div ng-show="!((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
             <div class="row">
                 <div class="col col-md-8">
                     <div ng-if="!toolParameters.isPosetrack">
