@@ -762,6 +762,8 @@ angular.module('CVGTool')
 
             // Function called everytime the selector type changes
             _this.changeSelectedType = function(type) {
+                $scope.keypointEditor.closeEditor();
+                
                 _this.selectedType = _this.objectTypes[type];
             
                 $scope.canvasesManager.refreshProjectionOfCanvases();
