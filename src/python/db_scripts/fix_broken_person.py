@@ -14,10 +14,11 @@ dataset = {
     "name": "posetrack_data",
     "type": pt}
 videos = list(db.video.find({"dataset": dataset["name"]}, {"_id": 0}).sort("name"))
+video_ignore_list = ["000048", "014054", "017121"]
 
 for v in videos:
     # print("Checking video: ", v["name"])
-    if v["name"] != "000048":
+    if v["name"] not in video_ignore_list:
         vid_annotations = db.annotation.find({"dataset": dataset["name"], "scene": v["name"], "user": "root"}, {'_id': 0})
         for idx, annotation in enumerate(vid_annotations):
             modified = False

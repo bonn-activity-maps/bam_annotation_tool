@@ -41,10 +41,11 @@ def is_track_id_in_array(trckid, array):
     return times
 
 
+video_ignore_list = ["000048", "014054", "017121"]
 # try:
 for v in videos:
     # print("Checking video: ", v["name"])
-    if v["name"] != "000048":
+    if v["name"] not in video_ignore_list:
         vid_annotations = db.annotation.find({"dataset": dataset["name"], "scene": v["name"], "user": "root"}, {'_id': 0})
         ok = True
         for idx, annotation in enumerate(vid_annotations):

@@ -460,7 +460,6 @@ def interpolate_annotation():
         if frame != -1 and (end_frame - frame > 1):
             interpolate = True
             break
-
     # If we don't need to interpolate, return ok
     if not interpolate:
         success, msg, status = True, 'ok', 200

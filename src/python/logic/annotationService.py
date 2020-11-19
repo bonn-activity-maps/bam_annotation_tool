@@ -488,7 +488,6 @@ class AnnotationService:
 
         # Final keypoints
         final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2, type)
-
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():

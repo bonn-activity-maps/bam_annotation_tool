@@ -2283,10 +2283,10 @@ angular.module('CVGTool')
                 var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
 
                 object.keypoints = shape.cameraPoints;
-                
+
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
                     object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints.slice());
-                } 
+                }
 
                 if (object.type.localeCompare("person") === 0) {
                     for (var j=0; j< object.keypoints.length; j++){
