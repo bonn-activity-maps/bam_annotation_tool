@@ -66,7 +66,7 @@ class FrameService:
                 video = videoManager.get_video(video)
                 if video != 'Error':
                     videoFrames['type'] = video.type
-                    videos.append(videoFrames)
+                    videos.append(videoFrames) if videoFrames['video'] not in ptService.video_ignore_list else None
             return True, videos, 200
 
     # Return 'ok' if the frame has been created
