@@ -762,6 +762,8 @@ angular.module('CVGTool')
 
             // Function called everytime the selector type changes
             _this.changeSelectedType = function(type) {
+                $scope.keypointEditor.closeEditor();
+                
                 _this.selectedType = _this.objectTypes[type];
             
                 $scope.canvasesManager.refreshProjectionOfCanvases();
@@ -1792,6 +1794,8 @@ angular.module('CVGTool')
 
             // Checks if frame has to be annotated
             _this.isFrameAnnotable = function(frame, object) {
+                if (object === null) return false;
+                
                 if(navSrvc.getActiveDataset().name.includes('posetrack_intro')){
                     return true
                 }
@@ -1799,8 +1803,6 @@ angular.module('CVGTool')
                     return false
                 } else {
                     // Check if we have BBox
-                    if (object === null) return false;
-                    
                     if ($scope.objectManager.hasAnnotation(object.uid, "bbox", frame)) {
                         return true
                     } else return false
