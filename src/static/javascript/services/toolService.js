@@ -381,8 +381,8 @@ angular.module('CVGTool')
         },
 
         // Change track id of an object
-        updateTrackID: function(scene, dataset, datasetType, track_id, new_track_id, user, frame, swap, obj_type,
-                                callbackSuccess, callbackError) {
+        updateTrackID: function(scene, dataset, datasetType, track_id, new_track_id, user, obj_type,
+                                frame_start, frame_end, callbackSuccess, callbackError) {
             $http({
                 method: 'POST',
                 url: '/api/annotation/updateTrackID',
@@ -396,9 +396,9 @@ angular.module('CVGTool')
                     "newTrackID": new_track_id,
                     "trackID": track_id,
                     "user": user,
-                    "frame": frame,
-                    "swap": swap,
-                    "obj_type": obj_type
+                    "obj_type": obj_type,
+                    "frame_start": frame_start,
+                    "frame_end": frame_end
                 }
             }).then(function successCallback(response) {
                     callbackSuccess("Track ID changed!", new_track_id)

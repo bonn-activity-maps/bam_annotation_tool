@@ -293,7 +293,7 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th ng-if="!toolParameters.isPosetrack"></th>
+                                <th ng-if="!(toolParameters.isPosetrack && objectManager.selectedType.type === 'bbox')"></th>
                                 <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
@@ -304,6 +304,13 @@
                             <tr ng-repeat="object in objectManager.selectedType.objects">
                                 <th><button class="btn btn-danger" ng-click="commonManager.openBatchDelete(object)"><span
                                     class="glyphicon glyphicon-transfer"></span></button></th>
+                                <th ng-if="toolParameters.isPosetrack &&
+                                 (objectManager.selectedType.type === 'ignore_region' ||
+                                  objectManager.selectedType.type === 'bbox_head' ||
+                                  objectManager.selectedType.type === 'person')">
+                                    <button class="btn btn-default" ng-click="commonManager.openBatchChangeTrackID(object)"><span
+                                            style="rotation: 90deg" class="glyphicon glyphicon-random"></span></button></th>
+
                                 <th ng-if="!toolParameters.isPosetrack"><button class="btn btn-danger" ng-click="keypointEditor.openTransferObject(object)"><span
                                         class="glyphicon glyphicon-random"></span></button></th>
                                 <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        

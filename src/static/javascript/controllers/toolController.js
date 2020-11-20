@@ -899,9 +899,9 @@ angular.module('CVGTool')
             }
 
             _this.prepareKeypointsForFrontend = function(keypoints) {
-                var prepared = keypoints.slice()
-                for (var i=0; i< keypoints.length; i++) {
-                    for (var j=0; j < keypoints[i].length; j++) {
+                let prepared = keypoints.slice()
+                for (let i=0; i< keypoints.length; i++) {
+                    for (let j=0; j < keypoints[i].length; j++) {
                         prepared[i][j] = keypoints[i][j] / 2.0
                     }    
                 }
@@ -909,17 +909,17 @@ angular.module('CVGTool')
             }
 
             _this.prepareKeypointForFrontend = function(keypoint) {
-                var prepared = keypoint.slice()
-                for (var i=0; i< keypoint.length; i++) {
+                let prepared = keypoint.slice()
+                for (let i=0; i< keypoint.length; i++) {
                     prepared[i] = keypoint[i] / 2.0
                 }
                 return prepared;
             }
 
             _this.prepareKeypointsForBackend = function(keypoints) {
-                var prepared = keypoints.slice()
-                for (var i=0; i< keypoints.length; i++) {
-                    for (var j=0; j < keypoints[i].length; j++) {
+                let prepared = keypoints.slice()
+                for (let i=0; i< keypoints.length; i++) {
+                    for (let j=0; j < keypoints[i].length; j++) {
                         prepared[i][j] = keypoints[i][j] * 2.0
                     }
                 }
@@ -927,8 +927,8 @@ angular.module('CVGTool')
             }
 
             _this.prepareKeypointForBackend = function(keypoint) {
-                var prepared = keypoint.slice()
-                for (var i=0; i< keypoint.length; i++) {
+                let prepared = keypoint.slice()
+                for (let i=0; i< keypoint.length; i++) {
                     prepared[i] = keypoint[i] * 2.0
                 }
                 return prepared;
@@ -2033,67 +2033,17 @@ angular.module('CVGTool')
                 }
             };
 
-            // Interpolate in AIK
-            _this.interpolate = function (objectUID, objectType, frameTo) {
-                var callbackSuccess = function(objectUID, objectType, framesFrom, frameTo) {
-                    // First remove -1 values from the frame array
-                    var framesFromFiltered = framesFrom.filter(function(value, index, arr) {
-                        return value >= 0;
-                    })
-
-                    // Get the min used frame
-                    var minFrame = Math.min(...framesFromFiltered);
-
-                    var frameArray = [];
-                    for (var i = minFrame; i <= frameTo; i++) frameArray.push(i);
-                    _this.retrieveAnnotation(objectUID, objectType, frameArray);
-                }
-
-                if (frameTo == $scope.toolParameters.frameFrom) return; // Nothing to interpolate
-
-                // Create structure for the object to interpolate
-                var framesFrom = []
-                for (var i=0; i<$scope.objectManager.selectedType.labels.length; i++) {
-                    framesFrom.push(-1);
-                }
-
-                // For each label find a possible frame to interpolate
-                for (var i=0; i<framesFrom.length; i++) {
-                    for (var j= frameTo - 1; j>=Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); j--) {
-                        if ($scope.objectManager.hasAnnotationForLabel(objectUID, objectType, j, i)) {
-                            framesFrom[i] = j;
-                            break;
-                        }
-                    }
-                }
-
-                // Check if there is something to interpolate
-                var doit = false;   
-                for (var i=0; i < framesFrom.length; i++) {
-                    if (framesFrom[i] != -1) {
-                        doit = true;
-                        break;
-                    }
-                }
-
-                if (doit) {
-                    toolSrvc.interpolate($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID, objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
-                } else {
-                    _this.retrieveAnnotation(objectUID, objectType, [frameTo])
-                }
-            }
-
             // Interpolate
             _this.interpolate = function (objectUID, objectType, frameTo) {
-                var callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
-                    var frameArray = [];
-                    for (var i = frameFrom; i <= frameTo; i++) frameArray.push(i);
+                let callbackSuccess = function(_objectUID, objectType, frameFrom, frameTo) {
+                    let frameArray = [];
+                    for (let i = frameFrom; i <= frameTo; i++) frameArray.push(i);
                     _this.retrieveAnnotation(objectUID, objectType, frameArray);
                 };
 
                 if (frameTo === $scope.toolParameters.frameFrom) return; // Nothing to interpolate
 
-                var frameFrom = null;
+                let frameFrom = null;
                 // Find the frame to interpolate to
                 for (var i = frameTo - 1; i >= Math.max($scope.toolParameters.frameFrom, frameTo - $scope.toolParameters.interpolationRange); i--) {
                     if ($scope.objectManager.annotationsState(objectUID, objectType, i) !== 0) {    // Found frame to interpolate to
@@ -2273,7 +2223,7 @@ angular.module('CVGTool')
                     }
                 }
 
-                var object = {
+                let object = {
                     uid: $scope.objectManager.selectedObject.original_uid,
                     type: $scope.objectManager.selectedObject.type,
                     track_id: $scope.objectManager.selectedObject.uid,
@@ -2282,25 +2232,27 @@ angular.module('CVGTool')
                     keypoints: []
                 }
 
-                var shape = $scope.keypointEditor.keypointEditorData.shapes[0];
+                let shape = $scope.keypointEditor.keypointEditorData.shapes[0];
 
                 object.keypoints = shape.cameraPoints;
 
                 if (_this.resizedVideos.includes($scope.canvasesManager.canvases[0].getActiveCamera().filename)) {
-                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(object.keypoints.slice());
+                    // DEEP Copy!!!!
+                    let keypointsCopy = JSON.parse(JSON.stringify(object.keypoints));
+                    object.keypoints = $scope.objectManager.prepareKeypointsForBackend(keypointsCopy);
                 }
 
                 if (object.type.localeCompare("person") === 0) {
-                    for (var j=0; j< object.keypoints.length; j++){
+                    for (let j=0; j< object.keypoints.length; j++){
                         if (object.keypoints[j].length === 0) {
                             object.keypoints[j] = [-1,-1,0]
                         }
                     }
 
-                    var visibilities = shape.visibilities.slice();
+                    let visibilities = JSON.parse(JSON.stringify(shape.visibilities));
                     
                     // Add the visibility values again
-                    for (var i=0; i<object.keypoints.length; i++){
+                    for (let i=0; i<object.keypoints.length; i++){
                         if (object.keypoints[i].length == 2) {
                             object.keypoints[i].push(visibilities[i]);
                         }   
@@ -2308,7 +2260,9 @@ angular.module('CVGTool')
 
                     object.keypoints = _this.restorePersonKeypoints(object.keypoints);
                 } 
-                toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset, $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value, object, callbackSuccess, $scope.messagesManager.sendMessage);
+                toolSrvc.updateAnnotation($scope.toolParameters.user.name, $scope.toolParameters.activeDataset,
+                    $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.timelineManager.slider.value,
+                    object, callbackSuccess, $scope.messagesManager.sendMessage);
             };
 
             _this.callbackChangePersonID = function(msg, new_person_id) {
@@ -2351,6 +2305,47 @@ angular.module('CVGTool')
                 $scope.messagesManager.sendMessage('success', msg);
             }
 
+            _this.openBatchChangeTrackID = function(object) {
+                if (object.type === "ignore_region" ||
+                    object.type === "bbox_head" ||
+                    object.type === "person" ) {
+                    $mdDialog.show({
+                        templateUrl: '/static/views/dialogs/batchChangeTrackIDDialog.html',
+                        controller: 'batchChangeTrackIDCtrl',
+                        escapeToClose: false,
+                        locals: {
+                            toolSrvc: toolSrvc,
+                            object: object,
+                            dataset: $scope.toolParameters.activeDataset,
+                            scene: $scope.canvasesManager.canvases[0].activeCamera.filename,
+                            username: $scope.toolParameters.user.name,
+                            ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
+                            bbox_heads: $scope.objectManager.objectTypes["bbox_head"].objects,
+                            persons: $scope.objectManager.objectTypes["person"].objects,
+                            frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom,
+                            min_frame: $scope.timelineManager.slider.value,
+                            max_frame: $scope.toolParameters.frameTo
+                        }
+                    }).then(function(data) { // When finished, update the object in the frame
+                        if (data.msg.localeCompare("success") === 0) {
+                            //TODO send frame range and change backend function to iterate
+                            toolSrvc.updateTrackID($scope.canvasesManager.canvases[0].activeCamera.filename,
+                                $scope.toolParameters.activeDataset.name,
+                                $scope.toolParameters.activeDataset.type,
+                                object.uid, data.new_track_id, $scope.toolParameters.user.name,
+                                object.type, data.frame_start, data.frame_end,
+                                _this.callbackChangeTrackID,
+                                $scope.messagesManager.sendMessage);
+                            // _this.retrieveObjects();
+                        } else if (data.msg.localeCompare("error") === 0) {
+                            $scope.messagesManager.sendMessage("warning", "Something went wrong")
+                        }
+                    })
+                } else {
+                    $scope.messagesManager.sendMessage("warning", "Action not available for this object type.")
+                }
+            }
+
             _this.openChangeTrackID = function(object) {
                 if (object.type === "ignore_region" ||
                     object.type === "bbox_head" ||
@@ -2376,7 +2371,9 @@ angular.module('CVGTool')
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,
                                 object.uid, data.new_track_id, $scope.toolParameters.user.name,
-                                $scope.timelineManager.slider.value, data.swap, object.type,
+                                object.type,
+                                $scope.timelineManager.slider.value,
+                                $scope.timelineManager.slider.value,
                                 _this.callbackChangeTrackID,
                                 $scope.messagesManager.sendMessage);
                             // _this.retrieveObjects();
@@ -2387,7 +2384,6 @@ angular.module('CVGTool')
                 } else {
                     $scope.messagesManager.sendMessage("warning", "Action not available for this object type.")
                 }
-
             }
 
             // Opens the dialog for batch-deleting points
