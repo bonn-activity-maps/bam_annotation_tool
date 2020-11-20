@@ -2323,7 +2323,7 @@ angular.module('CVGTool')
                             bbox_heads: $scope.objectManager.objectTypes["bbox_head"].objects,
                             persons: $scope.objectManager.objectTypes["person"].objects,
                             frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom,
-                            min_frame: $scope.timelineManager.slider.value,
+                            min_frame: $scope.toolParameters.frameFrom,
                             max_frame: $scope.toolParameters.frameTo
                         }
                     }).then(function(data) { // When finished, update the object in the frame
