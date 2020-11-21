@@ -259,18 +259,22 @@ class AnnotationService:
             return True, result, 200
 
     # Return True if the object with track id specified for the given frame in the given video is updated correctly
-    def update_track_id(self, video, track_id, new_track_id, user, frame, swap, obj_type):
+    def update_track_id(self, video, track_id, new_track_id, user, obj_type, frame_start, frame_end):
         # Create user action in db
         user_action = UserAction(user, 'track id', video.name, video.dataset)
         user_action_manager.create_user_action(user_action)
         # Swap track ids TODO swap uid too?
-        result = annotationManager.update_track_id(video, track_id, 100, frame, obj_type)
-        result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame, obj_type)
-        result3 = annotationManager.update_track_id(video, 100, new_track_id, frame, obj_type)
-        if result == 'Error' or result2 == 'Error' or result3 == 'Error':
+        error = False
+        for frame in range(frame_start, frame_end + 1):
+            result = annotationManager.update_track_id(video, track_id, 100, frame, obj_type)
+            result2 = annotationManager.update_track_id(video, new_track_id, track_id, frame, obj_type)
+            result3 = annotationManager.update_track_id(video, 100, new_track_id, frame, obj_type)
+            if result == 'Error' or result2 == 'Error' or result3 == 'Error':
+                error = True
+        if error:
             return False, 'Error updating track id', 400
         else:
-            return True, result, 200
+            return True, "OK", 200
 
     # Create a new person in a video for PT, precompute every annotation
     def create_person_pt(self, video):
@@ -488,7 +492,6 @@ class AnnotationService:
 
         # Final keypoints
         final_kpts = self.interpolate(num_frames, num_kpts, dataset.keypoint_dim, kps1, kps2, type)
-
         # Store interpolated keypoints for frames in between (avoid start and end frame)
         for i in range(1, len(final_kpts) - 1):
             if dataset.is_pt():

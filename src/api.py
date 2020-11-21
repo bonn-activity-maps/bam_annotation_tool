@@ -460,7 +460,6 @@ def interpolate_annotation():
         if frame != -1 and (end_frame - frame > 1):
             interpolate = True
             break
-
     # If we don't need to interpolate, return ok
     if not interpolate:
         success, msg, status = True, 'ok', 200
@@ -620,10 +619,11 @@ def update_track_id():
     new_track_id = req_data["newTrackID"]
     track_id = req_data["trackID"]
     user = req_data["user"]
-    frame = req_data["frame"]
-    swap = req_data["swap"]
     obj_type = req_data["obj_type"]
-    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, frame, swap, obj_type)
+    frame_start = req_data["frame_start"]
+    frame_end = req_data["frame_end"]
+    success, msg, status = annotationService.update_track_id(video, track_id, new_track_id, user, obj_type,
+                                                             frame_start, frame_end)
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 

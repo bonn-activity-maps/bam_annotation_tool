@@ -53,10 +53,12 @@ def check_existence(new_image_id, new_id):
     return exists_id or exists_id
 
 
+video_ignore_list = ["000048", "014054", "017121"]
+
 for v in videos:
     print("Checking video: ", v["name"])
     frames = get_frames(v)
-    if frames and v["name"] != "000048":
+    if frames and v["name"] not in video_ignore_list:
         frame_id = str(frames[0]["frame_id"])
         id = str(frames[0]["id"])
         if frame_id[0] == "2" or id[0] == "2":

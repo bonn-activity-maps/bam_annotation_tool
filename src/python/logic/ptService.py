@@ -1639,6 +1639,8 @@ class PTService:
                    58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 77, 81, 85, 89, 93, 97, 101, 105,
                    109, 113]}
 
+    video_ignore_list = ["000048", "014054", "017121"]
+
     # Generate a new valid poseTrack ID
     def generate_uid(self, scene, frame, track_id):
         uid = int("1" + scene + self.pad(str(frame), 4) + self.pad(str(track_id), 2))

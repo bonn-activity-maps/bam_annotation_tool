@@ -475,8 +475,8 @@ class DatasetService:
     def export_dataset_PT(self, dataset):
         videos = videoManager.get_videos(dataset)
         for j in range(0, len(videos)):
-            # Ignore video 000048 since it's buggy
-            if videos[j].name != "000048":
+            # Ignore buggy videos
+            if videos[j].name not in ptService.video_ignore_list:
                 final_annotation = dict()
 
                 annotation = Annotation(dataset, videos[j].name)
