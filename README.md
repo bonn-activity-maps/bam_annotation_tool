@@ -1,4 +1,5 @@
 # Annotation Tool
+
 This tool was created to interact (visualize, create, modify, remove) with **Bonn Activity Maps**[[1]](https://github.com/bonn-activity-maps/aikapi) datasets. Additionally, the tool supports interactions with **Posetrack**[[2]](https://posetrack.net/) datasets. The following sections contain the explanations of the main functionalities of the tool.
 
 ## Screenshots

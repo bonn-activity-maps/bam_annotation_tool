@@ -6,10 +6,10 @@ angular.module('CVGTool')
         // Tool version
         $scope.toolVersion = navSrvc.getToolVersion();
 
-        // ENABLE TOOLTIPS //
-        $(function() {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
+        // ENABLE TOOLTIPS // NOTE: disabled because Jquery 3.5.1 has conflicts with function hasOwnProperty that tooltips use
+        // $(function() {
+        //     $('[data-toggle="tooltip"]').tooltip()
+        // })
         
         function TimelineManager (frameFrom, frameTo) {
             // VARIABLES //
@@ -2913,7 +2913,7 @@ angular.module('CVGTool')
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
                     _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
-                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                    if ($scope.optionsManager.options.drawLimbLengths && Object.prototype.hasOwnProperty(_this.limbsToShowLengthConnections, $scope.keypointEditor.selectedLabel.toString())) {
                         _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
                     }
                 }
@@ -3020,7 +3020,7 @@ angular.module('CVGTool')
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
                     _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
-                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                    if ($scope.optionsManager.options.drawLimbLengths && Object.prototype.hasOwnProperty(_this.limbsToShowLengthConnections, $scope.keypointEditor.selectedLabel.toString())) {
                         _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
                     }
                 }          
@@ -5068,7 +5068,7 @@ angular.module('CVGTool')
 
             _this.unbindKeys = function() {
                 for (key in _this.shortcuts.oldShortcuts) {
-                    if (_this.shortcuts.oldShortcuts[key].hasOwnProperty('shortcut')) {
+                    if (Object.prototype.hasOwnProperty(_this.shortcuts.oldShortcuts[key], 'shortcut')) {
                         hotkeys.del(_this.shortcuts.oldShortcuts[key].shortcut)
                     }
                 }
