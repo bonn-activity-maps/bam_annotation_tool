@@ -1,6 +1,6 @@
 # Annotation Tool
 
-TODO: general description of the tool
+This tool was created to interact (visualize, create, modify, remove) with Bonn Activity Maps[1] datasets. Additionally, the tool supports interactions with Posetrack[2] datasets. The following sections contain the explanations of the main functionalities of the tool.
 
 ## Screenshots
 ### User 
