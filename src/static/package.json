@@ -10,7 +10,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "angular": "^1.7.8",
+        "angular": "^1.8.0",
         "angular-animate": "^1.7.8",
         "angular-aria": "^1.7.8",
         "angular-material": "^1.1.20",
