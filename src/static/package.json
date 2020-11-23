@@ -20,7 +20,7 @@
         "angular-ui-router": "^1.0.23",
         "angularjs-slider": "^7.0.0",
         "bootstrap": "3.4.1",
-        "jquery": "^3.3.1",
+        "jquery": "^3.5.0",
         "ng-toast": "^2.0.0",
         "angular-hotkeys": "1.7.0",
         "lodash": "4.17.15",
