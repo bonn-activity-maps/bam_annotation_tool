@@ -2913,7 +2913,7 @@ angular.module('CVGTool')
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null) {
                     _this.points[$scope.keypointEditor.selectedLabel].draw(context, "#FF8F3D");
-                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.prototype.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
                         _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
                     }
                 }
@@ -3020,7 +3020,7 @@ angular.module('CVGTool')
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
                     _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", labelsToUse[$scope.keypointEditor.selectedLabel]);
-                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
+                    if ($scope.optionsManager.options.drawLimbLengths && _this.limbsToShowLengthConnections.prototype.hasOwnProperty($scope.keypointEditor.selectedLabel.toString())) {
                         _this.drawEdgesWithLengths(context, $scope.keypointEditor.selectedLabel, _this.limbsToShowLengthConnections[$scope.keypointEditor.selectedLabel.toString()])
                     }
                 }          
@@ -5068,7 +5068,7 @@ angular.module('CVGTool')
 
             _this.unbindKeys = function() {
                 for (key in _this.shortcuts.oldShortcuts) {
-                    if (_this.shortcuts.oldShortcuts[key].hasOwnProperty('shortcut')) {
+                    if (_this.shortcuts.oldShortcuts[key].prototype.hasOwnProperty('shortcut')) {
                         hotkeys.del(_this.shortcuts.oldShortcuts[key].shortcut)
                     }
                 }
