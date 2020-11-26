@@ -1,4 +1,6 @@
 from pymongo import MongoClient, errors
+from math import isclose
+import numpy as np
 
 # c = MongoClient('172.18.0.2', 27017)
 c = MongoClient('127.0.0.1', 27017)
@@ -16,10 +18,38 @@ dataset = {
 videos = list(db.video.find({"dataset": dataset["name"]}, {"_id": 0}).sort("name"))
 video_ignore_list = ["000048", "014054", "017121"]
 
+
+def find_adjacent_point_and_check_correspondence(annotations, idx, nr_obj, nr_kp):
+    point = np.array(annotations[idx]["objects"][nr_obj]["keypoints"][nr_kp])
+    adj_point = np.array([])
+    visibility_value = point[2]
+    point = point[0:2]
+    factor = 1  # Factor to multiply in case of position having been multiplied
+    try:
+        adj_point = np.array(annotations[idx-1]["objects"][nr_obj]["keypoints"][nr_kp])
+        adj_point = adj_point[0:2]
+        print(adj_point, "<-- previous kp")
+    except:
+        try:
+            adj_point = np.array(annotations[idx+1]["objects"][nr_obj]["keypoints"][nr_kp])
+            adj_point = adj_point[0:2]
+            print(adj_point, "<-- next kp")
+        except:
+            print("no adjacent value")
+    if adj_point.size != 0:
+        if not np.allclose(point, adj_point, atol=10**2):
+            if np.allclose(point * 1/2, adj_point, atol=10**2):
+                factor = 1/2
+            elif np.allclose(point * 1/visibility_value, adj_point, atol=10**1):
+                factor = 1/visibility_value
+    print("Multiplication factor: ", factor)
+    return factor
+
+
 for v in videos:
     # print("Checking video: ", v["name"])
     if v["name"] not in video_ignore_list:
-        vid_annotations = db.annotation.find({"dataset": dataset["name"], "scene": v["name"], "user": "root"}, {'_id': 0})
+        vid_annotations = list(db.annotation.find({"dataset": dataset["name"], "scene": v["name"], "user": "root"}, {'_id': 0}))
         for idx, annotation in enumerate(vid_annotations):
             modified = False
             for nr_obj, obj in enumerate(annotation["objects"]):
@@ -38,19 +68,26 @@ for v in videos:
                                 if not kp or len(kp) < 3:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
+                                    # factor = find_adjacent_point_and_check_correspondence(vid_annotations, idx, nr_obj, nr_kp)
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
                                 if len(kp) > 1 and kp[2] is None:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 0.
                                     if kp[1] is None:
                                         annotation["objects"][nr_obj]["keypoints"][nr_kp] = [-1., -1., 0.]
+                                    # factor = find_adjacent_point_and_check_correspondence(vid_annotations, idx, nr_obj, nr_kp)
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
                                 if len(kp) > 1 and kp[2] < 0:
                                     modified = True
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 0.
+                                    factor = find_adjacent_point_and_check_correspondence(vid_annotations, idx, nr_obj, nr_kp)
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
                                 if len(kp) > 1 and kp[2] > 0:
                                     modified = True
+                                    factor = \
+                                        find_adjacent_point_and_check_correspondence(vid_annotations, idx, nr_obj, nr_kp)
+                                    annotation["objects"][nr_obj]["keypoints"][nr_kp] = \
+                                        (np.array(annotation["objects"][nr_obj]["keypoints"][nr_kp]) * factor).tolist()
                                     annotation["objects"][nr_obj]["keypoints"][nr_kp][2] = 1.
                                     print(annotation["objects"][nr_obj]["keypoints"][nr_kp], "<-- Corrected kp")
             if modified:
