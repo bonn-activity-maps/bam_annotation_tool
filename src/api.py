@@ -518,6 +518,16 @@ def replicate_annotation_static_object():
                                                                   req_data['lastDatasetFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Force the box object to be in contact with the floor and update the existing annotation for given frame, dataset, video and user
+@app.route('/api/annotation/extendBox', methods=['POST'])
+@flask_login.login_required
+def extend_box():
+    req_data = request.get_json()
+    dataset = Dataset(req_data['dataset'], req_data['datasetType'])
+    object = Object(req_data['uidObject'], req_data['objectType'], dataset_type=dataset.type)
+    annotation = Annotation(dataset, req_data['scene'], req_data['frame'], req_data['user'], [object])
+    success, msg, status = annotationService.extend_box(annotation)
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Only to check that the method works
 # Update only one label in one object in one frame
