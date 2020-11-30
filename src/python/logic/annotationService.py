@@ -95,6 +95,9 @@ class AnnotationService:
                         if obj['type'] == 'boxAIK' and obj['keypoints']:
                             a, b, c = obj['keypoints']
                             obj['keypoints'] = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+                        elif obj['type'] == 'cylinderAIK' and obj['keypoints']:
+                            a, b = obj['keypoints']
+                            obj['keypoints'] = aikService.create_cylinder(np.array(a), np.array(b)).tolist()
 
             return True, result, 200
 
@@ -359,6 +362,9 @@ class AnnotationService:
                         if obj.type == 'boxAIK' and obj.keypoints:
                             a, b, c = obj.keypoints
                             obj.keypoints = aikService.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+                        elif obj.type == 'cylinderAIK' and obj.keypoints:
+                            a, b = obj.keypoints
+                            obj.keypoints = aikService.create_cylinder(np.array(a), np.array(b)).tolist()
             return True, [r.to_json() for r in result], 200
 
     # Store annotation for an object for given frame, dataset, video and user
