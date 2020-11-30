@@ -1442,6 +1442,18 @@ angular.module('CVGTool')
 
                 toolSrvc.autoComplete($scope.toolParameters.user.name, $scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, framesFrom, frameTo, objectUID,objectType, objectUID, callbackSuccess, $scope.messagesManager.sendMessage);
             }
+            
+            // Extends the box object to the ground, so that the 4 floor points have (z=0)
+            _this.extendBoxToGround = function(objectUID, objectType, frame) {
+                var callbackSuccess = function(uid, type, frame) {
+                    _this.retrieveAnnotation(uid, type, [frame]);
+
+                    if ($scope.optionsManager.replicateOptions.replicateToTheMaxFrame) {
+                        _this.replicateStaticObject(uid, type, frame, $scope.toolParameters.maxVideoFrame);
+                    } 
+                }                
+                toolSrvc.extendBoxToGround($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type, $scope.toolParameters.activeDataset.name, $scope.toolParameters.user.name, objectType, objectUID, frame, callbackSuccess, $scope.messagesManager.sendMessage)
+            }
 
             // Replicates the current annotation to all posterior frames in the active range
             _this.replicate = function(uid, type, frame) {
@@ -2746,6 +2758,10 @@ angular.module('CVGTool')
                   }
 
                   $scope.commonManager.forcePoseAIKLimbLength(startLabels, endLabels, limbLength);
+            }
+
+            _this.extendBoxToGround = function() {
+                $scope.commonManager.extendBoxToGround($scope.objectManager.selectedObject.uid, $scope.objectManager.selectedObject.type, $scope.timelineManager.slider.value)
             }
 
             _this.setMoveWholeShape = function() {

@@ -13,6 +13,13 @@ db.objectType.insertOne({
 })
 
 db.objectType.insertOne({
+  "type": "cylinderAIK",
+  "datasetType": "actionInKitchen",
+  "numKeypoints": 2,
+  "labels": ["center", "radius"]
+})
+
+db.objectType.insertOne({
   "type": "poseAIK",
   "datasetType": "actionInKitchen",
   "numKeypoints": 24,
