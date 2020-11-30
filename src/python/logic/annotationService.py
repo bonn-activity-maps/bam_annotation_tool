@@ -636,6 +636,29 @@ class AnnotationService:
 
         return success, msg, status
 
+    # Force the box object to be in contact with the floor and update existing annotation
+    # for given frame, dataset, video and user
+    def extend_box(self, annotation):
+        if annotation.dataset.is_pt() or annotation.objects[0].type != 'boxAIK':
+            return False, 'Method not allowed', 500
+
+        # Get object
+        object = annotationManager.get_frame_object(annotation)
+        if object == 'Error':
+            return False, 'Error extending box', 500
+        annotation.objects[0] = object
+
+        # z=0 for bbl point if the box is correct
+        if annotation.objects[0].keypoints and len(annotation.objects[0].keypoints) == 3:
+            annotation.objects[0].keypoints[2][2] = 0
+        else:
+            return False, 'Incorrect keypoints extending box', 500
+
+        # Update keypoints
+        result = annotationManager.update_frame_object(annotation)
+        if result == 'Error':
+            return False, 'Error extending box', 500
+        return True, 'ok', 200
 
     # Force the size of the indicated limb and update existing annotation for given frame, dataset, video and user
     def force_limb_length(self, annotation, start_labels, end_labels, limb_length):

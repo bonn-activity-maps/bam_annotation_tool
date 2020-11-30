@@ -853,8 +853,29 @@ angular.module('CVGTool')
             }, function errorCallback(response) {
                 callbackError('danger', response.data.msg)
             })
+        },
+        extendBoxToGround: function(dataset, datasetType, scene, user, objectType, uid, frame, callbackSuccess, callbackError) {
+            $http({
+                method: 'POST',
+                url: '/api/annotation/extendBox',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                },
+                data: {
+                    'dataset': dataset,
+                    'datasetType': datasetType,
+                    'scene': scene,
+                    'user': user,
+                    'uidObject': uid,
+                    'objectType': objectType,
+                    "frame": frame
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(uid, objectType, frame)
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg)
+            })
         }
-
 
     }
 }]);

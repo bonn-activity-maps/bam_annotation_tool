@@ -602,43 +602,50 @@
                 <div class="col col-md-2">
                     <button class="btn-success" ng-click="commonManager.updateAnnotation();">Save</button>
                 </div>
-                <div class="col col-md-6">
-                    <div ng-show="objectManager.isStaticType(objectManager.selectedObject.type)">
-                        <div class="row">
-                            <div class="form-inline">
-                                <div class="form-group">
-                                    <p style="font-size: 9px;">Auto-replicate</p>
-                                </div>
-                                <div class="form-group">
-                                    <input type="checkbox" ng-change="optionsManager.replicateOptionchanged();" ng-model="optionsManager.replicateOptions.replicateToTheMaxFrame"></input>
-                                </div>
-                                <div class="form-group" ng-show="!optionsManager.replicateOptions.replicateToTheMaxFrame">
-                                    <button class="btn btn-sm btn-primary" ng-click="commonManager.replicateStaticObject(objectManager.selectedObject.uid, objectManager.selectedObject.type, timelineManager.slider.value, optionsManager.replicateOptions.replicateTo)">
-                                        Replicate
+                <div class="col col-md-10" ng-show="objectManager.isStaticType(objectManager.selectedObject.type)">
+                    <div class="row">
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <button class="btn-primary" ng-click="keypointEditor.extendBoxToGround();">Fit to ground <span class="glyphicon glyphicon-object-align-bottom"></span></button>
+                            </div>
+                            <div class="form-group">
+                                <p style="font-size: 9px;">Auto-replicate</p>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" ng-change="optionsManager.replicateOptionchanged();" ng-model="optionsManager.replicateOptions.replicateToTheMaxFrame"></input>
+                            </div>
+                            <div class="form-group" ng-show="!optionsManager.replicateOptions.replicateToTheMaxFrame">
+                                <button class="btn btn-sm btn-primary" ng-click="commonManager.replicateStaticObject(objectManager.selectedObject.uid, objectManager.selectedObject.type, timelineManager.slider.value, optionsManager.replicateOptions.replicateTo)">
+                                    Replicate
+                                </button>
+                                <div class="btn-group dropup">
+                                    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="glyphicon glyphicon-cog"></span>
                                     </button>
-                                    <div class="btn-group dropup">
-                                        <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <span class="glyphicon glyphicon-cog"></span>
-                                        </button>
-                                        <div id="ReplicateDropdown" class="dropdown-menu dropup text-center">
-                                            <!-- Dropdown menu links -->
-                                            <li class="dropdown-header">Replicate to:</li>
-                                            <li class="dropdown-item"><input type="number"  ng-change="optionsManager.replicateOptionChanged();" ng-model="optionsManager.replicateOptions.replicateTo"></li>
-                                            <li class="dropdown-item"><p>Max frame: <b>{{toolParameters.maxVideoFrame}}</b></p></li>
-                                        </div>
-                                    </div>        
-                                </div>
+                                    <div id="ReplicateDropdown" class="dropdown-menu dropup text-center">
+                                        <!-- Dropdown menu links -->
+                                        <li class="dropdown-header">Replicate to:</li>
+                                        <li class="dropdown-item"><input type="number"  ng-change="optionsManager.replicateOptionChanged();" ng-model="optionsManager.replicateOptions.replicateTo"></li>
+                                        <li class="dropdown-item"><p>Max frame: <b>{{toolParameters.maxVideoFrame}}</b></p></li>
+                                    </div>
+                                </div>        
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col col-md-4">
-                    <button class="btn-primary" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('dynamic')==0" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
+                <div class="col col-md-4" ng-show="!objectManager.isStaticType(objectManager.selectedObject.type)" >
+                    <button class="btn-primary" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
                 </div>
             </div>
             <div class="row">
-                <p ng-if="objectManager.isTypeSelected('boxAIK')"> Displayed full boxes will be updated after saving!</p>
-                <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
+                <!-- <div class="col col-md-1"></div> -->
+                <div class="col col-md-12">
+                    <div class="row">
+                        <p ng-if="objectManager.isTypeSelected('boxAIK')"> Displayed full boxes will be updated after saving!</p>
+                        <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
+                    </div>
+                </div>
+                <!-- <div class="col col-md-1"></div> -->
             </div>
         </div>
     </div>
