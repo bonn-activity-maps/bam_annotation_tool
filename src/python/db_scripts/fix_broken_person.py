@@ -141,8 +141,8 @@ for v in videos:
                 }
                 query = {"dataset": dataset["name"], "scene": v["name"], "frame": annotation["frame"]}
                 new_values = {"$set": {"objects": annotation["objects"]}}
-                # result = db.annotation.update_one(query, new_values, upsert=False)
-                # print("Result?", bool(result.modified_count))
+                result = db.annotation.update_one(query, new_values, upsert=False)
+                print("Result?", bool(result.modified_count))
                 # exit()
     if video_affected != {}:
         affected_list.append(video_affected)
