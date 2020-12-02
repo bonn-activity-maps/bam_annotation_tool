@@ -699,17 +699,18 @@ class DatasetService:
             frame_persons = []
             frame_objects = []
             for obj in annotation['objects']:     # Each object in annotation
-                if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
-                    p = {"pid": obj['uid'],
-                         "location": obj['keypoints'],
-                         "type": obj['type']}
-                    frame_persons.append(p)
-                else:
-                    o = {"oid": obj['uid'],
-                         "location": obj['keypoints'],
-                         "labels": obj['labels'],
-                         "type": obj['type']}
-                    frame_objects.append(o)
+                if obj['keypoints']:              # Export only not empty keypoints
+                    if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
+                        p = {"pid": obj['uid'],
+                             "location": obj['keypoints'],
+                             "type": obj['type']}
+                        frame_persons.append(p)
+                    else:
+                        o = {"oid": obj['uid'],
+                             "location": obj['keypoints'],
+                             "labels": obj['labels'],
+                             "type": obj['type']}
+                        frame_objects.append(o)
 
             # Build persons and objects jsons and add to list
             persons_json = {"frame": annotation['frame'],
