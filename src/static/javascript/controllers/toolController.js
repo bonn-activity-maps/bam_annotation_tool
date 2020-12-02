@@ -3353,11 +3353,16 @@ angular.module('CVGTool')
             _this.cameraPoints = [];
             _this.projectedPoints = [];
             _this.labels = labels;
+            
+            // Fill the rest of the labels with empty strings for the non-editable points
+            for(var i=0; i < 20;i++) {
+                _this.labels.push("")
+            }
 
             _this.editableIndices = [0, 1];     // Fill with the indices of the corners that we want to be able to create
 
             _this.faces = [[2,3,4,5,6,7,8,9,10,11],[12,13,14,15,16,17,18,19,20,21]];
-            
+            // console.log(projectedPoints)
             // CONSTRUCT (Only the 2 main points)
             if (projectedPoints.length === 0) {
                 for (var i=0; i < _this.editableIndices.length; i++) {
@@ -3379,22 +3384,21 @@ angular.module('CVGTool')
 
             // OTHER FUNCTIONS
             _this.draw = function(context, color) {
-                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);               
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);               
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) _this.points[i].draw(context, color);
                 }
-
             }
 
             // For visualization, only lines will be drawn, no interaction at all will be done with any element
             _this.drawForVisualization = function(context, color) {
-                _this.drawFaces(context, color, true);
+                _this.drawFaces(context, color);
             }
 
             _this.drawWithUID = function(context, color) {
-                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -3403,7 +3407,7 @@ angular.module('CVGTool')
             }
 
             _this.drawWithLabel = function(context, color) {
-                if (_this.principalPointsExist()) _this.drawFaces(context, color, false);
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);
 
                 // Then draw the principal points
                 for (var i = 0; i < _this.points.length; i++) {
@@ -3411,16 +3415,40 @@ angular.module('CVGTool')
                 }
             }
 
-
             // Calls to draw all the faces of the box
-            _this.drawFaces = function(context, color, fill) {
+            _this.drawFaces = function(context, color) {
                 for (var i=0; i<_this.faces.length; i++) {
-                    if (fill) _this.drawFaceAndFill(_this.faces[i], context, color);
-                    else _this.drawFaceNoFill(_this.faces[i], context, color);
+                    _this.drawFace(_this.faces[i], context, color);
                 }
+                _this.drawFacesConnections(context, color)
             }
 
-            _this.drawFaceNoFill = function(indices, context, color){
+            _this.drawFacesConnections = function(context, color) {
+                context.beginPath();
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+
+                points_top = []
+                points_bot = []
+
+                for (var i=0; i<_this.faces[0].length; i++) {
+                    points_top.push(_this.projectedPoints[_this.faces[0][i]])
+                }
+
+                for (var i=0; i<_this.faces[1].length; i++) {
+                    points_bot.push(_this.projectedPoints[_this.faces[1][i]])
+                }
+
+                for(var i=0; i<_this.faces[0].length; i++) {
+                    context.moveTo(points_top[i][0], points_top[i][1])
+                    context.lineTo(points_bot[i][0], points_bot[i][1])
+                }
+
+                context.stroke()
+                context.closePath()
+            }
+
+            _this.drawFace = function(indices, context, color){
                 context.beginPath();
                 context.strokeStyle = color;
                 context.lineWidth = 2;
@@ -3443,34 +3471,6 @@ angular.module('CVGTool')
                 }
 
                 context.stroke()
-                context.closePath();
-            }
-
-            _this.drawFaceAndFill = function(indices, context, color) {
-                context.beginPath();
-                context.strokeStyle = color;
-                context.fillStyle = color;
-                context.lineWidth = 2;
-                // Get the points we need
-                points = [];
-
-                for (var i=0; i<indices.length; i++) {
-                    points.push(_this.projectedPoints[indices[i]])
-                }
-
-                // Draw the face
-                for (var i=0; i<points.length; i++) {
-                    if (i !== points.length - 1) {
-                        context.moveTo(points[i][0], points[i][1])
-                        context.lineTo(points[i + 1][0], points[i + 1][1])
-                    } else {
-                        context.moveTo(points[i][0], points[i][1])
-                        context.lineTo(points[0][0], points[0][1])
-                    }          
-                }
-
-                context.stroke()
-                context.fill()
                 context.closePath();
             }
  
@@ -3534,8 +3534,6 @@ angular.module('CVGTool')
                     }
                 }
             }
-
-
         }
 
         function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
@@ -4907,7 +4905,7 @@ angular.module('CVGTool')
                         }
                     }
                 }
-
+                
                 if (type.localeCompare("personAIK") == 0) {
                     newObject = new PersonAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());         
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {

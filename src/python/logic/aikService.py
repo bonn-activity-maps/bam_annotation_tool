@@ -224,7 +224,7 @@ class AIKService:
         :param b: (x, y, z) radius
         """
         # divide by number of segments we want for the circle
-        num_segments = 20
+        num_segments = 10
         segments = np.arange(2*math.pi, step=2*math.pi/num_segments)
         r = np.sqrt(np.sum((a-b)**2, axis=0))   # calculate radius
 
