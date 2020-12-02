@@ -57,8 +57,8 @@ class AIKService:
         if annotations == 'Error':
             return False, 'Error projecting points in cameras', 400
 
-        # If type boxAIK is projected, convert to complete box with 8 keypoints
-        if start_annotation.dataset.is_aik() and object_type == 'boxAIK':
+        # If type boxAIK/cylinderAIK is projected, convert to complete box/cylinder with X keypoints
+        if start_annotation.dataset.is_aik() and (object_type == 'boxAIK' or object_type == 'cylinderAIK'):
             for annotation in annotations:
                 for obj in annotation.objects:
                     if obj.type == 'boxAIK' and obj.keypoints:
