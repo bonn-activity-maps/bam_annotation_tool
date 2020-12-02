@@ -3390,6 +3390,17 @@ angular.module('CVGTool')
                 for (var i = 0; i < _this.points.length; i++) {
                     if (_this.points[i] !== null) _this.points[i].draw(context, color);
                 }
+
+                // Draw the line between the two principal points
+                if (_this.points[0] !== null && _this.points[1] !== null) {
+                    context.beginPath();
+                    context.strokeStyle = color;
+                    context.lineWidth = 2;
+                    context.moveTo(_this.points[0][0], _this.points[0][1])
+                    context.lineTo(_this.points[1][0], _this.points[1][1])
+                    context.stroke()
+                    context.closePath()
+                }
             }
 
             // For visualization, only lines will be drawn, no interaction at all will be done with any element
@@ -4905,7 +4916,7 @@ angular.module('CVGTool')
                         }
                     }
                 }
-                
+
                 if (type.localeCompare("personAIK") == 0) {
                     newObject = new PersonAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice());         
                 } else if (type.localeCompare("bbox") == 0|| type.localeCompare("bbox_head") == 0) {
