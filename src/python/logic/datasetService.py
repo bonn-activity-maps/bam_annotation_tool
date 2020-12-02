@@ -705,9 +705,10 @@ class DatasetService:
                          "type": obj['type']}
                     frame_persons.append(p)
                 else:
-                    o = {"labels": obj['labels'],
+                    o = {"oid": obj['uid'],
                          "location": obj['keypoints'],
-                         "oid": obj['uid']}
+                         "labels": obj['labels'],
+                         "type": obj['type']}
                     frame_objects.append(o)
 
             # Build persons and objects jsons and add to list
