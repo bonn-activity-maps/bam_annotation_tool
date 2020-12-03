@@ -544,6 +544,7 @@ class DatasetService:
                                         annotations_file.append(obj)
                                     else:   # If already in annotation, just add what we want
                                         if obj["type"] == "bbox":
+                                            annotations_file[index]["person_id"] = obj["person_id"]
                                             annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
                                         elif obj["type"] == "bbox_head":
                                             annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
@@ -552,7 +553,7 @@ class DatasetService:
                                             kps = list(obj["keypoints"])
                                             del(obj["keypoints"])
                                             annotations_file[index]["keypoints"] = self.process_keypoints_person(kps)
-                    annotations_correct = self.check_annotations_file(annotations_file, videos[j].name)
+                    # annotations_correct = self.check_annotations_file(annotations_file, videos[j].name)
                     final_annotation["annotations"] = annotations_file
 
                 # Hardcoded categories because they don't change and are a very special case...
