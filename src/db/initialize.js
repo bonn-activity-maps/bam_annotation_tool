@@ -16,7 +16,7 @@ db.objectType.insertOne({
   "type": "cylinderAIK",
   "datasetType": "actionInKitchen",
   "numKeypoints": 2,
-  "labels": ["center", "radius"]
+  "labels": ["Top center", "Top border"]
 })
 
 db.objectType.insertOne({

@@ -817,6 +817,8 @@ angular.module('CVGTool')
 
                 if (type.localeCompare("boxAIK") == 0) return _this.boxAIKAnnotationsState(objectUID, type, frame);
 
+                if (type.localeCompare("cylinderAIK") == 0) return _this.cylinderAIKAnnotationsState(objectUID, type, frame);
+
                 if (type.localeCompare("person") == 0) return _this.personAnnotationsState(objectUID, type, frame);
                 
                 var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist.slice();
@@ -828,6 +830,21 @@ angular.module('CVGTool')
                 if (count == 0) return 0;      // No annotation
                 if (count == existAnnotation.length) return 1;    // All annotations
                 return -1;                     // Some annotated, but not all
+            }
+
+            // Auxiliar function to take care of the state of the cylinders, for AIK. (Takes into account only the main points)
+            _this.cylinderAIKAnnotationsState = function(objectUID, type, frame) {
+                var mainIndices = [0, 1];  
+                var existAnnotation = _this.objectTypes[type.toString()].objects[objectUID.toString()].frames[frame - $scope.toolParameters.frameFrom].annotationsExist;
+
+                var count = 0;
+                for (var i=0; i<mainIndices.length; i++) {
+                    if (existAnnotation[mainIndices[i]]) count++;
+                }
+
+                if (count == 0) return 0;
+                if (count == 2) return 1;
+                return -1;  
             }
 
             // Auxiliar function to take care of the state of the boxes, for AIK. (Takes into account only the main points)
@@ -1087,7 +1104,7 @@ angular.module('CVGTool')
                         }
                         
                         // Set the type in the dynamic or static category
-                        if (obj[i].type.localeCompare("boxAIK") == 0) {
+                        if (obj[i].type.localeCompare("boxAIK") == 0 || obj[i].type.localeCompare("cylinderAIK") == 0) {
                             $scope.objectManager.staticTypes.push(obj[i].type);
                         } else {
                             $scope.objectManager.dynamicTypes.push(obj[i].type)
@@ -3328,6 +3345,208 @@ angular.module('CVGTool')
             }
         }
 
+        function CylinderAIK(uid, projectedPoints, cameraPoints, labels) {
+            var _this = this;
+
+            _this.uid = uid;
+            _this.points = [];
+            _this.cameraPoints = [];
+            _this.projectedPoints = [];
+            _this.labels = labels;
+            
+            // Fill the rest of the labels with empty strings for the non-editable points
+            for(var i=0; i < 20;i++) {
+                _this.labels.push("")
+            }
+
+            _this.editableIndices = [0, 1];     // Fill with the indices of the corners that we want to be able to create
+
+            _this.faces = [[2,3,4,5,6,7,8,9,10,11],[12,13,14,15,16,17,18,19,20,21]];
+            // console.log(projectedPoints)
+            // CONSTRUCT (Only the 2 main points)
+            if (projectedPoints.length === 0) {
+                for (var i=0; i < _this.editableIndices.length; i++) {
+                    _this.points.push(null);
+                    _this.cameraPoints.push([]);
+                } 
+            } else {
+                for (var i=0; i < _this.editableIndices.length; i++) {
+                    if (projectedPoints[_this.editableIndices[i]].length !==0) {
+                        _this.points.push(new Point(projectedPoints[_this.editableIndices[i]]))
+                        _this.cameraPoints.push(cameraPoints[_this.editableIndices[i]])
+                    } else {
+                        _this.points.push(null);
+                        _this.cameraPoints.push([])
+                    }
+                }
+                _this.projectedPoints = projectedPoints;
+            }
+
+            // OTHER FUNCTIONS
+            _this.draw = function(context, color) {
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);               
+
+                // Then draw the principal points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].draw(context, color);
+                }
+
+                // Draw the line between the two principal points
+                if (_this.points[0] !== null && _this.points[1] !== null) {
+                    context.beginPath();
+                    context.strokeStyle = color;
+                    context.lineWidth = 2;
+                    context.moveTo(_this.points[0][0], _this.points[0][1])
+                    context.lineTo(_this.points[1][0], _this.points[1][1])
+                    context.stroke()
+                    context.closePath()
+                }
+            }
+
+            // For visualization, only lines will be drawn, no interaction at all will be done with any element
+            _this.drawForVisualization = function(context, color) {
+                _this.drawFaces(context, color);
+            }
+
+            _this.drawWithUID = function(context, color) {
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);
+
+                // Then draw the principal points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                }
+            }
+
+            _this.drawWithLabel = function(context, color) {
+                if (_this.principalPointsExist()) _this.drawFaces(context, color);
+
+                // Then draw the principal points
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.labels[i]);
+                }
+            }
+
+            // Calls to draw all the faces of the box
+            _this.drawFaces = function(context, color) {
+                for (var i=0; i<_this.faces.length; i++) {
+                    _this.drawFace(_this.faces[i], context, color);
+                }
+                _this.drawFacesConnections(context, color)
+            }
+
+            _this.drawFacesConnections = function(context, color) {
+                context.beginPath();
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+
+                points_top = []
+                points_bot = []
+
+                for (var i=0; i<_this.faces[0].length; i++) {
+                    points_top.push(_this.projectedPoints[_this.faces[0][i]])
+                }
+
+                for (var i=0; i<_this.faces[1].length; i++) {
+                    points_bot.push(_this.projectedPoints[_this.faces[1][i]])
+                }
+
+                for(var i=0; i<_this.faces[0].length; i++) {
+                    context.moveTo(points_top[i][0], points_top[i][1])
+                    context.lineTo(points_bot[i][0], points_bot[i][1])
+                }
+
+                context.stroke()
+                context.closePath()
+            }
+
+            _this.drawFace = function(indices, context, color){
+                context.beginPath();
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                // Get the points we need
+                points = [];
+
+                for (var i=0; i<indices.length; i++) {
+                    points.push(_this.projectedPoints[indices[i]])
+                }
+
+                // Draw the face
+                for (var i=0; i<points.length; i++) {
+                    if (i !== points.length - 1) {
+                        context.moveTo(points[i][0], points[i][1])
+                        context.lineTo(points[i + 1][0], points[i + 1][1])
+                    } else {
+                        context.moveTo(points[i][0], points[i][1])
+                        context.lineTo(points[0][0], points[0][1])
+                    }          
+                }
+
+                context.stroke()
+                context.closePath();
+            }
+ 
+            _this.principalPointsExist = function() {
+                if (_this.projectedPoints.length >= 22) {
+                    return true;
+                }
+                return false;
+            } 
+
+            // We dont want to be able to edit a point this way, so the only option will be to delete and create a new one
+            _this.isInside = function(x,y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            _this.move = function(dx, dy, index) {
+                if (index == -1) { // Move everything
+                    for(var i=0; i<_this.points.length; i++) {
+                        if (_this.points[i] !== null) _this.points[i].move(dx,dy);
+                    }
+                } else {
+                    if (_this.points[index] == null) return;
+                    _this.points[index].move(dx,dy);
+                }       
+            }
+
+            _this.updateCameraPoints = function(dxCamera,dyCamera, index) {
+                if (index == -1) {  // Update all the points
+                    for(var i=0; i<_this.points.length; i++) {
+                        if (_this.points[i] !== null) {
+                            _this.cameraPoints[i][0] += dxCamera;
+                            _this.cameraPoints[i][1] += dyCamera;
+                        }
+                    }
+                } else {
+                    _this.cameraPoints[index][0] += dxCamera;
+                    _this.cameraPoints[index][1] += dyCamera;
+                }
+            }
+
+            _this.removePoint = function(index) {
+                delete _this.points[index];
+                _this.points[index] = null;
+                _this.cameraPoints[index] = [];
+            }
+
+            _this.getPointIndex = function(x, y) {
+                for (var i = 0; i < _this.points.length; i++) {
+                    if (_this.points[i] !== null) {
+                        if (_this.points[i].isInside(x,y)) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
+
         function PersonAIK(uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
@@ -4708,6 +4927,8 @@ angular.module('CVGTool')
                     newObject = new PoseAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
                 } else if (type.localeCompare("boxAIK") == 0) {
                     newObject = new BoxAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
+                } else if (type.localeCompare("cylinderAIK") == 0) {
+                    newObject = new CylinderAIK(uid, imgPoints, points, $scope.objectManager.objectTypes[type.toString()].labels.slice(), $scope.objectManager.selectedType.skeleton);
                 } else if (type.localeCompare("ignore_region") == 0) {
                     newObject = new IgnoreRegion(uid, imgPoints, points);
                 } else {
