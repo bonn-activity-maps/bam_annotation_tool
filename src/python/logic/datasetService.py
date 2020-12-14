@@ -674,59 +674,135 @@ class DatasetService:
 
     # Export annotation for AIK datasets to a file for given dataset
     def export_dataset_AIK(self, dataset):
-        db_objects = annotationManager.get_objects_by_dataset(dataset)
-        actions = actionManager.get_actions_by_dataset_export(dataset)
-
-        if db_objects == 'Error' or actions == 'Error':
-            return False, 'Error getting annotations for the dataset', 400
-        else:
-            # TODO: Create the mean of all annotations
-            final_annotation = self.build_annotation_AIK(db_objects, actions)
-
-        # Write to file in same directory of dataset
         file = os.path.join(dataset.STORAGE_DIR, dataset.name + '.json')
-        with open(file, 'w') as outfile:
-            json.dump(final_annotation, outfile)
+
+        # Remove file before export if it exists
+        if os.path.exists(file):
+            os.remove(file)
+
+        result_persons = self.export_objects_AIK(dataset, file, ['personAIK', 'poseAIK'], 'persons')
+        result_objects = self.export_objects_AIK(dataset, file, ['boxAIK', 'cylinderAIK'], 'objects')
+        result_actions = self.export_actions_AIK(dataset, file)
+
+        if result_persons == 'Error' or result_objects == 'Error' or result_actions == 'Error':
+            return False, 'Error getting annotations for the dataset', 400
+
+        # db_objects = annotationManager.get_objects_by_dataset(dataset)
+        # actions = actionManager.get_actions_by_dataset_export(dataset)
+        #
+        # if db_objects == 'Error' or actions == 'Error':
+        # else:
+        #     final_annotation = self.build_annotations_AIK(db_objects, actions)
+        #
+        # # Write to file in same directory of dataset
+        # file = os.path.join(dataset.STORAGE_DIR, dataset.name + '.json')
+        # with open(file, 'w') as outfile:
+        #     json.dump(final_annotation, outfile)
 
         return 'ok'
 
-    # Build correct annotation using recover data from database
-    def build_annotation_AIK(self, db_objects, actions):
-        persons = []
-        objects = []
+    # Add all objects from dataset to file with object type in the obj_type array
+    def export_objects_AIK(self, dataset, file, obj_types, final_obj_name):
+        # Divide frames in ranges to query only one range each time
+        result_ok, frames_info = frameService.get_frame_info_of_video(Video(0, dataset))
+        if not result_ok:
+            return False
 
-        for annotation in db_objects:    # Each annotation
-            frame_persons = []
-            frame_objects = []
-            for obj in annotation['objects']:     # Each object in annotation
-                if obj['keypoints']:              # Export only not empty keypoints
-                    if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
-                        p = {"pid": obj['uid'],
-                             "location": obj['keypoints'],
-                             "type": obj['type']}
-                        frame_persons.append(p)
-                    else:
-                        o = {"oid": obj['uid'],
-                             "location": obj['keypoints'],
-                             "labels": obj['labels'],
-                             "type": obj['type']}
+        max_frame = frames_info[1].number
+        num_intervals = 10
+        frames = np.arange(0, max_frame, max_frame/num_intervals, dtype=np.int)
+        if frames[-1] < max_frame:
+            frames = np.append(frames, max_frame)
+
+        objects = []
+        for i in range(len(frames)-1):
+            db_objects = annotationManager.get_objects_by_dataset(dataset, frames[i], frames[i+1])
+            if db_objects == 'Error':
+                return False
+
+            for annotation in db_objects:    # Each annotation
+                frame_objects = []
+                for obj in annotation['objects']:     # Each object in annotation
+                    if obj['keypoints'] and obj['type'] in obj_types:          # Export only not empty keypoints
+                        if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
+                            o = {"pid": obj['uid'],
+                                 "location": obj['keypoints'],
+                                 "type": obj['type']}
+                        else:
+                            o = {"oid": obj['uid'],
+                                 "location": obj['keypoints'],
+                                 "labels": obj['labels'],
+                                 "type": obj['type']}
                         frame_objects.append(o)
 
-            # Build persons and objects jsons and add to list
-            persons_json = {"frame": annotation['frame'],
-                           "persons": frame_persons}
-            objects_json = {"frame": annotation['frame'],
-                           "objects": frame_objects}
-            persons.append(persons_json)
-            objects.append(objects_json)
+                # Build persons and objects jsons and add to list
+                objects_json = {"frame": annotation['frame'],
+                                final_obj_name: frame_objects}
+                objects.append(objects_json)
 
-        # Build final annotation
-        final_annotation = {
-            "persons": persons,
-            "objects": objects,
+        # Build and write final annotation
+        objs_json = {
+            final_obj_name: objects
+        }
+        self.append_json_to_file(file, objs_json)
+        return True
+
+    # Add all actions from dataset to file
+    def export_actions_AIK(self, dataset, file):
+        actions = actionManager.get_actions_by_dataset_export(dataset)
+        if actions == 'Error':
+            return False
+
+        # Build and write final annotation
+        actions_json = {
             "actions": actions
         }
-        return final_annotation
+        self.append_json_to_file(file, actions_json)
+        return True
+
+    # Append json_data to file
+    def append_json_to_file(self, file, json_data):
+        with open(file, 'a') as f:
+            json.dump(json_data, f)
+            f.write(os.linesep)
+
+    # Build correct annotation using recover data from database
+    # def build_annotations_AIK(self, db_objects, actions):
+    #     persons = []
+    #     objects = []
+    #
+    #     for annotation in db_objects:    # Each annotation
+    #         frame_persons = []
+    #         frame_objects = []
+    #         for obj in annotation['objects']:     # Each object in annotation
+    #             if obj['keypoints']:              # Export only not empty keypoints
+    #                 if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
+    #                     p = {"pid": obj['uid'],
+    #                          "location": obj['keypoints'],
+    #                          "type": obj['type']}
+    #                     frame_persons.append(p)
+    #                 else:
+    #                     o = {"oid": obj['uid'],
+    #                          "location": obj['keypoints'],
+    #                          "labels": obj['labels'],
+    #                          "type": obj['type']}
+    #                     frame_objects.append(o)
+    #
+    #         # Build persons and objects jsons and add to list
+    #         persons_json = {"frame": annotation['frame'],
+    #                        "persons": frame_persons}
+    #         objects_json = {"frame": annotation['frame'],
+    #                        "objects": frame_objects}
+    #         persons.append(persons_json)
+    #         objects.append(objects_json)
+    #
+    #     # Build final annotation
+    #     final_annotation = {
+    #         "persons": persons,
+    #         "objects": objects,
+    #         "actions": actions
+    #     }
+    #     return final_annotation
 
     ###########################################################################
     ####                           DATABASE                                ####
