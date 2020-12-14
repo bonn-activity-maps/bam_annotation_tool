@@ -686,19 +686,6 @@ class DatasetService:
 
         if result_persons == 'Error' or result_objects == 'Error' or result_actions == 'Error':
             return False, 'Error getting annotations for the dataset', 400
-
-        # db_objects = annotationManager.get_objects_by_dataset(dataset)
-        # actions = actionManager.get_actions_by_dataset_export(dataset)
-        #
-        # if db_objects == 'Error' or actions == 'Error':
-        # else:
-        #     final_annotation = self.build_annotations_AIK(db_objects, actions)
-        #
-        # # Write to file in same directory of dataset
-        # file = os.path.join(dataset.STORAGE_DIR, dataset.name + '.json')
-        # with open(file, 'w') as outfile:
-        #     json.dump(final_annotation, outfile)
-
         return 'ok'
 
     # Add all objects from dataset to file with object type in the obj_type array
@@ -765,44 +752,6 @@ class DatasetService:
         with open(file, 'a') as f:
             json.dump(json_data, f)
             f.write(os.linesep)
-
-    # Build correct annotation using recover data from database
-    # def build_annotations_AIK(self, db_objects, actions):
-    #     persons = []
-    #     objects = []
-    #
-    #     for annotation in db_objects:    # Each annotation
-    #         frame_persons = []
-    #         frame_objects = []
-    #         for obj in annotation['objects']:     # Each object in annotation
-    #             if obj['keypoints']:              # Export only not empty keypoints
-    #                 if obj['type'] == 'personAIK' or obj['type'] == 'poseAIK':
-    #                     p = {"pid": obj['uid'],
-    #                          "location": obj['keypoints'],
-    #                          "type": obj['type']}
-    #                     frame_persons.append(p)
-    #                 else:
-    #                     o = {"oid": obj['uid'],
-    #                          "location": obj['keypoints'],
-    #                          "labels": obj['labels'],
-    #                          "type": obj['type']}
-    #                     frame_objects.append(o)
-    #
-    #         # Build persons and objects jsons and add to list
-    #         persons_json = {"frame": annotation['frame'],
-    #                        "persons": frame_persons}
-    #         objects_json = {"frame": annotation['frame'],
-    #                        "objects": frame_objects}
-    #         persons.append(persons_json)
-    #         objects.append(objects_json)
-    #
-    #     # Build final annotation
-    #     final_annotation = {
-    #         "persons": persons,
-    #         "objects": objects,
-    #         "actions": actions
-    #     }
-    #     return final_annotation
 
     ###########################################################################
     ####                           DATABASE                                ####
