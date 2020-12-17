@@ -293,7 +293,8 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th ng-if="!(toolParameters.isPosetrack && objectManager.selectedType.type === 'bbox')"></th>
+<!--                                <th ng-if="!(toolParameters.isPosetrack && objectManager.selectedType.type === 'bbox')"></th>-->
+                                <th></th>
                                 <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
@@ -307,6 +308,7 @@
                                 <th ng-if="toolParameters.isPosetrack &&
                                  (objectManager.selectedType.type === 'ignore_region' ||
                                   objectManager.selectedType.type === 'bbox_head' ||
+                                  objectManager.selectedType.type === 'bbox' ||
                                   objectManager.selectedType.type === 'person')">
                                     <button class="btn btn-default" ng-click="commonManager.openBatchChangeTrackID(object)"><span
                                             style="rotation: 90deg" class="glyphicon glyphicon-random"></span></button></th>

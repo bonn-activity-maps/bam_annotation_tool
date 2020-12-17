@@ -2337,6 +2337,7 @@ angular.module('CVGTool')
             _this.openBatchChangeTrackID = function(object) {
                 if (object.type === "ignore_region" ||
                     object.type === "bbox_head" ||
+                    object.type === "bbox" ||
                     object.type === "person" ) {
                     $mdDialog.show({
                         templateUrl: '/static/views/dialogs/batchChangeTrackIDDialog.html',

@@ -107,9 +107,11 @@ class AnnotationManager:
 
     # Get all annotations for the dataset order by frame
     # Return json for export
-    def get_objects_by_dataset(self, dataset):
+    def get_objects_by_dataset(self, dataset, start_frame, end_frame):
         try:
-            result = self.collection.find({"dataset": dataset.name, "scene": dataset.name}, {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
+            result = self.collection.find({"dataset": dataset.name, "scene": dataset.name,
+                                           "frame": {"$gt": int(start_frame), "$lte": int(end_frame)}},
+                                          {"_id": 0, "frame": 1, "objects": 1}).sort("frame", 1)
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding annotation in db')
