@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import random, json, base64
 import logging
+import math
 
 from aik.dataset import AIK
 from aik.camera import Camera
@@ -56,13 +57,16 @@ class AIKService:
         if annotations == 'Error':
             return False, 'Error projecting points in cameras', 400
 
-        # If type boxAIK is projected, convert to complete box with 8 keypoints
-        if start_annotation.dataset.is_aik() and object_type == 'boxAIK':
+        # If type boxAIK/cylinderAIK is projected, convert to complete box/cylinder with X keypoints
+        if start_annotation.dataset.is_aik() and (object_type == 'boxAIK' or object_type == 'cylinderAIK'):
             for annotation in annotations:
                 for obj in annotation.objects:
                     if obj.type == 'boxAIK' and obj.keypoints:
                         a, b, c = obj.keypoints
                         obj.keypoints = self.create_box(np.array(a), np.array(b), np.array(c)).tolist()
+                    elif obj.type == 'cylinderAIK' and obj.keypoints:
+                        a, b = obj.keypoints
+                        obj.keypoints = self.create_cylinder(np.array(a), np.array(b)).tolist()
 
         # Project points into the camera
         annotation_index = 0
@@ -212,6 +216,29 @@ class AIKService:
             bfl, bfr,
             bbl, bbr
         ])
+
+    # Create complete cylinder from 2 3d points
+    def create_cylinder(self, a, b):
+        """
+        :param a: (x, y, z) center
+        :param b: (x, y, z) radius
+        """
+        # divide by number of segments we want for the circle
+        num_segments = 10
+        segments = np.arange(2*math.pi, step=2*math.pi/num_segments)
+        r = np.sqrt(np.sum((a-b)**2, axis=0))   # calculate radius
+
+        # calculate coordinates for each point in circle
+        x = a[0] + r * np.cos(segments)
+        y = a[1] + r * np.sin(segments)
+
+        # combine coords to create 3d points for superior and inferior part of the cylinder
+        top_3d_points = np.stack((x, y, np.ones(num_segments) * a[2]), axis=1)
+        bottom_3d_points = np.stack((x, y, np.zeros(num_segments)), axis=1)
+
+        # concatenate all points as: center, radius, X top kpts, X bottom kpts
+        center_and_radius = np.array([a, b])
+        return np.concatenate((center_and_radius, top_3d_points, bottom_3d_points), axis=0)
 
     # Image to binary
     def img2binary(self, im):
