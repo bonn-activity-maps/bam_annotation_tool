@@ -524,15 +524,21 @@ class DatasetService:
                                     index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
                                     if index == -1:
                                         if obj["type"] == "bbox":
-                                            obj["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Set negative numbers to 0
+                                            kps = [0 if i < 0 else i for i in kps]
+                                            obj["bbox"] = kps
                                             del(obj["keypoints"])
                                         elif obj["type"] == "bbox_head":
-                                            obj["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Set negative numbers to 0
+                                            kps = [0 if i < 0 else i for i in kps]
+                                            obj["bbox_head"] = kps
                                             del(obj["keypoints"])
                                         elif obj["type"] == "person":   # flatten keypoints array
-                                            # obj["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
                                             kps = list(obj["keypoints"])
                                             del(obj["keypoints"])
+                                            kps = [0 if i < 0 else i for i in kps]
                                             obj["keypoints"] = self.process_keypoints_person(kps)
                                         # Always delete type field, as it is unnecessary
                                         del(obj["type"])
@@ -545,13 +551,20 @@ class DatasetService:
                                     else:   # If already in annotation, just add what we want
                                         if obj["type"] == "bbox":
                                             annotations_file[index]["person_id"] = obj["person_id"]
-                                            annotations_file[index]["bbox"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Set negative numbers to 0
+                                            kps = [0 if i < 0 else i for i in kps]
+                                            annotations_file[index]["bbox"] = kps
                                         elif obj["type"] == "bbox_head":
-                                            annotations_file[index]["bbox_head"] = ptService.transform_to_XYWH(obj["keypoints"])
+                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Set negative numbers to 0
+                                            kps = [0 if i < 0 else i for i in kps]
+                                            annotations_file[index]["bbox_head"] = kps
                                         elif obj["type"] == "person":
                                             # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
                                             kps = list(obj["keypoints"])
                                             del(obj["keypoints"])
+                                            kps = [0 if i < 0 else i for i in kps]
                                             annotations_file[index]["keypoints"] = self.process_keypoints_person(kps)
                     # annotations_correct = self.check_annotations_file(annotations_file, videos[j].name)
                     final_annotation["annotations"] = annotations_file
