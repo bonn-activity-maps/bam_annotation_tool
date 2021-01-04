@@ -491,8 +491,6 @@ class DatasetService:
 
     def check_limits_ir(self, kps_y, kps_x, width, height):
         kps2_x, kps2_y = list(kps_x), list(kps_y)
-        print("check")
-        print(kps_x)
         if kps2_x != [] and isinstance(kps2_x[0], list):
             for i in range(len(kps_x)):
                 for k in range(len(kps_x[i])):
@@ -622,7 +620,6 @@ class DatasetService:
                     # Add ignore regions
                     annotation = Annotation(dataset, videos[j].name, frame=i)
                     ir_y, ir_x = self.export_ignore_regions(annotation)
-                    print(ir_y)
                     ir_y, ir_x = self.check_limits_ir(ir_y, ir_x, width, height)
                     frames[i]["ignore_regions_y"], frames[i]["ignore_regions_x"] = ir_y, ir_x
                     del(frames[i]["number"])
