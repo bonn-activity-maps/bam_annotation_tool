@@ -86,7 +86,7 @@ angular.module('CVGTool')
                 });
             },
 
-            exportDataset: function (name, type, callbackSuccess, callbackError) {
+            exportDataset: function (name, type, callback) {
                 $http({
                     method: 'GET',
                     url: '/api/dataset/exportDataset',
@@ -96,9 +96,9 @@ angular.module('CVGTool')
                         'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg)
+                    callback('finish', 'Dataset successfully exported!', 'success')
                 }, function errorCallback(response) {
-                    callbackError(response.data.msg)
+                    callback('finish', 'Something went wrong when exporting!', 'danger')
                 });
             },
 

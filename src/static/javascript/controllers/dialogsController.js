@@ -161,9 +161,15 @@ angular.module('CVGTool')
         $scope.mode = 'normal';
         $scope.msg = '';
 
+        $scope.returnValues = {
+            doit: false,
+            name: name,
+            type: type,
+        }
+
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
-            $mdDialog.cancel();
+            $mdDialog.hide($scope.returnValues);
         };
 
         // Recall function if the rename worked
@@ -180,7 +186,8 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to remove the file
         $scope.export = function() {
-            adminDatasetsSrvc.exportDataset(name, type, showSuccess, showError)
+            $scope.returnValues.doit = true;
+            $mdDialog.hide($scope.returnValues)
         }
     }
 ])
