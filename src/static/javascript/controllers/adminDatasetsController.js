@@ -111,9 +111,13 @@ angular.module('CVGTool')
                 },
                 controller: 'dialogExportDatasetCtrl',
                 escapeToClose: false,
-                onRemoving: function (event, removePromise) {
+            }).then(function(successData) {
+                if (successData.doit === false) {
                     $scope.getListOfDatasets();
                     $scope.getInfoOfVideos();
+                } else {
+                    sendMessage('loading', 'Exporting dataset, this may take a while...');
+                    adminDatasetsSrvc.exportDataset(successData.name, successData.type, sendMessage)
                 }
             });
         };
