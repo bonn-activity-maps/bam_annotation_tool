@@ -479,14 +479,10 @@ class DatasetService:
         jump = 3 if person else 2
         # Check kps for width
         for i in range(0, len(kps), jump):
-            kps2[i] = max(min(width - 1, kps[i]), 0)
-            if kps[i] < 0:
-                print("for", i, "og: ", kps[i], " --> ", kps2[i])
+            kps2[i] = max(min(width - 1, kps[i]), 0) if kps[i] != -1.0 else -1.0
         # Check kps for height
         for i in range(1, len(kps), jump):
-            kps2[i] = max(min(height - 1, kps[i]), 0)
-            if kps[i] < 0:
-                print("for", i, "og: ", kps[i], " --> ", kps2[i])
+            kps2[i] = max(min(height - 1, kps[i]), 0) if kps[i] != -1.0 else -1.0
         return kps2
 
     def check_limits_ir(self, kps_y, kps_x, width, height):
@@ -507,7 +503,7 @@ class DatasetService:
         videos = videoManager.get_videos(dataset)
         counter = 0
         for j in range(0, len(videos)):
-            print("Exporting, please wait...") if counter % 20 == 0 else None
+            print("Exporting, please wait...", counter, "/", len(videos)) if counter % 20 == 0 else None
             counter += 1
             # Ignore buggy videos
             if videos[j].name not in ptService.video_ignore_list:
