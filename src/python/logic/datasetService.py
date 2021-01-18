@@ -546,8 +546,8 @@ class DatasetService:
                                             del(obj["keypoints"])
                                         elif obj["type"] == "bbox_head":
                                             # kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Do not transform or clamp values of head_bboxes as per issue #430
                                             kps = obj["keypoints"]
-                                            # Do not clamp values of head_bboxes as per issue #430
                                             # kps = self.check_limits_kps(kps, width, height)
                                             obj["bbox_head"] = kps
                                             del(obj["keypoints"])
@@ -574,9 +574,11 @@ class DatasetService:
                                             kps = self.check_limits_kps(kps, width, height)
                                             annotations_file[index]["bbox"] = kps
                                         elif obj["type"] == "bbox_head":
-                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            # Do not transform or clamp values of head_bboxes as per issue #430
+                                            kps = obj["keypoints"]
                                             # Set kps outside the frame to an extreme within
-                                            kps = self.check_limits_kps(kps, width, height)
+                                            # kps = self.check_limits_kps(kps, width, height)
                                             annotations_file[index]["bbox_head"] = kps
                                         elif obj["type"] == "person":
                                             # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
