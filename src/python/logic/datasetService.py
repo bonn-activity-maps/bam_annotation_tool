@@ -545,9 +545,10 @@ class DatasetService:
                                             obj["bbox"] = kps
                                             del(obj["keypoints"])
                                         elif obj["type"] == "bbox_head":
-                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
-                                            # Set kps outside the frame to an extreme within
-                                            kps = self.check_limits_kps(kps, width, height)
+                                            # kps = ptService.transform_to_XYWH(obj["keypoints"])
+                                            kps = obj["keypoints"]
+                                            # Do not clamp values of head_bboxes as per issue #430
+                                            # kps = self.check_limits_kps(kps, width, height)
                                             obj["bbox_head"] = kps
                                             del(obj["keypoints"])
                                         elif obj["type"] == "person":   # flatten keypoints array
