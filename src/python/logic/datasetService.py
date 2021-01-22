@@ -538,7 +538,11 @@ class DatasetService:
                                 if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
                                     index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
                                     if index == -1:
+                                        # By default, every annotation is invalid until proven otherwise
+                                        obj["invalid"] = 1
                                         if obj["type"] == "bbox":
+                                            # If there is a bbox with a nonempty array of kps, it's valid
+                                            obj["invalid"] = 0 if len(obj["keypoints"]) != 0 else 1
                                             kps = ptService.transform_to_XYWH(obj["keypoints"])
                                             # Set kps outside the frame to an extreme within
                                             kps = self.check_limits_kps(kps, width, height)
@@ -568,6 +572,8 @@ class DatasetService:
                                         annotations_file.append(obj)
                                     else:   # If already in annotation, just add what we want
                                         if obj["type"] == "bbox":
+                                            # If there is a bbox with a nonempty array of kps, it's valid
+                                            obj["invalid"] = 0 if len(obj["keypoints"]) != 0 else 1
                                             annotations_file[index]["person_id"] = obj["person_id"]
                                             kps = ptService.transform_to_XYWH(obj["keypoints"])
                                             # Set kps outside the frame to an extreme within
