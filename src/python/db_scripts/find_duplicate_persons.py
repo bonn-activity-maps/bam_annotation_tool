@@ -67,6 +67,13 @@ for v in videos:
                     print("Video", v["name"], "track_id", bbox["track_id"],
                           "frame:", bbox["uid"]//100 % 10000)
                     ok = False
+                if len(bbox["keypoints"]) == 0 and len(person_arr[index]["keypoints"]) != 0:
+                    print(bbox["keypoints"])
+                    print(person_arr[index]["keypoints"])
+                    print("Person annotated with no bbox in")
+                    print("Video", v["name"], "track_id", bbox["track_id"],
+                          "frame:", bbox["uid"]//100 % 10000)
+                    ok = False
                     # raise TypeError
         print("Video ", v["name"], " OK?:", ok)
 # except TypeError as e:
