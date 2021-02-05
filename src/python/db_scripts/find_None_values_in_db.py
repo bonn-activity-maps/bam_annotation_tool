@@ -3,8 +3,8 @@ from math import isclose
 import os, json
 import numpy as np
 
-c = MongoClient('172.18.0.2', 27017)
-# c = MongoClient('127.0.0.1', 27017)
+# c = MongoClient('172.18.0.2', 27017)
+c = MongoClient('127.0.0.1', 27017)
 db = c.cvg
 
 datasetName = "posetrack_data"
