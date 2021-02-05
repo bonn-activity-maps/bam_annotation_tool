@@ -41,7 +41,6 @@ angular.module('CVGTool')
             return navSrvc.isPosetrack();
         }
 
-
         // Set activeDataset to dataset
         $scope.setActiveDataset = function(dataset) {
             $scope.activeDataset = dataset;

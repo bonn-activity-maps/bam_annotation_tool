@@ -952,7 +952,6 @@ angular.module('CVGTool')
             }
         }
 
-
         function ActionManager() {
             var _this = this;
 
@@ -1078,7 +1077,6 @@ angular.module('CVGTool')
                 }
             };
         }
-
 
         function AIKManager() {
             var _this = this;
@@ -3663,8 +3661,6 @@ angular.module('CVGTool')
             }
         }
 
-        
-
         function BBox (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
@@ -3795,8 +3791,6 @@ angular.module('CVGTool')
                 return -1;
             }
         }
-
-        
 
         function Person (uid, projectedPoints, cameraPoints, labels, visibilities) {
             var _this = this;
