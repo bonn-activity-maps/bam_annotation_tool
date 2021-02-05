@@ -194,6 +194,16 @@
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
         </div>
     </div>
+    <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img class="png-icon" src="/static/resources/guide-icon.png" style="width: 100%; height: 100%"></img>
+        </button>
+        <div id="PersonGuideDropdown" class="dropdown-menu text-center" style="font-size: x-small; width: 1000%; height: 1000%;">
+            <li class="dropdown-item">
+                <img class="image" src="/static/resources/guide.jpeg" style="width: 100%; height: 100%"></img>
+            </li>
+        </div>
+    </div>
     <hr class="tool-panel-hr">
     <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

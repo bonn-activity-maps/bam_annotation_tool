@@ -5424,6 +5424,10 @@ angular.module('CVGTool')
 
         document.getElementById("ShortcutsDropdown").addEventListener('click', function (event) { 
             event.stopPropagation(); 
+        });
+        
+        document.getElementById("PersonGuideDropdown").addEventListener('click', function (event) { 
+            event.stopPropagation(); 
         }); 
 
         // Prevents from closing when clicking inside
