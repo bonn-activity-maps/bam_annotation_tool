@@ -916,7 +916,7 @@ angular.module('CVGTool')
             }
 
             _this.prepareKeypointsForFrontend = function(keypoints) {
-                let prepared = keypoints.slice()
+                let prepared = JSON.parse(JSON.stringify(keypoints));
                 for (let i=0; i< keypoints.length; i++) {
                     for (let j=0; j < keypoints[i].length; j++) {
                         prepared[i][j] = keypoints[i][j] / 2.0
@@ -934,7 +934,7 @@ angular.module('CVGTool')
             }
 
             _this.prepareKeypointsForBackend = function(keypoints) {
-                let prepared = keypoints.slice()
+                let prepared = JSON.parse(JSON.stringify(keypoints));
                 for (let i=0; i< keypoints.length; i++) {
                     for (let j=0; j < keypoints[i].length; j++) {
                         prepared[i][j] = keypoints[i][j] * 2.0
@@ -951,7 +951,6 @@ angular.module('CVGTool')
                 return prepared;
             }
         }
-
 
         function ActionManager() {
             var _this = this;
@@ -1078,7 +1077,6 @@ angular.module('CVGTool')
                 }
             };
         }
-
 
         function AIKManager() {
             var _this = this;
@@ -1775,9 +1773,9 @@ angular.module('CVGTool')
 
             // Function that removes the two ear keypoints from posetrack person
             _this.fixPersonKeypoints = function(keypoints) {
-                if (keypoints.length == 15) return keypoints.slice();
+                if (keypoints.length == 15) return JSON.parse(JSON.stringify(keypoints));
                 // First remove the points from the ears
-                var returnKeypoints = keypoints.slice();
+                var returnKeypoints = JSON.parse(JSON.stringify(keypoints));
                 returnKeypoints.splice(3,2);
 
                 var finalReturnKeypoints = [];
@@ -1804,7 +1802,7 @@ angular.module('CVGTool')
             _this.restorePersonKeypoints = function(keypoints) {
                 if (keypoints.length == 17) return keypoints;
 
-                var returnKeypoints = keypoints.slice();
+                var returnKeypoints = JSON.parse(JSON.stringify(keypoints));
                 returnKeypoints.splice(3,0, [-1, -1, 0], [-1, -1, 0]);
                 return returnKeypoints;
             }
@@ -3663,8 +3661,6 @@ angular.module('CVGTool')
             }
         }
 
-        
-
         function BBox (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
@@ -3795,8 +3791,6 @@ angular.module('CVGTool')
                 return -1;
             }
         }
-
-        
 
         function Person (uid, projectedPoints, cameraPoints, labels, visibilities) {
             var _this = this;
