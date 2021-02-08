@@ -3891,12 +3891,15 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
+                var lightColor = "#BDBBC9";
+
                 // Draw all the edges
                 _this.drawEdges(context, color);
 
                 // Draw all points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                    if (_this.points[i] !== null && _this.visibilities[i] == 0) _this.points[i].drawWithText(context, lightColor, _this.uid);
+                    else if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
                 }
             }
 
