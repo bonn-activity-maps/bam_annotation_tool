@@ -952,7 +952,6 @@ angular.module('CVGTool')
             }
         }
 
-
         function ActionManager() {
             var _this = this;
 
@@ -1078,7 +1077,6 @@ angular.module('CVGTool')
                 }
             };
         }
-
 
         function AIKManager() {
             var _this = this;
@@ -3663,8 +3661,6 @@ angular.module('CVGTool')
             }
         }
 
-        
-
         function BBox (uid, projectedPoints, cameraPoints, labels) {
             var _this = this;
 
@@ -3796,8 +3792,6 @@ angular.module('CVGTool')
             }
         }
 
-        
-
         function Person (uid, projectedPoints, cameraPoints, labels, visibilities) {
             var _this = this;
 
@@ -3891,12 +3885,15 @@ angular.module('CVGTool')
             }
 
             _this.drawWithUID = function(context, color) {
+                var lightColor = "#BDBBC9";
+
                 // Draw all the edges
                 _this.drawEdges(context, color);
 
                 // Draw all points
                 for (var i = 0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
+                    if (_this.points[i] !== null && _this.visibilities[i] == 0) _this.points[i].drawWithOutlineAndText(context, lightColor, color, _this.uid);
+                    else if (_this.points[i] !== null) _this.points[i].drawWithText(context, color, _this.uid);
                 }
             }
 
@@ -3907,8 +3904,8 @@ angular.module('CVGTool')
                 // If the option is active, draw only the selected point and return
                 if ($scope.optionsManager.options.showSelectedPointOnly) {
                     if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
-                        if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, lightColorSelected, _this.labels[$scope.keypointEditor.selectedLabel]);
-                        else _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
+                        if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, lightColorSelected, color, _this.labels[$scope.keypointEditor.selectedLabel]);
+                        else _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", color, _this.labels[$scope.keypointEditor.selectedLabel]);
                     }
                     return
                 }
@@ -3925,8 +3922,8 @@ angular.module('CVGTool')
                 }
                 // Lastly draw the selected point, to be on top of the rest
                 if (_this.points[$scope.keypointEditor.selectedLabel] !== null){
-                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, lightColorSelected, _this.labels[$scope.keypointEditor.selectedLabel]);
-                    else _this.points[$scope.keypointEditor.selectedLabel].drawWithText(context, "#FF8F3D", _this.labels[$scope.keypointEditor.selectedLabel]);
+                    if (_this.visibilities[$scope.keypointEditor.selectedLabel] == 0) _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, lightColorSelected, color, _this.labels[$scope.keypointEditor.selectedLabel]);
+                    else _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", color, _this.labels[$scope.keypointEditor.selectedLabel]);
                 } 
             }
 
@@ -4015,12 +4012,12 @@ angular.module('CVGTool')
 
                 // Draw the points
                 for (var i=0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, i);                    
+                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, "black", i);                    
                 }
                 
                 if ($scope.keypointEditor.editorActive) {
                     if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
-                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", $scope.keypointEditor.selectedLabel);
+                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", "black", $scope.keypointEditor.selectedLabel);
                     }
                 }   
             }
@@ -4035,12 +4032,12 @@ angular.module('CVGTool')
 
                 // Draw the points
                 for (var i=0; i < _this.points.length; i++) {
-                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, _this.uid);                    
+                    if (_this.points[i] !== null) _this.points[i].drawWithOutlineAndText(context, color, "black", _this.uid);                    
                 }
                 
                 if ($scope.keypointEditor.editorActive) {
                     if (_this.points[$scope.keypointEditor.selectedLabel] !== null && _this.points[$scope.keypointEditor.selectedLabel] !== undefined) {
-                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", $scope.keypointEditor.selectedLabel);
+                        _this.points[$scope.keypointEditor.selectedLabel].drawWithOutlineAndText(context, "#FF8F3D", "black", $scope.keypointEditor.selectedLabel);
                     }
                 }  
             }
@@ -4181,10 +4178,10 @@ angular.module('CVGTool')
                 context.closePath();
             }
 
-            _this.drawWithOutlineAndText = function(context, color, text) {
+            _this.drawWithOutlineAndText = function(context, color, outlineColor, text) {
                 context.beginPath();
                 context.arc(_this.center[0], _this.center[1], $scope.optionsManager.options.pointSize, 0, 2 * Math.PI, false);
-                context.strokeStyle = "black";
+                context.strokeStyle = outlineColor;
                 context.lineWidth = 3;
                 context.fillStyle = color;
                 context.stroke();

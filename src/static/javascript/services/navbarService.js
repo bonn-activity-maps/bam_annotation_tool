@@ -1,8 +1,8 @@
 angular.module('CVGTool')
-    .factory('navSrvc', function($state, $rootScope, $http, $httpParamSerializer) {
+    .factory('navSrvc', ['loginSrvc', '$state', '$rootScope', '$http', '$httpParamSerializer', function(loginSrvc, $state, $rootScope, $http, $httpParamSerializer) {
 
         // Actual version of the tool, THIS IS THE MAIN VARIABLE
-        var toolVersion = "2.9";
+        var toolVersion = "3.0";
 
         // Function to send message to tell the controller to update
         var updateSessionData = function() {
@@ -34,6 +34,56 @@ angular.module('CVGTool')
             minFrame: -1, // Min frame of the session to check frame range displacements
             options: null // Options selected from the user
         };
+
+        // Catch inactive user and log him out
+        function IdleTimerManager() {
+            let t;
+            //window.onload = resetTimer;
+            let _this = this;
+
+            _this.eventCatchStart = function () {
+                window.onmousemove = resetTimer; // catches mouse movements
+                window.onmousedown = resetTimer; // catches mouse movements
+                window.onclick = resetTimer;     // catches mouse clicks
+                window.onscroll = resetTimer;    // catches scrolling
+                window.onkeypress = resetTimer;  //catches keyboard actions
+            }
+
+            _this.eventCatchStop = function() {
+                window.onmousemove = ""; // stop catching mouse movements
+                window.onmousedown = ""; // stop catching mouse movements
+                window.onclick = "";     // stop catching mouse clicks
+                window.onscroll = "";    // stop catching scrolling
+                window.onkeypress = "";  //stop catching keyboard actions
+            }
+
+            let callbackDoLogout = function () {
+                // Logout
+                user.name = "";
+                user.role = "";
+                user.email = "";
+                user.assignedTo = [];
+                activeDataset = "";
+                $state.go('login');
+                // Stop catching events
+                _this.eventCatchStop();
+                // Show alert with info
+                window.alert("You have been logged out for inactivity.");
+            }
+
+            function doLogout() {
+                loginSrvc.logout(user.name, callbackDoLogout);
+            }
+
+            function resetTimer() {
+                clearTimeout(t);
+                t = setTimeout(doLogout,
+                    // 5000);  // testing time
+                    600000);  // time is in milliseconds (1000 is 1 second) set to 10 minutes
+            }
+        }
+
+        let idleTimerManager = new IdleTimerManager();
 
         return {
 
@@ -177,6 +227,7 @@ angular.module('CVGTool')
                 user.assignedTo = [];
                 activeDataset = "";
                 $state.go('login');
+                idleTimerManager.eventCatchStop();
             },
 
             // Returns info of stored user
@@ -201,6 +252,7 @@ angular.module('CVGTool')
                 user.email = u.email;
                 user.assignedTo = u.assignedTo;
                 user.sessionToken = u.sessionToken;
+                idleTimerManager.eventCatchStart();
             },
 
             // Set active dataset to dataset
@@ -261,4 +313,4 @@ angular.module('CVGTool')
 
 
         }
-    });
+    }]);
