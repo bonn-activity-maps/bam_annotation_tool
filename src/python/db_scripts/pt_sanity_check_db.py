@@ -2,6 +2,7 @@ from pymongo import MongoClient, errors
 from math import isclose
 import os, json
 import numpy as np
+import numbers
 
 c = MongoClient('172.18.0.2', 27017)
 # c = MongoClient('127.0.0.1', 27017)
@@ -1658,7 +1659,6 @@ frames_to_annotate_persons = {
                58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 77, 81, 85, 89, 93, 97, 101, 105,
                109, 113]}
 
-
 categories = [
     "nose",
     "head_bottom",
@@ -1678,6 +1678,13 @@ categories = [
     "left_ankle",
     "right_ankle"
 ]
+
+def recursive_len(item):
+    if type(item) == list:
+        return sum(recursive_len(subitem) for subitem in item)
+    else:
+        return 1
+
 '''
     Structure of affected list must be:
     affected_list: [{
@@ -1702,40 +1709,70 @@ for v in videos:
             try:
                 frame_in_list = annotation["frame"] in frames_to_annotate_persons[annotation["scene"]]
             except KeyError as e:
-                print("Video not in list")
+                print("Frame not in list")
                 frame_in_list = False
             if frame_in_list:
                 error_detected = False
                 # TODO recheck error reason formatting
                 object_err_reason = ""
                 for nr_obj, obj in enumerate(annotation["objects"]):
+                    obj_error = False
+                    obj_reason = ""
                     person_exists, bbox_exists, bbox_head_exists = False, False, False
-                    if obj["keypoints"]:
+                    if "keypoints" in obj:
                         if obj["type"] == "bbox":
                             bbox_exists = True
-                            if len(obj["keypoints"]) != 4:
+                            if recursive_len(obj["keypoints"]) not in [0, 4]:
                                 error_detected = True
-                                frames_affected.append({
-                                    "track_id": obj["track_id"],
-                                    "reason": "Wrong number of keypoints in bbox."
-                                })
+                                obj_error = True
+                                obj_reason += "Wrong number of keypoints in bbox. "
+                            else:
+                                if obj["keypoints"]:
+                                    kps = [kp_x for sublist in obj["keypoints"] for kp_x in sublist]
+                                    if kps:
+                                        kp_0, kp_1, kp_2, kp_3 = kps
+                                        if not (isinstance(kp_0, numbers.Number) and isinstance(kp_1, numbers.Number) and
+                                                isinstance(kp_2, numbers.Number) and isinstance(kp_3, numbers.Number)):
+                                            obj_error = True
+                                            obj_reason = "Wrong format of keypoints in bbox. "
+                            frames_affected.append({
+                                "number": obj["uid"]//100 % 10000,
+                                "track_id": obj["track_id"],
+                                "reason": obj_reason
+                            }) if obj_error else None
+                        obj_error = False
                         if obj["type"] == "bbox_head":
                             bbox_head_exists = True
-                            if len(obj["keypoints"]) != 4:
+                            if recursive_len(obj["keypoints"]) not in [0, 4]:
                                 error_detected = True
-                                frames_affected.append({
-                                    "track_id": obj["track_id"],
-                                    "reason": "Wrong number of keypoints in bbox_head."
-                                })
+                                obj_error = True
+                                obj_reason += "Wrong number of keypoints in bbox head. "
+                            else:
+                                if obj["keypoints"]:
+                                    kps = [kp_x for sublist in obj["keypoints"] for kp_x in sublist]
+                                    if kps:
+                                        kp_0, kp_1, kp_2, kp_3 = kps
+                                        if not (isinstance(kp_0, numbers.Number) and isinstance(kp_1, numbers.Number) and
+                                                isinstance(kp_2, numbers.Number) and isinstance(kp_3, numbers.Number)):
+                                            obj_error = True
+                                            obj_reason = "Wrong format of keypoints in bbox head. "
+                            frames_affected.append({
+                                "number": obj["uid"]//100 % 10000,
+                                "track_id": obj["track_id"],
+                                "reason": obj_reason
+                            }) if error_detected else None
                         if obj["type"] == "person":
                             person_exists = True
                             joints = []
                             keypoint_err_reason = ""
                             frame_aff = False
-                            if len(obj["keypoints"]) != 17:
+                            if recursive_len(obj["keypoints"]) not in [0, 51]:
                                 error_detected = True
                                 keypoint_err_reason += "Incorrect number of keypoints. "
                             for nr_kp, kp in enumerate(obj["keypoints"]):
+                                if len(kp) == 3 and not (isinstance(kp[0], numbers.Number) and isinstance(kp[1], numbers.Number) and kp[2] in [0, 1]):
+                                    keypoint_err_reason += "Wrong formatting in one of the keypoint values"
+                                    object_err_reason += "Keypoint value error"
                                 if not (len(kp) == 3 and kp[2] in [0, 1] and None not in kp):
                                     frame_aff = True
                                     object_err_reason += "Keypoint error"
@@ -1773,11 +1810,12 @@ for v in videos:
                     }
                     # exit()
     if video_affected != {}:
+        print("Errors detected. Check list in dataset folder for details.")
         affected_list.append(video_affected)
 
 path = "/usr/storage"
 
-file = os.path.join(path, dataset["name"] + '_modified.json')
+file = os.path.join(path, dataset["name"] + '_incorrect.json')
 if not os.path.exists(path):
     os.makedirs(path)
 with open(file, 'w') as outfile:
