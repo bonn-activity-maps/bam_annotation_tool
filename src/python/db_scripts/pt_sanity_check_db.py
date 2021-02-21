@@ -1679,6 +1679,7 @@ categories = [
     "right_ankle"
 ]
 
+
 def recursive_len(item):
     if type(item) == list:
         return sum(recursive_len(subitem) for subitem in item)
