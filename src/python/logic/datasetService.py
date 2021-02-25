@@ -550,7 +550,8 @@ class DatasetService:
                                             # Do not transform or clamp values of head_bboxes as per issue #430
                                             kps = obj["keypoints"]
                                             # kps = self.check_limits_kps(kps, width, height)
-                                            obj["bbox_head"] = kps
+                                            # Flatten list of kps
+                                            obj["bbox_head"] = [item for sublist in kps for item in sublist]
                                             del(obj["keypoints"])
                                         elif obj["type"] == "person":   # flatten keypoints array
                                             kps = list(obj["keypoints"])
