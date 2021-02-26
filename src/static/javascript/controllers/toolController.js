@@ -2349,6 +2349,7 @@ angular.module('CVGTool')
                             username: $scope.toolParameters.user.name,
                             ignoreRegions: $scope.objectManager.objectTypes["ignore_region"].objects,
                             bbox_heads: $scope.objectManager.objectTypes["bbox_head"].objects,
+                            bboxes: $scope.objectManager.objectTypes["bbox"].objects,
                             persons: $scope.objectManager.objectTypes["person"].objects,
                             frame: $scope.timelineManager.slider.value - $scope.toolParameters.frameFrom,
                             min_frame: $scope.toolParameters.frameFrom,
@@ -2356,7 +2357,6 @@ angular.module('CVGTool')
                         }
                     }).then(function(data) { // When finished, update the object in the frame
                         if (data.msg.localeCompare("success") === 0) {
-                            //TODO send frame range and change backend function to iterate
                             toolSrvc.updateTrackID($scope.canvasesManager.canvases[0].activeCamera.filename,
                                 $scope.toolParameters.activeDataset.name,
                                 $scope.toolParameters.activeDataset.type,

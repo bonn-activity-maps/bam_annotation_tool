@@ -628,8 +628,8 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
 * Controller of the dialog of change track ID
 */
 .controller('batchChangeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
-    'ignoreRegions', 'bbox_heads', 'persons', 'frame', 'min_frame', 'max_frame',
-    function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, bbox_heads, persons, frame,
+    'ignoreRegions', 'bbox_heads', 'bboxes', 'persons', 'frame', 'min_frame', 'max_frame',
+    function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, bbox_heads, bboxes, persons, frame,
              min_frame, max_frame) {
         $scope.object = object;
         $scope.dataset = dataset;
@@ -676,6 +676,8 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
                     ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100)) ||
                 ($scope.object.type === 'bbox_head' &&
                     ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
+                ($scope.object.type === 'bbox' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
                 ($scope.object.type === 'person' &&
                     ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0))) {
                 switch ($scope.object.type) {
@@ -684,6 +686,9 @@ function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
                         break
                     case "bbox_head":
                         check_array(bbox_heads);
+                        break
+                    case "bbox":
+                        check_array(bboxes);
                         break
                     case "person":
                         check_array(persons);
