@@ -582,7 +582,8 @@ class DatasetService:
                                             kps = obj["keypoints"]
                                             # Set kps outside the frame to an extreme within
                                             # kps = self.check_limits_kps(kps, width, height)
-                                            annotations_file[index]["bbox_head"] = kps
+                                            # Flatten list of kps
+                                            annotations_file[index]["bbox_head"] = [item for sublist in kps for item in sublist]
                                         elif obj["type"] == "person":
                                             # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
                                             kps = list(obj["keypoints"])
