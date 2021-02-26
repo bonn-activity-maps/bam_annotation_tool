@@ -2,7 +2,7 @@ angular.module('CVGTool')
     .factory('navSrvc', ['loginSrvc', '$state', '$rootScope', '$http', '$httpParamSerializer', function(loginSrvc, $state, $rootScope, $http, $httpParamSerializer) {
 
         // Actual version of the tool, THIS IS THE MAIN VARIABLE
-        var toolVersion = "3.0";
+        var toolVersion = "3.1";
 
         // Function to send message to tell the controller to update
         var updateSessionData = function() {
@@ -252,7 +252,12 @@ angular.module('CVGTool')
                 user.email = u.email;
                 user.assignedTo = u.assignedTo;
                 user.sessionToken = u.sessionToken;
-                idleTimerManager.eventCatchStart();
+                // If root role or admin users don't start
+                if (user.role.localeCompare("root") !== 0 && user.name.localeCompare("s6bepere") !== 0
+                    && user.name.localeCompare("alberto") !== 0 && user.name.localeCompare("admin") !== 0
+                    && user.name.localeCompare("dario") !== 0){
+                    idleTimerManager.eventCatchStart();
+                }
             },
 
             // Set active dataset to dataset

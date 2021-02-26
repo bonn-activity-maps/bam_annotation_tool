@@ -54,17 +54,17 @@
                     <h3>Are you sure?</h3>
                 </div>
             </md-dialog-content>
-            <md-dialog-content ng-if="object.type === 'bbox_head'">
+            <md-dialog-content ng-if="object.type === 'bbox_head' || object.type === 'bbox'">
                 <div ng-if="values.is_id_in_use && !values.invalid_track_id && values.obj_exists" class="alert alert-warning">
                     <strong>&#9888</strong> The ID: {{values.new_track_id}} is <b>already in use</b> for this frame.<br>
                     The track IDs will be swapped. Do you still wish to continue?
                 </div>
                 <div ng-if="values.is_id_in_use && values.invalid_track_id" class="alert alert-danger">
                     <strong>&#9888</strong> The ID: {{values.new_track_id}} is <b>invalid.</b> <br>
-                    The track ID for an bbox_head must be <b>lower than 60 and higher than 0</b>.
+                    The track ID for an bbox_head/bbox must be <b>lower than 60 and higher than 0</b>.
                 </div>
                 <div ng-if="!values.is_id_in_use && !values.invalid_track_id && !values.obj_exists" class="alert alert-danger">
-                    <strong>&#9888</strong> The bbox_head with track ID {{values.new_track_id}} <b>does not exist.</b> <br>
+                    <strong>&#9888</strong> The bbox_head/bbox with track ID {{values.new_track_id}} <b>does not exist.</b> <br>
                     Please create a new object before assigning its track ID.
                 </div>
                 <div ng-if="!values.is_id_in_use && !values.invalid_track_id && values.obj_exists" class="alert alert-success">
