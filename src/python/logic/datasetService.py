@@ -744,7 +744,7 @@ class DatasetService:
                     if not os.path.exists(path):
                         os.makedirs(path)
                     with open(file, 'w') as outfile:
-                        json.dump(final_annotation, outfile)
+                        json.dump(final_annotation, outfile, sort_keys=True, indent=4)
                 except:
                     print("Empty video ", videos[j].name)
         return 'ok'
