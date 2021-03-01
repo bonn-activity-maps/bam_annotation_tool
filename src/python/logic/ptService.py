@@ -1828,3 +1828,18 @@ class PTService:
             if item[key] == value and item[key2] == value2:
                 return item
         return 0
+
+    def divide_objects_in_arrays(self, objects):
+        bbxx, bbxxhh, prsn = [], [], []
+        for nr_obj, obj in enumerate(objects):
+            if obj["type"] == "bbox":
+                bbxx.append(obj)
+            elif obj["type"] == "bbox_head":
+                bbxxhh.append(obj)
+            elif obj["type"] == "person":
+                prsn.append(obj)
+            elif obj["type"] == "ignore_region":
+                pass
+            else:
+                raise TypeError
+        return bbxx, bbxxhh, prsn

@@ -355,6 +355,18 @@ class DatasetService:
                 return i
         return -1
 
+    def is_track_id_on_list_multiple(self, lst, image_id, track_id):
+        for i in range(0, len(lst)):
+            if image_id == lst[i]["image_id"] and track_id in lst[i]["track_ids"]:
+                return i
+        return -1
+
+    def is_person_id_in_list(self, lst, image_id, person_id):
+        for i in range(0, len(lst)):
+            if image_id == lst[i]["image_id"] and person_id == lst[i]["person_id"]:
+                return i
+        return -1
+
     # Process ignore regions to export for one frame
     def export_ignore_regions(self, annotation):
         ignore_regions_y = []
@@ -498,17 +510,29 @@ class DatasetService:
                 kps2_y[i] = max(min(height - 1, kps_y[i]), 0)
         return kps2_y, kps2_x
 
+    # Returns True if kps is [] or all of the elements in the array are either 0 or -1
+    def are_person_kps_empty(self, kps):
+        for kp in kps:
+            if kp not in [-1, 0]:
+                return False
+        return True
+
     # Export annotation file for PT datasets to a file for a given dataset
     def export_dataset_PT(self, dataset):
         videos = videoManager.get_videos(dataset)
         counter = 0
+        export_errors = dict({
+            "train": dict(),
+            "val": dict()
+        })
         for j in range(0, len(videos)):
             print("Exporting, please wait...", counter, "/", len(videos)) if counter % 20 == 0 else None
             counter += 1
             # Ignore buggy videos
             if videos[j].name not in ptService.video_ignore_list:
+            # if videos[j].name == "004891":
                 final_annotation = dict()
-
+                video_errors = dict()
                 annotation = Annotation(dataset, videos[j].name)
                 # _, annotations_db, _ = annotationService.get_annotations(dataset, dataset.pt, videos[j].name, "root")
                 _, annotations_db, _ = annotationService.get_annotations(annotation)
@@ -531,70 +555,188 @@ class DatasetService:
 
                     annotations_file = list()
                     for i in range(0, len(annotations_db)):
+                        frame = annotations_db[i]["frame"]
+                        frame_errors = []
                         # Export only annotations in the original frame range
-                        if min_frame <= annotations_db[i]["frame"] <= max_frame:
+                        if min_frame <= frame <= max_frame:
                             objects = annotations_db[i]["objects"]
-                            for obj in objects:
-                                if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
-                                    index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
-                                    if index == -1:
-                                        if obj["type"] == "bbox":
-                                            # If there is a bbox with a nonempty array of kps, it's valid
-                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
-                                            # Set kps outside the frame to an extreme within
-                                            kps = self.check_limits_kps(kps, width, height)
-                                            obj["bbox"] = kps
-                                            del(obj["keypoints"])
-                                        elif obj["type"] == "bbox_head":
-                                            # kps = ptService.transform_to_XYWH(obj["keypoints"])
-                                            # Do not transform or clamp values of head_bboxes as per issue #430
-                                            kps = obj["keypoints"]
-                                            # kps = self.check_limits_kps(kps, width, height)
-                                            # Flatten list of kps
-                                            obj["bbox_head"] = [item for sublist in kps for item in sublist]
-                                            del(obj["keypoints"])
-                                        elif obj["type"] == "person":   # flatten keypoints array
-                                            kps = list(obj["keypoints"])
-                                            del(obj["keypoints"])
-                                            # Set kps outside the frame to an extreme within
-                                            kps = self.process_keypoints_person(kps)
-                                            kps = self.check_limits_kps(kps, width, height, person=True)
-                                            obj["keypoints"] = kps
-                                        # Always delete type field, as it is unnecessary
-                                        del(obj["type"])
-                                        obj["id"] = obj["uid"]
-                                        del(obj["uid"])
-                                        obj["image_id"] = int(obj["id"]/100)
-                                        obj["scores"] = []
-                                        obj = self.create_missing_params_pt(obj)
-                                        annotations_file.append(obj)
-                                    else:   # If already in annotation, just add what we want
-                                        if obj["type"] == "bbox":
-                                            # If there is a bbox with a nonempty array of kps, it's valid
-                                            annotations_file[index]["person_id"] = obj["person_id"]
-                                            kps = ptService.transform_to_XYWH(obj["keypoints"])
-                                            # Set kps outside the frame to an extreme within
-                                            kps = self.check_limits_kps(kps, width, height)
-                                            annotations_file[index]["bbox"] = kps
-                                        elif obj["type"] == "bbox_head":
-                                            # kps = ptService.transform_to_XYWH(obj["keypoints"])
-                                            # Do not transform or clamp values of head_bboxes as per issue #430
-                                            kps = obj["keypoints"]
-                                            # Set kps outside the frame to an extreme within
-                                            # kps = self.check_limits_kps(kps, width, height)
-                                            # Flatten list of kps
-                                            annotations_file[index]["bbox_head"] = [item for sublist in kps for item in sublist]
-                                        elif obj["type"] == "person":
-                                            # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
-                                            kps = list(obj["keypoints"])
-                                            del(obj["keypoints"])
-                                            # Set kps outside the frame to an extreme within
-                                            kps = self.process_keypoints_person(kps)
-                                            kps = self.check_limits_kps(kps, width, height, person=True)
-                                            annotations_file[index]["keypoints"] = kps
+                            # Separate into specific arrays for every object, except ignore regions (already processed)
+                            bbox_objs, bbox_head_objs, person_objs = ptService.divide_objects_in_arrays(objects)
+                            # Process bbox first to merge person_id
+                            for bbox in bbox_objs:
+                                # Find if person_id is on the annotation file already
+                                index_person_id = self.is_person_id_in_list(annotations_file, int(bbox["uid"]/100),
+                                                                            bbox["person_id"])
+                                # If the bbox corresponding to this bbox's person_id has not been added to the list,
+                                # add the current object
+                                if index_person_id == -1:
+                                    # Transform to export format
+                                    kps = ptService.transform_to_XYWH(bbox["keypoints"])
+                                    # Clamp values within frame
+                                    kps = self.check_limits_kps(kps, width, height)
+                                    # Set correct parameters for export
+                                    bbox["bbox"] = kps
+                                    bbox["id"] = bbox["uid"]
+                                    del bbox["keypoints"], bbox["type"], bbox["uid"]
+                                    bbox["image_id"] = int(bbox["id"]/100)
+                                    bbox["scores"] = []
+                                    # Create list of track_ids to append bbox_head and person later.
+                                    bbox["track_ids"] = [bbox["track_id"]]
+                                    bbox = self.create_missing_params_pt(bbox)
+                                    # Append object to the annotations file to be exported
+                                    annotations_file.append(bbox)
+                                else:
+                                    # Append track_id for bbox_head and person later
+                                    annotations_file[index_person_id]["track_ids"].append(bbox["track_id"])
+                                    # Transform to export format
+                                    kps = ptService.transform_to_XYWH(bbox["keypoints"])
+                                    # Clamp values within frame
+                                    kps = self.check_limits_kps(kps, width, height)
+                                    # If the old bbox was empty and the new one isn't, overwrite the empty array
+                                    if kps != [] and annotations_file[index_person_id]["bbox"] == []:
+                                        annotations_file[index_person_id]["bbox"] = kps
+                                        # Overwrite track_id and uid too
+                                        annotations_file[index_person_id]["track_id"] = bbox["track_id"]
+                                        annotations_file[index_person_id]["id"] = bbox["uid"]
+                                    # If both are not empty, we got a problem
+                                    elif kps != [] and annotations_file[index_person_id]["bbox"] != []:
+                                        # Wrongfully annotated, there can't be 2 bboxes annotated for the same person_id
+                                        frame_errors.append({
+                                            "track_id": bbox["track_id"],
+                                            "other_track_ids": annotations_file[index_person_id]["track_ids"] if annotations_file[index_person_id]["track_ids"] else None,
+                                            "person_id": bbox["person_id"],
+                                            "frame": frame,
+                                            "id": bbox["uid"],
+                                            "reason": "Duplicated non-empty bbox for this person_id"
+                                        })
+                                        pass
+                                    # else both are empty, so we don't need to do anything.
+                            # Process bbox_head based on track_id
+                            for bbox_head in bbox_head_objs:
+                                # Look up the index of the corresponding bbox according to its track_id and frame
+                                index = self.is_track_id_on_list_multiple(annotations_file, int(bbox_head["uid"]/100),
+                                                                          bbox_head["track_id"])
+                                # If there isn't any bbox, we got a problem
+                                if index == -1:
+                                    # This should NEVER happen, since annotations are precomputed to always exist.
+                                    pass
+                                else:
+                                    # If it exists, we append the keypoints if they are not empty
+                                    # As per issue #430, we do not transform or clamp keypoints of head_bboxes
+                                    kps = bbox_head["keypoints"]
+                                    # Flatten the list
+                                    kps = [item for sublist in kps for item in sublist]
+                                    # If kps is not empty, and the previous bbox_head is, overwrite it
+                                    if kps != [] and annotations_file[index]["bbox_head"] == []:
+                                        annotations_file[index]["bbox_head"] = kps
+                                    elif kps != [] and annotations_file[index]["bbox_head"] != []:
+                                        frame_errors.append({
+                                            "track_id": bbox_head["track_id"],
+                                            "other_track_ids": annotations_file[index]["track_ids"] if annotations_file[index]["track_ids"] else None,
+                                            "person_id": bbox_head["person_id"],
+                                            "frame": frame,
+                                            "id": bbox_head["uid"],
+                                            "reason": "Duplicated non-empty bbox_head for this person_id"
+                                        })
+                                        pass
+                                    # else if both are empty, we don't do anything
+                            # Process person based on track_id
+                            for person in person_objs:
+                                # Look up the index of the corresponding bbox according to its track_id and frame
+                                index = self.is_track_id_on_list_multiple(annotations_file, int(person["uid"]/100),
+                                                                          person["track_id"])
+                                # If there isn't any bbox, we got a problem
+                                if index == -1:
+                                    # This should NEVER happen, since annotations are precomputed to always exist.
+                                    pass
+                                else:
+                                    # If it exists, we append the keypoints if they are not empty
+                                    kps = list(person["keypoints"])
+                                    # Transform, clamp and flatten the list
+                                    kps = self.process_keypoints_person(kps)
+                                    kps = self.check_limits_kps(kps, width, height, person=True)
+                                    # If kps is not empty, and the previous person is, overwrite it
+                                    if not self.are_person_kps_empty(kps) and \
+                                            self.are_person_kps_empty(annotations_file[index]["keypoints"]):
+                                        annotations_file[index]["keypoints"] = kps
+                                    elif not self.are_person_kps_empty(kps) and \
+                                            not self.are_person_kps_empty(annotations_file[index]["keypoints"]):
+                                        frame_errors.append({
+                                            "track_id": person["track_id"],
+                                            "other_track_ids": annotations_file[index]["track_ids"] if annotations_file[index]["track_ids"] else None,
+                                            "person_id": person["person_id"],
+                                            "frame": frame,
+                                            "id": person["uid"],
+                                            "reason": "Duplicated non-empty person for this person_id"
+                                        })
+                                        pass
+                                    # else if both are empty, we don't do anything
+                            # for obj in objects:
+                            #     if obj["type"] != 'ignore_region':      # Ignore 'ignore_regions' --> already exported
+                            #         index = self.is_track_id_on_list(annotations_file, obj["uid"], obj["track_id"])
+                            #         if index == -1:
+                            #             if obj["type"] == "bbox":
+                            #                 # If there is a bbox with a nonempty array of kps, it's valid
+                            #                 kps = ptService.transform_to_XYWH(obj["keypoints"])
+                            #                 # Set kps outside the frame to an extreme within
+                            #                 kps = self.check_limits_kps(kps, width, height)
+                            #                 obj["bbox"] = kps
+                            #                 del(obj["keypoints"])
+                            #             elif obj["type"] == "bbox_head":
+                            #                 # kps = ptService.transform_to_XYWH(obj["keypoints"])
+                            #                 # Do not transform or clamp values of head_bboxes as per issue #430
+                            #                 kps = obj["keypoints"]
+                            #                 # kps = self.check_limits_kps(kps, width, height)
+                            #                 # Flatten list of kps
+                            #                 obj["bbox_head"] = [item for sublist in kps for item in sublist]
+                            #                 del(obj["keypoints"])
+                            #             elif obj["type"] == "person":   # flatten keypoints array
+                            #                 kps = list(obj["keypoints"])
+                            #                 del(obj["keypoints"])
+                            #                 # Set kps outside the frame to an extreme within
+                            #                 kps = self.process_keypoints_person(kps)
+                            #                 kps = self.check_limits_kps(kps, width, height, person=True)
+                            #                 obj["keypoints"] = kps
+                            #             # Always delete type field, as it is unnecessary
+                            #             del(obj["type"])
+                            #             obj["id"] = obj["uid"]
+                            #             del(obj["uid"])
+                            #             obj["image_id"] = int(obj["id"]/100)
+                            #             obj["scores"] = []
+                            #             obj = self.create_missing_params_pt(obj)
+                            #             annotations_file.append(obj)
+                            #         else:   # If already in annotation, just add what we want
+                            #             if obj["type"] == "bbox":
+                            #                 # If there is a bbox with a nonempty array of kps, it's valid
+                            #                 annotations_file[index]["person_id"] = obj["person_id"]
+                            #                 kps = ptService.transform_to_XYWH(obj["keypoints"])
+                            #                 # Set kps outside the frame to an extreme within
+                            #                 kps = self.check_limits_kps(kps, width, height)
+                            #                 annotations_file[index]["bbox"] = kps
+                            #             elif obj["type"] == "bbox_head":
+                            #                 # kps = ptService.transform_to_XYWH(obj["keypoints"])
+                            #                 # Do not transform or clamp values of head_bboxes as per issue #430
+                            #                 kps = obj["keypoints"]
+                            #                 # Set kps outside the frame to an extreme within
+                            #                 # kps = self.check_limits_kps(kps, width, height)
+                            #                 # Flatten list of kps
+                            #                 annotations_file[index]["bbox_head"] = [item for sublist in kps for item in sublist]
+                            #             elif obj["type"] == "person":
+                            #                 # annotations_file[index]["keypoints"] = np.array(obj["keypoints"]).flatten().tolist()
+                            #                 kps = list(obj["keypoints"])
+                            #                 del(obj["keypoints"])
+                            #                 # Set kps outside the frame to an extreme within
+                            #                 kps = self.process_keypoints_person(kps)
+                            #                 kps = self.check_limits_kps(kps, width, height, person=True)
+                            #                 annotations_file[index]["keypoints"] = kps
+                        # If there were errors in this frame, add an entry to the dictionary of errors in this video
+                        if frame_errors:
+                            video_errors[str(frame)] = frame_errors
                     # annotations_correct = self.check_annotations_file(annotations_file, videos[j].name)
                     final_annotation["annotations"] = annotations_file
-
+                # If there were errors in the video, add an entry to the dictionary of errors of the export
+                if video_errors:
+                    export_errors[videos[j].type][str(videos[j].name)] = video_errors
                 ''' Process frame data '''
                 width, height = 1920, 1080
                 if result:
@@ -747,6 +889,13 @@ class DatasetService:
                         json.dump(final_annotation, outfile, sort_keys=True, indent=4)
                 except:
                     print("Empty video ", videos[j].name)
+        if export_errors:
+            path = os.path.join(dataset.STORAGE_DIR, dataset.name + "_export")
+            file = os.path.join(path, 'export_errors.json')
+            if not os.path.exists(path):
+                os.makedirs(path)
+            with open(file, 'w') as outfile:
+                json.dump(export_errors, outfile, sort_keys=True, indent=4)
         return 'ok'
 
     # Export annotation for AIK datasets to a file for given dataset
