@@ -1714,6 +1714,12 @@ angular.module('CVGTool')
                                  "005068","006537","003419","015907","006540","022842","012968","017450","024157","022430","007128","023748","024593","024154",
                                  "022691","024199","000583","015241","007950","023717","003747","010992"]
 
+            _this.sanityCheck = {
+                visibilityPopup: false,
+                isLoading: true,
+                results: []
+            }
+
             // Executes the whole PT initialization process
             _this.initialize = function() {
                 $scope.loadingScreenManager.setLoadingScreen();
@@ -2117,7 +2123,6 @@ angular.module('CVGTool')
                     callbackSuccess, $scope.messagesManager.sendMessage)
             };
 
-
             // Creates a new person generating new UIDs in the database
             _this.createIgnoreRegion = function() {
                 let callbackSuccess = function() {
@@ -2142,7 +2147,6 @@ angular.module('CVGTool')
                 }
 
             };
-
 
             // Replicates the current annotation to all posterior frames in the active range
             _this.replicate = function(uid, type, frame) {
@@ -2444,6 +2448,27 @@ angular.module('CVGTool')
                         $scope.messagesManager.sendMessage("warning", "Something went wrong")
                     }
                 }) 
+            }
+
+            // Hide sanity check panel
+            _this.hideSanityCheck = function() {
+                _this.sanityCheck.visibilityPopup = false;
+            }
+            // Run sanity check for all of the frames loaded
+            _this.runSanityCheck = function() {
+                _this.sanityCheck.visibilityPopup = true;
+                _this.sanityCheck.isLoading = true;
+
+                // Show results of the sanity check
+                let successCallback = function(results) {
+                    _this.sanityCheck.isLoading = false;
+                    _this.sanityCheck.results = results;
+                }
+
+                toolSrvc.runSanityCheck($scope.toolParameters.activeDataset.name, $scope.toolParameters.activeDataset.type,
+                    $scope.canvasesManager.canvases[0].activeCamera.filename, $scope.toolParameters.frameFrom,
+                    $scope.toolParameters.frameTo, $scope.toolParameters.user.name, successCallback,
+                    $scope.messagesManager.sendMessage);
             }
 
             // Transfer object

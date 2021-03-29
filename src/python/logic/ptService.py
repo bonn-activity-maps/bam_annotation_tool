@@ -1765,6 +1765,33 @@ class PTService:
                       "022430", "007128", "023748", "024593", "024154",
                       "022691", "024199", "000583", "015241", "007950", "023717", "003747", "010992"]
 
+    skeleton = [
+        "nose",
+        "head_bottom",
+        "head_top",
+        "left_ear",
+        "right_ear",
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle"
+    ]
+
+    # Return the recursive length of a list
+    def recursive_len(self, item):
+        if type(item) == list:
+            return sum(self.recursive_len(subitem) for subitem in item)
+        else:
+            return 1
+
     # Generate a new valid poseTrack ID
     def generate_uid(self, scene, frame, track_id):
         uid = int("1" + scene + self.pad(str(frame), 4) + self.pad(str(track_id), 2))

@@ -22,6 +22,7 @@ from python.objects.user_action import UserAction
 from python.objects.object_type import Object_type
 from python.objects.pose_property import PoseProperty
 
+import numbers
 
 # AnnotationService logger
 log = logging.getLogger('annotationService')
@@ -594,6 +595,125 @@ class AnnotationService:
         else:
             log.error('Error filling in keypoints')
             return False, final_result, 500
+
+    # Run a sanity check to check correctness of data within the specified frames for the given video
+    def get_sanity_check(self, dataset, scene, user, start_frame, end_frame):
+        # Maybe register the action by the user, but at the moment, not necessary
+        # Get all annotations for the video for the specified frames
+        start_annotation = Annotation(dataset, scene, frame=start_frame)
+        end_annotation = Annotation(dataset, scene, frame=end_frame)
+        annotations = annotationManager.get_annotations_by_frame_range(start_annotation, end_annotation)
+        print("annotations received:")
+        print(len(annotations))
+        # Initialize errors list
+        errors_detected = []
+        # Run sanity check
+        for annotation in annotations:
+            try:
+                # frame_in_list = annotation["frame"] in ptService.frames_to_annotate_persons[annotation["scene"]]
+                frame_in_list = True
+            except KeyError as e:
+                print("Frame not in list")
+                frame_in_list = False
+            if frame_in_list:
+                # Note how many objects do we have per track_id and its type
+                track_ids = dict()
+                for nr_obj, obj in enumerate(annotation["objects"]):
+                    if obj["track_id"] in track_ids:
+                        track_ids[obj["track_id"]]["number"] += 1
+                    else:
+                        track_ids[obj["track_id"]] = {
+                            "number": 1,
+                            "type": "ignore_region" if obj["type"] == "ignore_region" else "person"
+                        }
+                    # If keypoints exists within the object
+                    if "keypoints" in obj:
+                        # If it's not empty, run further checks. If it's empty, it's fine and no more checks are needed.
+                        # Ignore ignore regions
+                        if obj["keypoints"] and obj["type"] != "ignore_region":
+                            # If the length is not correct, add error
+                            if ptService.recursive_len(obj["keypoints"]) not in [4, 51]:
+                                errors_detected.append({
+                                    "number": obj["uid"]//100 % 10000,
+                                    "track_id": obj["track_id"],
+                                    "type": obj["type"],
+                                    "reason": "Wrong number of keypoints"
+                                })
+                            else:
+                                if obj["type"] == "bbox" or obj["type"] == "bbox_head":
+                                    # Flatten list
+                                    kps = [kp_x for sublist in obj["keypoints"] for kp_x in sublist]
+                                    # If any of the values is not a Number, save error
+                                    errors_detected.append({
+                                        "number": obj["uid"]//100 % 10000,
+                                        "track_id": obj["track_id"],
+                                        "type": obj["type"],
+                                        "reason": "Invalid value of keypoint in object: Not Number"
+                                    }) if not any(isinstance(kp, numbers.Number) for kp in kps) else None
+                                elif obj["type"] == "person":
+                                    joints = []
+                                    error = False
+                                    for nr_kp, kp in enumerate(obj["keypoints"]):
+                                        if None in kp or len(kp) != 3 or kp[2] not in [0, 1] or not \
+                                                any(isinstance(point, numbers.Number) for point in kp):
+                                            error = True
+                                            joints.append(ptService.skeleton[nr_kp])
+                                    errors_detected.append({
+                                        "number": obj["uid"]//100 % 10000,
+                                        "track_id": obj["track_id"],
+                                        "type": obj["type"],
+                                        "joints": joints,
+                                        "reason": "Invalid value of keypoint in object"
+                                    }) if error else None
+                        if obj["keypoints"] and obj["type"] == "ignore_region":
+                            # TODO check ignore region
+                            pass
+                    else:
+                        errors_detected.append({
+                            "number": obj["uid"]//100 % 10000,
+                            "track_id": obj["track_id"],
+                            "type": obj["type"],
+                            "reason": "Object has no keypoints"
+                        })
+
+                # Check the number of objects per track_id is correct
+                for key, track_id in track_ids.items():
+                    if track_id["type"] == "ignore_region" and track_id["number"] != 1:
+                        errors_detected.append({
+                            "track_id": key,
+                            "type": track_id["type"],
+                            "reason": "Incorrect number of objects for ignore_region. Should be 1, is " + str(track_id["number"])
+                        })
+                    if track_id["type"] != "ignore_region" and track_id["number"] != 3:
+                        errors_detected.append({
+                            "track_id": key,
+                            "type": track_id["type"],
+                            "reason": "Incorrect number of objects for ignore_region. Should be 1, is " + str(track_id["number"])
+                        })
+        # print("Finished sanity check:")
+        # print(errors_detected)
+        #   bbox, bbox_head and person exist for every track_id
+        #   track_id are unique in the sequence
+        #   person_id is unique per track_id
+        #   bbox, bbox_head have 2kps and 4 points
+        #   person has 15 (+2) kps and 51 points total, in the following format [float, float, 0/1]
+        #   All person kps must be inside the bbox
+        #   bbox_head must (to some degree) be inside bbox
+        #   Organise results and return errors or an OK
+        # errors_detected.append({
+        #     "number": 17,
+        #     "track_id": 2,
+        #     "type": "test",
+        #     "reason": "Object has no keypoints"
+        # })
+        # errors_detected.append({
+        #     "number": 18,
+        #     "track_id": 2,
+        #     "type": "test",
+        #     "reason": "Object has no keypoints"
+        # })
+
+        return True, errors_detected, 200
 
     # Replicate and store the annotation between start and enf frame
     # Always a single object in "objects" so always objects[0] !!

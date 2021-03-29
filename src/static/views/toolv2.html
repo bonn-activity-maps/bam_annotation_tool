@@ -65,7 +65,7 @@
     <!-- TIMELINE END -->
     
     <!-- LOADING PANEL -->
-    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
+    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">
         <div class="row">
             <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
                 <div class="panel-body">
@@ -74,8 +74,59 @@
                     <p>Please wait</p>
                 </div>
             </div>
-        </div>   
-    </div>  
+        </div>
+    </div>
+
+    <!-- SANITY CHECK POPUP PANEL   -->
+    <div id="SanityCheckPopup" class="panel panel-loading animate-show-hide" ng-show="commonManager.sanityCheck.visibilityPopup">
+        <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
+            <div class="panel-heading" ng-draggable='dragOptions'>
+                <div class="row">
+                    <div class="col-sm-11">
+                        Sanity check results
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn-invisible btn-xs" ng-click="commonManager.hideSanityCheck()"><span
+                                class="glyphicon glyphicon-remove"></span></button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" ng-show="commonManager.sanityCheck.isLoading">
+                <img src="/static/resources/loading.gif" />
+                <h2>Loading content</h2>
+                <p>Please wait</p>
+            </div>
+            <div class="panel-body" ng-show="!commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length !== 0">
+                <h2>Errors detected in annotations.</h2>
+                <hr>
+                <div class="zui-wrapper" style="min-height: 200px">
+                    <div class="zui-scroller" style="margin:auto;width:100%;overflow-x:visible">
+                        <table class="zui-table" style="width: 100%;font-family:inherit">
+                            <thead>
+                            <tr>
+                                <th>frame</th>
+                                <th>track_id</th>
+                                <th>type</th>
+                                <th>reason</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="object in commonManager.sanityCheck.results">
+                                <td>{{object.number}}</td>
+                                <td>{{object.track_id}}</td>
+                                <td>{{object.type}}</td>
+                                <td>{{object.reason}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" ng-show="!commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length === 0">
+                <h2>All annotations are correct! &#127881</h2>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- CAMERAS PANEL (hidden panel) -->
@@ -117,7 +168,7 @@
 
 <!-- TOOLS PANEL ("floating panel) -->
 <div id="ToolPanel" class="panel panel-tools text-center">
-    <!-- Selector de object type -->
+    <!-- Object type selector -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-tower"></span>
@@ -135,6 +186,7 @@
         </div>
     </div>
     <hr class="tool-panel-hr">
+<!--    Config button -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-cog"></span>
@@ -170,6 +222,7 @@
             </div>
         </div>
     </div>
+<!--    Shortcuts button -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-list-alt"></span>
@@ -194,6 +247,7 @@
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
         </div>
     </div>
+<!--    Human keypoint schematics button-->
     <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img class="png-icon" src="/static/resources/guide-icon.png" style="width: 100%; height: 100%"></img>
@@ -204,6 +258,13 @@
             </li>
         </div>
     </div>
+<!--    Sanity check button -->
+    <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" ng-click="commonManager.runSanityCheck()" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-ok"></span>
+        </button>
+    </div>
+
     <hr class="tool-panel-hr">
     <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

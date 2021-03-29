@@ -2,7 +2,7 @@ angular.module('CVGTool')
     .factory('navSrvc', ['loginSrvc', '$state', '$rootScope', '$http', '$httpParamSerializer', function(loginSrvc, $state, $rootScope, $http, $httpParamSerializer) {
 
         // Actual version of the tool, THIS IS THE MAIN VARIABLE
-        var toolVersion = "3.1.2";
+        var toolVersion = "3.2";
 
         // Function to send message to tell the controller to update
         var updateSessionData = function() {

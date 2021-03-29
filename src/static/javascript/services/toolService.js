@@ -735,6 +735,27 @@ angular.module('CVGTool')
             })
         },
 
+        // Run sanity check on loaded frames for the video
+        runSanityCheck: function(dataset, datasetType, scene, startFrame, endFrame, username, callbackSuccess, callbackError){
+            $http({
+                method: 'GET',
+                url: '/api/annotation/getSanityCheck',
+                headers: {
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken(),
+                    "dataset": dataset,
+                    "datasetType": datasetType,
+                    "user": username,
+                    "scene": scene,
+                    "startFrame": startFrame,
+                    "endFrame": endFrame,
+                }
+            }).then(function successCallback(response) {
+                callbackSuccess(response.data.msg);
+            }, function errorCallback(response) {
+                callbackError('danger', response.data.msg);
+            })
+        },
+
         // Transfer object
         transferObject: function(dataset, datasetType, scene, startFrame, endFrame, username, oldUid, newUid, objectType, callbackSuccess, callbackError) {
             $http({

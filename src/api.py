@@ -478,6 +478,14 @@ def interpolate_annotation():
                                                                         start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
+# Replicate object between start and end frame
+@app.route('/api/annotation/getSanityCheck', methods=['GET'])
+@flask_login.login_required
+def get_sanity_check():
+    dataset = Dataset(request.headers['dataset'], request.headers['datasetType'])
+    success, msg, status = annotationService.get_sanity_check(dataset, request.headers['scene'], request.headers['user'],
+                                                              request.headers['startFrame'], request.headers['endFrame'])
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 # Autocomplete between 2 points and store the completed 3d points
 # startFrame is an array with the frame of each label
@@ -491,7 +499,6 @@ def autocomplete_annotation():
                                                                      int(req_data['uidObject']), req_data['objectType'],
                                                                      start_frames, req_data['endFrame'])
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
-
 
 # Replicate object between start and end frame
 @app.route('/api/annotation/replicate/object', methods=['POST'])
