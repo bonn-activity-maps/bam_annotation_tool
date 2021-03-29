@@ -190,6 +190,7 @@
             <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
             <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
             <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>
+            <li class="dropdown-item">Move sel. keypoint <b>{{shortcutsManager.shortcuts.selectedShortcuts.arrows.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
         </div>
