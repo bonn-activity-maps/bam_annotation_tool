@@ -395,6 +395,7 @@ angular.module('CVGTool')
             _this.tempCameraStorage = [null, null, null, null];
             _this.canvases = [];
             _this.canvasesColors = ["#FF2D26", "#5673E8", "#A66BFF", "#51FF2D"];
+            _this.canvasMouseOver = 0;
 
             // FUNCTIONS //
             // Moves the video "video" to the canvas specified by "number"
@@ -679,6 +680,10 @@ angular.module('CVGTool')
                 for (var i = 0; i < _this.canvases.length; i++) {
                     _this.canvases[i].setRedraw();
                 }
+            }
+
+            _this.setCanvasMouseOver = function(index) {
+                _this.canvasMouseOver = index;
             }
 
             _this.refreshProjectionOfCanvases = function() {
@@ -4606,6 +4611,11 @@ angular.module('CVGTool')
 
             }, true);
 
+            canvas.addEventListener('mouseenter', function(e) {
+                $scope.canvasesManager.setCanvasMouseOver(_this.canvasNumber - 1)
+
+            }, true);
+
             //----- FUNCTIONS -----//
             // Fits the image to the canvas depending of the zoom
 
@@ -5153,6 +5163,9 @@ angular.module('CVGTool')
                         showSelectedPointOnly: {
                             label: 'Q',
                             shortcut: 'q'
+                        },
+                        arrows: {
+                            label: '\u{2191}, \u{2193},\u{2190},\u{2192}'
                         }
                     },
                     {
@@ -5208,6 +5221,9 @@ angular.module('CVGTool')
                         showSelectedPointOnly: {
                             label: '\'',
                             shortcut: '\''
+                        },
+                        arrows: {
+                            label: '\u{2191}, \u{2193},\u{2190},\u{2192}'
                         }
                     }
                 ]
@@ -5286,7 +5302,7 @@ angular.module('CVGTool')
                     combo: "t",
                     description: 'Test',
                     callback: function() {
-                        console.log($scope.keypointEditor.keypointEditorData.shapes[0]);
+                        console.log("test shortcut")
                     }
                 })
                 .add({
@@ -5321,6 +5337,55 @@ angular.module('CVGTool')
                         if (($scope.toolParameters.isPosetrack) && ($scope.keypointEditor.editorActive === true) && ($scope.objectManager.isTypeSelected("person"))) {
                             $scope.optionsManager.options.showSelectedPointOnly = !$scope.optionsManager.options.showSelectedPointOnly;
                             $scope.canvasesManager.redrawCanvases();
+                        }
+                    }
+                })
+                .add({
+                    combo: "up",
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].move(0, -1, $scope.keypointEditor.selectedLabel);
+                            
+                            var point = $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].points[$scope.keypointEditor.selectedLabel].center
+                            var cameraPoint = $scope.canvasesManager.canvases[$scope.canvasesManager.canvasMouseOver].toCamera(point)
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].cameraPoints[$scope.keypointEditor.selectedLabel] = cameraPoint.slice();
+                            $scope.canvasesManager.redrawCanvases()
+                        }
+                    }
+                })
+                .add({
+                    combo: "down",
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].move(0, 1, $scope.keypointEditor.selectedLabel);
+                            var point = $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].points[$scope.keypointEditor.selectedLabel].center
+                            var cameraPoint = $scope.canvasesManager.canvases[$scope.canvasesManager.canvasMouseOver].toCamera(point)
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].cameraPoints[$scope.keypointEditor.selectedLabel] = cameraPoint.slice();
+                            $scope.canvasesManager.redrawCanvases()
+                        }
+                    }
+                })
+                .add({
+                    combo: "left",
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].move(-1, 0, $scope.keypointEditor.selectedLabel);
+                            var point = $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].points[$scope.keypointEditor.selectedLabel].center
+                            var cameraPoint = $scope.canvasesManager.canvases[$scope.canvasesManager.canvasMouseOver].toCamera(point)
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].cameraPoints[$scope.keypointEditor.selectedLabel] = cameraPoint.slice();
+                            $scope.canvasesManager.redrawCanvases()
+                        }
+                    }
+                })
+                .add({
+                    combo: "right",
+                    callback: function() {
+                        if ($scope.keypointEditor.editorActive === true) {
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].move(1, 0, $scope.keypointEditor.selectedLabel);
+                            var point = $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].points[$scope.keypointEditor.selectedLabel].center
+                            var cameraPoint = $scope.canvasesManager.canvases[$scope.canvasesManager.canvasMouseOver].toCamera(point)
+                            $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].cameraPoints[$scope.keypointEditor.selectedLabel] = cameraPoint.slice();
+                            $scope.canvasesManager.redrawCanvases()
                         }
                     }
                 });
