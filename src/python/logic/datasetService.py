@@ -561,7 +561,7 @@ class DatasetService:
                         if min_frame <= frame <= max_frame:
                             objects = annotations_db[i]["objects"]
                             # Separate into specific arrays for every object, except ignore regions (already processed)
-                            bbox_objs, bbox_head_objs, person_objs = ptService.divide_objects_in_arrays(objects)
+                            bbox_objs, bbox_head_objs, person_objs, _ = ptService.divide_objects_in_arrays(objects)
                             # Process bbox first to merge person_id
                             for bbox in bbox_objs:
                                 # Find if person_id is on the annotation file already
