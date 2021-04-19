@@ -1722,6 +1722,7 @@ angular.module('CVGTool')
             _this.sanityCheck = {
                 visibilityPopup: false,
                 isLoading: true,
+                isMinimized: false,
                 results: []
             }
 
@@ -2457,6 +2458,10 @@ angular.module('CVGTool')
                 })
             }
 
+            // Minimize sanity check panel
+            _this.minimizeSanityCheck = function() {
+                _this.sanityCheck.isMinimized = !_this.sanityCheck.isMinimized;
+            }
             // Hide sanity check panel
             _this.hideSanityCheck = function() {
                 _this.sanityCheck.visibilityPopup = false;

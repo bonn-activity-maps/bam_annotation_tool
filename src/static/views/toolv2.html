@@ -77,56 +77,6 @@
         </div>
     </div>
 
-    <!-- SANITY CHECK POPUP PANEL   -->
-    <div id="SanityCheckPopup" class="panel panel-loading animate-show-hide" ng-show="commonManager.sanityCheck.visibilityPopup">
-        <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
-            <div class="panel-heading" ng-draggable='dragOptions'>
-                <div class="row">
-                    <div class="col-sm-11">
-                        Sanity check results
-                    </div>
-                    <div class="col-sm-1">
-                        <button class="btn-invisible btn-xs" ng-click="commonManager.hideSanityCheck()"><span
-                                class="glyphicon glyphicon-remove"></span></button>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-body" ng-show="commonManager.sanityCheck.isLoading">
-                <img src="/static/resources/loading.gif" />
-                <h2>Loading content</h2>
-                <p>Please wait</p>
-            </div>
-            <div class="panel-body" ng-show="!commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length !== 0">
-                <h2>Errors detected in annotations.</h2>
-                <hr>
-                <div class="zui-wrapper" style="min-height: 200px">
-                    <div class="zui-scroller" style="margin:auto;width:100%;overflow-x:visible">
-                        <table class="zui-table" style="width: 100%;font-family:inherit">
-                            <thead>
-                            <tr>
-                                <th>frame</th>
-                                <th>track_id</th>
-                                <th>type</th>
-                                <th>reason</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="object in commonManager.sanityCheck.results">
-                                <td>{{object.number}}</td>
-                                <td>{{object.track_id}}</td>
-                                <td>{{object.type}}</td>
-                                <td>{{object.reason}}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-body" ng-show="!commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length === 0">
-                <h2>All annotations are correct! &#127881</h2>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- CAMERAS PANEL (hidden panel) -->
@@ -840,6 +790,65 @@
                 </div>
             </div> 
         </div>
+    </div>
+</div>
+
+<!-- SANITY CHECK POPUP PANEL   -->
+<div id="SanityCheckPopup" class="panel panel-floating" ng-show="commonManager.sanityCheck.visibilityPopup"
+style="width:600px; height:auto">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Sanity check results
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="commonManager.hideSanityCheck()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && commonManager.sanityCheck.isLoading">
+        <img src="/static/resources/loading.gif" />
+        <h2>Loading content</h2>
+        <p>Please wait</p>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length !== 0">
+        <h2>Errors detected in annotations.</h2>
+        <hr>
+        <div class="zui-wrapper" style="min-height: 200px">
+            <div class="zui-scroller" style="margin:auto;width:100%;overflow-x:visible">
+                <table class="zui-table" style="width: 100%;font-family:inherit">
+                    <thead>
+                    <tr>
+                        <th>frame</th>
+                        <th>track_id</th>
+                        <th>type</th>
+                        <th>reason</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="object in commonManager.sanityCheck.results">
+                        <td>{{object.number}}</td>
+                        <td>{{object.track_id}}</td>
+                        <td>{{object.type}}</td>
+                        <td>{{object.reason}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length === 0">
+        <h2>All annotations are correct! &#127881</h2>
     </div>
 </div>
 
