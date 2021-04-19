@@ -4644,6 +4644,31 @@ angular.module('CVGTool')
                         // Check what we have to draw
                         if (angular.equals(_this.objectsIn2D, {})) return; // Control to avoid errors while loading objects
                         if ($scope.objectManager.selectedObject === null && $scope.objectManager.selectedType.type !== undefined) {
+                            
+                            // If we want to preview Bboxes in PT, draw them now
+                            if ($scope.toolParameters.isPosetrack && $scope.optionsManager.options.previewBBoxes &&($scope.objectManager.isTypeSelected('person') || $scope.objectManager.isTypeSelected('bbox_head'))) {
+                                var colorIndex = 0;
+                                var objects = $scope.objectManager.objectTypes['bbox'].objects; 
+                                for (bbox in objects) {
+                                    var keypoints = objects[bbox.toString()].frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints
+                                    
+                                    if (keypoints.length > 1) {
+                                        var p1 = _this.toImage(keypoints[0])
+                                        var p2 = _this.toImage(keypoints[1])
+                                        
+                                        ctx.beginPath();
+                                        ctx.strokeStyle = _this.colors[colorIndex];
+                                        ctx.lineWidth = 3;
+                                        ctx.rect(p1[0], p1[1], Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]));
+                                        ctx.stroke();
+                                        ctx.closePath();
+                                    }
+                                    
+                                    colorIndex++;
+                                    _this.setRedraw()
+                                }
+                            }
+                        
                             var colorIndex = 0;
                             for (obj in _this.objects2D.objects) {
                                 if (_this.objects2D.objects[obj.toString()].frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].shape !== null) {
@@ -4664,6 +4689,29 @@ angular.module('CVGTool')
                                 }     
                             }
                         } else if ($scope.objectManager.selectedObject !== null) { // If there is one object selected, draw only its points
+
+                            // Draw BBox of the selected object if the preview option is set
+                            if ($scope.toolParameters.isPosetrack && $scope.optionsManager.options.previewBBoxes &&($scope.objectManager.isTypeSelected('person') || $scope.objectManager.isTypeSelected('bbox_head'))) {
+                                var obj = $scope.objectManager.objectTypes['bbox'].objects[$scope.objectManager.selectedObject.uid];
+                                
+                                var keypoints = obj.frames[$scope.timelineManager.slider.value - $scope.toolParameters.frameFrom].keypoints
+                                
+                                if (keypoints.length > 1) {
+                                    var p1 = _this.toImage(keypoints[0])
+                                    var p2 = _this.toImage(keypoints[1])
+                                    
+                                    ctx.beginPath();
+                                    ctx.strokeStyle = "#24FF41";
+                                    ctx.lineWidth = 3;
+                                    ctx.rect(p1[0], p1[1], Math.abs(p1[0] - p2[0]), Math.abs(p1[1] - p2[1]));
+                                    ctx.stroke();
+                                    ctx.closePath();
+                                }
+                                
+                                _this.setRedraw()         
+                            }
+
+
                             if ($scope.toolsManager.subTool.localeCompare("pointCreation") == 0) {
                                 // If active, draw guide lines
                                 if ($scope.optionsManager.options.showGuideLines) _this.drawGuideLines(ctx);
@@ -5052,7 +5100,8 @@ angular.module('CVGTool')
                 showStaticObjects: false,
                 quickSaveAfterJointRemoval: false,
                 visualizeActions: false,
-                showSelectedPointOnly: false
+                showSelectedPointOnly: false,
+                previewBBoxes: false
             }
 
             // Hidden option to change it manually. When True, the frames that can be annotated in PT with Persons will be restricted
@@ -5141,6 +5190,10 @@ angular.module('CVGTool')
                         },
                         arrows: {
                             label: '\u{2191}, \u{2193},\u{2190},\u{2192}'
+                        },
+                        previewBBoxes: {
+                            label: "Shift + B",
+                            shortcut: 'shift+b'
                         }
                     },
                     {
@@ -5199,6 +5252,10 @@ angular.module('CVGTool')
                         },
                         arrows: {
                             label: '\u{2191}, \u{2193},\u{2190},\u{2192}'
+                        },
+                        previewBBoxes: {
+                            label: "Shift + B",
+                            shortcut: 'shift+b'
                         }
                     }
                 ]
@@ -5360,6 +5417,16 @@ angular.module('CVGTool')
                             var point = $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].points[$scope.keypointEditor.selectedLabel].center
                             var cameraPoint = $scope.canvasesManager.canvases[$scope.canvasesManager.canvasMouseOver].toCamera(point)
                             $scope.keypointEditor.keypointEditorData.shapes[$scope.canvasesManager.canvasMouseOver].cameraPoints[$scope.keypointEditor.selectedLabel] = cameraPoint.slice();
+                            $scope.canvasesManager.redrawCanvases()
+                        }
+                    }
+                })
+                .add({
+                    combo: _this.shortcuts.selectedShortcuts.previewBBoxes.shortcut,
+                    description: 'Previews BBoxes when annotating persons in PT',
+                    callback: function() {
+                        if ($scope.toolParameters.isPosetrack && ($scope.objectManager.isTypeSelected('person') || $scope.objectManager.isTypeSelected('bbox_head'))) {
+                            $scope.optionsManager.options.previewBBoxes = !$scope.optionsManager.options.previewBBoxes;
                             $scope.canvasesManager.redrawCanvases()
                         }
                     }

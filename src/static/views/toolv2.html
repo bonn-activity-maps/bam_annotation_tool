@@ -158,6 +158,7 @@
                 <li class="dropdown-header">PT options:</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
                 <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person')"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSelectedPointOnly"> Draw sel. point only</li>  
+                <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head')"><input type="checkbox" ng-change="optionsManager.optionChanged(); canvasesManager.redrawCanvases();" ng-model="optionsManager.options.previewBBoxes"> Preview anot. Bboxes</li>  
             </div>
             <div ng-if="!toolParameters.isPosetrack">
                 <li class="divider"></li>
@@ -193,6 +194,7 @@
             <li class="dropdown-item">Move sel. keypoint <b>{{shortcutsManager.shortcuts.selectedShortcuts.arrows.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && (objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head'))">Preview anot. Bboxes: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previewBBoxes.label}}</b></li>
         </div>
     </div>
     <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
