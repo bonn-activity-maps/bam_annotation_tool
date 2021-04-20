@@ -1,3 +1,6 @@
+import numbers
+from shapely import geometry
+
 class PTService:
     frames_to_annotate_persons = {
         "013821": [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68,
@@ -1765,6 +1768,33 @@ class PTService:
                       "022430", "007128", "023748", "024593", "024154",
                       "022691", "024199", "000583", "015241", "007950", "023717", "003747", "010992"]
 
+    skeleton = [
+        "nose",
+        "head_bottom",
+        "head_top",
+        "left_ear",
+        "right_ear",
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle"
+    ]
+
+    # Return the recursive length of a list
+    def recursive_len(self, item):
+        if type(item) == list:
+            return sum(self.recursive_len(subitem) for subitem in item)
+        else:
+            return 1
+
     # Generate a new valid poseTrack ID
     def generate_uid(self, scene, frame, track_id):
         uid = int("1" + scene + self.pad(str(frame), 4) + self.pad(str(track_id), 2))
@@ -1822,15 +1852,16 @@ class PTService:
                 return item
         return 0
 
-    # Find an item with a key that has a value "value"
+    # Find an item with two keys that match given values
     def find_two(self, list, key, value, key2, value2):
         for item in list:
             if item[key] == value and item[key2] == value2:
                 return item
         return 0
 
+    # Divide an objects array into 4 different arrays, each of a different kind of PoseTrack object
     def divide_objects_in_arrays(self, objects):
-        bbxx, bbxxhh, prsn = [], [], []
+        bbxx, bbxxhh, prsn, ignrgn = [], [], [], []
         for nr_obj, obj in enumerate(objects):
             if obj["type"] == "bbox":
                 bbxx.append(obj)
@@ -1839,7 +1870,96 @@ class PTService:
             elif obj["type"] == "person":
                 prsn.append(obj)
             elif obj["type"] == "ignore_region":
-                pass
+                ignrgn.append(obj)
             else:
                 raise TypeError
-        return bbxx, bbxxhh, prsn
+        return bbxx, bbxxhh, prsn, ignrgn
+
+    # Check if the object keypoints are correct with respect to PoseTrack requirements
+    def check_object_correctness(self, obj, errors_detected):
+        # If keypoints exists within the object
+        if "keypoints" in obj:
+            # If it's not empty, run further checks. If it's empty, it's fine and no more checks are needed.
+            # Ignore ignore regions
+            if obj["keypoints"] and obj["type"] != "ignore_region":
+                # If the length is not correct, add error
+                if self.recursive_len(obj["keypoints"]) not in [4, 51]:
+                    errors_detected.append({
+                        "number": obj["uid"]//100 % 10000,
+                        "track_id": obj["track_id"],
+                        "type": obj["type"],
+                        "reason": "Wrong number of keypoints"
+                    })
+                else:
+                    if obj["type"] == "bbox" or obj["type"] == "bbox_head":
+                        # Flatten list
+                        kps = [kp_x for sublist in obj["keypoints"] for kp_x in sublist]
+                        # If any of the values is not a Number, save error
+                        errors_detected.append({
+                            "number": obj["uid"]//100 % 10000,
+                            "track_id": obj["track_id"],
+                            "type": obj["type"],
+                            "reason": "Invalid value of keypoint in object: Not Number"
+                        }) if not any(isinstance(kp, numbers.Number) for kp in kps) else None
+                    elif obj["type"] == "person":
+                        joints = []
+                        error = False
+                        for nr_kp, kp in enumerate(obj["keypoints"]):
+                            if None in kp or len(kp) != 3 or kp[2] not in [0, 1] or not \
+                                    any(isinstance(point, numbers.Number) for point in kp):
+                                error = True
+                                joints.append(self.skeleton[nr_kp])
+                        errors_detected.append({
+                            "number": obj["uid"]//100 % 10000,
+                            "track_id": obj["track_id"],
+                            "type": obj["type"],
+                            "joints": joints,
+                            "reason": "Invalid value of keypoint in object"
+                        }) if error else None
+            if obj["keypoints"] and obj["type"] == "ignore_region":
+                # TODO check ignore region
+                pass
+        else:
+            errors_detected.append({
+                "number": obj["uid"]//100 % 10000,
+                "track_id": obj["track_id"],
+                "type": obj["type"],
+                "reason": "Object has no keypoints"
+            })
+        return errors_detected
+
+    # Transform a point array to a polygon. Input must be array of points dim>=2
+    def transform_to_poly(self, points):
+        points = self.cubify(points) if len(points) == 2 else points
+        point_list = []
+        for p_idx in range(len(points)):
+            pt = geometry.Point(points[p_idx][0], points[p_idx][1])
+            point_list.append(pt)
+        return geometry.Polygon([p.x, p.y] for p in point_list)
+
+    # Create a 4 point cube from 2 points
+    def cubify(self, pts):
+        pt_1, pt_2 = pts
+        return [pt_1, [pt_1[0], pt_2[1]], pt_2, [pt_2[0], pt_1[1]]]
+
+    # Check if A is in B. If ALL points of A are inside B, return True.
+    # Otherwise return False and the % of points inside.
+    # Both inputs must be of type geometry.Polygon
+    def is_A_in_B(self, A, B):
+        if B.contains(A):
+            return True, None
+        else:
+            points_inside = 0
+            A_points = list(A.exterior.coords)
+            for point in A_points:
+                pt = geometry.Point(point)
+                points_inside = points_inside + 1 if B.contains(pt) else points_inside
+        return False, points_inside / len(A_points)
+
+    # Return true if and only if every point of array of tuples/triplets kpts is inside polygon B
+    def is_person_in_B(self, kpts, B):
+        for pt in kpts:
+            point = geometry.Point(pt[0], pt[1])
+            if pt[0] not in [0, -1] and not B.contains(point):
+                return False
+        return True

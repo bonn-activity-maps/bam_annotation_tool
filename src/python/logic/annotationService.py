@@ -16,12 +16,14 @@ from python.logic.aikService import AIKService
 from python.logic.ptService import PTService
 
 from python.objects.frame import Frame
+from python.objects.video import Video
 from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.user_action import UserAction
 from python.objects.object_type import Object_type
 from python.objects.pose_property import PoseProperty
 
+import numbers
 
 # AnnotationService logger
 log = logging.getLogger('annotationService')
@@ -30,6 +32,7 @@ annotationManager = AnnotationManager()
 objectTypeManager = ObjectTypeManager()
 frameManager = FrameManager()
 actionManager = ActionManager()
+videoManager = VideoManager()
 datasetManager = DatasetManager()
 aikService = AIKService()
 ptService = PTService()
@@ -594,6 +597,111 @@ class AnnotationService:
         else:
             log.error('Error filling in keypoints')
             return False, final_result, 500
+
+    # Run a sanity check to check correctness of data within the specified frames for the given video
+    def get_sanity_check(self, dataset, scene, user, start_frame, end_frame):
+        # Maybe register the action by the user, but at the moment, not necessary
+        # Get all annotations for the video for the specified frames
+        start_annotation = Annotation(dataset, scene, frame=start_frame)
+        end_annotation = Annotation(dataset, scene, frame=end_frame)
+        annotations = annotationManager.get_annotations_by_frame_range(start_annotation, end_annotation)
+        # Get details from video
+        video = videoManager.get_video(Video(scene, dataset))
+        print("annotations received:")
+        print(len(annotations))
+        # Initialize errors list
+        errors_detected = []
+        # Run sanity check
+        # For every frame, one annotation
+        for annotation in annotations:
+            # Check if it is an annotable frame
+            try:
+                annotable_frame = annotation["frame"] in ptService.frames_to_annotate_persons[annotation["scene"]]
+            except KeyError as e:
+                print("Frame not in list")
+                annotable_frame = False
+            # Separate into lists
+            bbox_list, bbox_head_list, person_list, ir_list = ptService.divide_objects_in_arrays(annotation["objects"])
+            # Normal checks
+            if not (len(bbox_list) == len(bbox_head_list) == len(person_list)):
+                errors_detected.append({
+                    "number": "xx",
+                    "track_id": "xx",
+                    "type": "xx",
+                    "reason": "Wrong number of objects. There may be duplicated track_ids in the sequence."
+                })
+            # Check properties of objects are correct
+            for nr_bbox, bbox in enumerate(bbox_list):
+                errors_detected = ptService.check_object_correctness(bbox, errors_detected)
+                # If bbox is not annotated, then there's nothing to check
+                if len(bbox["keypoints"]) > 0:
+                    poly_bbox = ptService.transform_to_poly(bbox["keypoints"])
+                    if video.type == "val":
+                        # --- Every bbox must have a head_bbox inside (or at least half of it, given that head_bbox can be
+                        # outside of the canvas)
+                        bbox_head = ptService.find(bbox_head_list, "track_id", bbox["track_id"])
+                        poly_bbox_head = ptService.transform_to_poly(bbox_head["keypoints"])
+                        head_inside, prcnt_points_inside = ptService.is_A_in_B(poly_bbox_head, poly_bbox)
+                        # If the bbox_head is not completely inside bbox, check the percentage of points inside
+                        if not head_inside:
+                            # If it's not at least half, it's wrong. Add error
+                            if prcnt_points_inside < 0.5:
+                                errors_detected.append({
+                                    "number": bbox["uid"]//100 % 10000,
+                                    "track_id": bbox["track_id"],
+                                    "type": "bbox_head",
+                                    "reason": "bbox_head outside of corresponding bbox."
+                                })
+                    # If it's an annotable frame, do further checks. These checks are the same in train and val
+                    if annotable_frame:
+                        # --- Every bbox must have a pose inside, unless it is inside an ignore region
+                        # Search if bbox is inside an ignore region
+                        bbox_in_ir = False
+                        for ir in ir_list:
+                            poly_ir = ptService.transform_to_poly(ir["keypoints"])
+                            if ptService.is_A_in_B(poly_bbox, poly_ir):
+                                bbox_in_ir = True
+                                break
+                        # If it's not in an ignore region, check that the pose is inside the bbox
+                        if not bbox_in_ir:
+                            person = ptService.find(person_list, "track_id", bbox["track_id"])
+                            person_inside = ptService.is_person_in_B(person["keypoints"], poly_bbox)
+                            if not person_inside:
+                                errors_detected.append({
+                                    "number": bbox["uid"]//100 % 10000,
+                                    "track_id": bbox["track_id"],
+                                    "type": "person",
+                                    "reason": "At least one person keypoint outside of corresponding bbox"
+                                })
+            for nr_bbox_head, bbox_head in enumerate(bbox_head_list):
+                if video.type == "train" and len(bbox_head["keypoints"]) > 0:
+                    # If there is a bbox_head, we must ensure that it is within the bounds of its corresponding bbox
+                    bbox = ptService.find(bbox_list, "track_id", bbox_head["track_id"])
+                    if len(bbox["keypoints"]) > 0:
+                        poly_bbox = ptService.transform_to_poly(bbox["keypoints"])
+                        poly_bbox_head = ptService.transform_to_poly(bbox_head["keypoints"])
+                        bbox_head_inside, prcnt = ptService.is_A_in_B(poly_bbox_head, poly_bbox)
+                        if not bbox_head_inside and prcnt < 0.5:
+                            errors_detected.append({
+                                "number": bbox["uid"]//100 % 10000,
+                                "track_id": bbox["track_id"],
+                                "type": "bbox_head",
+                                "reason": "bbox_head outside of corresponding bbox"
+                            })
+                    else:
+                        errors_detected.append({
+                            "number": bbox["uid"]//100 % 10000,
+                            "track_id": bbox["track_id"],
+                            "type": bbox["type"],
+                            "reason": "bbox_head annotated with no corresponding annotated bbox"
+                        })
+                errors_detected = ptService.check_object_correctness(bbox_head, errors_detected)
+            for nr_person, person in enumerate(person_list):
+                errors_detected = ptService.check_object_correctness(person, errors_detected)
+            for nr_ir, ir in enumerate(ir_list):
+                errors_detected = ptService.check_object_correctness(ir, errors_detected)
+
+        return True, errors_detected, 200
 
     # Replicate and store the annotation between start and enf frame
     # Always a single object in "objects" so always objects[0] !!

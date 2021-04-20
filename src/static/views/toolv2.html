@@ -65,7 +65,7 @@
     <!-- TIMELINE END -->
     
     <!-- LOADING PANEL -->
-    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
+    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">
         <div class="row">
             <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
                 <div class="panel-body">
@@ -74,8 +74,9 @@
                     <p>Please wait</p>
                 </div>
             </div>
-        </div>   
-    </div>  
+        </div>
+    </div>
+
 </div>
 
 <!-- CAMERAS PANEL (hidden panel) -->
@@ -117,7 +118,7 @@
 
 <!-- TOOLS PANEL ("floating panel) -->
 <div id="ToolPanel" class="panel panel-tools text-center">
-    <!-- Selector de object type -->
+    <!-- Object type selector -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-tower"></span>
@@ -135,6 +136,7 @@
         </div>
     </div>
     <hr class="tool-panel-hr">
+<!--    Config button -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-cog"></span>
@@ -158,6 +160,7 @@
                 <li class="dropdown-header">PT options:</li>
                 <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
                 <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person')"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSelectedPointOnly"> Draw sel. point only</li>  
+                <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head')"><input type="checkbox" ng-change="optionsManager.optionChanged(); canvasesManager.redrawCanvases();" ng-model="optionsManager.options.previewBBoxes"> Preview anot. Bboxes</li>  
             </div>
             <div ng-if="!toolParameters.isPosetrack">
                 <li class="divider"></li>
@@ -170,6 +173,7 @@
             </div>
         </div>
     </div>
+<!--    Shortcuts button -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-list-alt"></span>
@@ -190,10 +194,13 @@
             <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
             <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
             <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>
+            <li class="dropdown-item">Move sel. keypoint <b>{{shortcutsManager.shortcuts.selectedShortcuts.arrows.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>
             <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && (objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head'))">Preview anot. Bboxes: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previewBBoxes.label}}</b></li>
         </div>
     </div>
+<!--    Human keypoint schematics button-->
     <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <img class="png-icon" src="/static/resources/guide-icon.png" style="width: 100%; height: 100%"></img>
@@ -204,6 +211,13 @@
             </li>
         </div>
     </div>
+<!--    Sanity check button -->
+    <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" ng-click="commonManager.runSanityCheck()" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-ok"></span>
+        </button>
+    </div>
+
     <hr class="tool-panel-hr">
     <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -776,6 +790,65 @@
                 </div>
             </div> 
         </div>
+    </div>
+</div>
+
+<!-- SANITY CHECK POPUP PANEL   -->
+<div id="SanityCheckPopup" class="panel panel-floating" ng-show="commonManager.sanityCheck.visibilityPopup"
+style="width:600px; height:auto">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Sanity check results
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="commonManager.hideSanityCheck()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && commonManager.sanityCheck.isLoading">
+        <img src="/static/resources/loading.gif" />
+        <h2>Loading content</h2>
+        <p>Please wait</p>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length !== 0">
+        <h2>Errors detected in annotations.</h2>
+        <hr>
+        <div class="zui-wrapper" style="min-height: 200px">
+            <div class="zui-scroller" style="margin:auto;width:100%;overflow-x:visible">
+                <table class="zui-table" style="width: 100%;font-family:inherit">
+                    <thead>
+                    <tr>
+                        <th>frame</th>
+                        <th>track_id</th>
+                        <th>type</th>
+                        <th>reason</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="object in commonManager.sanityCheck.results">
+                        <td>{{object.number}}</td>
+                        <td>{{object.track_id}}</td>
+                        <td>{{object.type}}</td>
+                        <td>{{object.reason}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length === 0">
+        <h2>All annotations are correct! &#127881</h2>
     </div>
 </div>
 
