@@ -637,21 +637,17 @@ class AnnotationService:
                 if len(bbox["keypoints"]) > 0:
                     poly_bbox = ptService.transform_to_poly(bbox["keypoints"])
                     if video.type == "val":
-                        # --- Every bbox must have a head_bbox inside (or at least half of it, given that head_bbox can be
-                        # outside of the canvas)
+                        # --- Every bbox must have a head_bbox inside within a threshold.
                         bbox_head = ptService.find(bbox_head_list, "track_id", bbox["track_id"])
-                        poly_bbox_head = ptService.transform_to_poly(bbox_head["keypoints"])
-                        head_inside, prcnt_points_inside = ptService.is_A_in_B(poly_bbox_head, poly_bbox)
-                        # If the bbox_head is not completely inside bbox, check the percentage of points inside
+                        head_inside = ptService.is_bbox_head_in_bbox(bbox_head["keypoints"], bbox["keypoints"])
+                        # If it is considered to be sufficiently out of the bbox, add error
                         if not head_inside:
-                            # If it's not at least half, it's wrong. Add error
-                            if prcnt_points_inside < 0.5:
-                                errors_detected.append({
-                                    "number": bbox["uid"]//100 % 10000,
-                                    "track_id": bbox["track_id"],
-                                    "type": "bbox_head",
-                                    "reason": "bbox_head outside of corresponding bbox."
-                                })
+                            errors_detected.append({
+                                "number": bbox["uid"]//100 % 10000,
+                                "track_id": bbox["track_id"],
+                                "type": "bbox_head",
+                                "reason": "bbox_head outside of corresponding bbox"
+                            })
                     # If it's an annotable frame, do further checks. These checks are the same in train and val
                     if annotable_frame:
                         # --- Every bbox must have a pose inside, unless it is inside an ignore region
@@ -678,10 +674,9 @@ class AnnotationService:
                     # If there is a bbox_head, we must ensure that it is within the bounds of its corresponding bbox
                     bbox = ptService.find(bbox_list, "track_id", bbox_head["track_id"])
                     if len(bbox["keypoints"]) > 0:
-                        poly_bbox = ptService.transform_to_poly(bbox["keypoints"])
-                        poly_bbox_head = ptService.transform_to_poly(bbox_head["keypoints"])
-                        bbox_head_inside, prcnt = ptService.is_A_in_B(poly_bbox_head, poly_bbox)
-                        if not bbox_head_inside and prcnt < 0.5:
+                        head_inside = ptService.is_bbox_head_in_bbox(bbox_head["keypoints"], bbox["keypoints"])
+                        # If it is considered to be sufficiently out of the bbox, add error
+                        if not head_inside:
                             errors_detected.append({
                                 "number": bbox["uid"]//100 % 10000,
                                 "track_id": bbox["track_id"],

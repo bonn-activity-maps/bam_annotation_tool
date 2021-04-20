@@ -1942,6 +1942,29 @@ class PTService:
         pt_1, pt_2 = pts
         return [pt_1, [pt_1[0], pt_2[1]], pt_2, [pt_2[0], pt_1[1]]]
 
+    # Check if bbox_head is sufficiently inside bbox, within a treshhold
+    def is_bbox_head_in_bbox(self, bbox_head, bbox):
+        pt1, pt2 = bbox
+        x1, y1 = pt1
+        x2, y2 = pt2
+        # only, if head box is not interpolated
+        # if bbox_head[0, 0] > -100 and bbox_head[0, 1] > -1:
+        pt1, pt2 = bbox_head
+        h_x1, h_y1 = pt1
+        h_x2, h_y2 = pt2
+
+        # we are only interested in the "visible" part of the head box
+        x_min = max(x1, max(0, h_x1))
+        y_min = max(y1, max(0, h_y1))
+
+        x_max = min(x2, h_x2)
+        y_max = min(y2, h_y2)
+
+        intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
+        if intersection / ((h_x2 - h_x1 + 1) * (h_y2 - h_y1 + 1)) < 0.8:
+            return False
+        return True
+
     # Check if A is in B. If ALL points of A are inside B, return True.
     # Otherwise return False and the % of points inside.
     # Both inputs must be of type geometry.Polygon
