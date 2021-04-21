@@ -607,8 +607,6 @@ class AnnotationService:
         annotations = annotationManager.get_annotations_by_frame_range(start_annotation, end_annotation)
         # Get details from video
         video = videoManager.get_video(Video(scene, dataset))
-        print("annotations received:")
-        print(len(annotations))
         # Initialize errors list
         errors_detected = []
         # Run sanity check

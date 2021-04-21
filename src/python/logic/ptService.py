@@ -1933,8 +1933,8 @@ class PTService:
         points = self.cubify(points) if len(points) == 2 else points
         point_list = []
         for p_idx in range(len(points)):
-            pt = geometry.Point(points[p_idx][0], points[p_idx][1])
-            point_list.append(pt)
+            pt = geometry.Point(points[p_idx][0], points[p_idx][1]) if points[p_idx] != [] else None
+            point_list.append(pt) if pt is not None else None
         return geometry.Polygon([p.x, p.y] for p in point_list)
 
     # Create a 4 point cube from 2 points
@@ -1948,21 +1948,21 @@ class PTService:
         x1, y1 = pt1
         x2, y2 = pt2
         # only, if head box is not interpolated
-        # if bbox_head[0, 0] > -100 and bbox_head[0, 1] > -1:
-        pt1, pt2 = bbox_head
-        h_x1, h_y1 = pt1
-        h_x2, h_y2 = pt2
+        if bbox_head[0][0] > -100 and bbox_head[0][1] > -1:
+            pt1, pt2 = bbox_head
+            h_x1, h_y1 = pt1
+            h_x2, h_y2 = pt2
 
-        # we are only interested in the "visible" part of the head box
-        x_min = max(x1, max(0, h_x1))
-        y_min = max(y1, max(0, h_y1))
+            # we are only interested in the "visible" part of the head box
+            x_min = max(x1, max(0, h_x1))
+            y_min = max(y1, max(0, h_y1))
 
-        x_max = min(x2, h_x2)
-        y_max = min(y2, h_y2)
+            x_max = min(x2, h_x2)
+            y_max = min(y2, h_y2)
 
-        intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
-        if intersection / ((h_x2 - h_x1 + 1) * (h_y2 - h_y1 + 1)) < 0.8:
-            return False
+            intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
+            if intersection / ((h_x2 - h_x1 + 1) * (h_y2 - h_y1 + 1)) < 0.8:
+                return False
         return True
 
     # Check if A is in B. If ALL points of A are inside B, return True.
