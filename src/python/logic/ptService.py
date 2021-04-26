@@ -1883,7 +1883,7 @@ class PTService:
             # Ignore ignore regions
             if obj["keypoints"] and obj["type"] != "ignore_region":
                 # If the length is not correct, add error
-                if self.recursive_len(obj["keypoints"]) not in [4, 51]:
+                if self.recursive_len(obj["keypoints"]) not in [0, 4, 51]:
                     errors_detected.append({
                         "number": obj["uid"]//100 % 10000,
                         "track_id": obj["track_id"],
@@ -1900,13 +1900,13 @@ class PTService:
                             "track_id": obj["track_id"],
                             "type": obj["type"],
                             "reason": "Invalid value of keypoint in object: Not Number"
-                        }) if not any(isinstance(kp, numbers.Number) for kp in kps) else None
+                        }) if not all(isinstance(kp, numbers.Number) for kp in kps) else None
                     elif obj["type"] == "person":
                         joints = []
                         error = False
                         for nr_kp, kp in enumerate(obj["keypoints"]):
                             if None in kp or len(kp) != 3 or kp[2] not in [0, 1] or not \
-                                    any(isinstance(point, numbers.Number) for point in kp):
+                                    all(isinstance(point, numbers.Number) for point in kp):
                                 error = True
                                 joints.append(self.skeleton[nr_kp])
                         errors_detected.append({
@@ -1930,11 +1930,11 @@ class PTService:
 
     # Transform a point array to a polygon. Input must be array of points dim>=2
     def transform_to_poly(self, points):
-        points = self.cubify(points) if len(points) == 2 else points
+        points = self.cubify(points) if self.recursive_len(points) == 4 else points
         point_list = []
         for p_idx in range(len(points)):
-            pt = geometry.Point(points[p_idx][0], points[p_idx][1])
-            point_list.append(pt)
+            pt = geometry.Point(points[p_idx][0], points[p_idx][1]) if points[p_idx] != [] else None
+            point_list.append(pt) if pt is not None else None
         return geometry.Polygon([p.x, p.y] for p in point_list)
 
     # Create a 4 point cube from 2 points
@@ -1944,26 +1944,29 @@ class PTService:
 
     # Check if bbox_head is sufficiently inside bbox, within a treshhold
     def is_bbox_head_in_bbox(self, bbox_head, bbox):
-        pt1, pt2 = bbox
-        x1, y1 = pt1
-        x2, y2 = pt2
-        # only, if head box is not interpolated
-        # if bbox_head[0, 0] > -100 and bbox_head[0, 1] > -1:
-        pt1, pt2 = bbox_head
-        h_x1, h_y1 = pt1
-        h_x2, h_y2 = pt2
+        if self.recursive_len(bbox_head) > 0:
+            pt1, pt2 = bbox
+            x1, y1 = pt1
+            x2, y2 = pt2
+            # only, if head box is not interpolated
+            if bbox_head[0][0] > -100 and bbox_head[0][1] > -1:
+                pt1, pt2 = bbox_head
+                h_x1, h_y1 = pt1
+                h_x2, h_y2 = pt2
 
-        # we are only interested in the "visible" part of the head box
-        x_min = max(x1, max(0, h_x1))
-        y_min = max(y1, max(0, h_y1))
+                # we are only interested in the "visible" part of the head box
+                x_min = max(x1, max(0, h_x1))
+                y_min = max(y1, max(0, h_y1))
 
-        x_max = min(x2, h_x2)
-        y_max = min(y2, h_y2)
+                x_max = min(x2, h_x2)
+                y_max = min(y2, h_y2)
 
-        intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
-        if intersection / ((h_x2 - h_x1 + 1) * (h_y2 - h_y1 + 1)) < 0.8:
-            return False
-        return True
+                intersection = (x_max - x_min + 1) * (y_max - y_min + 1)
+                if intersection / ((h_x2 - h_x1 + 1) * (h_y2 - h_y1 + 1)) < 0.8:
+                    return False
+            return True
+        else:
+            return True
 
     # Check if A is in B. If ALL points of A are inside B, return True.
     # Otherwise return False and the % of points inside.

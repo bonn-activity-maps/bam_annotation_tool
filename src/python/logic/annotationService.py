@@ -607,8 +607,6 @@ class AnnotationService:
         annotations = annotationManager.get_annotations_by_frame_range(start_annotation, end_annotation)
         # Get details from video
         video = videoManager.get_video(Video(scene, dataset))
-        print("annotations received:")
-        print(len(annotations))
         # Initialize errors list
         errors_detected = []
         # Run sanity check
@@ -634,7 +632,7 @@ class AnnotationService:
             for nr_bbox, bbox in enumerate(bbox_list):
                 errors_detected = ptService.check_object_correctness(bbox, errors_detected)
                 # If bbox is not annotated, then there's nothing to check
-                if len(bbox["keypoints"]) > 0:
+                if ptService.recursive_len(bbox["keypoints"]) > 0:
                     poly_bbox = ptService.transform_to_poly(bbox["keypoints"])
                     if video.type == "val":
                         # --- Every bbox must have a head_bbox inside within a threshold.
