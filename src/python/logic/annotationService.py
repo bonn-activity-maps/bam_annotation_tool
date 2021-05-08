@@ -652,10 +652,11 @@ class AnnotationService:
                         # Search if bbox is inside an ignore region
                         bbox_in_ir = False
                         for ir in ir_list:
-                            poly_ir = ptService.transform_to_poly(ir["keypoints"])
-                            if ptService.is_A_in_B(poly_bbox, poly_ir):
-                                bbox_in_ir = True
-                                break
+                            if len(ir["keypoints"]) > 0:
+                                poly_ir = ptService.transform_to_poly(ir["keypoints"])
+                                if ptService.is_A_in_B(poly_bbox, poly_ir):
+                                    bbox_in_ir = True
+                                    break
                         # If it's not in an ignore region, check that the pose is inside the bbox
                         if not bbox_in_ir:
                             person = ptService.find(person_list, "track_id", bbox["track_id"])
