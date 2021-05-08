@@ -836,7 +836,7 @@ style="width:600px; height:auto">
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="object in commonManager.sanityCheck.results">
+                    <tr ng-repeat="object in commonManager.sanityCheck.results" ng-click="keypointEditor.goToSanityCheckErrorObject(object)" >
                         <td>{{object.number}}</td>
                         <td>{{object.track_id}}</td>
                         <td>{{object.type}}</td>

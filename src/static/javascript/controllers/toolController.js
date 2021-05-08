@@ -2617,6 +2617,19 @@ angular.module('CVGTool')
 
             _this.moveWholeShape = false;
 
+            // When the user clicks on an error of the sanity check error list, mark that object as selected
+            _this.goToSanityCheckErrorObject = function(object) {
+                $scope.objectManager.changeSelectedType(object.type);
+                try{
+                    let selectObject = $scope.objectManager.objectTypes[object.type].objects[object.track_id];
+                    this.openEditor(selectObject, object.number);
+                } catch (e) {
+                    if(object.number != null) {
+                        $scope.timelineManager.slider.value = object.number;
+                    }
+                }
+            }
+
             // Opens the panel to edit keypoints
             _this.openEditor = function(object, frame) {
                 $scope.toolParameters.setMaxVideoFrame(navSrvc.getMaxFrame());
