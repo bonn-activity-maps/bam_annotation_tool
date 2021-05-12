@@ -24,7 +24,7 @@
         "ng-toast": "^2.0.0",
         "angular-hotkeys": "1.7.0",
         "lodash": "4.17.19",
-        "chart.js": "2.9.3",
+        "chart.js": "2.9.4",
         "angular-chart.js": "1.1.1"
     }
 }
