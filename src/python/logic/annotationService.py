@@ -637,7 +637,16 @@ class AnnotationService:
                     if video.type == "val":
                         # --- Every bbox must have a head_bbox inside within a threshold.
                         bbox_head = ptService.find(bbox_head_list, "track_id", bbox["track_id"])
-                        head_inside = ptService.is_bbox_head_in_bbox(bbox_head["keypoints"], bbox["keypoints"])
+                        head_inside = False
+                        if ptService.recursive_len(bbox["keypoints"]) > 0:
+                            head_inside = ptService.is_bbox_head_in_bbox(bbox_head["keypoints"], bbox["keypoints"])
+                        else:
+                            errors_detected.append({
+                                "number": bbox["uid"]//100 % 10000,
+                                "track_id": bbox["track_id"],
+                                "type": "bbox",
+                                "reason": "empty bbox for annotated bbox_head"
+                            })
                         # If it is considered to be sufficiently out of the bbox, add error
                         if not head_inside:
                             errors_detected.append({
@@ -672,7 +681,7 @@ class AnnotationService:
                 if video.type == "train" and len(bbox_head["keypoints"]) > 0:
                     # If there is a bbox_head, we must ensure that it is within the bounds of its corresponding bbox
                     bbox = ptService.find(bbox_list, "track_id", bbox_head["track_id"])
-                    if len(bbox["keypoints"]) > 0:
+                    if ptService.recursive_len(bbox["keypoints"]) > 0:
                         head_inside = ptService.is_bbox_head_in_bbox(bbox_head["keypoints"], bbox["keypoints"])
                         # If it is considered to be sufficiently out of the bbox, add error
                         if not head_inside:
@@ -686,7 +695,7 @@ class AnnotationService:
                         errors_detected.append({
                             "number": bbox["uid"]//100 % 10000,
                             "track_id": bbox["track_id"],
-                            "type": bbox["type"],
+                            "type": "bbox_head",
                             "reason": "bbox_head annotated with no corresponding annotated bbox"
                         })
                 errors_detected = ptService.check_object_correctness(bbox_head, errors_detected)
