@@ -620,6 +620,9 @@ class AnnotationService:
                 annotable_frame = False
             # Separate into lists
             bbox_list, bbox_head_list, person_list, ir_list = ptService.divide_objects_in_arrays(annotation["objects"])
+            errors_detected = ptService.check_duplicated_person_id(bbox_list, errors_detected)
+            errors_detected = ptService.check_duplicated_person_id(bbox_head_list, errors_detected)
+            errors_detected = ptService.check_duplicated_person_id(person_list, errors_detected)
             # Normal checks
             if not (len(bbox_list) == len(bbox_head_list) == len(person_list)):
                 errors_detected.append({
