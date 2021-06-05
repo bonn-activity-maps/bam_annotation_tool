@@ -1990,18 +1990,19 @@ class PTService:
                 return False
         return True
 
+    # Check if the person_id in a list of objects is assigned to more than one track_id
     def check_duplicated_person_id(self, collection, errors_detected):
         # Dictionary person_id: [track_id...]
         person_ids = {}
         for item in collection:
-            if item["person_id"] in person_ids:
+            if item["person_id"] in person_ids and self.recursive_len(item["keypoints"]) > 0:
                 person_ids[item["person_id"]].append(item["track_id"])
                 errors_detected.append({
                     "number": item["uid"]//100 % 10000,
                     "track_id": item["track_id"],
                     "type": item["type"],
-                    "reason": "Same person_id " + str(item["person_id"]) + " assigned to track_ids: " + str(person_ids[item["person_id"]])
+                    "reason": "Same person_id " + str(item["person_id"]) + " assigned to annotated object with track_ids: " + str(person_ids[item["person_id"]])
                 })
-            elif item["person_id"] not in person_ids:
+            elif item["person_id"] not in person_ids and self.recursive_len(item["keypoints"]) > 0:
                 person_ids[item["person_id"]] = [item["track_id"]]
         return errors_detected
