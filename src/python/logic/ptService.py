@@ -1989,3 +1989,19 @@ class PTService:
             if pt[0] not in [0, -1] and not B.contains(point):
                 return False
         return True
+
+    def check_duplicated_person_id(self, collection, errors_detected):
+        # Dictionary person_id: [track_id...]
+        person_ids = {}
+        for item in collection:
+            if item["person_id"] in person_ids:
+                person_ids[item["person_id"]].append(item["track_id"])
+                errors_detected.append({
+                    "number": item["uid"]//100 % 10000,
+                    "track_id": item["track_id"],
+                    "type": item["type"],
+                    "reason": "Same person_id " + str(item["person_id"]) + " assigned to track_ids: " + str(person_ids[item["person_id"]])
+                })
+            elif item["person_id"] not in person_ids:
+                person_ids[item["person_id"]] = [item["track_id"]]
+        return errors_detected
