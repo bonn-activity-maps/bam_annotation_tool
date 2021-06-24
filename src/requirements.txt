@@ -8,3 +8,4 @@ bcrypt==3.1.7
 Flask-Login==0.5.0
 PyJWT==1.7.1
 git+https://github.com/actions-in-kitchens/aik.git
+shapely==1.7.1
