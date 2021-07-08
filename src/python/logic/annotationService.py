@@ -17,6 +17,7 @@ from python.logic.ptService import PTService
 
 from python.objects.frame import Frame
 from python.objects.video import Video
+from python.objects.dataset import Dataset
 from python.objects.annotation import Annotation
 from python.objects.object import Object
 from python.objects.user_action import UserAction
@@ -1035,3 +1036,24 @@ class AnnotationService:
             return True, 'Objects transferred successfully!', 200
         else:
             return False, 'Operation not allowed', 400
+
+    # Load person_ids from a hardcoded file
+    def load_person_ids(self):
+        file_route = '/usr/storage/posetrack_person_ids.json'   # TODO UPDATE THIS BEFORE PUSH!!!
+        try:
+            with open(file_route) as json_file:
+                file_person_id = json.load(json_file)
+        except OSError:
+            log.exception('Could not read from file')
+            return False, 'Could not read from file', 400
+        for key_video, video in file_person_id.items():
+            print("key", key_video)
+            print("video", video)
+            for track_id, person_id in video.items():
+                print(track_id)
+                print(person_id)
+                video_obj = Video(key_video, Dataset("posetrack_data", self.pt))
+                result = annotationManager.update_person_id(video_obj, int(track_id), person_id)
+                if result == 'Error':
+                    return False, 'Error while updating the person', 400
+        return True, 'Updated successfully', 200

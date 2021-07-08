@@ -1139,5 +1139,12 @@ def insert_frames():
     return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
 
 
+# Load person_ids from a hardcoded local JSON file
+@app.route('/api/loadPersonIDs', methods=['POST'])
+def load_person_ids():
+    success, msg, status = annotationService.load_person_ids()
+    return json.dumps({'success': success, 'msg': msg}), status, {'ContentType': 'application/json'}
+
+
 if __name__ == "__main__":
     app.run(host=cfg.app["ip"], port=cfg.app["port"])
