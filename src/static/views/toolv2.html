@@ -441,8 +441,10 @@
                          class="form-group input-group-sm">
                         <label class="control-label col-sm-4">Person:</label>
                         <div class="col-sm-8">
-                            <p ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
+                            <p ng-if="toolParameters.user.name.localeCompare('test') === 0 || toolParameters.user.name.localeCompare('asplett') === 0" ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
                             class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
+                            <p ng-if="toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0"
+                               class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
                         </div>
                     </div>
                     <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
