@@ -1,5 +1,8 @@
 angular.module('CVGTool')
-    .factory('navSrvc', function($state, $rootScope, $http, $httpParamSerializer) {
+    .factory('navSrvc', ['loginSrvc', '$state', '$rootScope', '$http', '$httpParamSerializer', function(loginSrvc, $state, $rootScope, $http, $httpParamSerializer) {
+
+        // Actual version of the tool, THIS IS THE MAIN VARIABLE
+        var toolVersion = "3.3.5";
 
         // Function to send message to tell the controller to update
         var updateSessionData = function() {
@@ -11,7 +14,8 @@ angular.module('CVGTool')
             name: "",
             role: "",
             email: "",
-            assignedTo: []
+            assignedTo: [],
+            sessionToken: null
         };
 
         var activeDataset = { // Active dataset selected
@@ -27,10 +31,67 @@ angular.module('CVGTool')
             canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
             selectedType: "",
             maxFrame: -1, // Max frame of the session to check frame range displacements
-            minFrame: -1 // Min frame of the session to check frame range displacements
+            minFrame: -1, // Min frame of the session to check frame range displacements
+            options: null // Options selected from the user
         };
 
+        // Catch inactive user and log him out
+        function IdleTimerManager() {
+            let t;
+            //window.onload = resetTimer;
+            let _this = this;
+
+            _this.eventCatchStart = function () {
+                window.onmousemove = resetTimer; // catches mouse movements
+                window.onmousedown = resetTimer; // catches mouse movements
+                window.onclick = resetTimer;     // catches mouse clicks
+                window.onscroll = resetTimer;    // catches scrolling
+                window.onkeypress = resetTimer;  //catches keyboard actions
+            }
+
+            _this.eventCatchStop = function() {
+                window.onmousemove = ""; // stop catching mouse movements
+                window.onmousedown = ""; // stop catching mouse movements
+                window.onclick = "";     // stop catching mouse clicks
+                window.onscroll = "";    // stop catching scrolling
+                window.onkeypress = "";  //stop catching keyboard actions
+            }
+
+            let callbackDoLogout = function () {
+                // Logout
+                user.name = "";
+                user.role = "";
+                user.email = "";
+                user.assignedTo = [];
+                activeDataset = "";
+                $state.go('login');
+                // Stop catching events
+                _this.eventCatchStop();
+                // Show alert with info
+                window.alert("You have been logged out for inactivity.");
+            }
+
+            function doLogout() {
+                loginSrvc.logout(user.name, callbackDoLogout);
+            }
+
+            function resetTimer() {
+                clearTimeout(t);
+                t = setTimeout(doLogout,
+                    // 5000);  // testing time
+                    600000);  // time is in milliseconds (1000 is 1 second) set to 10 minutes
+            }
+        }
+
+        let idleTimerManager = new IdleTimerManager();
+
         return {
+
+            // Returns the version of the tool
+            getToolVersion: function() {
+                return toolVersion;
+            },
+
             /* Session data storage */
             // Gets the sessionData struct
             getSessionData: function() {
@@ -73,6 +134,11 @@ angular.module('CVGTool')
                 updateSessionData();
             },
 
+            setOptions: function(options) {
+                sessionData.options = options;
+                updateSessionData();
+            },
+
             // Reset sessionData
             resetSessionData: function() {
                 sessionData = {
@@ -83,7 +149,8 @@ angular.module('CVGTool')
                     canvasCameras: ["", "", "", ""], // Filenames of the cameras that have been placed in the canvas. Each position of the array is one of the canvases
                     selectedType: "",
                     maxFrame: -1,
-                    minFrame: -1
+                    minFrame: -1,
+                    options: null
                 };
             },
 
@@ -119,13 +186,18 @@ angular.module('CVGTool')
                     headers: {
                         'dataset': dataset,
                         'datasetType': datasetType,
-                        'video': video
+                        'video': video,
+                        'Authorization': 'Bearer ' + this.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     sessionData.maxFrame = response.data.msg.frames; // Directly set the maxFrame
                 }, function errorCallback(response) {
                     console.log(response.data.msg)
                 });
+            },
+
+            getMaxFrame: function() {
+                return sessionData.maxFrame;
             },
 
             // Check the min number of frames for the video
@@ -136,7 +208,8 @@ angular.module('CVGTool')
                     headers: {
                         'dataset': dataset,
                         'datasetType': datasetType,
-                        'video': video
+                        'video': video,
+                        'Authorization': 'Bearer ' + this.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     sessionData.minFrame = response.data.msg.frames; // Directly set the minFrame
@@ -154,6 +227,7 @@ angular.module('CVGTool')
                 user.assignedTo = [];
                 activeDataset = "";
                 $state.go('login');
+                idleTimerManager.eventCatchStop();
             },
 
             // Returns info of stored user
@@ -166,12 +240,24 @@ angular.module('CVGTool')
                 return user.role;
             },
 
+            // Return session token
+            getSessionToken: function() {
+                return user.sessionToken;
+            },
+
             // Set user to u
             setUser: function(u) {
                 user.name = u.name;
                 user.role = u.role;
                 user.email = u.email;
                 user.assignedTo = u.assignedTo;
+                user.sessionToken = u.sessionToken;
+                // If root role or admin users don't start
+                if (user.role.localeCompare("root") !== 0 && user.name.localeCompare("s6bepere") !== 0
+                    && user.name.localeCompare("alberto") !== 0 && user.name.localeCompare("admin") !== 0
+                    && user.name.localeCompare("dario") !== 0){
+                    idleTimerManager.eventCatchStart();
+                }
             },
 
             // Set active dataset to dataset
@@ -188,6 +274,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/user/updateUserPassword',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.getSessionToken()
+                    },
                     data: {
                         'username': user,
                         'password': pwd
@@ -213,6 +302,20 @@ angular.module('CVGTool')
             // Return true iff the type of the active dataset is posetrack
             isPosetrack: function() {
                 return activeDataset.type.localeCompare("poseTrack") === 0;
+            },
+
+            obtainNotificationState: function(callbackSucces, callbackError) {
+                $http({
+                    method: 'GET',
+                    url: '/api/notification/obtain',
+                    headers: {}
+                }).then(function successCallback(response) {
+                    callbackSucces(response.data.msg)
+                }, function errorCallBack(response) {
+                    callbackError("danger", "An error ocurred when requesting the notification state!")
+                });
             }
+
+
         }
-    });
+    }]);

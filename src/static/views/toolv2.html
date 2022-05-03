@@ -1,6 +1,8 @@
 <div ng-controller="toastCtrl">
 </div>
 
+
+<!-- CANVASES -->
 <div style="height: 100%;">
     <div class="row" style="height: 90%; width: 94%; margin-left: 4%; margin-right: 2%">
         <div class="panel panel-canvases" style="height: 100%;">
@@ -25,6 +27,9 @@
             </div>
         </div>
     </div>
+
+    <!-- ZOOM CANVAS -->
+    <canvas ng-show="canvasZoomManager.isActive()" id="canvasZoom" class="playable-canvas" style="border:3px solid #0000; pointer-events:none; position:absolute; width: 200px; height: 200px;"></canvas>
                         
     <!-- TIMELINE BEGIN -->
     <div class="row" style="height: 10%">
@@ -40,13 +45,13 @@
                 <div class="col-md-11">
                     <div class="row">
                         <div class="col-md-2" style="text-align: center; padding-top: 20px;">
-                            <button ng-click="timelineManager.previousFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Left arrow"><span
+                            <button ng-click="timelineManager.previousFrame()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-chevron-left"></span></button>
-                            <button ng-if="!timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                            <button ng-if="!timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-play"></button>
-                            <button ng-if="timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Spacebar"><span
+                            <button ng-if="timelineManager.isPlaying" ng-click="timelineManager.switchPlay()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-pause"></button>
-                            <button ng-click="timelineManager.nextFrame()" class="btn btn-default" data-toggle="tooltip" data-placement="top" title="Right arrow"><span
+                            <button ng-click="timelineManager.nextFrame()" class="btn btn-default"><span
                                     class="glyphicon glyphicon-chevron-right"></span></button>
                         </div>
                         <div class="col-md-10">
@@ -60,7 +65,7 @@
     <!-- TIMELINE END -->
     
     <!-- LOADING PANEL -->
-    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">    
+    <div id="LoadingPanel" class="panel panel-loading animate-show-hide" ng-show="loadingScreenManager.loading==true">
         <div class="row">
             <div class="panel" style="position: absolute; left: 30%; width: 40%; top: 20%;">
                 <div class="panel-body">
@@ -69,8 +74,9 @@
                     <p>Please wait</p>
                 </div>
             </div>
-        </div>   
-    </div>  
+        </div>
+    </div>
+
 </div>
 
 <!-- CAMERAS PANEL (hidden panel) -->
@@ -92,7 +98,7 @@
                     </div>
                 </button>
                 <div id="MoveVideoToCameraDropdown" class="dropdown-menu text-center">
-                    <li class="dropdown-header">Selected the canvas to move the video</li>
+                    <li class="dropdown-header">Select the canvas to move the video</li>
                     <li class="divider"></li> 
                     <li class="text-center">
                         <button class="btn btn-default" ng-click="canvasesManager.moveToCanvas(video, 1)"><bold>1</bold></button>
@@ -112,21 +118,106 @@
 
 <!-- TOOLS PANEL ("floating panel) -->
 <div id="ToolPanel" class="panel panel-tools text-center">
-    <!-- Selector de object type -->
+    <!-- Object type selector -->
     <div class="btn-group dropright">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span
-            class="glyphicon glyphicon-tower"></span>
+            <span class="glyphicon glyphicon-tower"></span>
         </button>
         <div id="ObjectTypeDropdown" class="dropdown-menu text-center">
           <!-- Dropdown menu links -->
           <li class="dropdown-header">Selected type</li>
           <li ng-if="objectManager.selectedType.type !== undefined"><b>{{objectManager.selectedType.type}}</b></li>
           <li class="divider"></li> 
-          <li class="dropdown-header">Object types</li>
-          <li ng-repeat="type in objectManager.objectTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type.type)" style="width: 100%;">{{type.type}}</button></li>
+          <li class="dropdown-header">Dynamic object types</li>
+          
+          <li ng-repeat="type in objectManager.dynamicTypes" ng-if="type.localeCompare('poseAIK')!==0"><button class="btn btn-default"  ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
+          <li class="dropdown-header">Static object types</li>
+          <li ng-repeat="type in objectManager.staticTypes"><button class="btn btn-default" ng-click="objectManager.changeSelectedType(type)" style="width: 100%;">{{type}}</button></li>
         </div>
     </div>
+    <hr class="tool-panel-hr">
+<!--    Config button -->
+    <div class="btn-group dropright">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-cog"></span>
+        </button>
+        <div id="OptionsDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">General options:</li>
+            <li class="dropdown-item">
+                Point size:
+                <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.pointSize" min="1" max="12">
+            </li>
+            <li class="dropdown-item">
+                Font size:
+                <input type="number" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.fontSize" min="1" max="12">
+            </li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showLabels"> Show labels</li>
+            <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showGuideLines"> Show guidelines</li>
+            <li class="dropdown-item"><input type="checkbox" ng-model="optionsManager.options.autoInterpolate"> Auto-interpolate</li>
+            <!-- <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showStaticObjects"> Show static objects</li> -->
+            <div ng-if="toolParameters.isPosetrack">
+                <li class="divider"></li>
+                <li class="dropdown-header">PT options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.autoReplicate"> Auto-replicate</li>
+                <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person')"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSelectedPointOnly"> Draw sel. point only</li>  
+                <li class="dropdown-item" ng-if="objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head')"><input type="checkbox" ng-change="optionsManager.optionChanged(); canvasesManager.redrawCanvases();" ng-model="optionsManager.options.previewBBoxes"> Preview anot. Bboxes</li>  
+            </div>
+            <div ng-if="!toolParameters.isPosetrack">
+                <li class="divider"></li>
+                <li class="dropdown-header">AIK options:</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.abbreviateLabels"> Abbreviate labels</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.showSecondaryPoseJoints"> Show secondary pose joints</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.drawLimbLengths"> Draw limb lengths</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.quickSaveAfterJointRemoval"> Quicksave when <span class="glyphicon glyphicon-trash"></span> joints</li>
+                <li class="dropdown-item"><input type="checkbox" ng-change="optionsManager.optionChanged();" ng-model="optionsManager.options.visualizeActions"> Visualize actions</li>
+            </div>
+        </div>
+    </div>
+<!--    Shortcuts button -->
+    <div class="btn-group dropright">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-list-alt"></span>
+        </button>
+        <div id="ShortcutsDropdown" class="dropdown-menu text-center" style="font-size: x-small;">
+            <select class="form-control" id="selLayout" ng-model="shortcutsManager.shortcuts.selectedShortcuts" ng-change="shortcutsManager.unbindKeys(); shortcutsManager.bindKeys();" ng-options="shortcut as shortcut.layout for shortcut in shortcutsManager.shortcuts.layouts" ></select>                     
+            <li class="divider"></li> 
+            <li class="dropdown-header">Global shortcuts:</li>
+            <li class="dropdown-item">Next frame: <b>{{shortcutsManager.shortcuts.selectedShortcuts.nextFrame.label}}</b></li>
+            <li class="dropdown-item">Previous frame: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previousFrame.label}}</b></li>
+            <li class="dropdown-item">Play/Pause: <b>{{shortcutsManager.shortcuts.selectedShortcuts.playPause.label}}</b></li>
+            <li class="dropdown-item">Toggle zoom: <b>{{shortcutsManager.shortcuts.selectedShortcuts.toggleZoom.label}}</b></li>
+            <li class="divider"></li> 
+            <li class="dropdown-header">Editor shortcuts:</li>
+            <li class="dropdown-item">Next label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.nextLabel.label}}</b></li>
+            <li class="dropdown-item">Previous label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previousLabel.label}}</b></li>
+            <li class="dropdown-item">Start annotating: <b>{{shortcutsManager.shortcuts.selectedShortcuts.startAnn.label}}</b></li>
+            <li class="dropdown-item">Save annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.saveAnn.label}}</b></li>
+            <li class="dropdown-item">Delete label: <b>{{shortcutsManager.shortcuts.selectedShortcuts.deleteLabel.label}}</b></li>
+            <li class="dropdown-item">Reset annotation: <b>{{shortcutsManager.shortcuts.selectedShortcuts.resetAnn.label}}</b></li>
+            <li class="dropdown-item">Move sel. keypoint <b>{{shortcutsManager.shortcuts.selectedShortcuts.arrows.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Change visibility: <b>{{shortcutsManager.shortcuts.selectedShortcuts.changeVisibility.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('person')">Draw sel. point only: <b>{{shortcutsManager.shortcuts.selectedShortcuts.showSelectedPointOnly.label}}</b></li>
+            <li class="dropdown-item" ng-if="toolParameters.isPosetrack && (objectManager.isTypeSelected('person') || objectManager.isTypeSelected('bbox_head'))">Preview anot. Bboxes: <b>{{shortcutsManager.shortcuts.selectedShortcuts.previewBBoxes.label}}</b></li>
+        </div>
+    </div>
+<!--    Human keypoint schematics button-->
+    <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img class="png-icon" src="/static/resources/guide-icon.png" style="width: 100%; height: 100%"></img>
+        </button>
+        <div id="PersonGuideDropdown" class="dropdown-menu text-center" style="font-size: x-small; width: 1000%; height: 1000%;">
+            <li class="dropdown-item">
+                <img class="image" src="/static/resources/guide.jpeg" style="width: 100%; height: 100%"></img>
+            </li>
+        </div>
+    </div>
+<!--    Sanity check button -->
+    <div class="btn-group dropright" ng-show="toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" ng-click="commonManager.runSanityCheck()" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-ok"></span>
+        </button>
+    </div>
+
     <hr class="tool-panel-hr">
     <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
         <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -134,7 +225,7 @@
             class="glyphicon glyphicon-th-large"></span>
         </button>
         <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
-            <li class="dropdown-header">Selected number of canvases:</li>
+            <li class="dropdown-header">Select number of canvases:</li>
             <li class="divider"></li> 
             <li class="text-center">
                 <button class="btn btn-default" ng-click="canvasesManager.switchNumberOfCanvases(1)"><bold>1</bold></button>
@@ -144,10 +235,45 @@
             </li>
         </div>
     </div>
+    <div class="btn-group dropright" ng-show="!toolParameters.isPosetrack">
+        <button class="btn btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span
+            class="glyphicon glyphicon-th-large"></span>
+            <span
+            class="glyphicon glyphicon-remove" style="position: absolute;"></span>
+        </button>
+        <div id="NumberOfCanvasesDropdown" class="dropdown-menu text-center">
+            <li class="dropdown-header">Remove camera from canvas:</li>
+            <li class="divider"></li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 1">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 2">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 3">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+            </li>    
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(1)"><bold>1</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(2)"><bold>2</bold></button>
+            </li>
+            <li class="text-center" ng-if="canvasesManager.numberOfCanvases == 4">
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(3)"><bold>3</bold></button>
+                <button class="btn btn-default" ng-click="canvasesManager.removeCameraFromCanvas(4)"><bold>4</bold></button>
+            </li>
+        </div>
+    </div>
     <hr class="tool panel-hr">
     <button class="btn btn-tool" ng-click="keypointEditor.toggleActive()"><span class="glyphicon glyphicon-pushpin"></span></button>
     <button ng-if="!toolParameters.isPosetrack" class="btn btn-tool" ng-click="actionsEditor.toggleActive()"><span class="glyphicon glyphicon-tag"></span></button>
-    
 </div>
 
 <!-- KEYPOINT EDITOR FLOATING PANEL -->
@@ -172,7 +298,7 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 500px;" ng-show="!keypointEditor.minimized">
+    <div class="panel-body" style="height: 550px;" ng-show="!keypointEditor.minimized">
         <div ng-if="objectManager.selectedType.type === undefined">
             <p>
                 Select an object type to work with in the <span class="glyphicon glyphicon-tower"></span> symbol of the left panel.
@@ -184,12 +310,6 @@
             </p>  
         </div>
         <div ng-if="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
-            <div class="checkbox">
-                <label><input type="checkbox" ng-model="keypointEditor.autoInterpolate"> Auto-interpolate when saving</label>
-            </div>
-            <div class="checkbox">
-                <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showGuideLines"> Show guide-lines when creating points/boxes</label>
-            </div>
             <hr>
             <div class="zui-wrapper" >
                 <div class="zui-scroller">
@@ -197,6 +317,9 @@
                         <thead>
                             <tr>
                                 <th></th>
+<!--                                <th ng-if="!(toolParameters.isPosetrack && objectManager.selectedType.type === 'bbox')"></th>-->
+                                <th></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"></th>
                                 <th class="zui-sticky-col">Objects</th>
                                 <th ng-repeat="frame in toolParameters.frameList">{{frame}}</th>
                             </tr>
@@ -206,25 +329,54 @@
                             <tr ng-repeat="object in objectManager.selectedType.objects">
                                 <th><button class="btn btn-danger" ng-click="commonManager.openBatchDelete(object)"><span
                                     class="glyphicon glyphicon-transfer"></span></button></th>
+                                <th ng-if="toolParameters.isPosetrack &&
+                                 (objectManager.selectedType.type === 'ignore_region' ||
+                                  objectManager.selectedType.type === 'bbox_head' ||
+                                  objectManager.selectedType.type === 'bbox' ||
+                                  objectManager.selectedType.type === 'person')">
+                                    <button class="btn btn-default" ng-click="commonManager.openBatchChangeTrackID(object)"><span
+                                            style="rotation: 90deg" class="glyphicon glyphicon-random"></span></button></th>
+
+                                <th ng-if="!toolParameters.isPosetrack"><button class="btn btn-danger" ng-click="keypointEditor.openTransferObject(object)"><span
+                                        class="glyphicon glyphicon-random"></span></button></th>
+                                <th ng-if="objectManager.selectedType.type.localeCompare('poseAIK') == 0"><button class="btn btn-danger" ng-click="keypointEditor.forceAllLimbLengthsInRange(object)"><span class="glyphicon glyphicon-resize-small"></span></button></th>        
                                 <td class="zui-sticky-col">{{object.uid}} </td>
                                 <th ng-repeat="f in object.frames">
-                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-success" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-info" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == 0" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                                     class="glyphicon glyphicon-pushpin"></span></button>
-                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)"><span
+                                    <button class="btn btn-warning" ng-if="objectManager.annotationsState(object.uid, object.type, f.frame) == -1" ng-click="keypointEditor.openEditor(object, f.frame)" ng-disabled="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(f.frame, object) && !toolParameters.activeDataset.name.includes('posetrack_intro')"><span
                                         class="glyphicon glyphicon-pushpin"></span></button>
+                                </th>
+                                <th ng-if="optionsManager.restrictPTFrames && objectManager.isTypeSelected('person')" ng-repeat="f in object.frames">
+                                    <div ng-if="commonManager">
+
+                                    </div>
                                 </th>
                             </tr>
                             <tr>
                                 <td class="zui-sticky-col">
-                                    <button class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
+                                    <button ng-if="!toolParameters.isPosetrack" class="btn btn-primary" ng-click="objectManager.createNewObject()"><span
                                                     class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type !== 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createPerson()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
+                                    <button ng-if="toolParameters.isPosetrack && objectManager.selectedType.type === 'ignore_region'"
+                                            class="btn btn-primary" ng-click="commonManager.createIgnoreRegion()"><span
+                                            class="glyphicon glyphicon-plus"></span></button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <hr>
+            <div class="row">
+                <p><b>Color meanings: </b></p>
+                <span class="label label-primary">Empty</span>
+                <span class="label label-warning">Partial</span>
+                <span class="label label-success">Completed</span>
             </div>
         </div>
     </div>
@@ -252,9 +404,9 @@
             </div>
         </div>
     </div>
-    <div class="panel-body" style="height: 525px;" ng-show="!keypointEditor.editorMinimized">
+    <div class="panel-body" style="height: 620px;" ng-show="!keypointEditor.editorMinimized">
         <div class="row">
-            <div class="col col-md-8">
+            <div class="col col-md-6">
                 <form class="form-horizontal">
                     <div class="form-group input-group-sm">
                         <label class="control-label col-sm-4">Object type:</label>
@@ -269,98 +421,263 @@
                         </div>
                     </div>
                     <div class="form-group input-group-sm">
-                        <label class="control-label col-sm-4">UID:</label>
-                        <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                        <label ng-if="!toolParameters.isPosetrack"  class="control-label col-sm-4">UID:</label>
+                        <label ng-if="toolParameters.isPosetrack"
+                               class="control-label col-sm-4">Track ID:</label>
+                        <div class="col-sm-2">
+                            <p class="form-control-static">{{objectManager.selectedObject.uid}}</p>
+                        </div>
+                        <div class="col-sm-2">
+                            <button ng-if="objectManager.selectedObject.type === 'ignore_region' ||
+                                           objectManager.selectedObject.type === 'bbox_head' ||
+                                           objectManager.selectedObject.type === 'person'"
+                                    ng-click="commonManager.openChangeTrackID(objectManager.selectedObject)">
+                                <span style="rotation: 90deg" class="glyphicon glyphicon-random"></span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4"></div>
+                    </div>
+                    <div ng-if="toolParameters.isPosetrack && keypointEditor.keypointEditorData.editorMode.localeCompare('static') !== 0"
+                         class="form-group input-group-sm">
+                        <label class="control-label col-sm-4">Person:</label>
+                        <div class="col-sm-8">
+                            <p ng-if="toolParameters.user.name.localeCompare('test') === 0 || toolParameters.user.name.localeCompare('asplett') === 0" ng-click="commonManager.openChangePersonID(objectManager.selectedObject)"
+                            class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
+                            <p ng-if="toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0"
+                               class="form-control-static">{{objectManager.selectedObject.person_id}}</p>
+                        </div>
                     </div>
                     <div ng-if="toolParameters.isPosetrack" class="form-group input-group-sm">
-                        <label class="control-label col-sm-4">Original UID:</label>
-                        <p class="form-control-static">{{objectManager.selectedObject.original_uid}}</p>
+                        <label class="control-label col-sm-4">UID:</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-static">{{objectManager.selectedObject.original_uid}}</p>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="col col-md-4">
+            <div class="col col-md-6">
                 <div ng-if="toolParameters.isPosetrack" uib-carousel active="active" style="width: 100px; height: 100px;" template-url="static/views/carousel/carousel.html">
                     <div uib-slide ng-repeat="mugshot in mugshotsManager.mugshots" index="$index">
                         <img style="width: 100px; height: 100px;" ng-src="{{mugshot.image}}">
                     </div>
                 </div>
                 <div ng-if="!toolParameters.isPosetrack">
-                    Mugshots are disabled for Action In Kitchen.
+                    <div ng-if="objectManager.isTypeSelected('poseAIK')">
+                        <div class="panel">
+                            <div class="panel-heading-limbs">
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <h4>Limb lenghts</h4>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <!-- <button class="btn-sm btn-success pull-right" ng-click="keypointEditor.updatePoseAIKLimbs()" data-toggle="tooltip" data-placement="right" title="Update length values"><span class="glyphicon glyphicon-upload"></span></button> -->
+                                        <button class="btn-sm btn-success pull-right" ng-click="keypointEditor.updatePoseAIKLimbs()"><span class="glyphicon glyphicon-upload"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-body panel-body-limbs">
+                                <hr class="margin-0">
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Upper arm:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" step=".01" ng-model="keypointEditor.poseAIKLimbs.upperArm" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(0)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Lower arm:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" step=".01" ng-model="keypointEditor.poseAIKLimbs.lowerArm" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(1)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Upper leg:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" step=".01" ng-model="keypointEditor.poseAIKLimbs.upperLeg" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(2)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <p><b>Lower leg:</b></p>
+                                    </div>
+                                    <div class="col-sm-5" style="padding-right: 0; padding-left: 0;">
+                                        <input type="number" step=".01" ng-model="keypointEditor.poseAIKLimbs.lowerLeg" class="form-control">
+                                    </div>
+                                    <div class="col-sm-2" style="padding-right: 0; padding-left: 0;">
+                                        <button class="btn-sm btn-primary" ng-click="keypointEditor.forceLimbLength(3)"><span class="glyphicon glyphicon-resize-small"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <hr>
-        <div class="row">
-            <div class="col col-md-6">
-                <div class="checkbox">
-                    <label><input type="checkbox" ng-change="canvasesManager.redrawCanvases();" ng-model="keypointEditor.showLabels"> Show labels</label>
+        <div ng-show="!toolParameters.activeDataset.name.includes('posetrack_intro') && ((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
+            <p>This frame is not editable!</p>
+        </div>
+        <div ng-show="toolParameters.activeDataset.name.includes('posetrack_intro') || !((optionsManager.restrictPTFrames && objectManager.isTypeSelected('person') && !commonManager.isFrameAnnotable(timelineManager.slider.value, objectManager.selectedObject)) || (objectManager.isTypeSelected('bbox') && toolParameters.user.name.localeCompare('test') !== 0 && toolParameters.user.name.localeCompare('asplett') !== 0))">
+            <div class="row">
+                <div class="col col-md-8">
+                    <div ng-if="!toolParameters.isPosetrack">
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <label>Auto-complete:</label>
+                                <button class="btn-xs btn-primary small" ng-if="objectManager.isTypeSelected('poseAIK')"
+                                ng-click="commonManager.autoCompleteEachTag()">Tag-wise 
+                                <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                                <button class="btn-xs btn-primary small" ng-if="!toolParameters.isPosetrack"
+                                ng-click="commonManager.autoCompleteWholeAnnotation()">Full
+                                <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                            </div>
+                        </form>      
+                    </div>
+                    <button class="btn-xs btn-primary small" ng-if="toolParameters.isPosetrack && objectManager.isTypeSelected('ignore_region')"
+                            ng-click="commonManager.replicate_backwards()" >Backwards replicate
+                        <span class="glyphicon glyphicon-arrow-left small"></span></button>
+                </div>
+                <div class="col col-md-4 text-center" style="padding-right: 0px;">
+                    <button class="btn-xs btn-danger small" ng-click="commonManager.deleteAnnotation()"><span class="glyphicon glyphicon-trash small"></span> Annotation</button>
                 </div>
             </div>
-            <div class="col col-md-6">
-                <button class="btn-sm btn-danger" ng-click="commonManager.deleteAnnotation()" data-toggle="tooltip" data-placement="top" title="D">Delete annotation<span class="glyphicon glyphicon-trash"></button>
+    
+            <div class="row" ng-if="keypointEditor.keypointEditorData.editorMode.localeCompare('static')==0 && !objectManager.isTypeSelected('ignore_region')">
+                <hr>
+                <div class="form-group input-group-sm">
+                    <label class="control-label col-sm-2">Labels:</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" type="text" ng-model="keypointEditor.keypointEditorData.annotationLabels[0]">
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <hr>
-        <div class="container" style="overflow: auto; max-height: 150px; max-width: 300px;">
-            <table class="table table-hover table-bordered" style="height: 100px; width: 300;">
-                <thead>
-                    <tr>
-                        <th>Tag</th>
-                        <th>Points</th>
-                        <th>Visibility</th>
-                        <th>Remove</th>
-                    </tr>
-                </thead>
-                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('point') === 0">
-                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
-                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" class="label label-primary">{{tag}}</span>
-                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" class="label label-success">{{tag}}</span></td>
-                        <th>  
-                            <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('pointCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
-
-                        </th>
-                        <th>-</th>
-                        <th>
-                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>
-                        </th>
-                    </tr>
-                </tbody>
-                <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('box') === 0">
-                    <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
-                        <td><span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
-                            <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] !== null" class="label label-success">{{tag}}</span></td>
-                        <th>  
-                            <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
-                            <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('boxCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
-
-                        </th>
-                        <th>-</th>
-                        <th>
-                            <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index);"><span class="glyphicon glyphicon-trash"></button>
-                        </th>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col col-md-4">
-                <button class="btn-success" ng-click="commonManager.updateAnnotation();" data-toggle="tooltip" data-placement="top" title="S">Save</button>
+            
+            <hr>
+            <div class="container" style="overflow: auto; max-height: 150px; max-width: 350px;">
+                <table class="table table-hover table-bordered" style="height: 100px; width: 350px;">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Points</th>
+                            <th ng-if="toolParameters.isPosetrack && objectManager.selectedObject.type.localeCompare('person')==0">Visibility</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('point') === 0">
+                        <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                            <td>
+                                <span ng-if="keypointEditor.selectedLabel === $index" class="glyphicon glyphicon-arrow-right"></span>
+                                <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.selectLabel($index)" class="label label-primary">{{tag}}</span>
+                                <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.selectLabel($index)"class="label label-success">{{tag}}</span></td>
+                            <th>  
+                                <button class="btn btn-primary" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] === null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>
+                                <button class="btn btn-success" ng-if="(toolsManager.subTool.localeCompare('pointCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null) || (toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited !== $index && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null)" ng-click="keypointEditor.startEditingSelectedLabel($index, 'pointCreation');"><span class="glyphicon glyphicon-edit"></span></button>
+                                <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('pointCreation') === 0 && keypointEditor.keypointEditorData.indexBeingEdited == $index" ng-click="keypointEditor.startEditingSelectedLabel($index, '');"><span class="glyphicon glyphicon-edit"></span></button>
+                            </th>
+                            <th ng-if="toolParameters.isPosetrack && objectManager.selectedObject.type.localeCompare('person')==0">
+                                <button class="btn btn-success" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==1" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-open"></span></button>
+                                <button class="btn" ng-if="keypointEditor.keypointEditorData.shapes[0].visibilities[$index]==0" ng-click="keypointEditor.changeVisibility($index)"><span class="glyphicon glyphicon-eye-close"></span></button>
+                            </th>
+                            <th>
+                                <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index)"><span class="glyphicon glyphicon-trash"></button>
+                            </th>
+                        </tr>
+                        <tr ng-if="objectManager.isTypeSelected('ignore_region')">
+                            <td class="zui-sticky-col">
+                                <button class="btn btn-primary" ng-click="keypointEditor.addNewTag();"><span
+                                    class="glyphicon glyphicon-plus"></span></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody ng-if="keypointEditor.keypointEditorData.creationType.localeCompare('box') === 0">
+                        <tr ng-repeat="tag in keypointEditor.keypointEditorData.labels">
+                            <td>
+                                <span ng-if="keypointEditor.selectedLabel === $index" class="glyphicon glyphicon-arrow-right"></span>
+                                <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] === null" class="label label-primary">{{tag}}</span>
+                                <span ng-if="keypointEditor.keypointEditorData.shapes[0].points[0] !== null" class="label label-success">{{tag}}</span></td>
+                            <th>  
+                                <button class="btn btn-primary" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] === null" ng-click="keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                                <button class="btn btn-success" ng-if="toolsManager.subTool.localeCompare('boxCreation') !== 0 && keypointEditor.keypointEditorData.shapes[0].points[$index] !== null" ng-click="keypointEditor.removeEditorDataPoint($index); keypointEditor.setIndexBeingEdited($index); toolsManager.switchSubTool('boxCreation')"><span class="glyphicon glyphicon-edit"></span></button>
+                                <button class="btn btn-warning" ng-if="toolsManager.subTool.localeCompare('boxCreation') === 0" ng-click="keypointEditor.removeEditorDataPoint($index); toolsManager.switchSubTool('')"><span class="glyphicon glyphicon-edit"></span></button>
+    
+                            </th>
+                            <th ng-if="toolParameters.isPosetrack && objectManager.selectedObject.type.localeCompare('person')==0">-</th>
+                            <th>
+                                <button class="btn-sm btn-danger" ng-click="keypointEditor.removeEditorDataPoint($index);"><span class="glyphicon glyphicon-trash"></button>
+                            </th>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="col col-md-4"></div>
-            <div class="col col-md-4">
-                <button class="btn-primary" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
+            <p ng-if="objectManager.isTypeSelected('poseAIK')" style="font-size: 9px;"><b>(*): </b>optional keypoint</p>
+            <p style="font-size: 9px;"><b>Shift + drag point</b>: move the whole object</p>
+            <hr>
+            <div class="row">
+                <div class="col col-md-2">
+                    <button class="btn-success" ng-click="commonManager.updateAnnotation();">Save</button>
+                </div>
+                <div class="col col-md-10" ng-show="objectManager.isStaticType(objectManager.selectedObject.type)">
+                    <div class="row">
+                        <div class="form-inline">
+                            <div class="form-group" ng-show="objectManager.isTypeSelected('boxAIK')">
+                                <button class="btn-primary" ng-click="keypointEditor.extendBoxToGround();">Fit to ground <span class="glyphicon glyphicon-object-align-bottom"></span></button>
+                            </div>
+                            <div class="form-group">
+                                <p style="font-size: 9px;">Auto-replicate</p>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" ng-change="optionsManager.replicateOptionchanged();" ng-model="optionsManager.replicateOptions.replicateToTheMaxFrame"></input>
+                            </div>
+                            <div class="form-group" ng-show="!optionsManager.replicateOptions.replicateToTheMaxFrame">
+                                <button class="btn btn-sm btn-primary" ng-click="commonManager.replicateStaticObject(objectManager.selectedObject.uid, objectManager.selectedObject.type, timelineManager.slider.value, optionsManager.replicateOptions.replicateTo)">
+                                    Replicate
+                                </button>
+                                <div class="btn-group dropup">
+                                    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="glyphicon glyphicon-cog"></span>
+                                    </button>
+                                    <div id="ReplicateDropdown" class="dropdown-menu dropup text-center">
+                                        <!-- Dropdown menu links -->
+                                        <li class="dropdown-header">Replicate to:</li>
+                                        <li class="dropdown-item"><input type="number"  ng-change="optionsManager.replicateOptionChanged();" ng-model="optionsManager.replicateOptions.replicateTo"></li>
+                                        <li class="dropdown-item"><p>Max frame: <b>{{toolParameters.maxVideoFrame}}</b></p></li>
+                                    </div>
+                                </div>        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col-md-4" ng-show="!objectManager.isStaticType(objectManager.selectedObject.type)" >
+                    <button class="btn-primary" ng-click="keypointEditor.callInterpolate();">Interpolate</button>
+                </div>
             </div>
-            <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
+            <div class="row">
+                <!-- <div class="col col-md-1"></div> -->
+                <div class="col col-md-12">
+                    <div class="row">
+                        <p ng-if="objectManager.isTypeSelected('boxAIK') || objectManager.isTypeSelected('cylinderAIK')"> Displayed full objects will be updated after saving!</p>
+                        <p ng-show="keypointEditor.keypointEditorData.modified">The object has been modified, <b>save it!</b></p>
+                    </div>
+                </div>
+                <!-- <div class="col col-md-1"></div> -->
+            </div>
         </div>
     </div>
 </div>
-
-
 
 <!-- ACTIONS EDITOR FLOATING PANEL -->
 <div id="ActionsEditor" class="panel panel-floating"  style="width: 450px;" ng-show="actionsEditor.active">
@@ -398,7 +715,7 @@
         <div ng-show="objectManager.selectedType.type !== undefined && canvasesManager.atLeastOneCameraPlaced()">
             <h4>Select object:</h4>
             <div class="row">
-                <select class="form-control" id="selObject" ng-change="actionManager.getActionsListByUID()" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
+                <select class="form-control" id="selObject" ng-model="actionManager.selectedObject" ng-options="object as object.uid for object in objectManager.selectedType.objects" convert-to-number>                     
                 </select>
             </div> 
             <hr>
@@ -412,16 +729,33 @@
                     </button>
                     <div id="ActionCreationDropdown" class="dropdown-menu text-center">
                         <li class="dropdown-header">Actions:</li>
+                        <p><input class="form-control" type="text" ng-model="search" placeholder="Filter actions..."></p>
                         <li>
-                            <select class="form-control" id="selAction" ng-model="actionManager.actionCreationData.selectedType" ng-options="activity for activity in actionManager.activitiesList">
+                            <select class="form-control" id="selAction" ng-model="actionManager.actionCreationData.selectedType" ng-options="activity for activity in actionManager.activitiesList | filter:search">
                             </select>
                         </li>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame from:</li>
-                        <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameFrom" ng-model="actionManager.actionCreationData.startFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <!-- <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameFrom()"><span class="glyphicon glyphicon glyphicon-screenshot"></span></button> -->
+                                <button class="btn btn-primary" ng-click="actionsEditor.setActualFrameFrom()"><span class="glyphicon glyphicon glyphicon-screenshot"></span></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li class="dropdown-header">Frame to:</li>
-                        <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                        <div class="row margin-h-0 text-center">
+                            <div class="col col-sm-8 padding-0">
+                                <input type="number" class="form-control" id="actionFrameTo" ng-model="actionManager.actionCreationData.endFrame">
+                            </div>
+                            <div class="col col-sm-4 padding-0">
+                                <!-- <button class="btn btn-primary" data-toggle="tooltip" data-placement="right" title="Take actual frame" ng-click="actionsEditor.setActualFrameTo()"><span class="glyphicon glyphicon glyphicon-screenshot"></button> -->
+                                <button class="btn btn-primary"  ng-click="actionsEditor.setActualFrameTo()"><span class="glyphicon glyphicon glyphicon-screenshot"></button>
+                            </div>
+                        </div>
                         <li class="divider"></li>
                         <li>
                             <button class="btn btn-sm btn-primary" ng-click="actionManager.createNewAction()">Add</button>
@@ -440,7 +774,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-if="actionManager.actionsList.length != 0" ng-repeat="action in actionManager.actionsList">
+                            <tr ng-if="actionManager.actionsList[actionManager.selectedObject.uid].length != 0" ng-repeat="action in actionManager.actionsList[actionManager.selectedObject.uid]">
                                 <td>
                                     <button class="btn-danger" ng-click="actionManager.removeAction(action)">
                                     <span class="glyphicon glyphicon-remove"></span>
@@ -450,7 +784,7 @@
                                 <th>{{action.startFrame}}</th>
                                 <th>{{action.endFrame}}</th>
                             </tr>
-                            <tr ng-if="actionManager.actionsList.length == 0">
+                            <tr ng-if="actionManager.actionsList[actionmanager.selectedObject.uid].length == 0">
                                 <td>No actions created</td>
                             </tr>
                         </tbody>
@@ -461,15 +795,72 @@
     </div>
 </div>
 
+<!-- SANITY CHECK POPUP PANEL   -->
+<div id="SanityCheckPopup" class="panel panel-floating" ng-show="commonManager.sanityCheck.visibilityPopup"
+style="width:600px; height:auto">
+    <div class="panel-heading" ng-draggable='dragOptions'>
+        <div class="row">
+            <div class="col-sm-1">
+                <span class="glyphicon glyphicon-move"></span>
+            </div>
+            <div class="col-sm-9">
+                Sanity check results
+            </div>
+            <div class="col-sm-1">
+                <button ng-if="!commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-minus"></span></button>
+                <button ng-if="commonManager.sanityCheck.isMinimized" class="btn-invisible btn-xs" ng-click="commonManager.minimizeSanityCheck()"><span
+                        class="glyphicon glyphicon-plus"></span></button>
+            </div>
+            <div class="col-sm-1">
+                <button class="btn-invisible btn-xs" ng-click="commonManager.hideSanityCheck()"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && commonManager.sanityCheck.isLoading">
+        <img src="/static/resources/loading.gif" />
+        <h2>Loading content</h2>
+        <p>Please wait</p>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length !== 0">
+        <h2>Errors detected in annotations.</h2>
+        <hr>
+        <div class="zui-wrapper" style="min-height: 200px">
+            <div class="zui-scroller" style="margin:auto;width:100%;overflow-x:visible">
+                <table class="zui-table" style="width: 100%;font-family:inherit">
+                    <thead>
+                    <tr>
+                        <th>frame</th>
+                        <th>track_id</th>
+                        <th>type</th>
+                        <th>reason</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="object in commonManager.sanityCheck.results" ng-click="keypointEditor.goToSanityCheckErrorObject(object)" >
+                        <td>{{object.number}}</td>
+                        <td>{{object.track_id}}</td>
+                        <td>{{object.type}}</td>
+                        <td>{{object.reason}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body" ng-show="!commonManager.sanityCheck.isMinimized && !commonManager.sanityCheck.isLoading && commonManager.sanityCheck.results.length === 0">
+        <h2>All annotations are correct! &#127881</h2>
+    </div>
+</div>
 
-<!-- Object Type reselection alert floating panel -->
+<!-- OBJECT TYPE RESELECTION ALERT FLOATING PANEL -->
 <div id="KeypointEditor" class="panel panel-alert" style="width: 300;" ng-show="toolParameters.showObjectTypeAlert" ng-click="toolParameters.closeObjectTypeAlert()">
     <div class="panel panel-body">
         <h4> <span class="glyphicon glyphicon-arrow-left"></span> Select the Object Type again.</h4>
         <small class="form-text text-muted" style="text-align: center;">Click anywhere on this panel to close it</small>
     </div>
 </div>
-
 
 <!-- ALL THE OTHER WINDOWS -->
 

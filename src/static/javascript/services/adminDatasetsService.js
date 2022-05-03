@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-    .factory('adminDatasetsSrvc', function ($state, $http, $httpParamSerializer) {
+    .factory('adminDatasetsSrvc', ['navSrvc', '$state', '$http', '$httpParamSerializer',function (navSrvc, $state, $http, $httpParamSerializer) {
 
         return {
             getInfoOfVideos: function (callbackSuccess, activeDataset, callbackError) {
@@ -8,7 +8,8 @@ angular.module('CVGTool')
                     method: 'GET',
                     url: '/api/video/getVideos',
                     headers: {
-                        'dataset': activeDataset
+                        'dataset': activeDataset,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     if (response.data.msg.length === 0) {
@@ -25,6 +26,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/dataset/readData',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': dataset,
                         'type': type
@@ -39,7 +43,10 @@ angular.module('CVGTool')
             getDatasets: function (callback, callbackError) {
                 $http({
                     method: 'GET',
-                    url: '/api/dataset/getDatasets'
+                    url: '/api/dataset/getDatasets',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    }
                 }).then(function successCallback(response) {
                     callback(response.data.msg);
                 }, function errorCallback(response) {
@@ -52,7 +59,8 @@ angular.module('CVGTool')
                     method: 'GET',
                     url: '/api/dataset/getDataset',
                     headers: {
-                        'name': datasetName
+                        'name': datasetName,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                     callbackSuccess(response.data.msg);
@@ -65,6 +73,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/dataset/removeDataset',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': name
                     }
@@ -75,25 +86,29 @@ angular.module('CVGTool')
                 });
             },
 
-            exportDataset: function (name, type, callbackSuccess, callbackError) {
+            exportDataset: function (name, type, callback) {
                 $http({
                     method: 'GET',
                     url: '/api/dataset/exportDataset',
                     headers: {
                         'dataset': name,
-                        'datasetType': type
+                        'datasetType': type,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
-                    callbackSuccess(response.data.msg)
+                    callback('finish', 'Dataset successfully exported!', 'success')
                 }, function errorCallback(response) {
-                    callbackError(response.data.msg)
+                    callback('finish', 'Something went wrong when exporting!', 'danger')
                 });
             },
 
             getZipFiles: function(callback, callbackError) {
                 $http({
                     method: 'GET',
-                    url: 'api/dataset/getZipFiles'
+                    url: 'api/dataset/getZipFiles',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    }
                 }).then(function successCallback(response) {
                     callback(response.data.msg)
                 }, function errorCallback(response) {
@@ -104,7 +119,10 @@ angular.module('CVGTool')
             getAnnotationFolders: function(dataset, callback, callbackError) {
                 $http({
                     method: 'GET',
-                    url: 'api/annotation/getFolders'
+                    url: 'api/annotation/getFolders',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    }
                 }).then(function successCallback(response) {
                    callback(dataset, response.data.msg)
                 }, function errorCallback(response) {
@@ -116,6 +134,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/annotation/uploadAnnotations',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'dataset': name,
                         'datasetType': type,
@@ -132,6 +153,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: 'api/dataset/loadZip',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         'name': name,
                         'type': type
@@ -149,7 +173,8 @@ angular.module('CVGTool')
                     method: 'GET',
                     url: '/api/activity/getActivities',
                     headers: {
-                        dataset: dataset
+                        dataset: dataset,
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                     }
                 }).then(function successCallback(response) {
                         callbackSuccess(response.data.msg);
@@ -164,6 +189,9 @@ angular.module('CVGTool')
                 $http({
                     method: 'POST',
                     url: '/api/activity/createActivity',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
                     data: {
                         dataset: dataset,
                         activity: activity
@@ -175,5 +203,45 @@ angular.module('CVGTool')
                         callbackError(response.data.msg);
                     })
             },
+
+            // Load Ignore Regions of a local dataset
+            loadIgnoreRegions: function(dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/dataset/loadIgnoreRegions',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
+                    data: {
+                        'name': dataset.name,
+                        'type': dataset.type
+                }
+                }).then(function successCallback(response) {
+                        callbackSuccess(response.data.msg)
+                    },
+                    function errorCallback(response) {
+                        callbackError(response.data.msg);
+                    })
+            },
+
+            // Load Ignore Regions of a local dataset
+            loadPTPoses: function(dataset, callbackSuccess, callbackError) {
+                $http({
+                    method: 'POST',
+                    url: '/api/dataset/loadPTPoses',
+                    headers: {
+                        'Authorization': 'Bearer ' + navSrvc.getSessionToken()
+                    },
+                    data: {
+                        'name': dataset.name,
+                        'type': dataset.type
+                    }
+                }).then(function successCallback(response) {
+                        callbackSuccess(response.data.msg)
+                    },
+                    function errorCallback(response) {
+                        callbackError(response.data.msg);
+                    })
+            }
         }
-    });
+    }]);

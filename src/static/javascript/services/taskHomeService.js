@@ -1,6 +1,6 @@
 angular.module('CVGTool')
 
-.factory('taskHomeSrvc', function($state, $http, $httpParamSerializer) {
+.factory('taskHomeSrvc', ['navSrvc', '$state', '$http', '$httpParamSerializer', function(navSrvc, $state, $http, $httpParamSerializer) {
     return {
         getFrameInfo: function (dataset, datasetType, callbackSuccess, callbackError) {
             $http({
@@ -8,7 +8,8 @@ angular.module('CVGTool')
                 url: '/api/frame/getFrameInfoOfDataset',
                 headers: {
                     'dataset': dataset,
-                    'datasetType': datasetType
+                    'datasetType': datasetType,
+                    'Authorization': 'Bearer ' + navSrvc.getSessionToken()
                 }
             }).then(function successCallback(response) {
                 callbackSuccess(response.data.msg)
@@ -17,4 +18,4 @@ angular.module('CVGTool')
             });
         },
     }
-});
+}]);

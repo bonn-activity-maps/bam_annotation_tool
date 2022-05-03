@@ -1,10 +1,3 @@
-db.user.insertOne({
-    name: "Rooty",
-    password: BinData(0, "JDJiJDEyJHhmL1Q0RVRxVUNJOVN1dFE5MHhCdy4uRFduNkxhTzNNNUZaNE9NNDNmM1FQSFBEYkg3SHd5"),
-    assignedTo: [""],
-    role: "root",
-    email: "rooty@root.com"
-})
 db.objectType.insertOne({
     "type": "personAIK",
     "datasetType": "actionInKitchen",
@@ -13,42 +6,48 @@ db.objectType.insertOne({
 })
 
 db.objectType.insertOne({
-    "type": "box",
-    "datasetType": "actionInKitchen",
-    "numKeypoints": 8,
-    "labels": ["tfl", "tfr", "tbl", "tbr", "bfl", "bfr", "bbl", "bbr"]
+  "type": "boxAIK",
+  "datasetType": "actionInKitchen",
+  "numKeypoints": 3,
+  "labels": ["tfl", "tfr", "bbl"]
+})
+
+db.objectType.insertOne({
+  "type": "cylinderAIK",
+  "datasetType": "actionInKitchen",
+  "numKeypoints": 2,
+  "labels": ["Top center", "Top border"]
 })
 
 db.objectType.insertOne({
   "type": "poseAIK",
   "datasetType": "actionInKitchen",
-  "numKeypoints": 25,
+  "numKeypoints": 24,
   "labels": [
-    "nose",
-    "neck",
-    "right_shoulder",
-    "right_elbow",
-    "right_wrist",
-    "left_shoulder",
-    "left_elbow",
-    "left_wrist",
-    "center_hip",
-    "right_hip",
-    "right_knee",
-    "right_ankle",
-    "left_hip",
-    "left_knee",
-    "left_ankle",
-    "right_eye",
-    "left_eye",
-    "right_ear",
-    "left_ear",
-    "left_toe",
-    "left_pinkie",
-    "left_heel",
-    "right_toe",
-    "right_pinkie",
-    "right_heel",
+    "Nose",
+    "Neck",
+    "Shoulder right",
+    "Elbow right",
+    "Hand right",
+    "Shoulder left",
+    "Elbow left",
+    "Hand left",
+    "Hip right",
+    "Knee right",
+    "Foot right",
+    "Hip left",
+    "Knee left",
+    "Foot left",
+    "Eye right",
+    "Eye left",
+    "Ear right",
+    "Ear left",
+    "Small toe left",
+    "Large toe left",
+    "Heel left",
+    "Small toe right",
+    "Large toe right",
+    "Heel right"
   ],
   "skeleton": [
     [0, 1],
@@ -58,34 +57,32 @@ db.objectType.insertOne({
     [1, 5],
     [5, 6],
     [6, 7],
-    [2, 9],
-    [5, 12],
+    [2, 8],
     [8, 9],
-    [8, 12],
     [9, 10],
-    [10, 11],
+    [5, 11],
+    [11, 12],
     [12, 13],
-    [13, 14],
+    [0, 14],
     [0, 15],
     [0, 16],
     [0, 17],
-    [0, 18],
+    [1,16],
     [1,17],
-    [1,18],
+    [14, 16],
     [15, 17],
-    [16, 18],
-    [14, 19],
-    [14, 20],
-    [14, 21],
-    [19, 20],
-    [19, 21],
-    [11, 22],
-    [11, 23],
-    [11, 24],
+    [10, 21],
+    [10, 22],
+    [10, 23],
+    [21, 22],
     [22, 23],
-    [23, 24]
+    [13, 18],
+    [13, 19],
+    [13, 20],
+    [18, 19],
+    [19, 20]
   ]
-})
+});
 
 db.activities.insertMany([
   { "name": 'standing' },

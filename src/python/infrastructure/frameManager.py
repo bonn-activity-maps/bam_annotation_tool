@@ -2,14 +2,17 @@ from pymongo import MongoClient, errors
 import logging
 from bson.son import SON
 
+import python.config as cfg
+
 # FrameManager logger
 log = logging.getLogger('frameManager')
 
 from python.objects.frame import Frame
 
+
 class FrameManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.frame
 
@@ -106,5 +109,20 @@ class FrameManager:
             return list(result)
         except errors.PyMongoError as e:
             log.exception('Error finding frames in db')
+            return 'Error'
+
+    # Return 'ok' if the camera calibration parameters has been updated
+    def update_frames_camera_calibration(self, dataset, video, start_frame, end_frame, new_cam_params):
+        query = {"dataset": dataset.name, "video": video.name, "number": {"$gte": start_frame, "$lte": end_frame}}
+        # Update values
+        new_values = {"$set": {"cameraParameters": new_cam_params}}
+        try:
+            result = self.collection.update_many(query, new_values, upsert=False)
+            if result.acknowledged:
+                return 'ok'
+            else:
+                return 'Error'
+        except errors.PyMongoError as e:
+            log.exception('Error updating pose property in db')
             return 'Error'
 

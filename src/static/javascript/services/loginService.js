@@ -2,18 +2,6 @@ angular.module('CVGTool')
     // 'Login' service manage the authentication function of the page with the server
     .factory('loginSrvc', function ($state, $http, $httpParamSerializer) {
         return {
-            // Function that gets the list of datasets (used when user in "root" only)
-            getDatasetList: function() {
-              $http({
-                  method: 'GET',
-                  url: '/api/...',
-              }).then(function successCallback(response) {
-                  user.assignedTo = response.data.msg;
-              }, function errorCallback(response) {
-                  console.log(response.data.msg);
-              });
-            },
-
             // Login call
             login: function(userName, password, callbackSuccess, callbackError) {
               $http({
@@ -29,6 +17,7 @@ angular.module('CVGTool')
                       role: response.data.msg.role,
                       email: response.data.msg.email,
                       assignedTo: response.data.msg.assignedTo,
+                      sessionToken: response.data.msg.token
                   }
                   
                   // If the user role is 'root', we need to retrieve all datasets
@@ -39,6 +28,17 @@ angular.module('CVGTool')
               }, function errorCallback(response) {
                   callbackError(response.data.msg);
               });
+            },
+            logout: function(userName, callback) {
+                $http({
+                    method: 'GET',
+                    url: '/api/user/logout',
+                    headers: {
+                        'username': userName
+                    }
+                }).then(function successCallback() {
+                    callback();
+                })
             }
         }
 });

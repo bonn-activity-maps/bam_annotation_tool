@@ -6,6 +6,9 @@ angular.module('CVGTool')
     .controller('loginCtrl', ['$scope', '$state', 'loginSrvc', 'navSrvc', 'adminDatasetsSrvc',
         function ($scope, $state, loginSrvc, navSrvc, adminDatasetsSrvc) {
 
+        // Version of the tool
+        $scope.toolVersion = navSrvc.getToolVersion();
+
         // Feedback handling variables
         $scope.errorMsg = "";
         $scope.successMsg = "";
@@ -34,13 +37,13 @@ angular.module('CVGTool')
 
         // Callback function to redirect the user if the login worked
         var successRedirect = function (user) {
-            navSrvc.setUser(user);
+            navSrvc.setUser(user);  // Send user info and session token to storage
             if (user.role.localeCompare('user') === 0) { // NOT assign dataset automatically, select in task page
                 // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
                 $state.go('taskHome');
             } else {
                 // adminDatasetsSrvc.get_dataset(user.assignedTo[0], setActiveDataset);
-                $state.go('adminStatistics');
+                $state.go('adminNotification');
             }
         };
 

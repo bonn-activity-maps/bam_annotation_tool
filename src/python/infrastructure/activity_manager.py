@@ -1,15 +1,16 @@
 from pymongo import MongoClient, errors
 import logging
+import python.config as cfg
 
 from python.objects.activity import Activity
 
-# TaskManager logger
+# ActivityManager logger
 log = logging.getLogger('activity_manager')
 
 
 class ActivityManager:
 
-    c = MongoClient('172.18.0.2', 27017)
+    c = MongoClient(cfg.mongo["ip"], cfg.mongo["port"])
     db = c.cvg
     collection = db.activities
 

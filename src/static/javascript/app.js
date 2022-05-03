@@ -1,6 +1,8 @@
-angular.module('CVGTool', ['ui.router', /*'thatisuday.dropzone',*/ 'ngMaterial', 'ngAnimate', 'rzSlider', 'ngToast', 'ui.bootstrap', 'cfp.hotkeys'])
+angular.module("lodash", []).constant("_", window._);
 
-.config(function($stateProvider, $urlRouterProvider) {
+angular.module('CVGTool', ['ui.router', 'ngMaterial', 'ngAnimate', 'rzSlider', 'ngToast', 'ui.bootstrap', 'cfp.hotkeys', 'chart.js'])
+
+.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $stateProvider
 
         .state('tool', {
@@ -47,10 +49,28 @@ angular.module('CVGTool', ['ui.router', /*'thatisuday.dropzone',*/ 'ngMaterial',
         controller: "adminTasksCtrl"
     })
 
-    .state('adminStatistics', {
-        url: "/admin/statistics",
-        templateUrl: "static/views/adminStatistics.html"
+    .state('adminNotification', {
+        url: "/admin/notification",
+        templateUrl: "static/views/adminNotification.html",
+        controller: "adminNotificationCtrl"
+    })
+
+    .state('adminUserActions', {
+        url: "/admin/useractions",
+        templateUrl: "static/views/adminUserActions.html",
+        controller: "adminUserActionsCtrl"
     });
 
     $urlRouterProvider.otherwise('login');
+
+    $httpProvider.interceptors.push(function($q, $window) {
+        return {
+            'responseError': function(response){
+                if(response.status === 401){
+                    $window.location.href = "/#/login";
+                }
+                return $q.reject(response);
+            }
+        };
+    });
 });

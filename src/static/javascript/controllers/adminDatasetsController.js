@@ -15,42 +15,11 @@ angular.module('CVGTool')
 
         $scope.unwrapping = false;
 
-        // Dropzone zip options
-        $scope.dzZipOptions = {
-            paramName: 'file',
-            chunking: true,
-            forceChunking: true,
-            uploadMultiple: false,
-            maxFilesize: 10240, // mb
-            chunkSize: 20000000, // bytes (chunk: 20mb)
-            headers: {
-                "type": ""
-            },
-            acceptedFiles: ".zip",
-            url: '/api/dataset/uploadZip',
-            dictDefaultMessage: 'Drop zip file here to upload a dataset.'
-        };
-
-        // Dropzone zip event handler
-        $scope.dzZipCallbacks = {
-            'addedfile' : function(file){
-                console.log(file);
-                $scope.newFile = file;
-            },
-            'success' : function(file, xhr) {
-                $scope.getListOfDatasets();
-                $scope.getInfoOfVideos();
-                // TODO: Check this --> doesn't work for big datasets
-                // Request to read/store in db information of dataset
-                $scope.readData(file.name.split(".zip")[0], $scope.datasetType);
-            }
-        };
-
         // Set watcher to control the selector
         $scope.$watch(function(){
             return $scope.datasetType;
         }, function(newVal, oldVal){
-            $scope.dzZipOptions.headers.type = $scope.datasetType;
+            // $scope.dzZipOptions.headers.type = $scope.datasetType;
         });
 
         // Retrieve list of datasets in the system
@@ -62,6 +31,44 @@ angular.module('CVGTool')
         var updateListOfDatasets = function(datasets) {
             $scope.listOfDatasets = datasets;
         };
+
+        var showLoadIgnoreRegionDialog = function(videos) {
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/showLoadIgnoreRegions.html',
+                locals: {
+                    dataset: $scope.selectedDataset,
+                    files: videos.length
+                },
+                controller: 'dialogShowLoadIgnoreRegionsCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        }
+
+        $scope.loadIgnoreRegions = function(dataset) {
+            $scope.selectedDataset = dataset;
+            adminDatasetsSrvc.getInfoOfVideos(showLoadIgnoreRegionDialog, dataset.name, sendMessage)
+
+        }
+
+        $scope.loadPTPoses = function(dataset) {
+            $scope.selectedDataset = dataset;
+            $mdDialog.show({
+                templateUrl: '/static/views/dialogs/showLoadPTPoses.html',
+                locals: {
+                    dataset: $scope.selectedDataset
+                },
+                controller: 'dialogShowLoadPTPosesCtrl',
+                escapeToClose: false,
+                onRemoving: function (event, removePromise) {
+                    $scope.getListOfDatasets();
+                    $scope.getInfoOfVideos();
+                }
+            });
+        }
 
         // Function to select a dataset and show its videos
         $scope.selectDataset = function(dataset) {
@@ -104,9 +111,13 @@ angular.module('CVGTool')
                 },
                 controller: 'dialogExportDatasetCtrl',
                 escapeToClose: false,
-                onRemoving: function (event, removePromise) {
+            }).then(function(successData) {
+                if (successData.doit === false) {
                     $scope.getListOfDatasets();
                     $scope.getInfoOfVideos();
+                } else {
+                    sendMessage('loading', 'Exporting dataset, this may take a while...');
+                    adminDatasetsSrvc.exportDataset(successData.name, successData.type, sendMessage)
                 }
             });
         };

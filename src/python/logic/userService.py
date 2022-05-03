@@ -7,6 +7,10 @@ from python.infrastructure.datasetManager import DatasetManager
 from python.infrastructure.videoManager import VideoManager
 from python.infrastructure.frameManager import FrameManager
 from python.infrastructure.annotationManager import AnnotationManager
+from python.infrastructure.user_action_manager import UserActionManager
+
+from python.objects.user_action import UserAction
+from python.objects.dataset import Dataset
 
 # UserService logger
 log = logging.getLogger('userService')
@@ -16,6 +20,8 @@ datasetManager = DatasetManager()
 videoManager = VideoManager()
 frameManager = FrameManager()
 annotationManager = AnnotationManager()
+user_action_manager = UserActionManager()
+
 
 class UserService:
 
@@ -31,6 +37,11 @@ class UserService:
         # Check hashed password. Using bcrypt, the salt is saved into the hash itself
         return bcrypt.checkpw(plain_text_password.encode('utf-8'), hashed_password)
 
+    def user_logout(self, user):
+        # Create user action in db
+        user_action = UserAction(user, 'logout', "", Dataset("None"))
+        user_action_manager.create_user_action(user_action)
+
     # Check if user exist and return user info
     def user_login(self, user, pwd):
         result = userManager.get_user_pwd(user)
@@ -38,8 +49,12 @@ class UserService:
             return False, 'Wrong credentials', 400
 
         if self.check_password(pwd, result.password):
+            # Create user action in db
+            user_action = UserAction(user, 'login', "", Dataset("None"))
+            user_action_manager.create_user_action(user_action)
+
             result.password = ''
-            return True, result.to_json(), 200
+            return True, result, 200
         else:
             return False, 'Wrong credentials', 400
 
@@ -49,7 +64,7 @@ class UserService:
         if result == 'Error':
             return False, 'Incorrect user', 400
         else:
-            return True, result.to_json(), 200
+            return True, result, 200
 
     # Return users info
     def get_users(self):
@@ -85,7 +100,6 @@ class UserService:
         else:
             # Create random password of length 12
             pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
-            # pwd = u"test"
             user.password = self.get_hashed_password(pwd)
 
             result = userManager.create_user(user)
@@ -96,7 +110,6 @@ class UserService:
                 if not result:
                     return False, "Error duplicating annotations", 400
 
-                ## TODO: send password to email
                 return True, {'name': user.name, 'password': pwd}, 200
 
     # Check if the the user has annotations of his own for the assignated datasets and create a copy of root's otherwise
@@ -136,3 +149,18 @@ class UserService:
             return False, 'Error updating password', 400
         else:
             return True, 'Password successfully updated', 200
+
+    # Return user's password if the password has been updated
+    def reset_user_password(self, user):
+        # Check if user exists
+        if userManager.get_user(user) != 'Error':
+            # Create random password of length 12 and update in db
+            pwd = u"".join(random.choices(string.ascii_uppercase + string.digits, k=12))
+            result = userManager.update_user_password(user, self.get_hashed_password(pwd))
+            if result == 'Error':
+                return False, 'Error updating password', 400
+            else:
+                return True, {'name': user, 'password': pwd}, 200
+        else:
+            return False, 'The user does not exist', 400
+

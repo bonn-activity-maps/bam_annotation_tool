@@ -1,5 +1,6 @@
 <!--menu -->
-<nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong" ng-show="loggedIn()">
+
+<nav class="navbar navbar-inverse navbar-fixed-top theme-color-strong" style="margin-bottom: 0px;" ng-show="loggedIn()">
     <div class="container-fluid">
         <div class="navbar-header">
             <a class="navbar-brand" href="" rel="home" id="hombeButton">
@@ -43,11 +44,13 @@
             </ul>
 
             <ul class="nav navbar-nav" ng-if="user.role=='admin' || user.role=='root'">
-                <li><a href="#!/admin/statistics"> Statistics</a></li>
+                <li><a href="#!/admin/notification"> Notification</a></li>
                 <li><a href="#!/admin/users"> User management</a></li>
                 <li ng-if="user.role=='root'"><a href="#!/admin/datasets"> Dataset</a></li>
                 <li><a href="#!/admin/annotations"> Annotations</a></li>
                 <li><a href="#!/admin/tasks">Tasks management</a></li>
+                <li><a href="#!/admin/useractions">User activity</a></li>
+
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
@@ -59,6 +62,11 @@
                 </li>
                 <li><a href="" ng-click="logOut()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
             </ul>
+        </div>
+    </div>
+    <div class="row" ng-show="notificationValues.showNotification">
+        <div class="alert alert-warning" style="margin-bottom: 0px; padding-top: 0px; height: 20px; font-size: 12px; text-align: center;">
+            <b>{{notificationValues.notificationMessage}}</b>
         </div>
     </div>
 </nav>

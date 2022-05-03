@@ -1,0 +1,16 @@
+<md-dialog>
+    <div class="panel">
+        <md-dialog-content>
+            <h2>Replicate warning</h2>
+            <p>There are objects in the forward range with a different number of keypoints. <br>
+                They will be overwritten if you confirm. <br>
+                Consider making use of the backwards replication option instead. <br>
+                Do you still wish to continue?
+            </p>
+        </md-dialog-content>
+        <md-dialog-actions>
+            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+            <button ng-click="continue()" class="btn btn-primary">Continue</button>
+        </md-dialog-actions>
+    </div>
+</md-dialog>

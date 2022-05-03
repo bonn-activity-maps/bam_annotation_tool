@@ -161,9 +161,15 @@ angular.module('CVGTool')
         $scope.mode = 'normal';
         $scope.msg = '';
 
+        $scope.returnValues = {
+            doit: false,
+            name: name,
+            type: type,
+        }
+
         // Function to cancel all actions and close the dialog
         $scope.cancel = function() {
-            $mdDialog.cancel();
+            $mdDialog.hide($scope.returnValues);
         };
 
         // Recall function if the rename worked
@@ -180,39 +186,8 @@ angular.module('CVGTool')
 
         // Function that generates the call to the server to remove the file
         $scope.export = function() {
-            adminDatasetsSrvc.exportDataset(name, type, showSuccess, showError)
-        }
-    }
-])
-
-/*
- * Controller of the dialog of the "upload annotations to existing dataset" action
- */
-.controller('dialogExportDatasetCtrl', ['$scope', 'adminDatasetsSrvc', 'navSrvc', '$mdDialog', 'name', 'type',
-    function($scope, adminDatasetsSrvc, navSrvc, $mdDialog, name, type) {
-        $scope.mode = 'normal';
-        $scope.msg = '';
-
-        // Function to cancel all actions and close the dialog
-        $scope.cancel = function() {
-            $mdDialog.cancel();
-        };
-
-        // Recall function if the rename worked
-        var showSuccess = function(response) {
-            $scope.mode = 'success';
-            $scope.msg = 'Annotations successfully uploaded.'
-        };
-
-        // Recall function if the rename didnt worked
-        var showError = function(response) {
-            $scope.mode = 'error';
-            $scope.msg = 'There was an error when upload the annotations.'
-        };
-
-        // Function that generates the call to the server to remove the file
-        $scope.export = function() {
-            adminDatasetsSrvc.exportDataset(name, type, showSuccess, showError)
+            $scope.returnValues.doit = true;
+            $mdDialog.hide($scope.returnValues)
         }
     }
 ])
@@ -307,6 +282,93 @@ angular.module('CVGTool')
                 success: $scope.success,
                 filename: $scope.filename,
                 type: $scope.variables.datasetType
+            };
+            $mdDialog.hide($scope.successData);
+        }
+    }
+])
+
+/**
+ * Controller of the dialog show load ignore regions
+ */
+.controller('dialogShowLoadIgnoreRegionsCtrl', ['$scope', '$mdDialog', 'dataset', 'files', 'adminDatasetsSrvc',
+function($scope, $mdDialog, dataset, files, adminDatasetsSrvc) {
+    $scope.variables = {
+        dataset: dataset,
+        files: files
+    };
+
+    $scope.success = false;
+    $scope.mode = 'normal';
+    $scope.msg = '';
+
+    // Load the ignore regions
+    $scope.load = function() {
+        $scope.mode = 'progress';
+        adminDatasetsSrvc.loadIgnoreRegions($scope.variables.dataset, showSuccess, showError);
+    };
+
+    // Recall function if the rename worked
+    var showSuccess = function(response) {
+        $scope.mode = 'success';
+        $scope.msg = response;
+        $scope.success = true;
+    };
+
+    // Recall function if the rename didnt worked
+    var showError = function(response) {
+        $scope.mode = 'error';
+        $scope.msg = response;
+        $scope.success = false;
+    };
+
+    // Function to cancel all actions and close the dialog
+    $scope.cancel = function() {
+        $scope.successData = {
+            success: $scope.success
+        };
+        $mdDialog.hide($scope.successData);
+    }
+}
+])
+
+/**
+ * Controller of the dialog show load pt poses
+ */
+.controller('dialogShowLoadPTPosesCtrl', ['$scope', '$mdDialog', 'dataset', 'adminDatasetsSrvc',
+    function($scope, $mdDialog, dataset, adminDatasetsSrvc) {
+        $scope.variables = {
+            dataset: dataset
+        };
+
+        $scope.success = false;
+        $scope.mode = 'normal';
+        $scope.msg = '';
+
+        // Load the poses
+        $scope.load = function() {
+            $scope.mode = 'progress';
+            adminDatasetsSrvc.loadPTPoses($scope.variables.dataset, showSuccess, showError);
+        };
+
+        // Recall function if the rename worked
+        var showSuccess = function(response) {
+            $scope.mode = 'success';
+            $scope.msg = response;
+            $scope.success = true;
+        };
+
+        // Recall function if the rename didnt worked
+        var showError = function(response) {
+            $scope.mode = 'error';
+            $scope.msg = response;
+            $scope.success = false;
+        };
+
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $scope.successData = {
+                success: $scope.success
             };
             $mdDialog.hide($scope.successData);
         }
@@ -498,20 +560,272 @@ angular.module('CVGTool')
 //     }
 // ])
 
-/*
- * Controller of the dialog of batch delete
+    /*
+ * Controller of the dialog of change person ID
  */
-.controller('batchDeleteCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
-    function($scope, $mdDialog, toolSrvc, object, minFrame, maxFrame, dataset, scene, username) {
+.controller('changePersonIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, dataset, scene, username) {
         $scope.object = object;
         $scope.dataset = dataset;
         $scope.scene = scene;
         $scope.username = username;
         $scope.mode = "normal";
+        $scope.values = {
+            old_person_id: object.person_id,
+            new_person_id: Number(),
+            is_id_in_use: Boolean()
+        };
+        $scope.old_person_id = object.person_id;
+        $scope.new_person_id = Number();
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        };
+
+        $scope.change = function() {
+            let callback = function(response){
+                $scope.values.is_id_in_use = response;
+            };
+
+            // Check if ID is previously used
+            !toolSrvc.isPersonIDInUse($scope.dataset.name,$scope.dataset.type, $scope.values.new_person_id, callback, errorFunction);
+            $scope.mode = "check";
+        };
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        };
+
+        let successFunction = function() {
+            let successData = {
+                msg: "success",
+                object: $scope.object
+            };
+            $mdDialog.hide(successData);
+        };
+
+        let errorFunction = function() {
+            let successData = {
+                msg: "error",
+                object: $scope.object
+            };
+            $mdDialog.hide(successData)
+        };
+
+        $scope.confirm = function() {
+            var successData = {
+                msg: "success",
+                new_person_id: $scope.values.new_person_id,
+                old_person_id: $scope.values.old_person_id,
+                object: $scope.object
+            };
+            $mdDialog.hide(successData);
+        }
+    }
+])
+
+    /*
+* Controller of the dialog of change track ID
+*/
+.controller('batchChangeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username',
+    'ignoreRegions', 'bbox_heads', 'bboxes', 'persons', 'frame', 'min_frame', 'max_frame',
+    function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, bbox_heads, bboxes, persons, frame,
+             min_frame, max_frame) {
+        $scope.object = object;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+        $scope.values = {
+            old_track_id: object.uid,
+            new_track_id: Number(),
+            invalid_track_id: Boolean(),
+            is_id_in_use: Boolean(),
+            obj_exists: Boolean(),
+            frame_start: min_frame,
+            frame_end: min_frame,
+            min_frame: min_frame,
+            max_frame: max_frame
+        };
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        };
+
+        let check_array = function(array){
+            for (let index in array) {
+                // If the current frame IR with same ID is not empty
+                if (parseInt(index, 10) === $scope.values.new_track_id &&
+                    array[index].frames[frame].keypoints.length > 0) {
+                    $scope.values.is_id_in_use = true;
+                    $scope.values.obj_exists = true;
+                }
+                if (parseInt(index, 10) === $scope.values.new_track_id){
+                    $scope.values.obj_exists = true;
+                }
+            }
+        }
+
+        $scope.change = function() {
+            // Check if ID is in use in this frame
+            $scope.values.is_id_in_use = false;
+            $scope.values.invalid_track_id = false;
+            $scope.values.obj_exists = false;
+            if (
+                ($scope.object.type === 'ignore_region' &&
+                    ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100)) ||
+                ($scope.object.type === 'bbox_head' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
+                ($scope.object.type === 'bbox' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
+                ($scope.object.type === 'person' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0))) {
+                switch ($scope.object.type) {
+                    case "ignore_region":
+                        check_array(ignoreRegions);
+                        break
+                    case "bbox_head":
+                        check_array(bbox_heads);
+                        break
+                    case "bbox":
+                        check_array(bboxes);
+                        break
+                    case "person":
+                        check_array(persons);
+                        break
+                    default:
+                        break
+                }
+            } else {
+                $scope.values.is_id_in_use = true;
+                $scope.values.invalid_track_id = true;
+            }
+            $scope.mode = "check";
+        };
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        };
+
+        $scope.confirm = function() {
+            let successData = {
+                msg: "success",
+                new_track_id: $scope.values.new_track_id,
+                old_track_id: $scope.values.old_track_id,
+                frame_start: $scope.values.frame_start,
+                frame_end: $scope.values.frame_end,
+                object: $scope.object,
+                swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.obj_exists
+            };
+            $mdDialog.hide(successData);
+        }
+    }
+])
+
+    /*
+ * Controller of the dialog of change track ID
+ */
+.controller('changeTrackIDCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'dataset', 'scene', 'username', 'ignoreRegions', 'bbox_heads', 'persons', 'frame',
+        function($scope, $mdDialog, toolSrvc, object, dataset, scene, username, ignoreRegions, bbox_heads, persons, frame) {
+            $scope.object = object;
+            $scope.dataset = dataset;
+            $scope.scene = scene;
+            $scope.username = username;
+            $scope.mode = "normal";
+            $scope.values = {
+                old_track_id: object.uid,
+                new_track_id: Number(),
+                invalid_track_id: Boolean(),
+                is_id_in_use: Boolean(),
+                obj_exists: Boolean()
+            };
+            $scope.old_track_id = object.uid;
+            $scope.new_track_id = Number();
+
+            $scope.close = function() {
+                $mdDialog.cancel();
+            };
+
+            let check_array = function(array){
+                for (let index in array) {
+                    // If the current frame IR with same ID is not empty
+                    if (parseInt(index, 10) === $scope.values.new_track_id &&
+                        array[index].frames[frame].keypoints.length > 0) {
+                        $scope.values.is_id_in_use = true;
+                        $scope.values.obj_exists = true;
+                    }
+                    if (parseInt(index, 10) === $scope.values.new_track_id){
+                        $scope.values.obj_exists = true;
+                    }
+                }
+            }
+
+            $scope.change = function() {
+                // Check if ID is in use in this frame
+                $scope.values.is_id_in_use = false;
+                $scope.values.invalid_track_id = false;
+                $scope.values.obj_exists = false;
+                if (
+                    ($scope.object.type === 'ignore_region' &&
+                    ($scope.values.new_track_id >= 60 && $scope.values.new_track_id < 100)) ||
+                    ($scope.object.type === 'bbox_head' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0)) ||
+                    ($scope.object.type === 'person' &&
+                    ($scope.values.new_track_id < 60 && $scope.values.new_track_id >= 0))) {
+                    switch ($scope.object.type) {
+                        case "ignore_region":
+                            check_array(ignoreRegions);
+                            break
+                        case "bbox_head":
+                            check_array(bbox_heads);
+                            break
+                        case "person":
+                            check_array(persons);
+                            break
+                        default:
+                            break
+                    }
+                } else {
+                    $scope.values.is_id_in_use = true;
+                    $scope.values.invalid_track_id = true;
+                }
+                $scope.mode = "check";
+            };
+
+            $scope.cancel = function() {
+                $scope.mode = "normal";
+            };
+
+            $scope.confirm = function() {
+                let successData = {
+                    msg: "success",
+                    new_track_id: $scope.values.new_track_id,
+                    old_track_id: $scope.values.old_track_id,
+                    object: $scope.object,
+                    swap: $scope.values.is_id_in_use && !$scope.values.invalid_track_id && $scope.values.obj_exists
+                };
+                $mdDialog.hide(successData);
+            }
+        }
+    ])
+
+/*
+ * Controller of the dialog of batch delete
+ */
+.controller('batchDeleteCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'objectType', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, objectType, minFrame, maxFrame, dataset, scene, username) {
+        $scope.object = object;
+        $scope.objectType = objectType;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+        $scope.deleteType = "annotation";
 
         $scope.values = {
             deleteFrom: minFrame,
-            deleteTo: minFrame + 1
+            deleteTo: minFrame + 1,
+            label: $scope.objectType.labels[0]
         }
 
         $scope.minFrame = minFrame;
@@ -529,7 +843,8 @@ angular.module('CVGTool')
             if ($scope.values.deleteTo > $scope.maxFrame) $scope.values.deleteTo = $scope.maxFrame;
         }
 
-        $scope.delete = function() {
+        $scope.delete = function(type) {
+            $scope.deleteType = type;
             $scope.mode = "check";
         }
 
@@ -564,7 +879,105 @@ angular.module('CVGTool')
                 $scope.values.deleteFrom = $scope.values.deleteTo;
                 $scope.values.deleteTo = aux;
             }
-            toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene, $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid, $scope.object.type, successFunction, errorFunction);
+
+            if ($scope.deleteType.localeCompare("annotation") == 0) {
+                toolSrvc.batchDeleteAnnotations($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                    $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                    $scope.object.type, successFunction, errorFunction);
+            } else if ($scope.deleteType.localeCompare("label") == 0) {
+                var labelIndex = $scope.objectType.labels.indexOf($scope.values.label);
+                toolSrvc.batchDeleteLabel($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                    $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                    $scope.object.type, labelIndex,successFunction, errorFunction);
+            }
+
+        }
+    }
+])
+
+/*
+ * Controller of the dialog of transfer object
+ */
+.controller('transferObjectCtrl', ['$scope', '$mdDialog', 'toolSrvc', 'object', 'objectType', 'objects', 'minFrame', 'maxFrame', 'dataset', 'scene', 'username',
+    function($scope, $mdDialog, toolSrvc, object, objectType, objects, minFrame, maxFrame, dataset, scene, username) {
+        $scope.object = object;
+        $scope.objectType = objectType;
+        $scope.objects = objects;
+        $scope.dataset = dataset;
+        $scope.scene = scene;
+        $scope.username = username;
+        $scope.mode = "normal";
+
+        $scope.values = {
+            newUid: '',
+            deleteFrom: minFrame,
+            deleteTo: minFrame + 1,
+        }
+
+        $scope.minFrame = minFrame;
+        $scope.maxFrame = maxFrame;
+
+        $scope.close = function() {
+            $mdDialog.cancel();
+        }
+
+        $scope.checkSlider = function() {
+            // Check that values are between range
+            if ($scope.values.deleteFrom < $scope.minFrame) $scope.values.deleteFrom = $scope.minFrame;
+            if ($scope.values.deleteFrom > $scope.maxFrame) $scope.values.deleteFrom = $scope.maxFrame;
+            if ($scope.values.deleteTo < $scope.minFrame) $scope.values.deleteTo = $scope.minFrame;
+            if ($scope.values.deleteTo > $scope.maxFrame) $scope.values.deleteTo = $scope.maxFrame;
+        }
+
+        // Check it's not empty
+        $scope.checkNewUid = function() {
+            if ($scope.values.newUid === '') errorFunction('You have to select a new uid');
+        }
+
+        $scope.transferObject = function() {
+            $scope.checkNewUid();
+            $scope.mode = "check";
+        }
+
+        $scope.cancel = function() {
+            $scope.mode = "normal";
+        }
+        var successFunction = function(successMsg) {
+            var successData = {
+                msg: "success",
+                successMsg: successMsg,
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object,
+                newObjectUid: $scope.values.newUid
+            }
+            $mdDialog.hide(successData);
+        }
+
+        var errorFunction = function(errorMsg) {
+            var successData = {
+                msg: "error",
+                errorMsg: errorMsg,
+                deleteFrom: $scope.values.deleteFrom,
+                deleteTo: $scope.values.deleteTo,
+                object: $scope.object,
+                newObjectUid: $scope.values.newUid
+            }
+            $mdDialog.hide(successData)
+        }
+
+        $scope.confirm = function() {
+            $scope.checkSlider();
+            // Check and fix the order
+            if ($scope.values.deleteFrom > $scope.values.deleteTo) {
+                var aux = $scope.values.deleteFrom;
+                $scope.values.deleteFrom = $scope.values.deleteTo;
+                $scope.values.deleteTo = aux;
+            }
+
+            toolSrvc.transferObject($scope.dataset.name, $scope.dataset.type, $scope.scene,
+                $scope.values.deleteFrom, $scope.values.deleteTo, $scope.username, $scope.object.uid,
+                $scope.values.newUid, $scope.object.type, successFunction, errorFunction);
         }
     }
 ])
@@ -582,6 +995,28 @@ angular.module('CVGTool')
         $scope.continue = function() {
             $rootScope.$broadcast('advanceFrames', {'range': range});
             $mdDialog.hide();
+        }
+    }
+])
+
+/*
+ * Controller of the dialog to confirm replication of object if the next one has a different number of keypoints.
+ */
+.controller('confirmReplicateCtrl', ['$scope', '$mdDialog', 'uid', 'type', 'frame',
+    function($scope, $mdDialog, uid, type, frame) {
+        // Function to cancel all actions and close the dialog
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+        // Go back and continue
+        $scope.continue = function() {
+            let successData = {
+                msg: "success",
+                uid: uid,
+                frame: frame,
+                type: type
+            }
+            $mdDialog.hide(successData)
         }
     }
 ]);

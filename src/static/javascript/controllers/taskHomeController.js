@@ -6,6 +6,9 @@ angular.module('CVGTool')
 .controller('taskHomeCtrl', ['$scope', '$rootScope', '$state', '$mdDialog', 'navSrvc', 'taskHomeSrvc',
     function($scope, $rootScope, $state, $mdDialog, navSrvc, taskHomeSrvc) {
 
+        // Tool version
+        $scope.toolVersion = navSrvc.getToolVersion();
+
         $scope.initialFrame = 0;
         $scope.slider = { // Options and values for the slider
             range: 1,
