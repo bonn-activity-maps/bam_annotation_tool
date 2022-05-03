@@ -2,6 +2,7 @@ from flask import Flask, make_response, request, send_file
 import json, os
 import flask_login, jwt
 from datetime import datetime, timedelta
+from werkzeug.utils import safe_join
 
 from python.logic.datasetService import DatasetService
 from python.logic.videoService import VideoService
@@ -339,7 +340,7 @@ def get_min_frame():
 # Get a frame from video
 @app.route('/usr/storage/<path:filename>', methods=['GET'])
 def get_video_frame(filename):
-    return send_file('/usr/storage/'+filename)
+    return send_file(safe_join('/usr/storage/',filename))
 
 
 # Get a range of frames from video
